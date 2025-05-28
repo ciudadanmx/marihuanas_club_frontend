@@ -23,6 +23,7 @@
     "react-lazyload": "^3.2.1",
     "react-router-dom": "^6.26.1",
     "react-scripts": "^5.0.1",
+    "react-use-cart": "^1.14.0",
     "save": "^2.9.0",
     "socket.io-client": "^4.8.1",
     "spherical-geometry-js": "^3.0.2",
@@ -35,7 +36,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "dev": "react-scripts start"
-
   },
   "eslintConfig": {
     "extends": [

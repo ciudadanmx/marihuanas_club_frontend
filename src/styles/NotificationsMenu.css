@@ -16,6 +16,7 @@
 
 .notifications-menu-contenedor.open {
     display: block;
+    z-index: 99999 !important;
 
 }
 
@@ -34,12 +35,13 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     width: 33vw;
     display: none;
-    z-index: 1000;
+    z-index: 99000;
 }
 
 .notifications-menu.open {
     display: block;
     overflow-y: visible;
+    z-index: 99999 !important;
 }
 
 .notifications-menu ul {

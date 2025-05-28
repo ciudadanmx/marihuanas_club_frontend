@@ -31,10 +31,12 @@ body {
 }
 
 .atras {
-  z-index: -200;
-  position: absolute;
-  display: none; 
+  z-index: -2;
+  position: fixed;
+  margin-bottom: 150px;
+  top:120px
 }
+
 .intro {
   margin-top: -120px;
   margin-left: 14px;
