@@ -178,3 +178,13 @@ body {
   border-bottom: 3px solid #4caf50;
   font-weight: bold;
 }
+
+.estrella {
+  font-size: 24px; /* más grande que los 16px originales */
+  color: #ffc107;  /* color amarillo típico de rating */
+  line-height: 1;
+}
+
+.estrella.vacia {
+  opacity: 0.5; /* opción: menos saturada la estrella vacía */
+}

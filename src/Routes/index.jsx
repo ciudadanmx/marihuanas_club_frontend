@@ -27,8 +27,11 @@ import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
 import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
 import RegistroTienda from '../Pages/RegistroTienda.jsx';
 import AgregarProducto from '../Pages/AgregarProducto.jsx';
+import PreguntasProducto from '../components/MarketPlace/PreguntasProducto.jsx';
 import MarketPlace from '../Pages/MarketPlace.jsx';
 import Tienda from '../Pages/Tienda.jsx';
+import Producto from '../Pages/Producto.jsx';
+import MiUbicacion from '../components/MiUbicacion';
 
 
 const Rutas = () => (
@@ -61,8 +64,19 @@ const Rutas = () => (
               <Route path='/agregar-producto' element={<AgregarProducto />} />
               <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} />
               <Route path="/market" element={<MarketPlace />} />
+              <Route path="/market/producto/:slug" element={<Producto />} />
+              
+              <Route path="/ubicacion" element={<MiUbicacion />} />
 
-              <Route path="/market/store/:slug" element={<Tienda />} />
+              <Route path="/market/store/:slug" element={<Tienda />}>
+                <Route path="agregar-producto" element={<AgregarProducto />} />
+                <Route path="pedidos" element={<PreguntasProducto />} />
+                <Route path="entregados" element={<PreguntasProducto />} />
+                <Route path="productos" element={<PreguntasProducto />} />
+                <Route path="preguntas-producto" element={<PreguntasProducto />} />
+                <Route path="pagos" element={<PreguntasProducto />} />
+                <Route path="configuracion" element={<PreguntasProducto />} />
+              </Route>
 
 
 

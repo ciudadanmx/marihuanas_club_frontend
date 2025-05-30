@@ -33,6 +33,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.2rem;
+    margin-top: 1.5rem;
 }
 
 .agregar-producto-form input,
@@ -55,11 +56,40 @@
   background: rgba(255, 255, 255, 0.8);
 }
 
+.input-text {
+  margin-bottom: 1rem;
+}
+
 /* Switch y stock */
 .agregar-producto-stock {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.imagen-section {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.error-text {
+  margin-top: 1rem;
+  color: red;
+}
+
+.preview-imagen {
+  max-width: 100%;
+  height: auto;
+  margin-top: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.medidas-box {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
 }
 
 /* Imagen preview */

@@ -151,12 +151,14 @@ const NavBar = ({ SetIsMenuOpen }) => {
            eventKey: palabra clave para detectar la redirección (ej. "llamar a taxi")
            redirectPath: ruta a la que se redirige (ej. "/taxi")
       */}
-      <Direccionador 
+ 
+ 
+ {/*      <Direccionador 
         eventUrl="http://localhost:8000/chat" 
         eventKey="ya estoy invocando a la función llamar a taxi" 
         redirectPath="/taxi" 
       />
-
+ */}
 
       <section className="navbar"
         style={{

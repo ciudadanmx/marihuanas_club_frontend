@@ -19,16 +19,40 @@ const getRegion = (estado) => {
 
 const obtenerEstadoPorCP = async (cp) => {
   try {
-    const res = await fetch(`https://api-codigos-postales.herokuapp.com/v2/codigo_postal/${cp}`, {
-      credentials: 'include'
-    });
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${cp}&components=country:MX&key=${process.env.REACT_APP_GEOCODING_KEY}`;
+    console.log('Consultando URL:', url);
+
+    const res = await fetch(url);
     const data = await res.json();
-    return data.estado || null;
+
+    //console.log('Respuesta completa de la API:', data);
+
+    if (data.status !== 'OK') {
+      //console.error('Google Maps API error:', data.status);
+      return null;
+    }
+
+    const resultados = data.results[0]?.address_components;
+    //console.log('Componentes de dirección:', resultados);
+
+    if (!resultados) {
+      //console.warn('No se encontraron componentes de dirección');
+      return null;
+    }
+
+    const estado = resultados.find(component =>
+      component.types.includes('administrative_area_level_1')
+    );
+
+    //console.log('Estado detectado:', estado?.long_name || 'No encontrado');
+
+    return estado ? estado.long_name : null;
   } catch (err) {
-    console.error(`Error consultando CP ${cp}:`, err);
+    //console.error('Error al consultar Google Maps:', err);
     return null;
   }
 };
+
 
 const obtenerEstadoProducto = async (producto) => {
   return await obtenerEstadoPorCP(producto.cp);
@@ -94,7 +118,7 @@ const useProductos = () => {
 
   const [producto, setProducto] = useState(null);
 
-  const API_URL = process.env.REACT_APP_STRAPI_URL;
+  const API_URL = process.env.REACT_APP_STRAPI_URL +'/api';
 
   const fetchProductos = async () => {
     setLoading(true);
@@ -103,7 +127,7 @@ const useProductos = () => {
         credentials: 'include'
       });
       const data = await res.json();
-      setProductos(data.data || []);
+      setProductos(data || []);
     } catch (err) {
       setError(err);
     } finally {
@@ -188,18 +212,23 @@ const useProductos = () => {
 
 
     // ✅ Obtener todos los productos
+
+  const API_URL_PRODUCTOS = API_URL + '/productos';  
   const getProductos = async (params = {}) => {
     setLoading(true);
     try {
-      const res = await axios.get(API_URL, {
+      console.log('🌐 Fetching productos desde useHook...');
+      const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           populate: '*',
           ...params,
         },
       });
+      console.log('✅ Productos response: desde hook', res.data);      
       setProductos(res.data.data);
       return res.data.data;
     } catch (err) {
+      console.error('❌ Error al obtener productos:', error);      
       setError(err);
     } finally {
       setLoading(false);
@@ -210,7 +239,7 @@ const useProductos = () => {
   const getProducto = async (id) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_URL}/${id}?populate=*`);
+      const res = await axios.get(`${API_URL}/productos/${id}?populate=*`);
       setProducto(res.data.data);
       return res.data.data;
     } catch (err) {
@@ -224,8 +253,9 @@ const useProductos = () => {
   const getProductoBySlug = async (slug) => {
     setLoading(true);
     setError(null);
+    const API_COMPLETA = API_URL + '/productos/';
     try {
-      const res = await axios.get(API_URL, {
+      const res = await axios.get(API_COMPLETA, {
         params: {
           'filters[slug][$eq]': slug,
           populate: '*',
@@ -319,6 +349,18 @@ const useProductos = () => {
     }
   };
 
+  const obtenerImagenProducto = async (productoId) => {
+    try {
+      const res = await axios.get(`${API_URL}/productos/${productoId}?populate=imagen_predeterminada`);
+      const imagen = res.data?.data?.attributes?.imagen_predeterminada?.data?.[0];
+      if (!imagen) return null;
+      const url = imagen.attributes?.url;
+      return `${process.env.REACT_APP_STRAPI_URL}${url}`;
+    } catch (err) {
+      console.error('Error obteniendo imagen del producto:', err);
+      return null;
+    }
+  };
 
 
   return {
@@ -346,6 +388,7 @@ const useProductos = () => {
     buscarProductos,
     getProductosPorCategoria,
     getProductosPorTienda,
+    obtenerImagenProducto,
   };
 };
 

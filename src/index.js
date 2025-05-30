@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { RolesProvider } from './Contexts/RolesContext'; 
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { Auth0Provider } from '@auth0/auth0-react';  // Importa Auth0Provider
 import NavBar from './components/NavBar/NavBar.jsx';
 import Rutas from './Routes/index.jsx';
