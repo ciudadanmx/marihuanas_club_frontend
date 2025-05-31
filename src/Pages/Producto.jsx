@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { consola } from '@utils/utilidades';
+import { consola } from '@/utils/utilidades';
 import { useParams } from 'react-router-dom';
 import {
   Box,

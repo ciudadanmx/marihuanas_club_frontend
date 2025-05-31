@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Stack, Typography } from '@mui/material';
+import { Box, Button, Stack } from '@mui/material';
 import productoImg from '../../assets/producto.png';
 import '../../styles/Producto.css';
 
@@ -46,5 +46,4 @@ const GaleriaImagenesProducto = ({ imagenes, nombre, imagenIndex, setImagenIndex
     </Box>
   );
 };
-
 export default GaleriaImagenesProducto;
