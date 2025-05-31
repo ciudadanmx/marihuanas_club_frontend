@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { initAutocomplete } from '../utils/autocompleteMaps';
+import { initAutocomplete } from './autocompleteMaps';
 
 const useGoogleMaps = (
   fromCoordinates,

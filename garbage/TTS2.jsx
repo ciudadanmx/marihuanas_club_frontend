@@ -12,7 +12,7 @@ import ojosAbiertos from "../../assets/sara/ojos_abiertos.png";
 import ojosCerrados from "../../assets/sara/ojos_cerrados.png";
 
 // Importar hook useLmAiChat
-import { useLmAiChat } from "../../hooks/UseLmAiChat";
+import { useLmAiChat } from "../src/hooks/UseLmAiChat";
 
 // Crear socket para la conexión
 const socket = io("http://localhost:3003", {

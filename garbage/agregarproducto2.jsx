@@ -4,7 +4,7 @@ import {
   Button, Paper, Divider, Fade, Slide
 } from '@mui/material';  
 import { useAuth0 } from '@auth0/auth0-react';
-import useProductos from '../hooks/useProductos'; // ✅ usamos hook personalizado
+import useProductos from '../src/hooks/useProductos'; // ✅ usamos hook personalizado
 import '../styles/AgregarProducto.css';
 
 const AgregarProducto = () => {

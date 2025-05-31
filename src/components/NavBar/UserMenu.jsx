@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button, Avatar, Menu, MenuItem, ListItemIcon, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import '../../styles/AccountMenuMenu.css';
+import '../../styles/AccountMenuInfo.css';
 
 
 // Importar iconos desde la CDN

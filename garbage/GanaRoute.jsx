@@ -1,5 +1,5 @@
 import React from 'react';
-import Ganar from '../components/Ganar/Ganar';
+import Ganar from './Ganar/Ganar';
 
 const GanaRoute = () => {
   return (

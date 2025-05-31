@@ -26,7 +26,7 @@ export const useLmAiChat = () => {
     setConversation(updatedConversation);
 
     try {
-      const res = await fetch('http://localhost:8000/chat', {
+      const res = await fetch(`${process.env_REACT_APP_AI_URL}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         // Enviamos la conversación completa para retener el contexto

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import {
-  Box, Typography, TextField, MenuItem, Switch, FormControlLabel,
-  Button, Paper, Divider, Fade, Slide, Stepper, Step, StepLabel, IconButton
+  Box, Typography, Button, Paper, Divider, Fade, Slide, Stepper, Step, StepLabel 
 } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
 import '../styles/AgregarProducto.css';
@@ -15,9 +14,11 @@ import Paso1 from '../components/MarketPlace/AgregarProducto/Paso1'
 import Paso2 from '../components/MarketPlace/AgregarProducto/Paso2'
 import Paso3 from '../components/MarketPlace/AgregarProducto/Paso3'
 import Paso4 from '../components/MarketPlace/AgregarProducto/Paso4'
+
 //función para crear el slug
-const slugify = (str) =>
+/* const slugify = (str) =>
   str.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+ */
 
 const AgregarProducto = () => {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
@@ -254,5 +255,4 @@ const AgregarProducto = () => {
     </Paper>
   );
 };
-
 export default AgregarProducto;

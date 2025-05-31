@@ -21,7 +21,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import mapa from "../assets/mapa.png";
-import paises from "../assets/paises.json";
+import paises from "../src/assets/paises.json";
 import PasajeroTermsModal from "../components/Taxis/PasajeroTermsModal";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -112,7 +112,7 @@ const RegistroPasajero = ({ onRegister }) => {
         {!isAuthenticated ? (
           <>
             <Typography variant="h5" color="white" mb={2}>
-              Para registrarte como pasajero, primero accede con tu cuenta de Google.
+              Para registrarte como conductor, primero accede con tu cuenta de Google.
             </Typography>
             <Button variant="contained" color="primary" onClick={() => loginWithRedirect()}>
               Iniciar sesión
@@ -121,7 +121,7 @@ const RegistroPasajero = ({ onRegister }) => {
         ) : (
           <>
             <Typography variant="h4" fontWeight="bold" color="white" mb={3}>
-              🚖 Registro de Pasajero
+              🚖 Registro de Conductor
             </Typography>
 
             <form onSubmit={handleSubmit}>

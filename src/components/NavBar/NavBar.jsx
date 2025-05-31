@@ -14,9 +14,10 @@ import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 import guestImage from '../../assets/guest.png'; // Ajusta la ruta si es necesario
 import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tienes una imagen predeterminada de perfil
 import BotonCircular from './../Usuarios/BotonCircular.jsx';
-import AIInput from './AIInput';
+
 import MenuIcon from './MenuIcon';
 //import MessagesIcon from './MessagesIcon';
+import CartIcon from './CartIcon';
 import NotificationsIcon from './NotificationsIcon';
 import UserMenu from './UserMenu.jsx';
 import NavButton from './NavButton.jsx';
@@ -207,7 +208,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
                 />
               </span>
               <span className="nav-linky">
-                <NotificationsIcon
+                <CartIcon
                   isOpen={isMenuOpen}
                   onClose={() => setIsMenuOpen(false)}
                   authenticated={isAuthenticated}
