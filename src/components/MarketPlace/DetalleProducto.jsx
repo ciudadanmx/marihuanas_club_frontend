@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { consola } from '../../utils/utilidades';
 import {
   Typography,
   Button,
@@ -7,6 +8,7 @@ import {
 } from '@mui/material';
 
 const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, envio }) => {
+    consola.log('iniciando');
   const [cantidad, setCantidad] = useState(1);
 
   const handleCantidadChange = (newCantidad) => {

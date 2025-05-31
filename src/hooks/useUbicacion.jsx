@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 
 export function useUbicacion() {
   const [ubicacion, setUbicacion] = useState(null);
-  const [error, setError] = useState(null);
+  const [errorUbicacion, setErrorUbicacion] = useState(null);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
     if (!navigator.geolocation) {
-      setError("La geolocalización no es compatible con este navegador.");
+      setErrorUbicacion("La geolocalización no es compatible con este navegador.");
       setCargando(false);
       return;
     }
@@ -27,19 +27,19 @@ export function useUbicacion() {
             direccion: data.display_name,
           });
         } catch (err) {
-          setError("Error obteniendo dirección.");
+          setErrorUbicacion("Error obteniendo dirección.");
         } finally {
           setCargando(false);
         }
       },
       (err) => {
-        setError("No se pudo obtener la ubicación.");
+        setErrorUbicacion("No se pudo obtener la ubicación.");
         setCargando(false);
       }
     );
   }, []);
 
-  return { ubicacion, error, cargando };
+  return { ubicacion, errorUbicacion, cargando };
 }
 
 // 🔧 Helper para reverse geocoding usando Nominatim (OpenStreetMap)

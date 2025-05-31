@@ -3,10 +3,10 @@ import React from "react";
 import { useUbicacion } from "../hooks/useUbicacion";
 
 export default function MiUbicacion() {
-  const { ubicacion, error, cargando } = useUbicacion();
+  const { ubicacion, errorUbicacion, cargando } = useUbicacion();
 
   if (cargando) return <p>Obteniendo ubicación...</p>;
-  if (error) return <p>{error}</p>;
+  if (errorUbicacion) return <p>{errorUbicacion}</p>;
 
   return (
     <div>

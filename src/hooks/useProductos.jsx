@@ -25,18 +25,18 @@ const obtenerEstadoPorCP = async (cp) => {
     const res = await fetch(url);
     const data = await res.json();
 
-    //console.log('Respuesta completa de la API:', data);
+    console.log('🔗Respuesta completa de la API:', data);
 
     if (data.status !== 'OK') {
-      //console.error('Google Maps API error:', data.status);
+      console.error('❌Google Maps API error:', data.status);
       return null;
     }
 
     const resultados = data.results[0]?.address_components;
-    //console.log('Componentes de dirección:', resultados);
+    console.log('🗺️ Componentes de dirección:', resultados);
 
     if (!resultados) {
-      //console.warn('No se encontraron componentes de dirección');
+      console.warn('❌ No se encontraron componentes de dirección');
       return null;
     }
 
@@ -44,7 +44,7 @@ const obtenerEstadoPorCP = async (cp) => {
       component.types.includes('administrative_area_level_1')
     );
 
-    //console.log('Estado detectado:', estado?.long_name || 'No encontrado');
+    console.log('🗺️ Estado detectado:', estado?.long_name || 'No encontrado');
 
     return estado ? estado.long_name : null;
   } catch (err) {

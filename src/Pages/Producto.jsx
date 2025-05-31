@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { consola } from '@utils/utilidades';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -14,6 +15,7 @@ import Resenas from '../components/MarketPlace/Resenas'
 import GaleriaImagenesProducto from '../components/MarketPlace/GaleriaImagenesProducto';
 import DetalleProducto from '../components/MarketPlace/DetalleProducto';
 import useProductos from '../hooks/useProductos';
+
 import productoImg from '../assets/producto.png';
 import '../styles/Producto.css';
 
