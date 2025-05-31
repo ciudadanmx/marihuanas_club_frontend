@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { consola } from '../../utils/utilidades';
 //quitar
+//quitar 2
 import {
   Typography,
   Button,
