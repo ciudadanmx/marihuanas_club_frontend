@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { consola } from '../../utils/utilidades';
+//quitar
 import {
   Typography,
   Button,
@@ -10,7 +11,7 @@ import {
 const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, envio }) => {
     consola.log('iniciando');
   const [cantidad, setCantidad] = useState(1);
-
+    consola.log(`🚪 envio --- ${envio}`)
   const handleCantidadChange = (newCantidad) => {
     if (newCantidad < 1) return;
     if (stock && newCantidad > stock) return;
