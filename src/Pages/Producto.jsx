@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { consola } from '@/utils/utilidades';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -11,24 +10,25 @@ import {
   Divider,
 } from '@mui/material';
 //import { Add, Remove } from '@mui/icons-material';
-import Resenas from '../components/MarketPlace/Resenas'
-import GaleriaImagenesProducto from '../components/MarketPlace/GaleriaImagenesProducto';
-import DetalleProducto from '../components/MarketPlace/DetalleProducto';
 import useProductos from '../hooks/useProductos';
+import Resenas from '@/components/MarketPlace/Resenas'
+import GaleriaImagenesProducto from '@/components/MarketPlace/GaleriaImagenesProducto';
+import productoImg from '@/assets/producto.png';
+import '@/styles/Producto.css';
+import DetallesProducto from '@/components/MarketPlace/DetalleProducto.jsx';
 
-import productoImg from '../assets/producto.png';
-import '../styles/Producto.css';
 
 const Producto = () => {
   const { slug } = useParams();
-  const { getProductoBySlug, precotizarMienvio } = useProductos();
+  const { getProductoBySlug, } = useProductos();
 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [imagenIndex, setImagenIndex] = useState(0);
+  const [cantidad, setCantidad] = useState(1);
+  const [envioApi, setEnvioApi] = useState(null); // solo para mostrar
 
-  //usamos el useProductos para traernos los productos
   useEffect(() => {
     const fetchProducto = async () => {
       setLoading(true);
@@ -37,13 +37,44 @@ const Producto = () => {
         const data = await getProductoBySlug(slug);
         const productoData = Array.isArray(data) ? data[0] : data;
         setProducto(productoData);
+        console.log(`productooooo ---   ${productoData.attributes}`);
         setImagenIndex(0);
+
+        // Si no hay envío definido, cotizamos desde la API
+        const envioStr = productoData.attributes?.envio;
+        if (!envioStr || envioStr === '') {
+          const origen = productoData.attributes?.cp_origen || '01000';
+          const destino = productoData.attributes?.cp_destino || '02000';
+          try {
+            const response = await fetch('http://localhost:1337/api/shipping/calcular', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                cp_origen: 11560,
+                cp_destino: 11560,
+                peso: 1,
+              }),
+            });
+            const result = await response.json();
+            if (result?.precio) {
+              setEnvioApi(`$${result.precio.toFixed(2)}`);
+            } else {
+              setEnvioApi('No disponible');
+            }
+          } catch (err) {
+            console.error('Error al cotizar envío:', err);
+            setEnvioApi('Error al cotizar');
+          }
+        }
       } catch (e) {
         setError('No se encontró el producto');
       } finally {
         setLoading(false);
       }
     };
+
     if (slug) fetchProducto();
   }, [slug]);
 
@@ -79,42 +110,36 @@ const Producto = () => {
     vendidos,
     localidad,
     estado,
-    largo,
-    ancho,
-    alto,
-    peso,
-    /* envio, */
+    envio,
     resenas,
-    cp,
   } = producto.attributes || {};
 
-  //****** OBTENER EL C.P. 
-  const micpDestino = '11560';
-
-  //traemos la función precotizarMienvio para pasársela a detalle producto
-  const envio = precotizarMienvio ;
-
-  //traemos las imágenes
-  //imagen predeterminada
   const imagenPredeterminadaL =
     producto?.attributes?.imagen_predeterminada?.data?.[0]?.attributes?.formats?.medium?.url ??
     producto?.attributes?.imagen_predeterminada?.data?.[0]?.attributes?.url ??
     null;
 
-  //galeria
   const imagenesData = Array.isArray(imagenes?.data)
     ? imagenes.data.map((img) => `${process.env.REACT_APP_STRAPI_URL}${img.attributes.url}`)
     : [];
+
   const todasLasImagenes = [
     ...(imagenPredeterminadaL
       ? [`${process.env.REACT_APP_STRAPI_URL}${imagenPredeterminadaL}`]
       : []),
     ...imagenesData,
   ];
+
   if (todasLasImagenes.length === 0) {
     todasLasImagenes.push(productoImg);
   }
-  
+
+  const handleCantidadChange = (newCantidad) => {
+    if (newCantidad < 1) return;
+    if (stock && newCantidad > stock) return;
+    setCantidad(newCantidad);
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 4 }}>
@@ -122,6 +147,7 @@ const Producto = () => {
         <Typography variant="h4" fontWeight="bold" mb={3}>
           {nombre || 'Sin título'}
         </Typography>
+
         {/* Imagen Principal y Thumbnails */}
         <GaleriaImagenesProducto
             imagenes={todasLasImagenes}
@@ -129,6 +155,8 @@ const Producto = () => {
             imagenIndex={imagenIndex}
             setImagenIndex={setImagenIndex}
         />
+
+
         <Grid container spacing={4} sx={{ mb: 4 }}>
           {/* Columna 1: Descripción */}
           <Grid item xs={12} md={6}>
@@ -136,31 +164,32 @@ const Producto = () => {
               {descripcion || 'Sin descripción disponible.'}
             </Typography>
           </Grid>
+
           {/* Columna 2: Info detallada y botones */}
-          <Grid item xs={12} md={6}>
-            <DetalleProducto 
-                precio = { precio }
-                marca = { marca }
-                stock = { stock }
-                vendidos = { vendidos }
-                localidad = { localidad }
-                estado = { estado }
-                envio = { envio }
-                largo = { largo }
-                ancho = {ancho}
-                alto = {alto}
-                peso = {peso}
-                cp = {cp}
-            />
-          </Grid>
+          <DetallesProducto
+  producto={producto}
+  precio={precio}
+  marca={marca}
+  stock={stock}
+  vendidos={vendidos}
+  localidad={localidad}
+  estado={estado}
+  cantidad={cantidad}
+  handleCantidadChange={handleCantidadChange}
+/>
         </Grid>
+
         <Divider sx={{ mb: 2 }} />
+
         {/* Reseñas */}
+         
             <Resenas 
                 resenas={resenas}
             />
+
       </Paper>
     </Container>
   );
 };
+
 export default Producto;

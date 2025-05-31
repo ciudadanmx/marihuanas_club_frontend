@@ -1,25 +1,26 @@
-import React, { useState } from 'react';
-import { consola } from '../../utils/utilidades';
-//quitar.
+// src/components/MarketPlace/DetallesProducto.jsx
+import React from 'react';
 import {
   Typography,
-  Button,
+  Grid,
   TextField,
-  Stack,
+  Button,
+  Stack
 } from '@mui/material';
 
-const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, envio }) => {
-    consola.log('iniciando');
-  const [cantidad, setCantidad] = useState(1);
-
-  const handleCantidadChange = (newCantidad) => {
-    if (newCantidad < 1) return;
-    if (stock && newCantidad > stock) return;
-    setCantidad(newCantidad);
-  };
-
+const DetallesProducto = ({
+  producto,
+  precio,
+  marca,
+  stock,
+  vendidos,
+  localidad,
+  estado,
+  cantidad,
+  handleCantidadChange
+}) => {
   return (
-    <>
+    <Grid item xs={12} md={6}>
       <Typography variant="h5" color="primary" fontWeight="bold">
         ${precio?.toFixed(2) || '0.00'}
       </Typography>
@@ -30,15 +31,32 @@ const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, en
       <Typography>Localidad: {localidad ?? 'N/A'}, {estado ?? ''}</Typography>
 
       <Typography sx={{ mb: 2 }}>
-        Envío: {envio ? `$${parseFloat(envio).toFixed(2)}` : 'Calculando...'}
+        Envío: {
+          (() => {
+            try {
+              const cp_origen = producto?.attributes?.cp_origen || '01000';
+              const cp_destino = producto?.attributes?.cp_destino || '02800';
+              const xhr = new XMLHttpRequest();
+              xhr.open('POST', `${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, false);
+              xhr.setRequestHeader('Content-Type', 'application/json');
+              xhr.send(JSON.stringify({ cp_origen, cp_destino }));
+
+              if (xhr.status === 200) {
+                const res = JSON.parse(xhr.responseText);
+                return `$${res.costo}`;
+              } else {
+                return 'No disponible';
+              }
+            } catch (e) {
+              return 'No disponible';
+            }
+          })()
+        }
       </Typography>
 
       <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
-        <Button
-          variant="outlined"
-          onClick={() => handleCantidadChange(cantidad - 1)}
-        >
-          -
+        <Button variant="outlined" onClick={() => handleCantidadChange(cantidad - 1)}>
+          <span className="material-icons">-</span>
         </Button>
         <TextField
           value={cantidad}
@@ -48,11 +66,8 @@ const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, en
           size="small"
           sx={{ width: 60 }}
         />
-        <Button
-          variant="outlined"
-          onClick={() => handleCantidadChange(cantidad + 1)}
-        >
-          +
+        <Button variant="outlined" onClick={() => handleCantidadChange(cantidad + 1)}>
+          <span className="material-icons">+</span>
         </Button>
       </Stack>
 
@@ -63,8 +78,8 @@ const DetalleProducto = ({ precio, marca, stock, vendidos, localidad, estado, en
       >
         Agregar al carrito
       </Button>
-    </>
+    </Grid>
   );
 };
 
-export default DetalleProducto;
+export default DetallesProducto;

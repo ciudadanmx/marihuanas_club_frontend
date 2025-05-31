@@ -18,8 +18,9 @@ const getRegion = (estado) => {
 };
 
 const obtenerEstadoPorCP = async (cp) => {
+  const cpp = cp || '11560';
   try {
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${cp}&components=country:MX&key=${process.env.REACT_APP_GEOCODING_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${cpp}&components=country:MX&key=${process.env.REACT_APP_GEOCODING_KEY}`;
     console.log('Consultando URL:', url);
 
     const res = await fetch(url);
@@ -83,8 +84,10 @@ const estimarCostoEnvio = (regionOrigen, regionDestino, pesoCobrado) => {
 };
 
 const precotizarMienvio = async (cpOrigen, cpDestino, largo, ancho, alto, peso) => {
-  const estadoOrigen = await obtenerEstadoPorCP(cpOrigen);
-  const estadoDestino = await obtenerEstadoPorCP(cpDestino);
+  const cppOrigen = cpOrigen || '11560';
+  const cppDestino = cpDestino || '11560';
+  const estadoOrigen = await obtenerEstadoPorCP(cppOrigen);
+  const estadoDestino = await obtenerEstadoPorCP(cppDestino);
   if (!estadoOrigen || !estadoDestino) return null;
   const regionOrigen = getRegion(estadoOrigen);
   const regionDestino = getRegion(estadoDestino);
