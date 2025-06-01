@@ -9,6 +9,7 @@ import NavBar from './components/NavBar/NavBar.jsx';
 import Rutas from './Routes/index.jsx';
 import Asistente from './components/Asistente/Asistente';
 import { AuthProvider } from './Contexts/AuthContext'; 
+import { CartProvider }  from './Contexts/CartContext';
 import './styles/index.css';
 
 // Función global para leer la cookie
@@ -38,11 +39,13 @@ root.render(
       <AuthProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
         <RolesProvider>
-          <Router>
-            <NavBar />
-            <Rutas />
-            <Asistente />
-          </Router>
+          <CartProvider>
+            <Router>
+              <NavBar />
+              <Rutas />
+              <Asistente />
+            </Router>
+          </CartProvider>
         </RolesProvider>
       </LocalizationProvider>
       </AuthProvider>

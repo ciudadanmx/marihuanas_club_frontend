@@ -15,6 +15,7 @@ import Resenas from '../components/MarketPlace/Resenas'
 import GaleriaImagenesProducto from '../components/MarketPlace/GaleriaImagenesProducto';
 import productoImg from '../assets/producto.png';
 import '../styles/Producto.css';
+import '../styles/DetalleProducto.css';
 import DetallesProducto from '../components/MarketPlace/DetalleProducto.jsx';
 
 
@@ -141,7 +142,7 @@ const Producto = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
+    <Container  maxWidth="md" sx={{ mt: 4, mb: 8 }}>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 4 }}>
         {/* Título */}
         <Typography variant="h4" fontWeight="bold" mb={3}>
@@ -156,7 +157,7 @@ const Producto = () => {
             setImagenIndex={setImagenIndex}
         />
 
-
+        <div className='producto-layout'>
         <Grid container spacing={4} sx={{ mb: 4 }}>
           {/* Columna 1: Descripción */}
           <Grid item xs={12} md={6}>
@@ -167,17 +168,19 @@ const Producto = () => {
 
           {/* Columna 2: Info detallada y botones */}
           <DetallesProducto
-  producto={producto}
-  precio={precio}
-  marca={marca}
-  stock={stock}
-  vendidos={vendidos}
-  localidad={localidad}
-  estado={estado}
-  cantidad={cantidad}
-  handleCantidadChange={handleCantidadChange}
-/>
+            producto={producto}
+            precio={precio}
+            marca={marca}
+            stock={stock}
+            vendidos={vendidos}
+            localidad={localidad}
+            estado={estado}
+            cantidad={cantidad}
+            handleCantidadChange={setCantidad}
+          />
         </Grid>
+        </div>
+        
 
         <Divider sx={{ mb: 2 }} />
 

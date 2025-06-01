@@ -1,4 +1,3 @@
-// src/components/MarketPlace/DetallesProducto.jsx
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
@@ -11,6 +10,7 @@ import {
   Divider,
   Box
 } from '@mui/material';
+import { useCart } from '../../Contexts/CartContext'; // Asegúrate de que esté bien la ruta
 import '../../styles/DetalleProducto.css';
 
 const DetalleProducto = ({
@@ -25,6 +25,7 @@ const DetalleProducto = ({
   handleCantidadChange
 }) => {
   const [costoEnvio, setCostoEnvio] = useState('Calculando...');
+  const { addToCart } = useCart();
 
   const calcularEnvio = async () => {
     try {
@@ -33,10 +34,8 @@ const DetalleProducto = ({
 
       const response = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ cp_origen, cp_destino })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cp_origen, cp_destino, cantidad })
       });
 
       if (response.ok) {
@@ -46,6 +45,7 @@ const DetalleProducto = ({
         setCostoEnvio('No disponible');
       }
     } catch (e) {
+      console.error('[ENVÍO] Error:', e);
       setCostoEnvio('No disponible');
     }
   };
@@ -54,50 +54,60 @@ const DetalleProducto = ({
     calcularEnvio();
   }, [cantidad]);
 
+  const handleAddToCart = () => {
+    if (!producto?.id || !producto?.attributes) return;
+
+    addToCart({
+      id: producto.id,
+      nombre: producto.attributes.nombre,
+      marca: producto.attributes.marca,
+      precio: producto.attributes.precio,
+      imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
+      cantidad
+    });
+  };
+
   return (
-    <div className="mt-6 z-10">
+    <div className="mt-6 z-10 producto-layout">
+      <Card className="producto-card" elevation={10}>
+        <CardContent>
+          <Typography variant="h3" className="producto-precio">
+            ${precio?.toFixed(2) || '0.00'}
+          </Typography>
 
-    <Card className="producto-card" elevation={10}>
-      <CardContent>
-        <Typography variant="h3" className="producto-precio">
-          ${precio?.toFixed(2) || '0.00'}
-        </Typography>
+          <Divider sx={{ my: 3, borderColor: '#A5D6A7' }} />
 
-        <Divider sx={{ my: 3, borderColor: '#A5D6A7' }} />
-        
-        <Box className="producto-detalle">
-          <Typography variant="body1"><strong>🌿 Marca:</strong> {marca || 'Desconocida'}</Typography>
-          <Typography variant="body1"><strong>📦 Stock:</strong> {stock ?? 'N/A'}</Typography>
-          <Typography variant="body1"><strong>🔥 Vendidos:</strong> {vendidos ?? 0}</Typography>
-          <Typography variant="body1"><strong>📍 Localidad:</strong> {localidad ?? 'N/A'}, {estado ?? ''}</Typography>
-          <Typography variant="body1"><strong>🚚 Envío:</strong> {costoEnvio}</Typography>
-        </Box>
+          <Box className="producto-detalle">
+            <Typography variant="body1"><strong>🌿 Marca:</strong> {marca || 'Desconocida'}</Typography>
+            <Typography variant="body1"><strong>📦 Stock:</strong> {stock ?? 'N/A'}</Typography>
+            <Typography variant="body1"><strong>🔥 Vendidos:</strong> {vendidos ?? 0}</Typography>
+            <Typography variant="body1"><strong>📍 Localidad:</strong> {localidad ?? 'N/A'}, {estado ?? ''}</Typography>
+            <Typography variant="body1"><strong>🚚 Envío:</strong> {costoEnvio}</Typography>
+          </Box>
 
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" className="cantidad-stack">
-          <Button className="icon-button" onClick={() => handleCantidadChange(Math.max(1, cantidad - 1))}>
-            <span className="material-icons">remove</span>
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" className="cantidad-stack">
+            <Button className="icon-button" onClick={() => handleCantidadChange(Math.max(1, cantidad - 1))}>
+              <span className="material-icons">remove</span>
+            </Button>
+            <TextField
+              value={cantidad}
+              onChange={(e) => handleCantidadChange(Number(e.target.value))}
+              type="number"
+              inputProps={{ min: 1, max: stock }}
+              size="small"
+              className="cantidad-input"
+            />
+            <Button className="icon-button" onClick={() => handleCantidadChange(Math.min(stock, cantidad + 1))}>
+              <span className="material-icons">add</span>
+            </Button>
+          </Stack>
+
+          <Button className="agregar-boton" onClick={handleAddToCart}>
+            <span className="material-icons" style={{ marginRight: '8px' }}>shopping_cart</span>
+            Agregar al carrito
           </Button>
-          <TextField
-            value={cantidad}
-            onChange={(e) => handleCantidadChange(Number(e.target.value))}
-            type="number"
-            inputProps={{ min: 1, max: stock }}
-            size="small"
-            className="cantidad-input"
-          />
-          <Button className="icon-button" onClick={() => handleCantidadChange(Math.min(stock, cantidad + 1))}>
-            <span className="material-icons">add</span>
-          </Button>
-        </Stack>
-
-        <Button
-          className="agregar-boton"
-        >
-          <span className="material-icons" style={{ marginRight: '8px' }}>shopping_cart</span>
-          Agregar al carrito
-        </Button>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
     </div>
   );
 };

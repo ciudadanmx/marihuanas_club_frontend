@@ -1,4 +1,10 @@
+.producto-layout {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
 .producto-card {
+  display: block;
   margin-top: 20px !important;
   border-radius: 20px;
   padding: 24px;
@@ -58,4 +64,10 @@
   background-color: #222222;
   transform: scale(1.02);
   color: #fff;
+}
+
+@media (max-width: 768px) {
+  .producto-layout {
+    flex-direction: column-reverse !important;
+  }
 }
