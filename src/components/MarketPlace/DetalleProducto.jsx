@@ -58,13 +58,12 @@ const DetalleProducto = ({
     if (!producto?.id || !producto?.attributes) return;
 
     addToCart({
-      id: producto.id,
-      nombre: producto.attributes.nombre,
-      marca: producto.attributes.marca,
-      precio: producto.attributes.precio,
-      imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
-      cantidad
-    });
+  id: producto.id,
+  nombre: producto.attributes.nombre,
+  marca: producto.attributes.marca,
+  precio: producto.attributes.precio,
+  imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
+}, cantidad);
   };
 
   return (

@@ -28,14 +28,14 @@ export const CartProvider = ({ children }) => {
   const calcularTotal = (productos) =>
     productos.reduce((acc, item) => acc + item.precio_unitario * item.cantidad, 0);
 
-  const addToCart = (producto, cantidad = 1) => {
+  const addToCart = (producto) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.producto === producto.id);
       let updated;
       if (existing) {
         updated = prev.map((i) =>
           i.producto === producto.id
-            ? { ...i, cantidad: i.cantidad + cantidad }
+            ? { ...i, cantidad: i.cantidad + 1 }
             : i
         );
       } else {
@@ -46,7 +46,7 @@ export const CartProvider = ({ children }) => {
             nombre: producto.nombre,
             marca: producto.marca,
             precio_unitario: producto.precio,
-            cantidad: cantidad,
+            cantidad: 1,
             imagen: producto.imagen_predeterminada?.url || "",
           },
         ];
