@@ -52,6 +52,7 @@ const DetalleProducto = ({
 
   useEffect(() => {
     calcularEnvio();
+    console.log('envio');
   }, [cantidad]);
 
   const handleAddToCart = () => {

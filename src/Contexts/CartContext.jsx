@@ -8,6 +8,30 @@ export const CartProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
 
+  const precotizarStripe = (precioProducto) => {
+    const tarifa = precioProducto < 200 ? 5 : 10;
+    const iva = tarifa * 0.16;
+    return parseFloat((tarifa + iva).toFixed(2));
+  };
+
+  const precotizarMienvio = async (cpOrigen, cpDestino, largo, ancho, alto, peso) => {
+    console.log('precotizando');
+    try {
+      const res = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cpOrigen, cpDestino, largo, ancho, alto, peso }),
+      });
+      const data = await res.json();
+      console.log(`calculando......... ${data.costo} `, data);
+      console.log(peso);
+      return parseFloat(data.costo || 0);
+    } catch (error) {
+      console.error("Error en cálculo de envío:", error);
+      return 0;
+    }
+  };
+
   // Cargar del localStorage al inicio
   useEffect(() => {
     const stored = localStorage.getItem("carrito");
@@ -26,16 +50,36 @@ export const CartProvider = ({ children }) => {
   }, [items, total, isAuthenticated]);
 
   const calcularTotal = (productos) =>
-    productos.reduce((acc, item) => acc + item.precio_unitario * item.cantidad, 0);
+    productos.reduce((acc, item) => acc + (item.total || (item.precio_unitario * item.cantidad)), 0);
 
-  const addToCart = (producto, cantidad = 1) => {
+  const addToCart = async (producto, cantidad = 1) => {
+    const comisionStripe = precotizarStripe(producto.precio);
+    const envio = await precotizarMienvio(
+      producto.cp,
+      producto.cp_destino || "11560", // Ajusta esto según tu lógica
+      producto.largo,
+      producto.ancho,
+      producto.alto,
+      producto.peso
+    );
+    console.log('costo de envio ', producto.precio);
+    const subtotal = producto.precio * cantidad;
+    const totalItem = parseFloat((subtotal + comisionStripe + envio).toFixed(2));
+
     setItems((prev) => {
       const existing = prev.find((i) => i.producto === producto.id);
       let updated;
       if (existing) {
         updated = prev.map((i) =>
           i.producto === producto.id
-            ? { ...i, cantidad: i.cantidad + cantidad }
+            ? {
+                ...i,
+                cantidad: i.cantidad + cantidad,
+                subtotal: i.precio_unitario * (i.cantidad + cantidad),
+                comisionStripe,
+                envio,
+                total: parseFloat(((i.precio_unitario * (i.cantidad + cantidad)) + comisionStripe + envio).toFixed(2)),
+              }
             : i
         );
       } else {
@@ -48,6 +92,10 @@ export const CartProvider = ({ children }) => {
             precio_unitario: producto.precio,
             cantidad: cantidad,
             imagen: producto.imagen_predeterminada?.url || "",
+            subtotal,
+            comisionStripe,
+            envio,
+            total: totalItem,
           },
         ];
       }
@@ -60,9 +108,14 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = (productoId, cantidad) => {
     setItems((prev) => {
       const updated = prev
-        .map((i) =>
-          i.producto === productoId ? { ...i, cantidad } : i
-        )
+        .map((i) => {
+          if (i.producto === productoId) {
+            const subtotal = i.precio_unitario * cantidad;
+            const total = parseFloat((subtotal + i.comisionStripe + i.envio).toFixed(2));
+            return { ...i, cantidad, subtotal, total };
+          }
+          return i;
+        })
         .filter((i) => i.cantidad > 0);
       setTotal(calcularTotal(updated));
       return updated;
@@ -78,7 +131,7 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     const saveToStrapi = async () => {
       if (isAuthenticated && items.length > 0) {
-        console.log(`Buscando al usuario ${user.email}`)
+        console.log(`Buscando al usuario ${user.email}`);
         try {
           const endpoint = `${process.env.REACT_APP_STRAPI_URL}/api/carritos`;
           const query = `?filters[usuario_email][$eq]=${user.email}&filters[estado][$eq]=activo`;
@@ -95,7 +148,10 @@ export const CartProvider = ({ children }) => {
                 nombre: item.nombre,
                 precio_unitario: item.precio_unitario,
                 cantidad: item.cantidad,
-                subtotal: item.precio_unitario * item.cantidad,
+                subtotal: item.subtotal,
+                envio: item.envio,
+                comisionStripe: item.comisionStripe,
+                total: item.total,
               })),
               total,
               estado: "activo",
@@ -104,31 +160,31 @@ export const CartProvider = ({ children }) => {
           };
 
           if (carritoExistente) {
-  const response = await fetch(`${endpoint}/${carritoExistente.id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const result = await response.json();
+            const response = await fetch(`${endpoint}/${carritoExistente.id}`, {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            const result = await response.json();
 
-  console.log("Status del PUT:", response.status);
-console.log("¿OK?:", response.ok);
-const text = await response.text();
-console.log("Texto plano de la respuesta:", text);
-  console.log("Resultado del PUT:", result);
-} else {
-  const response = await fetch(endpoint, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const result = await response.json();
-  console.log("Resultado del POST:", result);
-}
+            console.log("Status del PUT:", response.status);
+            console.log("¿OK?:", response.ok);
+            const text = await response.text();
+            console.log("Texto plano de la respuesta:", text);
+            console.log("Resultado del PUT:", result);
+          } else {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(payload),
+            });
+            const result = await response.json();
+            console.log("Resultado del POST:", result);
+          }
         } catch (error) {
           console.error("Error al guardar en Strapi:", error);
         }
