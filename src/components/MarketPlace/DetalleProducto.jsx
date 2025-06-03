@@ -54,6 +54,8 @@ const DetalleProducto = ({
     }
   };
 
+//probando commits acumulados
+
   useEffect(() => {
     calcularEnvio();
     console.log('envio');
