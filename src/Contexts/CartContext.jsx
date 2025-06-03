@@ -11,10 +11,10 @@ export const CartProvider = ({ children }) => {
   // Evita múltiples fetch iniciales
   const initialized = useRef(false);
 
-  const precotizarStripe = (precioProducto) => {
-    const tarifa = precioProducto * 0.036 + 3;
-    const iva = tarifa * 0.16;
-    return parseFloat((tarifa + iva).toFixed(2));
+  const precotizarStripe = (precioProducto, envio, comisionPlataforma) => {
+    const subTotal = precioProducto + envio + (comisionPlataforma * 1.16);
+    const total = (subTotal * 0.036) + 3;
+    return parseFloat((total).toFixed(2));
   };
 
   const precotizarPlataforma = (precioProducto) => {
@@ -318,17 +318,17 @@ export const CartProvider = ({ children }) => {
 
     // 4) Calcular comisiones/envío para el nuevo producto
     const comisionPlataforma = precotizarPlataforma(producto.subtotal || producto.precio * cantidad);
-    const comisionStripe = precotizarStripe(comisionPlataforma);
-    const envio = await precotizarMienvio(
-      producto.cp,
-      producto.cp_destino || "11560",
-      producto.largo,
-      producto.ancho,
-      producto.alto,
-      producto.peso,
-      cantidad
-    );
-    const subtotal = producto.precio * cantidad;
+const subtotal          = producto.precio * cantidad;
+const envio             = await precotizarMienvio(
+  producto.cp,
+  producto.cp_destino || "11560",
+  producto.largo,
+  producto.ancho,
+  producto.alto,
+  producto.peso,
+  cantidad
+);
+const comisionStripe    = precotizarStripe(subtotal, envio, comisionPlataforma);
     const totalItem = parseFloat(
       (subtotal + comisionStripe + comisionPlataforma + envio).toFixed(2)
     );
@@ -569,55 +569,85 @@ export const CartProvider = ({ children }) => {
     })
     .filter((i) => i.cantidad > 0);
 
-  // Recalcular envío y total de cada uno
-  let mergedItems = await Promise.all(
-    tempItems.map(async (item, idx) => {
-      // ----------------- Logs para depurar -----------------
-      console.log(
-        `updateQuantity [${idx}] - Parámetros antes de precotizarMienvio:`,
-        {
-          nombre: item.nombre,
-          cpOrigen: item.cp,
-          cpDestino: item.cp_destino || "11560",
-          largo: item.largo,
-          ancho: item.ancho,
-          alto: item.alto,
-          peso: item.peso,
-          cantidad: item.cantidad,
-        }
-      );
-      // ------------------------------------------------------
-
-      let nuevaEnvio = item.envio;
-      if (item.producto) {
-        try {
-          nuevaEnvio = await precotizarMienvio(
-            item.cp,
-            item.cp_destino || "11560",
-            item.largo,
-            item.ancho,
-            item.alto,
-            item.peso,
-            item.cantidad
-          );
-          console.log(
-            `updateQuantity [${idx}] - precotizarMienvio devolvió:`,
-            nuevaEnvio
-          );
-        } catch (e) {
-          console.error("updateQuantity - error recalc envío:", e);
-        }
+  // Recalcular plataforma, stripe, envío y total de cada uno
+let mergedItems = await Promise.all(
+  tempItems.map(async (item, idx) => {
+    // ----------------- Logs para depurar -----------------
+    console.log(
+      `updateQuantity [${idx}] - Parámetros antes de recálculo:`,
+      {
+        nombre: item.nombre,
+        precio_unitario: item.precio_unitario,
+        cantidad: item.cantidad,
+        cpOrigen: item.cp,
+        cpDestino: item.cp_destino || "11560",
+        largo: item.largo,
+        ancho: item.ancho,
+        alto: item.alto,
+        peso: item.peso,
       }
+    );
+    // ------------------------------------------------------
 
-      const nuevoTotal = parseFloat(
-        (item.subtotal + item.comisionStripe + nuevaEnvio + item.comisionPlataforma).toFixed(2)
-      );
-      console.log(
-        `updateQuantity [${idx}] - item "${item.nombre}" recalculado: subtotal ${item.subtotal}, envío ${nuevaEnvio}, total ${nuevoTotal}`
-      );
-      return { ...item, envio: nuevaEnvio, total: nuevoTotal };
-    })
-  );
+    // 1) Recalcular subtotal (ya hecho en tempItems), ahora recalcular comisiones:
+    const nuevoSubtotal = item.subtotal; // ya actualizado en tempItems
+
+   const comisionPlataformaNueva = precotizarPlataforma(nuevoSubtotal);
+const envioRecalculado        = await precotizarMienvio(
+  item.cp,
+  item.cp_destino || "11560",
+  item.largo,
+  item.ancho,
+  item.alto,
+  item.peso,
+  item.cantidad
+);
+const comisionStripeNueva     = precotizarStripe(nuevoSubtotal, envioRecalculado, comisionPlataformaNueva);
+
+    console.log(
+      `updateQuantity [${idx}] - comisionPlataforma recalculada: ${comisionPlataformaNueva}, comisionStripe recalculada: ${comisionStripeNueva}`
+    );
+
+    // 2) Recalcular envío según la nueva cantidad
+    let nuevaEnvio = item.envio;
+    if (item.producto) {
+      try {
+        nuevaEnvio = await precotizarMienvio(
+          item.cp,
+          item.cp_destino || "11560",
+          item.largo,
+          item.ancho,
+          item.alto,
+          item.peso,
+          item.cantidad
+        );
+        console.log(
+          `updateQuantity [${idx}] - precotizarMienvio devolvió:`,
+          nuevaEnvio
+        );
+      } catch (e) {
+        console.error("updateQuantity - error recalc envío:", e);
+      }
+    }
+
+    // 3) Recalcular total: subtotal + comisionStripeNueva + comisionPlataformaNueva + nuevaEnvio
+    const nuevoTotal = parseFloat(
+      (nuevoSubtotal + comisionStripeNueva + comisionPlataformaNueva + nuevaEnvio).toFixed(2)
+    );
+    console.log(
+      `updateQuantity [${idx}] - item "${item.nombre}" recalculado: subtotal ${nuevoSubtotal}, comisionPlataforma ${comisionPlataformaNueva}, comisionStripe ${comisionStripeNueva}, envío ${nuevaEnvio}, total ${nuevoTotal}`
+    );
+
+    return {
+      ...item,
+      comisionPlataforma: comisionPlataformaNueva,
+      comisionStripe: comisionStripeNueva,
+      envio: nuevaEnvio,
+      total: nuevoTotal,
+    };
+  })
+);
+
 
   console.log("updateQuantity - mergedItems antes de setItems:", mergedItems);
 
