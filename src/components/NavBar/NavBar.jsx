@@ -207,6 +207,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   userData={user}
                   className="cuenta-icon"
                   handleLogout={handleLogout}
+                  //ok
                 />
               </span>
               <span className="nav-linky">
