@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "../Contexts/CartContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import "../styles/Carrito.css";
@@ -6,6 +6,21 @@ import "../styles/Carrito.css";
 const Carrito = () => {
   const { items, total, updateQuantity, clearCart } = useCart();
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
+  const [localItems, setLocalItems] = useState([]);
+  const [localTotal, setLocalTotal] = useState(0);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const raw = JSON.parse(localStorage.getItem("carrito"));
+      const carritoLocal = Array.isArray(raw) ? raw : [];
+      setLocalItems(carritoLocal);
+      const suma = carritoLocal.reduce(
+        (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
+        0
+      );
+      setLocalTotal(suma);
+    }
+  }, [isAuthenticated]);
 
   const handleVaciarCarrito = async () => {
     if (!user?.email) {
@@ -14,8 +29,6 @@ const Carrito = () => {
     }
 
     try {
-      // 1) Obtener carrito activo de Strapi
-      console.log(">> Fetch carrito activo para:", user.email);
       const resFetch = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
@@ -24,21 +37,13 @@ const Carrito = () => {
           credentials: "include",
         }
       );
-      console.log(">> Respuesta GET carrito:", resFetch.status);
       const json = await resFetch.json();
-      console.log(">> Datos GET carrito:", json);
-
       const carritoEntry = json?.data?.[0];
       if (!carritoEntry) {
-        console.warn("No existe un carrito activo en Strapi para este email.");
         clearCart();
         return;
       }
-
       const carritoIdStrapi = carritoEntry.id;
-      console.log(">> ID de carrito activo en Strapi:", carritoIdStrapi);
-
-      // 2) Hacer PUT para vaciar productos, totales a 0, etc.
       const payload = {
         data: {
           productos: [],
@@ -48,8 +53,6 @@ const Carrito = () => {
           ultima_actualizacion: new Date().toISOString(),
         },
       };
-      console.log(">> Payload para PUT vaciar:", payload);
-
       const resPut = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos/${carritoIdStrapi}`,
         {
@@ -61,21 +64,12 @@ const Carrito = () => {
           body: JSON.stringify(payload),
         }
       );
-      console.log(">> Respuesta PUT vaciar carrito:", resPut.status);
-
       if (!resPut.ok) {
-        console.error("No se vació el carrito en Strapi. Status:", resPut.status);
         const errText = await resPut.text();
         console.error("Error de Strapi:", errText);
         return;
       }
-
-      const jsonPut = await resPut.json();
-      console.log(">> Respuesta JSON PUT:", jsonPut);
-
-      // 3) Si todo OK, limpiamos el contexto local
       clearCart();
-      console.log(">> Carrito limpiado localmente.");
     } catch (err) {
       console.error("Error en handleVaciarCarrito:", err);
     }
@@ -83,14 +77,45 @@ const Carrito = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="carrito-login">
-        <p>Debes iniciar sesión para ver tu carrito.</p>
-        <button onClick={() => loginWithRedirect()}>Iniciar sesión</button>
+      <div className="carrito-container">
+        <h2>Carrito de compras</h2>
+        {localItems.length === 0 ? (
+          <p className="carrito-vacio">Tu carrito está vacío.</p>
+        ) : (
+          <div className="carrito-items">
+            {localItems.map((item, index) => (
+              <div key={index} className="carrito-item">
+                <div className="carrito-info">
+                  <h4>{item.nombre}</h4>
+                  <p>Precio unitario: ${(item.precio_unitario || 0).toFixed(2)}</p>
+                  <p>
+                    Subtotal: $
+                    {(
+                      (item.precio_unitario || 0) *
+                      (item.cantidad || 0)
+                    ).toFixed(2)}
+                  </p>
+                  <div className="carrito-cantidad">
+                    <span>{item.cantidad || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="carrito-resumen">
+              <p>
+                Total del carrito: <strong>${(localTotal || 0).toFixed(2)}</strong>
+              </p>
+            </div>
+          </div>
+        )}
+        <div className="carrito-login">
+          <p>Si quieres modificar o finalizar tu compra, inicia sesión:</p>
+          <button onClick={() => loginWithRedirect()}>Iniciar sesión</button>
+        </div>
       </div>
     );
   }
 
-  // Agrupar items por tienda (usa store.name, no store.nombre)
   const itemsPorTienda = items.reduce((acc, item) => {
     const nombreTienda = item.store?.name || "Sin tienda";
     if (!acc[nombreTienda]) {
@@ -110,18 +135,18 @@ const Carrito = () => {
         <div className="carrito-items">
           {Object.entries(itemsPorTienda).map(
             ([nombreTienda, itemsDeTienda], tiendaIndex) => {
-              // Calcular totales por tienda
               const subtotalTienda = itemsDeTienda.reduce(
-                (acc, item) => acc + item.subtotal,
+                (acc, item) => acc + (item.subtotal || 0),
                 0
               );
               const envioTienda = itemsDeTienda.reduce(
-                (acc, item) => acc + item.envio,
+                (acc, item) => acc + (item.envio || 0),
                 0
               );
               const comisionesTienda = itemsDeTienda.reduce(
                 (acc, item) =>
-                  acc + (item.comisionPlataforma + item.comisionStripe),
+                  acc +
+                  ((item.comisionPlataforma || 0) + (item.comisionStripe || 0)),
                 0
               );
 
@@ -144,10 +169,13 @@ const Carrito = () => {
                         <h4>{item.nombre}</h4>
                         <p>Marca: {item.marca}</p>
                         <p>
-                          Precio unitario: ${item.precio_unitario.toFixed(2)}
+                          Precio unitario: $
+                          {(item.precio_unitario || 0).toFixed(2)}
                         </p>
-                        <p>Subtotal: ${item.subtotal.toFixed(2)}</p>
-                        {/* No mostramos envío ni comisiones aquí, solo hasta subtotal */}
+                        <p>
+                          Subtotal: $
+                          {(item.subtotal || 0).toFixed(2)}
+                        </p>
                         <div className="carrito-cantidad">
                           <button
                             onClick={() =>
@@ -156,7 +184,7 @@ const Carrito = () => {
                           >
                             -
                           </button>
-                          <span>{item.cantidad}</span>
+                          <span>{item.cantidad || 0}</span>
                           <button
                             onClick={() =>
                               updateQuantity(item.producto, item.cantidad + 1)
@@ -184,7 +212,9 @@ const Carrito = () => {
                     </p>
                     <p>
                       Total tienda:{" "}
-                      <strong>${(subtotalTienda + envioTienda + comisionesTienda).toFixed(2)}</strong>
+                      <strong>
+                        ${(subtotalTienda + envioTienda + comisionesTienda).toFixed(2)}
+                      </strong>
                     </p>
                   </div>
                 </div>
@@ -194,7 +224,8 @@ const Carrito = () => {
 
           <div className="carrito-resumen">
             <p>
-              Total del carrito: <strong>${total.toFixed(2)}</strong>
+              Total del carrito:{" "}
+              <strong>${(total || 0).toFixed(2)}</strong>
             </p>
             <button onClick={handleVaciarCarrito}>Vaciar carrito</button>
           </div>
