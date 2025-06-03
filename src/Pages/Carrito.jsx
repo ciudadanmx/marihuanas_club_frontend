@@ -182,6 +182,10 @@ const Carrito = () => {
                       Comisiones tienda:{" "}
                       <strong>${comisionesTienda.toFixed(2)}</strong>
                     </p>
+                    <p>
+                      Total tienda:{" "}
+                      <strong>${(subtotalTienda + envioTienda + comisionesTienda).toFixed(2)}</strong>
+                    </p>
                   </div>
                 </div>
               );
