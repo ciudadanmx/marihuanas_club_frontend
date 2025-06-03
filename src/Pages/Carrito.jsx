@@ -121,6 +121,39 @@ const Carrito = () => {
     }
   };
 
+  const updateLocalQuantity = (productoId, nuevaCantidad) => {
+    const raw = JSON.parse(localStorage.getItem("carrito"));
+    const carritoLocal = Array.isArray(raw) ? raw : [];
+    const idxLocal = carritoLocal.findIndex((item) => item.producto === productoId);
+    if (idxLocal !== -1) {
+      if (nuevaCantidad <= 0) {
+        carritoLocal.splice(idxLocal, 1);
+      } else {
+        carritoLocal[idxLocal].cantidad = nuevaCantidad;
+      }
+      localStorage.setItem("carrito", JSON.stringify(carritoLocal));
+
+      setLocalItems((prev) => {
+        const nuevos = [...prev];
+        const idxPrev = nuevos.findIndex((item) => item.producto === productoId);
+        if (idxPrev !== -1) {
+          if (nuevaCantidad <= 0) {
+            nuevos.splice(idxPrev, 1);
+          } else {
+            nuevos[idxPrev].cantidad = nuevaCantidad;
+          }
+        }
+        return nuevos;
+      });
+
+      const newTotal = carritoLocal.reduce(
+        (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
+        0
+      );
+      setLocalTotal(newTotal);
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="carrito-container">
@@ -150,7 +183,27 @@ const Carrito = () => {
                     ).toFixed(2)}
                   </p>
                   <div className="carrito-cantidad">
+                    <button
+                      onClick={() =>
+                        updateLocalQuantity(
+                          item.producto,
+                          (item.cantidad || 0) - 1
+                        )
+                      }
+                    >
+                      -
+                    </button>
                     <span>{item.cantidad || 0}</span>
+                    <button
+                      onClick={() =>
+                        updateLocalQuantity(
+                          item.producto,
+                          (item.cantidad || 0) + 1
+                        )
+                      }
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               </div>
@@ -269,7 +322,7 @@ const Carrito = () => {
                     <p>
                       Total tienda:{" "}
                       <strong>
-                        ${(subtotalTienda + envioTienda + comisionesTienda).toFixed(
+                        {(subtotalTienda + envioTienda + comisionesTienda).toFixed(
                           2
                         )}
                       </strong>
