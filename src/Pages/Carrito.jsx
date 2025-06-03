@@ -90,6 +90,16 @@ const Carrito = () => {
     );
   }
 
+  // Agrupar items por tienda (usa store.name, no store.nombre)
+  const itemsPorTienda = items.reduce((acc, item) => {
+    const nombreTienda = item.store?.name || "Sin tienda";
+    if (!acc[nombreTienda]) {
+      acc[nombreTienda] = [];
+    }
+    acc[nombreTienda].push(item);
+    return acc;
+  }, {});
+
   return (
     <div className="carrito-container">
       <h2>Carrito de compras</h2>
@@ -98,53 +108,85 @@ const Carrito = () => {
         <p className="carrito-vacio">Tu carrito está vacío.</p>
       ) : (
         <div className="carrito-items">
-          {items.map((item, index) => (
-            <div key={index} className="carrito-item">
-              {item.imagen && (
-                <img
-                  src={item.imagen}
-                  alt={item.nombre}
-                  className="carrito-img"
-                />
-              )}
-              <div className="carrito-info">
-                <h3>{item.nombre}</h3>
-                <p>Marca: {item.marca}</p>
-                <p>
-                  Precio unitario: ${item.precio_unitario.toFixed(2)}
-                </p>
-                <p>Subtotal: ${item.subtotal.toFixed(2)}</p>
-                <p>Envío: ${item.envio.toFixed(2)}</p>
-                <p>
-                  Comisiones: $
-                  {(item.comisionPlataforma + item.comisionStripe).toFixed(
-                    2
-                  )}
-                </p>
-                <p className="item-total">
-                  Total item: ${item.total.toFixed(2)}
-                </p>
+          {Object.entries(itemsPorTienda).map(
+            ([nombreTienda, itemsDeTienda], tiendaIndex) => {
+              // Calcular totales por tienda
+              const subtotalTienda = itemsDeTienda.reduce(
+                (acc, item) => acc + item.subtotal,
+                0
+              );
+              const envioTienda = itemsDeTienda.reduce(
+                (acc, item) => acc + item.envio,
+                0
+              );
+              const comisionesTienda = itemsDeTienda.reduce(
+                (acc, item) =>
+                  acc + (item.comisionPlataforma + item.comisionStripe),
+                0
+              );
 
-                <div className="carrito-cantidad">
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.producto, item.cantidad - 1)
-                    }
-                  >
-                    -
-                  </button>
-                  <span>{item.cantidad}</span>
-                  <button
-                    onClick={() =>
-                      updateQuantity(item.producto, item.cantidad + 1)
-                    }
-                  >
-                    +
-                  </button>
+              return (
+                <div key={tiendaIndex} className="carrito-tienda">
+                  <h3 className="carrito-tienda-nombre">
+                    Tienda: {nombreTienda}
+                  </h3>
+
+                  {itemsDeTienda.map((item, index) => (
+                    <div key={index} className="carrito-item">
+                      {item.imagen && (
+                        <img
+                          src={item.imagen}
+                          alt={item.nombre}
+                          className="carrito-img"
+                        />
+                      )}
+                      <div className="carrito-info">
+                        <h4>{item.nombre}</h4>
+                        <p>Marca: {item.marca}</p>
+                        <p>
+                          Precio unitario: ${item.precio_unitario.toFixed(2)}
+                        </p>
+                        <p>Subtotal: ${item.subtotal.toFixed(2)}</p>
+                        {/* No mostramos envío ni comisiones aquí, solo hasta subtotal */}
+                        <div className="carrito-cantidad">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.producto, item.cantidad - 1)
+                            }
+                          >
+                            -
+                          </button>
+                          <span>{item.cantidad}</span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.producto, item.cantidad + 1)
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <div className="carrito-tienda-resumen">
+                    <p>
+                      Subtotal tienda:{" "}
+                      <strong>${subtotalTienda.toFixed(2)}</strong>
+                    </p>
+                    <p>
+                      Envío tienda:{" "}
+                      <strong>${envioTienda.toFixed(2)}</strong>
+                    </p>
+                    <p>
+                      Comisiones tienda:{" "}
+                      <strong>${comisionesTienda.toFixed(2)}</strong>
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            }
+          )}
 
           <div className="carrito-resumen">
             <p>
