@@ -58,7 +58,7 @@ export const CartProvider = ({ children }) => {
         const res = await fetch(
           `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
             user.email
-          )}&filters[estado][$eq]=activo&populate=productos.imagen_predeterminada`
+          )}&filters[estado][$eq]=activo&populate=productos`
         );
         const json = await res.json();
         const carritoEntry = json?.data?.[0];
@@ -75,18 +75,7 @@ export const CartProvider = ({ children }) => {
             productos = attrs.productos.data.map((p) => p.attributes);
           }
           const totalCarrito = attrs.total || 0;
-          // Añadir la URL de imagen_predeterminada a cada producto
-          const productosConImagen = productos.map((item) => {
-            const relUrl =
-              item.imagen_predeterminada?.data?.attributes?.url || "";
-            return {
-              ...item,
-              imagen_predeterminada: relUrl
-                ? `${process.env.REACT_APP_STRAPI_URL}${relUrl}`
-                : "",
-            };
-          });
-          setItems(productosConImagen);
+          setItems(productos);
           setTotal(totalCarrito);
         }
       } catch (error) {
@@ -111,13 +100,13 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (producto, cantidad = 1) => {
     if (!isAuthenticated || !user) return;
 
-    // 1) Traer el carrito más reciente de Strapi (con populate=productos.imagen_predeterminada)
+    // 1) Traer el carrito más reciente de Strapi (con populate=productos)
     let carritoExistente = null;
     try {
       const res = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
-        )}&filters[estado][$eq]=activo&populate=productos.imagen_predeterminada`
+        )}&filters[estado][$eq]=activo&populate=productos`
       );
       const json = await res.json();
       carritoExistente = json?.data?.[0] || null;
@@ -138,17 +127,7 @@ export const CartProvider = ({ children }) => {
         attrs.productos &&
         Array.isArray(attrs.productos.data)
       ) {
-        productosDesdeBackend = attrs.productos.data.map((p) => {
-          const base = p.attributes;
-          const relUrl =
-            base.imagen_predeterminada?.data?.attributes?.url || "";
-          return {
-            ...base,
-            imagen_predeterminada: relUrl
-              ? `${process.env.REACT_APP_STRAPI_URL}${relUrl}`
-              : "",
-          };
-        });
+        productosDesdeBackend = attrs.productos.data.map((p) => p.attributes);
       }
     }
 
@@ -194,16 +173,13 @@ export const CartProvider = ({ children }) => {
           : i
       );
     } else {
-      const relUrl = producto.imagen_predeterminada?.url || "";
       mergedItems.push({
         producto: producto.id,
         nombre: producto.nombre,
         marca: producto.marca,
         precio_unitario: producto.precio,
         cantidad,
-        imagen_predeterminada: relUrl
-          ? `${process.env.REACT_APP_STRAPI_URL}${relUrl}`
-          : "",
+        imagen: producto.imagen_predeterminada?.url || "",
         subtotal,
         comisionPlataforma,
         comisionStripe,
@@ -227,7 +203,6 @@ export const CartProvider = ({ children }) => {
       comisionStripe: item.comisionStripe,
       comisionPlataforma: item.comisionPlataforma,
       total: item.total,
-      imagen_predeterminada: item.imagen_predeterminada,
     }));
 
     const payload = {
@@ -269,7 +244,7 @@ export const CartProvider = ({ children }) => {
       const res = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
-        )}&filters[estado][$eq]=activo&populate=productos.imagen_predeterminada`
+        )}&filters[estado][$eq]=activo&populate=productos`
       );
       const json = await res.json();
       carritoExistente = json?.data?.[0] || null;
@@ -290,17 +265,7 @@ export const CartProvider = ({ children }) => {
         attrs.productos &&
         Array.isArray(attrs.productos.data)
       ) {
-        productosDesdeBackend = attrs.productos.data.map((p) => {
-          const base = p.attributes;
-          const relUrl =
-            base.imagen_predeterminada?.data?.attributes?.url || "";
-          return {
-            ...base,
-            imagen_predeterminada: relUrl
-              ? `${process.env.REACT_APP_STRAPI_URL}${relUrl}`
-              : "",
-          };
-        });
+        productosDesdeBackend = attrs.productos.data.map((p) => p.attributes);
       }
     }
 
@@ -333,7 +298,6 @@ export const CartProvider = ({ children }) => {
       comisionStripe: item.comisionStripe,
       comisionPlataforma: item.comisionPlataforma,
       total: item.total,
-      imagen_predeterminada: item.imagen_predeterminada,
     }));
     const payload = {
       data: {
@@ -416,7 +380,7 @@ export const CartProvider = ({ children }) => {
     return items.reduce((acc, item) => acc + item.cantidad, 0);
   };
 
-  
+
   return (
     <CartContext.Provider
       value={{ items, total, addToCart, updateQuantity, clearCart, getItemCount, }}
