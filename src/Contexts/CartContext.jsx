@@ -67,7 +67,7 @@ export const CartProvider = ({ children }) => {
     const initCart = async () => {
       if (isAuthenticated && user && !initialized.current) {
         console.log("🟡 initCart - usuario autenticado, comenzando sincronización...");
-        await sincronizarCarrito(user);
+        await sincronizarCarrito(user, precotizarPlataforma, precotizarMienvio, precotizarStripe);
         console.log("🟢 initCart - sincronización completada, cargando carrito desde Strapi...");
         initialized.current = true;
         await fetchCarrito();

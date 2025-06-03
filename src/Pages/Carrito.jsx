@@ -14,6 +14,7 @@ const Carrito = () => {
       const raw = JSON.parse(localStorage.getItem("carrito"));
       const carritoLocal = Array.isArray(raw) ? raw : [];
       setLocalItems(carritoLocal);
+      console.log('no autenticado nooooooooo ------- **** ');
       const suma = carritoLocal.reduce(
         (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
         0
