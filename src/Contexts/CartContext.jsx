@@ -464,195 +464,218 @@ export const CartProvider = ({ children }) => {
   };
 
   const updateQuantity = async (productoId, cantidad) => {
-    if (!isAuthenticated || !user) {
-      console.log("updateQuantity - no autenticado o sin usuario");
-      return;
-    }
+  if (!isAuthenticated || !user) {
+    console.log("updateQuantity - no autenticado o sin usuario");
+    return;
+  }
 
-    console.log("updateQuantity - productoId:", productoId, "nueva cantidad:", cantidad);
+  console.log("updateQuantity - productoId:", productoId, "nueva cantidad:", cantidad);
 
-    // 1) Traer el carrito más reciente con populate profundo
-    let carritoExistente = null;
-    try {
-      const urlFetch = `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
-        user.email
-      )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada`;
-      console.log("updateQuantity - URL fetch carrito:", urlFetch);
+  // 1) Traer el carrito más reciente con populate profundo
+  let carritoExistente = null;
+  try {
+    const urlFetch = `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
+      user.email
+    )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada`;
+    console.log("updateQuantity - URL fetch carrito:", urlFetch);
 
-      const res = await fetch(urlFetch);
-      console.log("updateQuantity - status fetch carrito:", res.status);
-      const json = await res.json();
-      console.log("updateQuantity - json fetch carrito:", JSON.stringify(json, null, 2));
+    const res = await fetch(urlFetch);
+    console.log("updateQuantity - status fetch carrito:", res.status);
+    const json = await res.json();
+    console.log("updateQuantity - json fetch carrito:", JSON.stringify(json, null, 2));
 
-      carritoExistente = json?.data?.[0] || null;
-      console.log("updateQuantity - carritoExistente:", carritoExistente);
-    } catch (err) {
-      console.error("Error obteniendo carrito de Strapi:", err);
-      carritoExistente = null;
-    }
+    carritoExistente = json?.data?.[0] || null;
+    console.log("updateQuantity - carritoExistente:", carritoExistente);
+  } catch (err) {
+    console.error("Error obteniendo carrito de Strapi:", err);
+    carritoExistente = null;
+  }
 
-    // 2) Extraer productosDesdeBackend
-    let productosDesdeBackend = [];
-    let carritoId = null;
-    if (carritoExistente) {
-      carritoId = carritoExistente.id;
-      const attrs = carritoExistente.attributes;
-      console.log("updateQuantity - attrs.productos raw:", attrs.productos);
+  // 2) Extraer productosDesdeBackend
+  let productosDesdeBackend = [];
+  let carritoId = null;
+  if (carritoExistente) {
+    carritoId = carritoExistente.id;
+    const attrs = carritoExistente.attributes;
+    console.log("updateQuantity - attrs.productos raw:", attrs.productos);
 
-      if (Array.isArray(attrs.productos)) {
-        console.log("updateQuantity - caso plano, count:", attrs.productos.length);
-        productosDesdeBackend = attrs.productos.map((item, idx) => {
-          const prodRel = item.producto?.data;
-          const prodId = prodRel?.id || item.producto; // ID siempre
-          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
-          let relativeUrl = "";
-          if (Array.isArray(imgArr) && imgArr.length > 0) {
-            relativeUrl = imgArr[0].attributes.url;
-          }
-          const existingUrl = relativeUrl
-            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
-            : "";
-          console.log(
-            `updateQuantity - plano [${idx}] nombre="${item.nombre}", existingUrl="${existingUrl}"`
-          );
-          return {
-            ...item,
-            producto: prodId,
-            imagen_predeterminada: item.imagen_predeterminada?.id || null,
-            imagen: existingUrl,
-          };
-        });
-      } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
-        console.log("updateQuantity - caso anidado, count:", attrs.productos.data.length);
-        productosDesdeBackend = attrs.productos.data.map((p, idx) => {
-          const itemAttrs = p.attributes;
-          const prodRel = itemAttrs.producto?.data;
-          const prodId = prodRel?.id;
-          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
-          let relativeUrl = "";
-          if (Array.isArray(imgArr) && imgArr.length > 0) {
-            relativeUrl = imgArr[0].attributes.url;
-          }
-          const existingUrl = relativeUrl
-            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
-            : "";
-          console.log(
-            `updateQuantity - anidado [${idx}] nombre="${itemAttrs.nombre}", existingUrl="${existingUrl}"`
-          );
-          return {
-            ...itemAttrs,
-            producto: prodId,
-            imagen_predeterminada: itemAttrs.imagen_predeterminada?.data?.id || null,
-            imagen: existingUrl,
-          };
-        });
-      } else {
-        console.log("updateQuantity - attrs.productos no reconocido:", attrs.productos);
-      }
+    if (Array.isArray(attrs.productos)) {
+      console.log("updateQuantity - caso plano, count:", attrs.productos.length);
+      productosDesdeBackend = attrs.productos.map((item, idx) => {
+        const prodRel = item.producto?.data;
+        const prodId = prodRel?.id || item.producto; // ID siempre
+        const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+        let relativeUrl = "";
+        if (Array.isArray(imgArr) && imgArr.length > 0) {
+          relativeUrl = imgArr[0].attributes.url;
+        }
+        const existingUrl = relativeUrl
+          ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+          : "";
+        console.log(
+          `updateQuantity - plano [${idx}] nombre="${item.nombre}", existingUrl="${existingUrl}"`
+        );
+        return {
+          ...item,
+          producto: prodId,
+          imagen_predeterminada: item.imagen_predeterminada?.id || null,
+          imagen: existingUrl,
+        };
+      });
+    } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
+      console.log("updateQuantity - caso anidado, count:", attrs.productos.data.length);
+      productosDesdeBackend = attrs.productos.data.map((p, idx) => {
+        const itemAttrs = p.attributes;
+        const prodRel = itemAttrs.producto?.data;
+        const prodId = prodRel?.id;
+        const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+        let relativeUrl = "";
+        if (Array.isArray(imgArr) && imgArr.length > 0) {
+          relativeUrl = imgArr[0].attributes.url;
+        }
+        const existingUrl = relativeUrl
+          ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+          : "";
+        console.log(
+          `updateQuantity - anidado [${idx}] nombre="${itemAttrs.nombre}", existingUrl="${existingUrl}"`
+        );
+        return {
+          ...itemAttrs,
+          producto: prodId,
+          imagen_predeterminada: itemAttrs.imagen_predeterminada?.data?.id || null,
+          imagen: existingUrl,
+        };
+      });
     } else {
-      console.log("updateQuantity - no existe carrito existente");
+      console.log("updateQuantity - attrs.productos no reconocido:", attrs.productos);
     }
-    console.log("updateQuantity - productosDesdeBackend resultante:", productosDesdeBackend);
+  } else {
+    console.log("updateQuantity - no existe carrito existente");
+  }
+  console.log("updateQuantity - productosDesdeBackend resultante:", productosDesdeBackend);
 
-    // 3) Fusionar en memoria cambiando solo la cantidad
-    let mergedItems = productosDesdeBackend.map((i) => {
+  // 3) Fusionar en memoria cambiando solo la cantidad
+  const tempItems = productosDesdeBackend
+    .map((i) => {
       if (i.producto === productoId) {
         const nuevaCantidad = cantidad;
         const nuevoSubtotal = i.precio_unitario * nuevaCantidad;
-        const nuevoTotal = parseFloat(
-          (nuevoSubtotal + i.comisionStripe + i.envio + i.comisionPlataforma).toFixed(2)
-        );
         console.log(
-          `updateQuantity - item "${i.nombre}" actualizado: cantidad ${nuevaCantidad}, subtotal ${nuevoSubtotal}, total ${nuevoTotal}`
+          `updateQuantity - item "${i.nombre}" cantidad a ${nuevaCantidad}, subtotal provisional ${nuevoSubtotal}`
         );
-        return { ...i, cantidad: nuevaCantidad, subtotal: nuevoSubtotal, total: nuevoTotal };
+        return { ...i, cantidad: nuevaCantidad, subtotal: nuevoSubtotal };
       }
       return i;
-    }).filter((i) => i.cantidad > 0);
+    })
+    .filter((i) => i.cantidad > 0);
 
-    console.log("updateQuantity - mergedItems antes de setItems:", mergedItems);
-
-    // Para cualquier item que quede sin imagen, hacer fetch individual
-    const mergedConImagen = await Promise.all(
-      mergedItems.map(async (item, idx) => {
-        if (!item.imagen && item.producto) {
-          try {
-            const urlProd = `${process.env.REACT_APP_STRAPI_URL}/api/productos/${item.producto}?populate=imagen_predeterminada`;
-            console.log(`updateQuantity - fetch fallback imagen para [${idx}] url:`, urlProd);
-            const resp = await fetch(urlProd);
-            console.log("updateQuantity - fallback status:", resp.status);
-            const js = await resp.json();
-            const arr = js.data.attributes.imagen_predeterminada?.data;
-            if (Array.isArray(arr) && arr.length > 0) {
-              const rel = arr[0].attributes.url;
-              const fullUrl = rel ? `${process.env.REACT_APP_STRAPI_URL}${rel}` : "";
-              console.log(`updateQuantity - fallback [${idx}] imagenUrl:`, fullUrl);
-              return { ...item, imagen: fullUrl };
-            }
-          } catch (e) {
-            console.error("updateQuantity - error fallback imagen:", e);
-          }
+  // Recalcular envío y total de cada uno
+  let mergedItems = await Promise.all(
+    tempItems.map(async (item, idx) => {
+      // ----------------- Logs para depurar -----------------
+      console.log(
+        `updateQuantity [${idx}] - Parámetros antes de precotizarMienvio:`,
+        {
+          nombre: item.nombre,
+          cpOrigen: item.cp,
+          cpDestino: item.cp_destino || "11560",
+          largo: item.largo,
+          ancho: item.ancho,
+          alto: item.alto,
+          peso: item.peso,
+          cantidad: item.cantidad,
         }
-        return item;
-      })
-    );
+      );
+      // ------------------------------------------------------
 
-    console.log("updateQuantity - mergedConImagen:", mergedConImagen);
-
-    const nuevoTotal = calcularTotal(mergedConImagen);
-    console.log("updateQuantity - nuevoTotal:", nuevoTotal);
-    setItems(mergedConImagen);
-    setTotal(nuevoTotal);
-
-    // 4) Guardar en Strapi
-    const productosParaPayload = mergedConImagen.map((item) => ({
-      producto: item.producto,
-      nombre: item.nombre,
-      precio_unitario: item.precio_unitario,
-      cantidad: item.cantidad,
-      subtotal: item.subtotal,
-      envio: item.envio,
-      comisionStripe: item.comisionStripe,
-      comisionPlataforma: item.comisionPlataforma,
-      total: item.total,
-      imagen_predeterminada: item.imagen_predeterminada || null,
-    }));
-    console.log("updateQuantity - productosParaPayload:", productosParaPayload);
-
-    const payload = {
-      data: {
-        usuario_email: user.email,
-        productos: productosParaPayload,
-        total: nuevoTotal,
-        estado: "activo",
-        ultima_actualizacion: new Date().toISOString(),
-      },
-    };
-    console.log("updateQuantity - payload final:", payload);
-
-    try {
-      const endpoint = `${process.env.REACT_APP_STRAPI_URL}/api/carritos`;
-      if (carritoId) {
-        console.log("updateQuantity - haciendo PUT en Strapi carritoId:", carritoId);
-        const response = await fetch(`${endpoint}/${carritoId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        console.log("updateQuantity - PUT response status:", response.status);
-      } else {
-        console.log("updateQuantity - haciendo POST en Strapi para crear carrito");
-        const response = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        console.log("updateQuantity - POST response status:", response.status);
+      let nuevaEnvio = item.envio;
+      if (item.producto) {
+        try {
+          nuevaEnvio = await precotizarMienvio(
+            item.cp,
+            item.cp_destino || "11560",
+            item.largo,
+            item.ancho,
+            item.alto,
+            item.peso,
+            item.cantidad
+          );
+          console.log(
+            `updateQuantity [${idx}] - precotizarMienvio devolvió:`,
+            nuevaEnvio
+          );
+        } catch (e) {
+          console.error("updateQuantity - error recalc envío:", e);
+        }
       }
-    } catch (error) {
-      console.error("Error al guardar el carrito en Strapi:", error);
-    }
+
+      const nuevoTotal = parseFloat(
+        (item.subtotal + item.comisionStripe + nuevaEnvio + item.comisionPlataforma).toFixed(2)
+      );
+      console.log(
+        `updateQuantity [${idx}] - item "${item.nombre}" recalculado: subtotal ${item.subtotal}, envío ${nuevaEnvio}, total ${nuevoTotal}`
+      );
+      return { ...item, envio: nuevaEnvio, total: nuevoTotal };
+    })
+  );
+
+  console.log("updateQuantity - mergedItems antes de setItems:", mergedItems);
+
+  const nuevoTotal = calcularTotal(mergedItems);
+  console.log("updateQuantity - nuevoTotal:", nuevoTotal);
+  setItems(mergedItems);
+  setTotal(nuevoTotal);
+
+  // 4) Guardar en Strapi
+  const productosParaPayload = mergedItems.map((item) => ({
+    producto: item.producto,
+    nombre: item.nombre,
+    precio_unitario: item.precio_unitario,
+    cantidad: item.cantidad,
+    subtotal: item.subtotal,
+    envio: item.envio,
+    comisionStripe: item.comisionStripe,
+    comisionPlataforma: item.comisionPlataforma,
+    total: item.total,
+    imagen_predeterminada: item.imagen_predeterminada || null,
+  }));
+  console.log("updateQuantity - productosParaPayload:", productosParaPayload);
+
+  const payload = {
+    data: {
+      usuario_email: user.email,
+      productos: productosParaPayload,
+      total: nuevoTotal,
+      estado: "activo",
+      ultima_actualizacion: new Date().toISOString(),
+    },
   };
+  console.log("updateQuantity - payload final:", payload);
+
+  try {
+    const endpoint = `${process.env.REACT_APP_STRAPI_URL}/api/carritos`;
+    if (carritoId) {
+      console.log("updateQuantity - haciendo PUT en Strapi carritoId:", carritoId);
+      const response = await fetch(`${endpoint}/${carritoId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      console.log("updateQuantity - PUT response status:", response.status);
+    } else {
+      console.log("updateQuantity - haciendo POST en Strapi para crear carrito");
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      console.log("updateQuantity - POST response status:", response.status);
+    }
+  } catch (error) {
+    console.error("Error al guardar el carrito en Strapi:", error);
+  }
+};
+
 
   const clearCart = async () => {
     if (!isAuthenticated || !user) {
