@@ -17,12 +17,13 @@ const NotificationsMenu = ({ handleLogout, isOpen, onClose,  onLogout }) => {
         <>
 
           <li onClick={handleLogout}>Cerrar sesión.</li>
-          <li onClick={onClose}>No tienes notificaciones nuevas .</li>
-          <li onClick={onClose}>No tienes notificaciones nuevas.3</li>
-          <li onClick={onClose}>No tienes notificaciones nuevas.4</li>
-          <li onClick={onClose}>No tienes notificaciones nuevas.5</li>
-          <li onClick={onClose}>No tienes notificaciones nuevas.</li>
-
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          <li onClick={handleLogout}>Cerrar sesión.</li>
+          
           
         </>
       

@@ -136,6 +136,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
   };
 
   const handleLogout = () => {
+    console.log('cerrando sesión');
     // Elimina la cookie de retorno antes de cerrar sesión
     document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     console.log("Cookie de returnTo eliminada antes de logout");
@@ -205,6 +206,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   authenticated={isAuthenticated}
                   userData={user}
                   className="cuenta-icon"
+                  handleLogout={handleLogout}
                 />
               </span>
               <span className="nav-linky">
@@ -249,6 +251,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
                 activeTab={activeTab}
                 handleNavigation={handleNavigation}
                 iconMap={iconMap}
+                handleLogout={handleLogout}
                 />
             ))}
             </span>

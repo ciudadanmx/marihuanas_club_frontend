@@ -4,6 +4,7 @@ import { MdShoppingCart } from "react-icons/md";
 import NotificationsMenu from './NotificationsMenu';
 //import { gapi } from 'gapi-script';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useCart } from '../../Contexts/CartContext';
 import { AuthProvider } from '../../Contexts/AuthContext'; // Importa el contexto
 
 import '../../styles/MessagesIcon.css';
@@ -18,12 +19,17 @@ const CartIcon = ({ count = 33 }) => {
         setIsMenuOpen(!isMenuOpen);
       };
 
+        const { getItemCount } = useCart();
+
+          const totalUnidades = getItemCount();
+
+
   return (
     
       
       <div className="message-icon-container" onClick={toggleMenu}>
         <MdShoppingCart className="message-icon" />
-        {count > 0 && <span className="message-count">{count}</span>}
+        {totalUnidades > 0 && <span className="message-count">{totalUnidades}</span>}
       
         <NotificationsMenu 
         isOpen={isMenuOpen} 
