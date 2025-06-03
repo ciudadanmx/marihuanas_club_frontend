@@ -1,47 +1,23 @@
-import React, { useState, useContext } from 'react';
-//import '../styles/CuentaIcon.css';
+// CartIcon.jsx
 import { MdShoppingCart } from "react-icons/md";
-import NotificationsMenu from './NotificationsMenu';
-//import { gapi } from 'gapi-script';
-import { useAuth0 } from '@auth0/auth0-react';
-import { useCart } from '../../Contexts/CartContext';
-import { AuthProvider } from '../../Contexts/AuthContext'; // Importa el contexto
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../Contexts/CartContext";
+import "../../styles/MessagesIcon.css";
 
-import '../../styles/MessagesIcon.css';
- 
+const CartIcon = () => {
+  const navigate = useNavigate();
+  const { getItemCount } = useCart();
+  const totalUnidades = getItemCount();
 
-const CartIcon = ({ count = 33 }) => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-    //const { isAuthenticated, setAuthenticated, user, userData, setUserData } = useContext(AuthProvider);
-
-  
-    const toggleMenu = () => {
-        setIsMenuOpen(!isMenuOpen);
-      };
-
-        const { getItemCount } = useCart();
-
-          const totalUnidades = getItemCount();
-
+  const handleClick = () => {
+    navigate("/cart");
+  };
 
   return (
-    
-      
-      <div className="message-icon-container" onClick={toggleMenu}>
-        <MdShoppingCart className="message-icon" />
-        {totalUnidades > 0 && <span className="message-count">{totalUnidades}</span>}
-      
-        <NotificationsMenu 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        
-      />
+    <div className="message-icon-container" onClick={handleClick}>
+      <MdShoppingCart className="message-icon" />
+      {totalUnidades > 0 && <span className="message-count">{totalUnidades}</span>}
     </div>
-
-
-
-
-
   );
 };
 
