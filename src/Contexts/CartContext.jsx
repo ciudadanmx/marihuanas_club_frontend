@@ -55,6 +55,7 @@ export const CartProvider = ({ children }) => {
       if (!isAuthenticated || !user) return;
 
       try {
+        // LLAMADA A STRAPI: populate profundo para traer imagenes de TODOS los items
         const res = await fetch(
           `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
             user.email
@@ -62,43 +63,48 @@ export const CartProvider = ({ children }) => {
         );
         const json = await res.json();
         const carritoEntry = json?.data?.[0];
-        console.log("fetchCarrito - carritoEntry:", carritoEntry);
         if (carritoEntry) {
           const attrs = carritoEntry.attributes;
           let productos = [];
+
+          // Si attrs.productos es un arreglo plano (caso manual)
           if (Array.isArray(attrs.productos)) {
-            // Si se guardó el carrito "manualmente" o sin relación anidada
             productos = attrs.productos.map((item) => {
-              // 'item' ya tiene campo 'imagen_predeterminada' como media
-              const imgData = item.imagen_predeterminada?.data?.attributes;
-              const imagenUrl = imgData?.url || "";
-              console.log("fetchCarrito - item simple:", item);
-              console.log("fetchCarrito - imagenUrl simple extraída:", imagenUrl);
+              const prodRel = item.producto?.data;
+              const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+              let relativeUrl = "";
+              if (Array.isArray(imgArr) && imgArr.length > 0) {
+                relativeUrl = imgArr[0].attributes.url;
+              }
+              const imagenUrl = relativeUrl
+                ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+                : "";
               return {
                 ...item,
                 imagen: imagenUrl,
               };
             });
-            console.log("fetchCarrito - productos como arreglo simple map:", productos);
-          } else if (
-            attrs.productos &&
-            Array.isArray(attrs.productos.data)
-          ) {
-            // Si el carrito viene con relación anidada productos.data
+          }
+          // Si attrs.productos viene anidado (populate en data)
+          else if (attrs.productos && Array.isArray(attrs.productos.data)) {
             productos = attrs.productos.data.map((p) => {
               const itemAttrs = p.attributes;
               const prodRel = itemAttrs.producto?.data;
-              const imgData = prodRel?.attributes?.imagen_predeterminada?.data?.attributes;
-              const imagenUrl = imgData?.url || "";
-              console.log("fetchCarrito - item con relación:", itemAttrs);
-              console.log("fetchCarrito - imagenUrl extraída:", imagenUrl);
+              const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+              let relativeUrl = "";
+              if (Array.isArray(imgArr) && imgArr.length > 0) {
+                relativeUrl = imgArr[0].attributes.url;
+              }
+              const imagenUrl = relativeUrl
+                ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+                : "";
               return {
                 ...itemAttrs,
                 imagen: imagenUrl,
               };
             });
-            console.log("fetchCarrito - productos mapeados con imagen:", productos);
           }
+
           const totalCarrito = attrs.total || 0;
           setItems(productos);
           setTotal(totalCarrito);
@@ -125,13 +131,10 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (producto, cantidad = 1) => {
     if (!isAuthenticated || !user) return;
 
-    console.log("addToCart - producto recibido:", producto);
-
     // 1) Obtener el ID y URL de la imagen cargando el producto completo
     let imagenId = null;
     let imagenUrl = "";
     try {
-      console.log(`addToCart - consultando producto ${producto.id} con populate=imagen_predeterminada`);
       const prodRes = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/productos/${producto.id}?populate=imagen_predeterminada`
       );
@@ -139,25 +142,25 @@ export const CartProvider = ({ children }) => {
       const imgArr = prodJson.data.attributes.imagen_predeterminada?.data;
       if (Array.isArray(imgArr) && imgArr.length > 0) {
         imagenId = imgArr[0].id;
-        imagenUrl = imgArr[0].attributes.url;
+        const relativeUrl = imgArr[0].attributes.url;
+        imagenUrl = relativeUrl
+          ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+          : "";
       }
-      console.log("addToCart - imagenId obtenida:", imagenId);
-      console.log("addToCart - imagenUrl obtenida:", imagenUrl);
     } catch (err) {
       console.error("addToCart - error obteniendo imagen del producto:", err);
     }
 
-    // 2) Traer el carrito más reciente de Strapi (con populate=productos)
+    // 2) Traer el carrito más reciente de Strapi (populate profundo aquí también)
     let carritoExistente = null;
     try {
       const res = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
-        )}&filters[estado][$eq]=activo&populate=productos`
+        )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada`
       );
       const json = await res.json();
       carritoExistente = json?.data?.[0] || null;
-      console.log("addToCart - carritoExistente:", carritoExistente);
     } catch (err) {
       console.error("Error obteniendo carrito de Strapi:", err);
       carritoExistente = null;
@@ -169,15 +172,40 @@ export const CartProvider = ({ children }) => {
     if (carritoExistente) {
       carritoId = carritoExistente.id;
       const attrs = carritoExistente.attributes;
+
       if (Array.isArray(attrs.productos)) {
-        productosDesdeBackend = attrs.productos;
-        console.log("addToCart - productosDesdeBackend simple:", productosDesdeBackend);
-      } else if (
-        attrs.productos &&
-        Array.isArray(attrs.productos.data)
-      ) {
-        productosDesdeBackend = attrs.productos.data.map((p) => p.attributes);
-        console.log("addToCart - productosDesdeBackend mapeados:", productosDesdeBackend);
+        productosDesdeBackend = attrs.productos.map((item) => {
+          const prodRel = item.producto?.data;
+          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+          let relativeUrl = "";
+          if (Array.isArray(imgArr) && imgArr.length > 0) {
+            relativeUrl = imgArr[0].attributes.url;
+          }
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
+          return {
+            ...item,
+            imagen: existingUrl,
+          };
+        });
+      } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
+        productosDesdeBackend = attrs.productos.data.map((p) => {
+          const itemAttrs = p.attributes;
+          const prodRel = itemAttrs.producto?.data;
+          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+          let relativeUrl = "";
+          if (Array.isArray(imgArr) && imgArr.length > 0) {
+            relativeUrl = imgArr[0].attributes.url;
+          }
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
+          return {
+            ...itemAttrs,
+            imagen: existingUrl,
+          };
+        });
       }
     }
 
@@ -219,27 +247,24 @@ export const CartProvider = ({ children }) => {
                   envio
                 ).toFixed(2)
               ),
-              // Mantenemos existing.imagen_predeterminada igual si ya existía
             }
           : i
       );
-      console.log("addToCart - existing actualizado:", mergedItems);
     } else {
-      // Creamos un nuevo ítem con el ID de la media
       const newItem = {
         producto: producto.id,
         nombre: producto.nombre,
         marca: producto.marca,
         precio_unitario: producto.precio,
         cantidad,
-        imagen_predeterminada: imagenId, // pasamos el ID de Strapi
+        imagen_predeterminada: imagenId,
+        imagen: imagenUrl,
         subtotal,
         comisionPlataforma,
         comisionStripe,
         envio,
         total: totalItem,
       };
-      console.log("addToCart - newItem a agregar:", newItem);
       mergedItems.push(newItem);
     }
 
@@ -247,7 +272,7 @@ export const CartProvider = ({ children }) => {
     setItems(mergedItems);
     setTotal(nuevoTotal);
 
-    // 6) Guardar en Strapi con la clave exacta del componente producto_en_carrito
+    // 6) Guardar en Strapi
     const productosParaPayload = mergedItems.map((item) => ({
       producto: item.producto,
       nombre: item.nombre,
@@ -258,9 +283,8 @@ export const CartProvider = ({ children }) => {
       comisionStripe: item.comisionStripe,
       comisionPlataforma: item.comisionPlataforma,
       total: item.total,
-      imagen_predeterminada: item.imagen_predeterminada || null, // enviamos el ID de media
+      imagen_predeterminada: item.imagen_predeterminada || null,
     }));
-    console.log("addToCart - productosParaPayload:", productosParaPayload);
 
     const payload = {
       data: {
@@ -271,24 +295,21 @@ export const CartProvider = ({ children }) => {
         ultima_actualizacion: new Date().toISOString(),
       },
     };
-    console.log("addToCart - payload final:", payload);
 
     try {
       const endpoint = `${process.env.REACT_APP_STRAPI_URL}/api/carritos`;
       if (carritoId) {
-        const response = await fetch(`${endpoint}/${carritoId}`, {
+        await fetch(`${endpoint}/${carritoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("addToCart - PUT response status:", response.status);
       } else {
-        const response = await fetch(endpoint, {
+        await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("addToCart - POST response status:", response.status);
       }
     } catch (error) {
       console.error("Error al guardar el carrito en Strapi:", error);
@@ -298,17 +319,16 @@ export const CartProvider = ({ children }) => {
   const updateQuantity = async (productoId, cantidad) => {
     if (!isAuthenticated || !user) return;
 
-    // 1) Traer el carrito más reciente
+    // 1) Traer el carrito más reciente con populate profundo
     let carritoExistente = null;
     try {
       const res = await fetch(
         `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
-        )}&filters[estado][$eq]=activo&populate=productos`
+        )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada`
       );
       const json = await res.json();
       carritoExistente = json?.data?.[0] || null;
-      console.log("updateQuantity - carritoExistente:", carritoExistente);
     } catch (err) {
       console.error("Error obteniendo carrito de Strapi:", err);
       carritoExistente = null;
@@ -320,29 +340,42 @@ export const CartProvider = ({ children }) => {
     if (carritoExistente) {
       carritoId = carritoExistente.id;
       const attrs = carritoExistente.attributes;
+
       if (Array.isArray(attrs.productos)) {
         productosDesdeBackend = attrs.productos.map((item) => {
-          const imgId = item.imagen_predeterminada?.id || null;
-          console.log("updateQuantity - item simple:", item);
+          const prodRel = item.producto?.data;
+          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+          let relativeUrl = "";
+          if (Array.isArray(imgArr) && imgArr.length > 0) {
+            relativeUrl = imgArr[0].attributes.url;
+          }
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
           return {
             ...item,
-            imagen_predeterminada: imgId,
+            imagen_predeterminada: item.imagen_predeterminada?.id || null,
+            imagen: existingUrl,
           };
         });
-        console.log("updateQuantity - productosDesdeBackend simple map:", productosDesdeBackend);
-      } else if (
-        attrs.productos &&
-        Array.isArray(attrs.productos.data)
-      ) {
+      } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
         productosDesdeBackend = attrs.productos.data.map((p) => {
           const itemAttrs = p.attributes;
-          const imgId = itemAttrs.imagen_predeterminada?.data?.id || null;
+          const prodRel = itemAttrs.producto?.data;
+          const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
+          let relativeUrl = "";
+          if (Array.isArray(imgArr) && imgArr.length > 0) {
+            relativeUrl = imgArr[0].attributes.url;
+          }
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
           return {
             ...itemAttrs,
-            imagen_predeterminada: imgId,
+            imagen_predeterminada: itemAttrs.imagen_predeterminada?.data?.id || null,
+            imagen: existingUrl,
           };
         });
-        console.log("updateQuantity - productosDesdeBackend mapeados:", productosDesdeBackend);
       }
     }
 
@@ -359,8 +392,6 @@ export const CartProvider = ({ children }) => {
         return i;
       })
       .filter((i) => i.cantidad > 0);
-
-    console.log("updateQuantity - mergedItems resultante:", mergedItems);
 
     const nuevoTotal = calcularTotal(mergedItems);
     setItems(mergedItems);
@@ -379,7 +410,6 @@ export const CartProvider = ({ children }) => {
       total: item.total,
       imagen_predeterminada: item.imagen_predeterminada || null,
     }));
-    console.log("updateQuantity - productosParaPayload:", productosParaPayload);
 
     const payload = {
       data: {
@@ -390,24 +420,21 @@ export const CartProvider = ({ children }) => {
         ultima_actualizacion: new Date().toISOString(),
       },
     };
-    console.log("updateQuantity - payload final:", payload);
 
     try {
       const endpoint = `${process.env.REACT_APP_STRAPI_URL}/api/carritos`;
       if (carritoId) {
-        const response = await fetch(`${endpoint}/${carritoId}`, {
+        await fetch(`${endpoint}/${carritoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("updateQuantity - PUT response status:", response.status);
       } else {
-        const response = await fetch(endpoint, {
+        await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("updateQuantity - POST response status:", response.status);
       }
     } catch (error) {
       console.error("Error al guardar el carrito en Strapi:", error);
@@ -427,7 +454,6 @@ export const CartProvider = ({ children }) => {
       );
       const json = await res.json();
       carritoExistente = json?.data?.[0] || null;
-      console.log("clearCart - carritoExistente:", carritoExistente);
     } catch (err) {
       console.error("Error obteniendo carrito de Strapi:", err);
       carritoExistente = null;
@@ -449,14 +475,12 @@ export const CartProvider = ({ children }) => {
           ultima_actualizacion: new Date().toISOString(),
         },
       };
-      console.log("clearCart - payload:", payload);
       try {
-        const response = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/carritos/${carritoId}`, {
+        await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/carritos/${carritoId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        console.log("clearCart - PUT response status:", response.status);
       } catch (err) {
         console.error("Error marcando carrito inactivo:", err);
       }
@@ -466,7 +490,6 @@ export const CartProvider = ({ children }) => {
   const getItemCount = () => {
     return items.reduce((acc, item) => acc + item.cantidad, 0);
   };
-
 
   return (
     <CartContext.Provider

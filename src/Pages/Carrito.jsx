@@ -8,82 +8,78 @@ const Carrito = () => {
   const { isAuthenticated, loginWithRedirect, user } = useAuth0();
 
   const handleVaciarCarrito = async () => {
-  if (!user?.email) {
-    console.warn("No hay email de usuario. No puedo vaciar.");
-    return;
-  }
-
-  try {
-    // 1) Obtener carrito activo de Strapi
-    console.log(">> Fetch carrito activo para:", user.email);
-    const resFetch = await fetch(
-      `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
-        user.email
-      )}&filters[estado][$eq]=activo`,
-      {
-        // Incluimos credentials para cookies (si es que Strapi está configurado para usarlas)
-        credentials: "include",
-      }
-    );
-    console.log(">> Respuesta GET carrito:", resFetch.status);
-    const json = await resFetch.json();
-    console.log(">> Datos GET carrito:", json);
-
-    const carritoEntry = json?.data?.[0];
-    if (!carritoEntry) {
-      console.warn("No existe un carrito activo en Strapi para este email.");
-      // Aún así limpiamos el contexto local
-      clearCart();
+    if (!user?.email) {
+      console.warn("No hay email de usuario. No puedo vaciar.");
       return;
     }
 
-    const carritoIdStrapi = carritoEntry.id;
-    console.log(">> ID de carrito activo en Strapi:", carritoIdStrapi);
+    try {
+      // 1) Obtener carrito activo de Strapi
+      console.log(">> Fetch carrito activo para:", user.email);
+      const resFetch = await fetch(
+        `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
+          user.email
+        )}&filters[estado][$eq]=activo`,
+        {
+          credentials: "include",
+        }
+      );
+      console.log(">> Respuesta GET carrito:", resFetch.status);
+      const json = await resFetch.json();
+      console.log(">> Datos GET carrito:", json);
 
-    // 2) Hacer PUT para vaciar productos, totales a 0, etc.
-    const payload = {
-      data: {
-        productos: [],
-        total: 0,
-        total_envios: 0,
-        estado: "activo",
-        ultima_actualizacion: new Date().toISOString(),
-      },
-    };
-    console.log(">> Payload para PUT vaciar:", payload);
+      const carritoEntry = json?.data?.[0];
+      if (!carritoEntry) {
+        console.warn("No existe un carrito activo en Strapi para este email.");
+        clearCart();
+        return;
+      }
 
-    const resPut = await fetch(
-      `${process.env.REACT_APP_STRAPI_URL}/api/carritos/${carritoIdStrapi}`,
-      {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const carritoIdStrapi = carritoEntry.id;
+      console.log(">> ID de carrito activo en Strapi:", carritoIdStrapi);
+
+      // 2) Hacer PUT para vaciar productos, totales a 0, etc.
+      const payload = {
+        data: {
+          productos: [],
+          total: 0,
+          total_envios: 0,
+          estado: "activo",
+          ultima_actualizacion: new Date().toISOString(),
         },
-        credentials: "include",
-        body: JSON.stringify(payload),
+      };
+      console.log(">> Payload para PUT vaciar:", payload);
+
+      const resPut = await fetch(
+        `${process.env.REACT_APP_STRAPI_URL}/api/carritos/${carritoIdStrapi}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        }
+      );
+      console.log(">> Respuesta PUT vaciar carrito:", resPut.status);
+
+      if (!resPut.ok) {
+        console.error("No se vació el carrito en Strapi. Status:", resPut.status);
+        const errText = await resPut.text();
+        console.error("Error de Strapi:", errText);
+        return;
       }
-    );
-    console.log(">> Respuesta PUT vaciar carrito:", resPut.status);
 
-    if (!resPut.ok) {
-      console.error("No se vació el carrito en Strapi. Status:", resPut.status);
-      const errText = await resPut.text();
-      console.error("Error de Strapi:", errText);
-      return;
+      const jsonPut = await resPut.json();
+      console.log(">> Respuesta JSON PUT:", jsonPut);
+
+      // 3) Si todo OK, limpiamos el contexto local
+      clearCart();
+      console.log(">> Carrito limpiado localmente.");
+    } catch (err) {
+      console.error("Error en handleVaciarCarrito:", err);
     }
-
-    const jsonPut = await resPut.json();
-    console.log(">> Respuesta JSON PUT:", jsonPut);
-
-    // 3) Si todo OK, limpiamos el contexto local
-    clearCart();
-    console.log(">> Carrito limpiado localmente.");
-
-  } catch (err) {
-    console.error("Error en handleVaciarCarrito:", err);
-  }
-};
-
+  };
 
   if (!isAuthenticated) {
     return (
