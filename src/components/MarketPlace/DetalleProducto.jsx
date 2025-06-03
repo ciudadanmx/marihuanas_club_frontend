@@ -54,6 +54,8 @@ const DetalleProducto = ({
     }
   };
 
+  //otra vez
+
   useEffect(() => {
     calcularEnvio();
     console.log('envio');
