@@ -10,58 +10,65 @@ const Carrito = () => {
   const [localTotal, setLocalTotal] = useState(0);
 
   useEffect(() => {
-  if (!isAuthenticated) {
-    const raw = JSON.parse(localStorage.getItem("carrito"));
-    const carritoLocal = Array.isArray(raw) ? raw : [];
-    console.log("🧾 carritoLocal antes de fetch:", carritoLocal);
+    if (!isAuthenticated) {
+      const raw = JSON.parse(localStorage.getItem("carrito"));
+      const carritoLocal = Array.isArray(raw) ? raw : [];
+      console.log("🧾 carritoLocal antes de fetch:", carritoLocal);
 
-    const fetchDetallesProductos = async () => {
+      const fetchDetallesProductos = async () => {
         console.log("fetch de detalles de productos / * /* / * /* / * /* / * ");
-      const detalles = await Promise.all(
-        carritoLocal.map(async (item) => {
-          try {
-            const res = await fetch(
-              `${process.env.REACT_APP_STRAPI_URL}/api/productos/${item.producto}?populate=imagen_predeterminada`
-            );
-            const json = await res.json();
-            console.log(' seguimos . . . . . . . . .  ', json);
+        const detalles = await Promise.all(
+          carritoLocal.map(async (item) => {
+            try {
+              const res = await fetch(
+                `${process.env.REACT_APP_STRAPI_URL}/api/productos/${item.producto}?populate=imagen_predeterminada`
+              );
+              const json = await res.json();
+              console.log(" seguimos . . . . . . . . .  ", json);
 
-            const prod = json?.data?.attributes || {};
-            const imagenData = prod?.imagen_predeterminada?.data?.[0]?.attributes;
+              const prod = json?.data?.attributes || {};
+              const imagenData = prod?.imagen_predeterminada?.data?.[0]?.attributes;
 
-            const imagenUrl = imagenData?.formats?.medium?.url || imagenData?.url || null;
-            const imagenCompleta = imagenUrl
-              ? `${process.env.REACT_APP_STRAPI_URL}${imagenUrl}`
-              : "";
+              const imagenUrl =
+                imagenData?.formats?.medium?.url || imagenData?.url || null;
+              const imagenCompleta = imagenUrl
+                ? `${process.env.REACT_APP_STRAPI_URL}${imagenUrl}`
+                : "";
 
-            return {
-              ...item,
-              marca: prod.marca || "",
-              imagen: imagenCompleta,
-            };
-          } catch (err) {
-            console.error("❌ Error al obtener producto:", item.producto, err);
-            return item; // fallback con lo que tenías
-          }
-        })
-      );
+              return {
+                ...item,
+                marca: prod.marca || "",
+                imagen: imagenCompleta,
+              };
+            } catch (err) {
+              console.error("❌ Error al obtener producto:", item.producto, err);
+              return item;
+            }
+          })
+        );
 
-      console.log("🧩 Carrito con detalles:", detalles);
-      setLocalItems(detalles);
+        console.log("🧩 Carrito con detalles:", detalles);
+        setLocalItems(detalles);
 
-      const suma = detalles.reduce(
-        (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
-        0
-      );
-      setLocalTotal(suma);
-    };
+        const suma = detalles.reduce(
+          (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
+          0
+        );
+        setLocalTotal(suma);
+      };
 
-    fetchDetallesProductos();
-  }
-}, [isAuthenticated]);
-
+      fetchDetallesProductos();
+    }
+  }, [isAuthenticated]);
 
   const handleVaciarCarrito = async () => {
+    if (!isAuthenticated) {
+      localStorage.removeItem("carrito");
+      setLocalItems([]);
+      setLocalTotal(0);
+      return;
+    }
+
     if (!user?.email) {
       console.warn("No hay email de usuario. No puedo vaciar.");
       return;
@@ -123,35 +130,38 @@ const Carrito = () => {
         ) : (
           <div className="carrito-items">
             {localItems.map((item, index) => (
-  <div key={index} className="carrito-item">
-    {item.imagen && (
-      <img
-        src={item.imagen}
-        alt={item.nombre}
-        className="carrito-img"
-      />
-    )}
-    <div className="carrito-info">
-      <h4>{item.nombre}</h4>
-      <p>Precio unitario: ${(item.precio_unitario || 0).toFixed(2)}</p>
-      <p>
-        Subtotal: $
-        {(
-          (item.precio_unitario || 0) *
-          (item.cantidad || 0)
-        ).toFixed(2)}
-      </p>
-      <div className="carrito-cantidad">
-        <span>{item.cantidad || 0}</span>
-      </div>
-    </div>
-  </div>
-))}
+              <div key={index} className="carrito-item">
+                {item.imagen && (
+                  <img
+                    src={item.imagen}
+                    alt={item.nombre}
+                    className="carrito-img"
+                  />
+                )}
+                <div className="carrito-info">
+                  <h4>{item.nombre}</h4>
+                  <p>
+                    Precio unitario: ${(item.precio_unitario || 0).toFixed(2)}
+                  </p>
+                  <p>
+                    Subtotal: $
+                    {(
+                      (item.precio_unitario || 0) * (item.cantidad || 0)
+                    ).toFixed(2)}
+                  </p>
+                  <div className="carrito-cantidad">
+                    <span>{item.cantidad || 0}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
 
             <div className="carrito-resumen">
               <p>
-                Total del carrito: <strong>${(localTotal || 0).toFixed(2)}</strong>
+                Total del carrito:{" "}
+                <strong>${(localTotal || 0).toFixed(2)}</strong>
               </p>
+              <button onClick={handleVaciarCarrito}>Vaciar carrito</button>
             </div>
           </div>
         )}
@@ -220,8 +230,7 @@ const Carrito = () => {
                           {(item.precio_unitario || 0).toFixed(2)}
                         </p>
                         <p>
-                          Subtotal: $
-                          {(item.subtotal || 0).toFixed(2)}
+                          Subtotal: ${(item.subtotal || 0).toFixed(2)}
                         </p>
                         <div className="carrito-cantidad">
                           <button
@@ -260,7 +269,9 @@ const Carrito = () => {
                     <p>
                       Total tienda:{" "}
                       <strong>
-                        ${(subtotalTienda + envioTienda + comisionesTienda).toFixed(2)}
+                        ${(subtotalTienda + envioTienda + comisionesTienda).toFixed(
+                          2
+                        )}
                       </strong>
                     </p>
                   </div>
@@ -271,8 +282,7 @@ const Carrito = () => {
 
           <div className="carrito-resumen">
             <p>
-              Total del carrito:{" "}
-              <strong>${(total || 0).toFixed(2)}</strong>
+              Total del carrito: <strong>${(total || 0).toFixed(2)}</strong>
             </p>
             <button onClick={handleVaciarCarrito}>Vaciar carrito</button>
           </div>
