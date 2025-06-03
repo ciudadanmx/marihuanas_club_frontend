@@ -8,19 +8,63 @@ export const CartProvider = ({ children }) => {
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
 
+    useEffect(() => {
+    const fetchCarrito = async () => {
+      if (!isAuthenticated || !user) return;
+
+      try {
+        const res = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${user.email}&filters[estado][$eq]=activo`);
+        const json = await res.json();
+        const carrito = json?.data?.[0]?.attributes;
+
+        console.log('carrito de strapi ------ ', carrito);
+
+        if (carrito) {
+          const productos = carrito.productos || [];
+          setItems(productos);
+          setTotal(carrito.total || 0);
+        }
+
+      } catch (error) {
+        console.error("Error al cargar carrito desde Strapi:", error);
+      }
+    };
+
+    fetchCarrito();
+  }, [isAuthenticated, user]);
+
+
+
+
+
+
+
+
+
   const precotizarStripe = (precioProducto) => {
+    const tarifa = (precioProducto * 0.036)+3;
+    const iva = tarifa * 0.16;
+    return parseFloat((tarifa + iva).toFixed(2));
+  };
+
+    const precotizarPlataforma = (precioProducto) => {
     const tarifa = precioProducto < 200 ? 5 : 10;
     const iva = tarifa * 0.16;
     return parseFloat((tarifa + iva).toFixed(2));
   };
 
-  const precotizarMienvio = async (cpOrigen, cpDestino, largo, ancho, alto, peso) => {
+  const precotizarMienvio = async (cpOrigen, cpDestino, largo, ancho, alto, peso, cantidad) => {
     console.log('precotizando');
     try {
+      const largo = 1;
+      const ancho = 1;
+      const alto = 1;
+      const peso = 1.5;
+      
       const res = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpOrigen, cpDestino, largo, ancho, alto, peso }),
+        body: JSON.stringify({ cpOrigen, cpDestino, largo, ancho, alto, peso, cantidad }),
       });
       const data = await res.json();
       console.log(`calculando......... ${data.costo} `, data);
@@ -32,7 +76,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Cargar del localStorage al inicio
+/*   // Cargar del localStorage al inicio
   useEffect(() => {
     const stored = localStorage.getItem("carrito");
     if (stored) {
@@ -40,7 +84,7 @@ export const CartProvider = ({ children }) => {
       setItems(data.items || []);
       setTotal(data.total || 0);
     }
-  }, []);
+  }, []); */
 
   // Guardar en localStorage cada que cambia
   useEffect(() => {
@@ -53,7 +97,8 @@ export const CartProvider = ({ children }) => {
     productos.reduce((acc, item) => acc + (item.total || (item.precio_unitario * item.cantidad)), 0);
 
   const addToCart = async (producto, cantidad = 1) => {
-    const comisionStripe = precotizarStripe(producto.precio);
+    const comisionPlataforma = precotizarPlataforma(producto.subtotal);
+    const comisionStripe = precotizarStripe(comisionPlataforma);
     const envio = await precotizarMienvio(
       producto.cp,
       producto.cp_destino || "11560", // Ajusta esto según tu lógica
@@ -62,9 +107,9 @@ export const CartProvider = ({ children }) => {
       producto.alto,
       producto.peso
     );
-    console.log('costo de envio ', producto.precio);
+    console.log('costo de envio ', producto.envio);
     const subtotal = producto.precio * cantidad;
-    const totalItem = parseFloat((subtotal + comisionStripe + envio).toFixed(2));
+    const totalItem = parseFloat((subtotal + comisionStripe + comisionPlataforma + envio).toFixed(2));
 
     setItems((prev) => {
       const existing = prev.find((i) => i.producto === producto.id);
@@ -77,8 +122,9 @@ export const CartProvider = ({ children }) => {
                 cantidad: i.cantidad + cantidad,
                 subtotal: i.precio_unitario * (i.cantidad + cantidad),
                 comisionStripe,
+                comisionPlataforma,
                 envio,
-                total: parseFloat(((i.precio_unitario * (i.cantidad + cantidad)) + comisionStripe + envio).toFixed(2)),
+                total: parseFloat(((i.precio_unitario * (i.cantidad + cantidad)) + comisionStripe +comisionPlataforma + envio).toFixed(2)),
               }
             : i
         );
@@ -93,6 +139,7 @@ export const CartProvider = ({ children }) => {
             cantidad: cantidad,
             imagen: producto.imagen_predeterminada?.url || "",
             subtotal,
+            comisionPlataforma,
             comisionStripe,
             envio,
             total: totalItem,
@@ -111,7 +158,7 @@ export const CartProvider = ({ children }) => {
         .map((i) => {
           if (i.producto === productoId) {
             const subtotal = i.precio_unitario * cantidad;
-            const total = parseFloat((subtotal + i.comisionStripe + i.envio).toFixed(2));
+            const total = parseFloat((subtotal + i.comisionStripe + i.envio + i.comisionPlataforma).toFixed(2));
             return { ...i, cantidad, subtotal, total };
           }
           return i;
@@ -151,6 +198,7 @@ export const CartProvider = ({ children }) => {
                 subtotal: item.subtotal,
                 envio: item.envio,
                 comisionStripe: item.comisionStripe,
+                comisionPlataforma: item.comisionPlataforma,
                 total: item.total,
               })),
               total,

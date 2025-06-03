@@ -31,11 +31,15 @@ const DetalleProducto = ({
     try {
       const cp_origen = producto?.attributes?.cp_origen || '01000';
       const cp_destino = producto?.attributes?.cp_destino || '02800';
+      const largo= 2;
+      const ancho= 2;
+      const alto= 2;
+      const peso= 2;
 
       const response = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cp_origen, cp_destino, cantidad })
+        body: JSON.stringify({ cp_origen, cp_destino, cantidad, largo, ancho, alto, peso })
       });
 
       if (response.ok) {
