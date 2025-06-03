@@ -15,6 +15,7 @@ import MarketPlace from '../Pages/MarketPlace.jsx';
 import Tienda from '../Pages/Tienda.jsx';
 import Producto from '../Pages/Producto.jsx';
 import MiUbicacion from '../components/MiUbicacion';
+import Carrito from '../Pages/Carrito';
 
 const Rutas = () => (
     <Routes>
@@ -29,6 +30,7 @@ const Rutas = () => (
               <Route path='/agregar-producto' element={<AgregarProducto />} />
               <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} />
               <Route path="/market" element={<MarketPlace />} />
+              <Route path="/carrito" element={<Carrito />} />
               <Route path="/market/producto/:slug" element={<Producto />} />
               
               <Route path="/ubicacion" element={<MiUbicacion />} />

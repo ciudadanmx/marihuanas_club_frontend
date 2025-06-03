@@ -10,7 +10,7 @@ const CartIcon = () => {
   const totalUnidades = getItemCount();
 
   const handleClick = () => {
-    navigate("/cart");
+    navigate("/carrito");
   };
 
   return (
