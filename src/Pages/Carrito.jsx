@@ -10,18 +10,56 @@ const Carrito = () => {
   const [localTotal, setLocalTotal] = useState(0);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      const raw = JSON.parse(localStorage.getItem("carrito"));
-      const carritoLocal = Array.isArray(raw) ? raw : [];
-      setLocalItems(carritoLocal);
-      console.log('no autenticado nooooooooo ------- **** ');
-      const suma = carritoLocal.reduce(
+  if (!isAuthenticated) {
+    const raw = JSON.parse(localStorage.getItem("carrito"));
+    const carritoLocal = Array.isArray(raw) ? raw : [];
+    console.log("🧾 carritoLocal antes de fetch:", carritoLocal);
+
+    const fetchDetallesProductos = async () => {
+        console.log("fetch de detalles de productos / * /* / * /* / * /* / * ");
+      const detalles = await Promise.all(
+        carritoLocal.map(async (item) => {
+          try {
+            const res = await fetch(
+              `${process.env.REACT_APP_STRAPI_URL}/api/productos/${item.producto}?populate=imagen_predeterminada`
+            );
+            const json = await res.json();
+            console.log(' seguimos . . . . . . . . .  ', json);
+
+            const prod = json?.data?.attributes || {};
+            const imagenData = prod?.imagen_predeterminada?.data?.[0]?.attributes;
+
+            const imagenUrl = imagenData?.formats?.medium?.url || imagenData?.url || null;
+            const imagenCompleta = imagenUrl
+              ? `${process.env.REACT_APP_STRAPI_URL}${imagenUrl}`
+              : "";
+
+            return {
+              ...item,
+              marca: prod.marca || "",
+              imagen: imagenCompleta,
+            };
+          } catch (err) {
+            console.error("❌ Error al obtener producto:", item.producto, err);
+            return item; // fallback con lo que tenías
+          }
+        })
+      );
+
+      console.log("🧩 Carrito con detalles:", detalles);
+      setLocalItems(detalles);
+
+      const suma = detalles.reduce(
         (acc, item) => acc + (item.precio_unitario || 0) * (item.cantidad || 0),
         0
       );
       setLocalTotal(suma);
-    }
-  }, [isAuthenticated]);
+    };
+
+    fetchDetallesProductos();
+  }
+}, [isAuthenticated]);
+
 
   const handleVaciarCarrito = async () => {
     if (!user?.email) {
@@ -85,23 +123,31 @@ const Carrito = () => {
         ) : (
           <div className="carrito-items">
             {localItems.map((item, index) => (
-              <div key={index} className="carrito-item">
-                <div className="carrito-info">
-                  <h4>{item.nombre}</h4>
-                  <p>Precio unitario: ${(item.precio_unitario || 0).toFixed(2)}</p>
-                  <p>
-                    Subtotal: $
-                    {(
-                      (item.precio_unitario || 0) *
-                      (item.cantidad || 0)
-                    ).toFixed(2)}
-                  </p>
-                  <div className="carrito-cantidad">
-                    <span>{item.cantidad || 0}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+  <div key={index} className="carrito-item">
+    {item.imagen && (
+      <img
+        src={item.imagen}
+        alt={item.nombre}
+        className="carrito-img"
+      />
+    )}
+    <div className="carrito-info">
+      <h4>{item.nombre}</h4>
+      <p>Precio unitario: ${(item.precio_unitario || 0).toFixed(2)}</p>
+      <p>
+        Subtotal: $
+        {(
+          (item.precio_unitario || 0) *
+          (item.cantidad || 0)
+        ).toFixed(2)}
+      </p>
+      <div className="carrito-cantidad">
+        <span>{item.cantidad || 0}</span>
+      </div>
+    </div>
+  </div>
+))}
+
             <div className="carrito-resumen">
               <p>
                 Total del carrito: <strong>${(localTotal || 0).toFixed(2)}</strong>
