@@ -70,12 +70,10 @@ export const CartProvider = ({ children }) => {
       }
 
       try {
-        // Populamos la relación store en cada elemento de productos
+        // LLAMADA A STRAPI: populate profundo para traer imagenes y store de TODOS los items
         const urlFetch = `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
-        )}&filters[estado][$eq]=activo
-&populate[productos][populate][store]=*
-&populate[productos][populate][producto][populate]=imagen_predeterminada`;
+        )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada,store`;
         console.log("fetchCarrito - URL de fetch:", urlFetch);
 
         const res = await fetch(urlFetch);
@@ -96,43 +94,50 @@ export const CartProvider = ({ children }) => {
 
         let productos = [];
 
-        // Extraemos productos, guardamos store.id de item.store o caemos al field producto.attributes.store_id
+        // Si attrs.productos es un arreglo plano (caso manual)
         if (Array.isArray(attrs.productos)) {
           console.log("fetchCarrito - caso arreglo plano, count:", attrs.productos.length);
           productos = attrs.productos.map((item, idx) => {
-            console.log(`fetchCarrito - item ${idx} store.raw:`, item.store);
-
             const prodRel = item.producto?.data;
-            const prodId = prodRel?.id || item.producto;
+            const prodId = prodRel?.id || item.producto; // en plano, item.producto es ID
             const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
             let relativeUrl = "";
             if (Array.isArray(imgArr) && imgArr.length > 0) {
               relativeUrl = imgArr[0].attributes.url;
             }
-            const imagenUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+            const imagenUrl = relativeUrl
+              ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+              : "";
 
-            // Intentamos store.id desde item.store
-            let storeId = item.store?.data?.id || null;
-            // Si no existe, caemos a prodRel.attributes.store_id
-            if (!storeId && prodRel?.attributes?.store_id) {
-              storeId = prodRel.attributes.store_id;
-              console.log(`fetchCarrito - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+            // Extraer store desde producto
+            let storeObj = null;
+            const storeData = prodRel?.attributes?.store?.data;
+            if (storeData) {
+              storeObj = {
+                id: storeData.id,
+                name: storeData.attributes.name,
+              };
             }
-            console.log(`fetchCarrito - plano [${idx}] productoID="${prodId}", storeID="${storeId}", imagenUrl="${imagenUrl}"`);
 
+            console.log(
+              `fetchCarrito - plano [${idx}] nombre="${item.nombre}", tienda="${storeObj?.name}", imagenUrl="${imagenUrl}"`
+            );
             return {
               ...item,
               producto: prodId,
               imagen: imagenUrl,
-              store: { id: storeId, name: null },
+              store: storeObj,
             };
           });
-        } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
-          console.log("fetchCarrito - caso anidado, count:", attrs.productos.data.length);
+        }
+        // Si attrs.productos viene anidado (populate en data)
+        else if (attrs.productos && Array.isArray(attrs.productos.data)) {
+          console.log(
+            "fetchCarrito - caso anidado, count:",
+            attrs.productos.data.length
+          );
           productos = attrs.productos.data.map((p, idx) => {
             const itemAttrs = p.attributes;
-            console.log(`fetchCarrito - itemAttrs ${idx} store.raw:`, itemAttrs.store);
-
             const prodRel = itemAttrs.producto?.data;
             const prodId = prodRel?.id;
             const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
@@ -140,58 +145,77 @@ export const CartProvider = ({ children }) => {
             if (Array.isArray(imgArr) && imgArr.length > 0) {
               relativeUrl = imgArr[0].attributes.url;
             }
-            const imagenUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+            const imagenUrl = relativeUrl
+              ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+              : "";
 
-            // Intentamos store.id desde itemAttrs.store
-            let storeId = itemAttrs.store?.data?.id || null;
-            // Si no existe, caemos a prodRel.attributes.store_id
-            if (!storeId && prodRel?.attributes?.store_id) {
-              storeId = prodRel.attributes.store_id;
-              console.log(`fetchCarrito - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+            // Extraer store desde producto
+            let storeObj = null;
+            const storeData = prodRel?.attributes?.store?.data;
+            if (storeData) {
+              storeObj = {
+                id: storeData.id,
+                name: storeData.attributes.name,
+              };
             }
-            console.log(`fetchCarrito - anidado [${idx}] productoID="${prodId}", storeID="${storeId}", imagenUrl="${imagenUrl}"`);
 
+            console.log(
+              `fetchCarrito - anidado [${idx}] nombre="${itemAttrs.nombre}", tienda="${storeObj?.name}", imagenUrl="${imagenUrl}"`
+            );
             return {
               ...itemAttrs,
               producto: prodId,
               imagen: imagenUrl,
-              store: { id: storeId, name: null },
+              store: storeObj,
             };
           });
         } else {
           console.log("fetchCarrito - attrs.productos no reconocido:", attrs.productos);
         }
 
-        // Para cada ítem que tenga store.id, buscamos nombre de la tienda
-        const productosConStore = await Promise.all(
+        // Para cualquier producto que quede sin imagen o sin store, intentar fetch individual
+        const productosConExtras = await Promise.all(
           productos.map(async (item, idx) => {
             let updated = { ...item };
-            if (item.store.id) {
+            if ((!item.imagen || !item.store) && item.producto) {
               try {
-                const urlStore = `${process.env.REACT_APP_STRAPI_URL}/api/stores/${item.store.id}`;
-                console.log(`fetchCarrito - fetch store para ítem ${idx}:`, urlStore);
-                const resStore = await fetch(urlStore);
-                console.log(`fetchCarrito - store status para ítem ${idx}:`, resStore.status);
-                const jsonStore = await resStore.json();
-                console.log(`fetchCarrito - store json para ítem ${idx}:`, JSON.stringify(jsonStore, null, 2));
-                const storeName = jsonStore.data.attributes.name;
-                updated.store.name = storeName;
-                console.log(`fetchCarrito - ítem ${idx} tienda nombre:`, storeName);
+                const urlProd = `${process.env.REACT_APP_STRAPI_URL}/api/productos/${item.producto}?populate=imagen_predeterminada,store`;
+                console.log(`fetchCarrito - fetch de fallback para [${idx}] url:`, urlProd);
+                const resp = await fetch(urlProd);
+                console.log("fetchCarrito - fallback status:", resp.status);
+                const js = await resp.json();
+                const prodAttrs = js.data.attributes;
+
+                // fallback imagen
+                const arr = prodAttrs.imagen_predeterminada?.data;
+                if (Array.isArray(arr) && arr.length > 0) {
+                  const rel = arr[0].attributes.url;
+                  const fullUrl = rel ? `${process.env.REACT_APP_STRAPI_URL}${rel}` : "";
+                  console.log(`fetchCarrito - fallback [${idx}] imagenUrl:`, fullUrl);
+                  updated.imagen = fullUrl;
+                }
+                // fallback store
+                if (!updated.store && prodAttrs.store?.data) {
+                  const storeData2 = prodAttrs.store.data;
+                  updated.store = {
+                    id: storeData2.id,
+                    name: storeData2.attributes.name,
+                  };
+                  console.log(`fetchCarrito - fallback [${idx}] storeName:`, storeData2.attributes.name);
+                }
               } catch (e) {
-                console.error(`fetchCarrito - error fetch store para ítem ${idx}:`, e);
+                console.error("fetchCarrito - error fallback imagen/store:", e);
               }
-            } else {
-              console.log(`fetchCarrito - ítem ${idx} sin storeId`);
             }
             return updated;
           })
         );
 
         const totalCarrito = attrs.total || 0;
-        console.log("fetchCarrito - productos finales con store names:", productosConStore);
+        console.log("fetchCarrito - productos finales:", productosConExtras);
         console.log("fetchCarrito - totalCarrito:", totalCarrito);
 
-        setItems(productosConStore);
+        setItems(productosConExtras);
         setTotal(totalCarrito);
       } catch (error) {
         console.error("Error al cargar carrito desde Strapi:", error);
@@ -222,11 +246,12 @@ export const CartProvider = ({ children }) => {
     console.log("addToCart - producto recibido:", producto);
     console.log("addToCart - cantidad deseada:", cantidad);
 
-    // 1) Obtener el ID y URL de la imagen cargando el producto completo
+    // 1) Obtener el ID y URL de la imagen y store cargando el producto completo
     let imagenId = null;
     let imagenUrl = "";
+    let storeObjFromProd = null;
     try {
-      const urlProd = `${process.env.REACT_APP_STRAPI_URL}/api/productos/${producto.id}?populate=imagen_predeterminada`;
+      const urlProd = `${process.env.REACT_APP_STRAPI_URL}/api/productos/${producto.id}?populate=imagen_predeterminada,store`;
       console.log("addToCart - URL fetch producto:", urlProd);
 
       const prodRes = await fetch(urlProd);
@@ -243,10 +268,19 @@ export const CartProvider = ({ children }) => {
           ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
           : "";
       }
+      // Extraer store desde producto
+      const storeData = prodAttrs.store?.data;
+      if (storeData) {
+        storeObjFromProd = {
+          id: storeData.id,
+          name: storeData.attributes.name,
+        };
+      }
       console.log("addToCart - imagenId obtenida:", imagenId);
       console.log("addToCart - imagenUrl obtenida:", imagenUrl);
+      console.log("addToCart - store obtenida:", storeObjFromProd);
     } catch (err) {
-      console.error("addToCart - error obteniendo imagen del producto:", err);
+      console.error("addToCart - error obteniendo imagen/store del producto:", err);
     }
 
     // 2) Traer el carrito más reciente de Strapi (populate profundo aquí también)
@@ -254,9 +288,7 @@ export const CartProvider = ({ children }) => {
     try {
       const urlCarritoFetch = `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
         user.email
-      )}&filters[estado][$eq]=activo
-&populate[productos][populate][store]=*
-&populate[productos][populate][producto][populate]=imagen_predeterminada`;
+      )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada,store`;
       console.log("addToCart - URL fetch carrito existente:", urlCarritoFetch);
 
       const res = await fetch(urlCarritoFetch);
@@ -271,7 +303,7 @@ export const CartProvider = ({ children }) => {
       carritoExistente = null;
     }
 
-    // 3) Extraer el arreglo de productos existentes, y completar store.id como antes
+    // 3) Extraer el arreglo de productos existentes
     let productosDesdeBackend = [];
     let carritoId = null;
     if (carritoExistente) {
@@ -282,37 +314,41 @@ export const CartProvider = ({ children }) => {
       if (Array.isArray(attrs.productos)) {
         console.log("addToCart - caso plano, count:", attrs.productos.length);
         productosDesdeBackend = attrs.productos.map((item, idx) => {
-          console.log(`addToCart - item ${idx} store.raw:`, item.store);
-
           const prodRel = item.producto?.data;
-          const prodId = prodRel?.id || item.producto;
+          const prodId = prodRel?.id || item.producto; // ID bien definido
           const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
           let relativeUrl = "";
           if (Array.isArray(imgArr) && imgArr.length > 0) {
             relativeUrl = imgArr[0].attributes.url;
           }
-          const existingUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
 
-          let storeId = item.store?.data?.id || null;
-          if (!storeId && prodRel?.attributes?.store_id) {
-            storeId = prodRel.attributes.store_id;
-            console.log(`addToCart - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+          // Extraer store desde producto
+          let storeObj = null;
+          const storeData = prodRel?.attributes?.store?.data;
+          if (storeData) {
+            storeObj = {
+              id: storeData.id,
+              name: storeData.attributes.name,
+            };
           }
-          console.log(`addToCart - plano [${idx}] productoID="${prodId}", storeID="${storeId}", existingUrl="${existingUrl}"`);
 
+          console.log(
+            `addToCart - plano [${idx}] nombre="${item.nombre}", tienda="${storeObj?.name}", existingUrl="${existingUrl}"`
+          );
           return {
             ...item,
             producto: prodId,
             imagen: existingUrl,
-            store: { id: storeId, name: null },
+            store: storeObj,
           };
         });
       } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
         console.log("addToCart - caso anidado, count:", attrs.productos.data.length);
         productosDesdeBackend = attrs.productos.data.map((p, idx) => {
           const itemAttrs = p.attributes;
-          console.log(`addToCart - itemAttrs ${idx} store.raw:`, itemAttrs.store);
-
           const prodRel = itemAttrs.producto?.data;
           const prodId = prodRel?.id;
           const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
@@ -320,20 +356,28 @@ export const CartProvider = ({ children }) => {
           if (Array.isArray(imgArr) && imgArr.length > 0) {
             relativeUrl = imgArr[0].attributes.url;
           }
-          const existingUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
 
-          let storeId = itemAttrs.store?.data?.id || null;
-          if (!storeId && prodRel?.attributes?.store_id) {
-            storeId = prodRel.attributes.store_id;
-            console.log(`addToCart - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+          // Extraer store desde producto
+          let storeObj = null;
+          const storeData = prodRel?.attributes?.store?.data;
+          if (storeData) {
+            storeObj = {
+              id: storeData.id,
+              name: storeData.attributes.name,
+            };
           }
-          console.log(`addToCart - anidado [${idx}] productoID="${prodId}", storeID="${storeId}", existingUrl="${existingUrl}"`);
 
+          console.log(
+            `addToCart - anidado [${idx}] nombre="${itemAttrs.nombre}", tienda="${storeObj?.name}", existingUrl="${existingUrl}"`
+          );
           return {
             ...itemAttrs,
             producto: prodId,
             imagen: existingUrl,
-            store: { id: storeId, name: null },
+            store: storeObj,
           };
         });
       } else {
@@ -342,32 +386,7 @@ export const CartProvider = ({ children }) => {
     } else {
       console.log("addToCart - no existe carrito existente, se va a crear nuevo");
     }
-    console.log("addToCart - productosDesdeBackend resultante (sin nombre de tienda aún):", productosDesdeBackend);
-
-    // Completar nombres de store para los ítems existentes
-    const productosConStore = await Promise.all(
-      productosDesdeBackend.map(async (item, idx) => {
-        let updated = { ...item };
-        if (item.store.id) {
-          try {
-            const urlStore = `${process.env.REACT_APP_STRAPI_URL}/api/stores/${item.store.id}`;
-            console.log(`addToCart - fetch store para ítem ${idx}:`, urlStore);
-            const resStore = await fetch(urlStore);
-            console.log(`addToCart - store status para ítem ${idx}:`, resStore.status);
-            const jsonStore = await resStore.json();
-            console.log(`addToCart - store json para ítem ${idx}:`, JSON.stringify(jsonStore, null, 2));
-            const storeName = jsonStore.data.attributes.name;
-            updated.store.name = storeName;
-            console.log(`addToCart - ítem ${idx} tienda nombre:`, storeName);
-          } catch (e) {
-            console.error(`addToCart - error fetch store para ítem ${idx}:`, e);
-          }
-        } else {
-          console.log(`addToCart - ítem ${idx} sin storeId`);
-        }
-        return updated;
-      })
-    );
+    console.log("addToCart - productosDesdeBackend resultante:", productosDesdeBackend);
 
     // 4) Calcular comisiones/envío para el nuevo producto
     const comisionPlataforma = precotizarPlataforma(producto.subtotal || producto.precio * cantidad);
@@ -396,10 +415,11 @@ export const CartProvider = ({ children }) => {
       totalItem
     );
 
-    // 5) Fusionar en memoria
-    let mergedItems = [...productosConStore];
+    // 5) Fusionar en memoria, ahora detectando correctamente por item.producto
+    let mergedItems = [...productosDesdeBackend];
     const existingIndex = mergedItems.findIndex((i) => i.producto === producto.id);
     if (existingIndex !== -1) {
+      // Si existe, solo actualizamos cantidad + montos
       const i = mergedItems[existingIndex];
       const nuevaCantidad = i.cantidad + cantidad;
       const nuevoSubtotal = i.precio_unitario * nuevaCantidad;
@@ -414,7 +434,7 @@ export const CartProvider = ({ children }) => {
       };
       console.log("addToCart - existing actualizado:", mergedItems[existingIndex]);
     } else {
-      // Si no existía, lo agregamos como nuevo. Intentamos usar producto.store_id para nombre
+      // Si no existía, lo agregamos como nuevo, incluyendo store
       const newItem = {
         producto: producto.id,
         nombre: producto.nombre,
@@ -428,21 +448,8 @@ export const CartProvider = ({ children }) => {
         comisionStripe,
         envio,
         total: totalItem,
-        store: { id: producto.store_id || null, name: null },
+        store: storeObjFromProd,
       };
-      if (producto.store_id) {
-        try {
-          const urlStore = `${process.env.REACT_APP_STRAPI_URL}/api/stores/${producto.store_id}`;
-          console.log(`addToCart - fetch store for newItem:`, urlStore);
-          const resStore = await fetch(urlStore);
-          console.log(`addToCart - store status for newItem:`, resStore.status);
-          const jsonStore = await resStore.json();
-          console.log(`addToCart - store json for newItem:`, JSON.stringify(jsonStore, null, 2));
-          newItem.store.name = jsonStore.data.attributes.name;
-        } catch (e) {
-          console.error("addToCart - error fetch store for newItem:", e);
-        }
-      }
       console.log("addToCart - newItem a agregar:", newItem);
       mergedItems.push(newItem);
     }
@@ -466,7 +473,7 @@ export const CartProvider = ({ children }) => {
       comisionPlataforma: item.comisionPlataforma,
       total: item.total,
       imagen_predeterminada: item.imagen_predeterminada || null,
-      store: item.store.id || null,
+      store: item.store?.id || null,
     }));
     console.log("addToCart - productosParaPayload:", productosParaPayload);
 
@@ -518,9 +525,7 @@ export const CartProvider = ({ children }) => {
     try {
       const urlFetch = `${process.env.REACT_APP_STRAPI_URL}/api/carritos?filters[usuario_email][$eq]=${encodeURIComponent(
         user.email
-      )}&filters[estado][$eq]=activo
-&populate[productos][populate][store]=*
-&populate[productos][populate][producto][populate]=imagen_predeterminada`;
+      )}&filters[estado][$eq]=activo&populate[productos][populate][producto][populate]=imagen_predeterminada,store`;
       console.log("updateQuantity - URL fetch carrito:", urlFetch);
 
       const res = await fetch(urlFetch);
@@ -535,7 +540,7 @@ export const CartProvider = ({ children }) => {
       carritoExistente = null;
     }
 
-    // 2) Extraer productosDesdeBackend y completar store.id / store.name
+    // 2) Extraer productosDesdeBackend
     let productosDesdeBackend = [];
     let carritoId = null;
     if (carritoExistente) {
@@ -546,37 +551,42 @@ export const CartProvider = ({ children }) => {
       if (Array.isArray(attrs.productos)) {
         console.log("updateQuantity - caso plano, count:", attrs.productos.length);
         productosDesdeBackend = attrs.productos.map((item, idx) => {
-          console.log(`updateQuantity - item ${idx} store.raw:`, item.store);
-
           const prodRel = item.producto?.data;
-          const prodId = prodRel?.id || item.producto;
+          const prodId = prodRel?.id || item.producto; // ID siempre
           const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
           let relativeUrl = "";
           if (Array.isArray(imgArr) && imgArr.length > 0) {
             relativeUrl = imgArr[0].attributes.url;
           }
-          const existingUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
 
-          let storeId = item.store?.data?.id || null;
-          if (!storeId && prodRel?.attributes?.store_id) {
-            storeId = prodRel.attributes.store_id;
-            console.log(`updateQuantity - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+          // Extraer store desde producto
+          let storeObj = null;
+          const storeData = prodRel?.attributes?.store?.data;
+          if (storeData) {
+            storeObj = {
+              id: storeData.id,
+              name: storeData.attributes.name,
+            };
           }
-          console.log(`updateQuantity - plano [${idx}] productoID="${prodId}", storeID="${storeId}", existingUrl="${existingUrl}"`);
 
+          console.log(
+            `updateQuantity - plano [${idx}] nombre="${item.nombre}", tienda="${storeObj?.name}", existingUrl="${existingUrl}"`
+          );
           return {
             ...item,
             producto: prodId,
+            imagen_predeterminada: item.imagen_predeterminada?.id || null,
             imagen: existingUrl,
-            store: { id: storeId, name: null },
+            store: storeObj,
           };
         });
       } else if (attrs.productos && Array.isArray(attrs.productos.data)) {
         console.log("updateQuantity - caso anidado, count:", attrs.productos.data.length);
         productosDesdeBackend = attrs.productos.data.map((p, idx) => {
           const itemAttrs = p.attributes;
-          console.log(`updateQuantity - itemAttrs ${idx} store.raw:`, itemAttrs.store);
-
           const prodRel = itemAttrs.producto?.data;
           const prodId = prodRel?.id;
           const imgArr = prodRel?.attributes?.imagen_predeterminada?.data;
@@ -584,20 +594,29 @@ export const CartProvider = ({ children }) => {
           if (Array.isArray(imgArr) && imgArr.length > 0) {
             relativeUrl = imgArr[0].attributes.url;
           }
-          const existingUrl = relativeUrl ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}` : "";
+          const existingUrl = relativeUrl
+            ? `${process.env.REACT_APP_STRAPI_URL}${relativeUrl}`
+            : "";
 
-          let storeId = itemAttrs.store?.data?.id || null;
-          if (!storeId && prodRel?.attributes?.store_id) {
-            storeId = prodRel.attributes.store_id;
-            console.log(`updateQuantity - ítem ${idx} cae a producto.attributes.store_id:`, storeId);
+          // Extraer store desde producto
+          let storeObj = null;
+          const storeData = prodRel?.attributes?.store?.data;
+          if (storeData) {
+            storeObj = {
+              id: storeData.id,
+              name: storeData.attributes.name,
+            };
           }
-          console.log(`updateQuantity - anidado [${idx}] productoID="${prodId}", storeID="${storeId}", existingUrl="${existingUrl}"`);
 
+          console.log(
+            `updateQuantity - anidado [${idx}] nombre="${itemAttrs.nombre}", tienda="${storeObj?.name}", existingUrl="${existingUrl}"`
+          );
           return {
             ...itemAttrs,
             producto: prodId,
+            imagen_predeterminada: itemAttrs.imagen_predeterminada?.data?.id || null,
             imagen: existingUrl,
-            store: { id: storeId, name: null },
+            store: storeObj,
           };
         });
       } else {
@@ -606,35 +625,10 @@ export const CartProvider = ({ children }) => {
     } else {
       console.log("updateQuantity - no existe carrito existente");
     }
-    console.log("updateQuantity - productosDesdeBackend resultante (sin nombre):", productosDesdeBackend);
-
-    // Completar nombres de store para los ítems existentes
-    const productosConStore = await Promise.all(
-      productosDesdeBackend.map(async (item, idx) => {
-        let updated = { ...item };
-        if (item.store.id) {
-          try {
-            const urlStore = `${process.env.REACT_APP_STRAPI_URL}/api/stores/${item.store.id}`;
-            console.log(`updateQuantity - fetch store para ítem ${idx}:`, urlStore);
-            const resStore = await fetch(urlStore);
-            console.log(`updateQuantity - store status para ítem ${idx}:`, resStore.status);
-            const jsonStore = await resStore.json();
-            console.log(`updateQuantity - store json para ítem ${idx}:`, JSON.stringify(jsonStore, null, 2));
-            const storeName = jsonStore.data.attributes.name;
-            updated.store.name = storeName;
-            console.log(`updateQuantity - ítem ${idx} tienda nombre:`, storeName);
-          } catch (e) {
-            console.error(`updateQuantity - error fetch store para ítem ${idx}:`, e);
-          }
-        } else {
-          console.log(`updateQuantity - ítem ${idx} sin storeId`);
-        }
-        return updated;
-      })
-    );
+    console.log("updateQuantity - productosDesdeBackend resultante:", productosDesdeBackend);
 
     // 3) Fusionar en memoria cambiando solo la cantidad
-    const tempItems = productosConStore
+    const tempItems = productosDesdeBackend
       .map((i) => {
         if (i.producto === productoId) {
           const nuevaCantidad = cantidad;
@@ -746,7 +740,7 @@ export const CartProvider = ({ children }) => {
       comisionPlataforma: item.comisionPlataforma,
       total: item.total,
       imagen_predeterminada: item.imagen_predeterminada || null,
-      store: item.store.id || null,
+      store: item.store?.id || null,
     }));
     console.log("updateQuantity - productosParaPayload:", productosParaPayload);
 
