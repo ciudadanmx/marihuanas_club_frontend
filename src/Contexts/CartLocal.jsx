@@ -125,6 +125,16 @@ export const guardarCarritoLocal = async (productoOrId, cantidad) => {
     }
 
     localStorage.setItem("carrito", JSON.stringify(carritoLocal));
+
+    
+    const itemCount = carritoLocal.reduce((acc, item) => acc + item.cantidad, 0);
+localStorage.setItem("itemCount", itemCount);
+console.log("🔢 itemCount actualizado en localStorage:", itemCount);
+
+// 🔔 Emitimos evento personalizado para notificar cambios (React no se entera solo)
+window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount } }));
+
+
     console.log("💾 carritoLocal guardado en localStorage:", carritoLocal);
   } catch (error) {
     console.error("⚠️ Error en guardarCarritoLocal:", error);
