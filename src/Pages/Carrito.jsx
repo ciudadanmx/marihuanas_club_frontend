@@ -133,6 +133,12 @@ const Carrito = () => {
       }
       localStorage.setItem("carrito", JSON.stringify(carritoLocal));
 
+
+      const itemCount = carritoLocal.reduce((acc, item) => acc + item.cantidad, 0);
+localStorage.setItem("itemCount", itemCount);
+console.log("🧮 updateLocalQuantity - itemCount actualizado:", itemCount);
+window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount } }));
+
       setLocalItems((prev) => {
         const nuevos = [...prev];
         const idxPrev = nuevos.findIndex((item) => item.producto === productoId);
