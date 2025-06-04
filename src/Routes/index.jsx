@@ -6,6 +6,7 @@ import Perfil from '../components/Usuarios/Perfil.jsx';
 import CallbackPage from '../Pages/CallbackPage';
 import Clubs from '../Pages/Clubs.jsx';
 import Membresias from '../Pages/Membresias.jsx';
+import MiMembresia from '../Pages/MiMembresia.jsx';
 import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
 import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
 import RegistroTienda from '../Pages/RegistroTienda.jsx';
@@ -26,6 +27,7 @@ const Rutas = () => (
               <Route path='/clubs' element={<Clubs />} />
               <Route path='/agregar-club' element={<AgregarClubWrapper />} />
               <Route path='/membresias' element={<Membresias />} />
+              <Route path='/mi-membresia' element={<MiMembresia />} />
               <Route path='/registro-vendedor' element={<RegistroTienda />} />
               <Route path='/agregar-producto' element={<AgregarProducto />} />
               <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} />
