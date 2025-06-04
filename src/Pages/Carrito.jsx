@@ -63,11 +63,18 @@ const Carrito = () => {
 
   const handleVaciarCarrito = async () => {
     if (!isAuthenticated) {
-      localStorage.removeItem("carrito");
-      setLocalItems([]);
-      setLocalTotal(0);
-      return;
-    }
+  localStorage.removeItem("carrito");
+  setLocalItems([]);
+  setLocalTotal(0);
+
+  // 🔢 También reiniciamos itemCount y notificamos
+  localStorage.setItem("itemCount", "0");
+  console.log("🧹 handleVaciarCarrito - carrito y itemCount eliminados");
+  window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount: 0 } }));
+
+  return;
+}
+
 
     if (!user?.email) {
       console.warn("No hay email de usuario. No puedo vaciar.");
