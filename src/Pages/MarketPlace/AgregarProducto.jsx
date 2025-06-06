@@ -4,16 +4,16 @@ import {
   Box, Typography, Button, Paper, Divider, Fade, Slide, Stepper, Step, StepLabel 
 } from '@mui/material';
 import { useAuth0 } from '@auth0/auth0-react';
-import '../styles/AgregarProducto.css';
-import useProductos from '../hooks/useProductos';
-import { useVolumetrico } from '../hooks/useVolumetrico';
-import { textoValido, validarPaso1, validarPaso2 } from '../utils/ValidacionesProducto';
-import { GuardarProducto } from '../utils/GuardarProducto';
-import usePasoProducto from '../hooks/usePasoProducto';
-import Paso1 from '../components/MarketPlace/AgregarProducto/Paso1'
-import Paso2 from '../components/MarketPlace/AgregarProducto/Paso2'
-import Paso3 from '../components/MarketPlace/AgregarProducto/Paso3'
-import Paso4 from '../components/MarketPlace/AgregarProducto/Paso4'
+import '../../styles/AgregarProducto.css';
+import useProductos from '../../hooks/useProductos';
+import { useVolumetrico } from '../../hooks/useVolumetrico';
+import { textoValido, validarPaso1, validarPaso2 } from '../../utils/ValidacionesProducto';
+import { GuardarProducto } from '../../utils/GuardarProducto';
+import usePasoProducto from '../../hooks/usePasoProducto';
+import Paso1 from '../../components/MarketPlace/AgregarProducto/Paso1'
+import Paso2 from '../../components/MarketPlace/AgregarProducto/Paso2'
+import Paso3 from '../../components/MarketPlace/AgregarProducto/Paso3'
+import Paso4 from '../../components/MarketPlace/AgregarProducto/Paso4'
 
 //función para crear el slug
 /* const slugify = (str) =>

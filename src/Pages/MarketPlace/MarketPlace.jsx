@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Box, Grid, Container, Typography } from '@mui/material';
-import Buscador from '../components/MarketPlace/Buscador';
-import ProductoCard from '../components/MarketPlace/ProductoCard';
-import BotonVender from '../components/MarketPlace/BotonVender';
-import CategoriasSlider from '../components/MarketPlace/CategoriasSlider';
-import { useCategorias } from '../hooks/useCategorias';
-import { useUbicacion } from '../hooks/useUbicacion';
-import useProductos from '../hooks/useProductos';
+import Buscador from '../../components/MarketPlace/Buscador';
+import ProductoCard from '../../components/MarketPlace/ProductoCard';
+import BotonVender from '../../components/MarketPlace/BotonVender';
+import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
+import { useCategorias } from '../../hooks/useCategorias';
+import { useUbicacion } from '../../hooks/useUbicacion';
+import useProductos from '../../hooks/useProductos';
 
 const MarketPlace = () => {
   const { getCategorias, loading: loadingCategorias } = useCategorias();

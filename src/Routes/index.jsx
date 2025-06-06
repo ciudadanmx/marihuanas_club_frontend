@@ -9,14 +9,14 @@ import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
 import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
 import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
-import RegistroTienda from '../Pages/RegistroTienda.jsx';
-import AgregarProducto from '../Pages/AgregarProducto.jsx';
+import RegistroTienda from '../Pages/MarketPlace/RegistroTienda.jsx';
+import AgregarProducto from '../Pages/MarketPlace/AgregarProducto.jsx';
 import PreguntasProducto from '../components/MarketPlace/PreguntasProducto.jsx';
-import MarketPlace from '../Pages/MarketPlace.jsx';
-import Tienda from '../Pages/Tienda.jsx';
-import Producto from '../Pages/Producto.jsx';
+import MarketPlace from '../Pages/MarketPlace/MarketPlace.jsx';
+import Tienda from '../Pages/MarketPlace/Tienda.jsx';
+import Producto from '../Pages/MarketPlace/Producto.jsx';
 import MiUbicacion from '../components/MiUbicacion';
-import Carrito from '../Pages/Carrito';
+import Carrito from '../Pages/MarketPlace/Carrito.jsx';
 
 const Rutas = () => (
     <Routes>

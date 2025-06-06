@@ -10,13 +10,13 @@ import {
   Divider,
 } from '@mui/material';
 //import { Add, Remove } from '@mui/icons-material';
-import useProductos from '../hooks/useProductos';
-import Resenas from '../components/MarketPlace/Resenas'
-import GaleriaImagenesProducto from '../components/MarketPlace/GaleriaImagenesProducto';
-import productoImg from '../assets/producto.png';
-import '../styles/Producto.css';
-import '../styles/DetalleProducto.css';
-import DetallesProducto from '../components/MarketPlace/DetalleProducto.jsx';
+import useProductos from '../../hooks/useProductos.jsx';
+import Resenas from '../../components/MarketPlace/Resenas.jsx'
+import GaleriaImagenesProducto from '../../components/MarketPlace/GaleriaImagenesProducto.jsx';
+import productoImg from '../../assets/producto.png';
+import '../../styles/Producto.css';
+import '../../styles/DetalleProducto.css';
+import DetallesProducto from '../../components/MarketPlace/DetalleProducto.jsx';
 
 
 const Producto = () => {

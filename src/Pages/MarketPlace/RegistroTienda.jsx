@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useStores } from "../hooks/useStores";
+import { useStores } from "../../hooks/useStores.jsx";
 import {
   Stepper, Step, StepLabel, Button, TextField,
   CircularProgress, Box, Typography
 } from "@mui/material";
 import { useAuth0 } from "@auth0/auth0-react";
-import { slugify } from "../utils/slugify.jsx";
+import { slugify } from "../../utils/slugify.jsx";
 
 const steps = ["Nombre de la tienda", "Conectar Stripe", "Conectar Mienvío"];
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useCart } from "../Contexts/CartContext";
+import { useCart } from "../../Contexts/CartContext";
 import { useAuth0 } from "@auth0/auth0-react";
-import "../styles/Carrito.css";
+import "../../styles/Carrito.css";
 
 const Carrito = () => {
   const { items, total, updateQuantity, clearCart } = useCart();

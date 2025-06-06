@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Box, IconButton, useMediaQuery } from '@mui/material';
 import CategoriaCard from './CategoriaCard';
-import './CategoriasSlider.css';
+import '../../styles/CategoriasSlider.css';
 
 const CategoriasSlider = ({ categorias }) => {
   const scrollRef = useRef();

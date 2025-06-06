@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useAuthInfo } from '../Contexts/AuthContext';
-import StoreImage from '../assets/agencia.png';
+import { useAuthInfo } from '../../Contexts/AuthContext';
+import StoreImage from '../../assets/agencia.png';
 import AgregarProducto from './AgregarProducto';
-import PreguntasProducto from '../components/MarketPlace/PreguntasProducto';
+import PreguntasProducto from '../../components/MarketPlace/PreguntasProducto';
 
 const Tienda = () => {
   const { slug } = useParams();
