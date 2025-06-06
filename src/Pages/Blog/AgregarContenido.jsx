@@ -1,5 +1,3 @@
-// src/Pages/Blog/AgregarContenido.jsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -20,8 +18,11 @@ import dayjs from 'dayjs';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useContenido } from '../../hooks/useContenido';
+import { useSnackbar } from 'notistack';
 
-export default function AgregarContenido() {
+
+const AgregarContenido = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const {
     categorias,
     crearContenido,
@@ -36,6 +37,8 @@ export default function AgregarContenido() {
     control,
     reset,
     watch,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -76,6 +79,11 @@ export default function AgregarContenido() {
     const files = e.target.files;
     setPortadaFiles(files);
     setPortadaPreview(crearPreviews(files));
+    if (files.length === 0) {
+      setError('portada', { type: 'required', message: 'La portada es obligatoria' });
+    } else {
+      clearErrors('portada');
+    }
   };
 
   const handleGaleriaLibreChange = (e) => {
@@ -88,6 +96,11 @@ export default function AgregarContenido() {
     const files = e.target.files;
     setGaleriaRestringidaFiles(files);
     setGaleriaRestringidaPreview(crearPreviews(files));
+    if (watch('restringido') && files.length === 0) {
+      setError('galeriaRestringida', { type: 'required', message: 'La galería restringida es obligatoria si está restringido' });
+    } else {
+      clearErrors('galeriaRestringida');
+    }
   };
 
   const handleVideosLibresChange = (e) => {
@@ -100,10 +113,43 @@ export default function AgregarContenido() {
     const files = e.target.files;
     setVideosRestringidosFiles(files);
     setVideosRestringidosPreview(crearPreviews(files));
+    if (watch('restringido') && files.length === 0) {
+      setError('videosRestringidos', { type: 'required', message: 'Los videos restringidos son obligatorios si está restringido' });
+    } else {
+      clearErrors('videosRestringidos');
+    }
+  };
+
+  // Validación antes de enviar para archivos
+  const validarArchivos = () => {
+    let valido = true;
+    if (portadaFiles.length === 0) {
+      setError('portada', { type: 'required', message: 'La portada es obligatoria' });
+      valido = false;
+    }
+    if (watch('restringido')) {
+      if (galeriaRestringidaFiles.length === 0) {
+        setError('galeriaRestringida', { type: 'required', message: 'La galería restringida es obligatoria si está restringido' });
+        valido = false;
+      }
+      if (videosRestringidosFiles.length === 0) {
+        setError('videosRestringidos', { type: 'required', message: 'Los videos restringidos son obligatorios si está restringido' });
+        valido = false;
+      }
+    } else {
+      clearErrors(['galeriaRestringida', 'videosRestringidos']);
+    }
+    return valido;
   };
 
   const onSubmit = async (data) => {
     setMensaje('');
+    clearErrors();
+    if (!validarArchivos()) {
+        enqueueSnackbar('Por favor corrige los errores en los archivos', { variant: 'error' });
+        return;
+    }
+
     setSubiendo(true);
 
     try {
@@ -143,6 +189,7 @@ export default function AgregarContenido() {
       await crearContenido(payload, media);
 
       setMensaje('Contenido creado correctamente');
+      enqueueSnackbar('Contenido creado correctamente', { variant: 'success' });
       reset({
         titulo: '',
         resumen: '',
@@ -166,11 +213,14 @@ export default function AgregarContenido() {
       setVideosRestringidosPreview([]);
     } catch (err) {
       console.error(err);
+      enqueueSnackbar(`Error: ${err.message}`, { variant: 'error' });
       setMensaje(`Error: ${err.message}`);
     } finally {
       setSubiendo(false);
     }
   };
+
+  const restringido = watch('restringido');
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -189,21 +239,15 @@ export default function AgregarContenido() {
               <TextField
                 label="Título"
                 fullWidth
-                {...register('titulo', { required: true })}
+                {...register('titulo', { required: 'Título obligatorio' })}
                 error={!!errors.titulo}
-                helperText={errors.titulo && 'Título obligatorio'}
+                helperText={errors.titulo?.message}
               />
             </Grid>
 
             {/* Resumen */}
             <Grid item xs={12}>
-              <TextField
-                label="Resumen"
-                fullWidth
-                multiline
-                rows={2}
-                {...register('resumen')}
-              />
+              <TextField label="Resumen" fullWidth multiline rows={2} {...register('resumen')} />
             </Grid>
 
             {/* Contenido libre (WYSIWYG) */}
@@ -238,8 +282,8 @@ export default function AgregarContenido() {
                     theme="snow"
                     value={field.value}
                     onChange={field.onChange}
-                    readOnly={!watch('restringido')}
-                    style={{ height: '200px', marginBottom: '1rem', opacity: watch('restringido') ? 1 : 0.5 }}
+                    style={{ height: '200px', marginBottom: '1rem' }}
+                    readOnly={!restringido}
                   />
                 )}
               />
@@ -249,29 +293,34 @@ export default function AgregarContenido() {
             <Grid item xs={12}>
               <FormControlLabel
                 control={<Checkbox {...register('restringido')} />}
-                label="¿Restringido?"
+                label="¿Contenido restringido?"
               />
             </Grid>
 
-            {/* Tags */}
-            <Grid item xs={12}>
+            {/* Status */}
+            <Grid item xs={12} sm={6}>
               <TextField
-                label="Tags (separados por coma)"
+                label="Status"
+                select
                 fullWidth
-                {...register('tags')}
-              />
+                defaultValue="borrador"
+                {...register('status')}
+              >
+                <MenuItem value="borrador">Borrador</MenuItem>
+                <MenuItem value="publicado">Publicado</MenuItem>
+                <MenuItem value="archivado">Archivado</MenuItem>
+              </TextField>
             </Grid>
 
             {/* Categoría */}
             <Grid item xs={12} sm={6}>
               <TextField
-                select
                 label="Categoría"
+                select
                 fullWidth
-                defaultValue=""
-                {...register('categoria', { required: true })}
+                {...register('categoria', { required: 'Categoría obligatoria' })}
                 error={!!errors.categoria}
-                helperText={errors.categoria && 'Selecciona una categoría'}
+                helperText={errors.categoria?.message}
               >
                 {categorias.map((cat) => (
                   <MenuItem key={cat.id} value={cat.id}>
@@ -281,204 +330,210 @@ export default function AgregarContenido() {
               </TextField>
             </Grid>
 
-            {/* Estado */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                select
-                label="Estado"
-                fullWidth
-                defaultValue="borrador"
-                {...register('status')}
-              >
-                <MenuItem value="borrador">Borrador</MenuItem>
-                <MenuItem value="publicado">Publicado</MenuItem>
-              </TextField>
-            </Grid>
-
-            {/* Fecha publicación */}
+            {/* Fecha de publicación */}
             <Grid item xs={12} sm={6}>
               <Controller
-                name="fecha_publicacion"
                 control={control}
+                name="fecha_publicacion"
                 render={({ field }) => (
                   <DatePicker
                     label="Fecha de publicación"
-                    {...field}
+                    value={field.value}
                     onChange={(date) => field.onChange(date)}
-                    slotProps={{
-                      textField: { fullWidth: true },
-                    }}
+                    renderInput={(params) => <TextField fullWidth {...params} />}
                   />
                 )}
               />
             </Grid>
 
-            {/* Portada */}
+            {/* Tags */}
             <Grid item xs={12} sm={6}>
-              <InputLabel>Portada (imagen única)</InputLabel>
+              <TextField
+                label="Tags (separados por coma)"
+                fullWidth
+                {...register('tags')}
+              />
+            </Grid>
+
+            {/* Portada (archivo único) */}
+            <Grid item xs={12}>
+              <InputLabel required>Portada (imagen o video)</InputLabel>
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,video/*"
                 onChange={handlePortadaChange}
-                style={{ marginTop: '0.5rem' }}
+                multiple={false}
+                style={{ marginTop: 8, marginBottom: 8 }}
               />
-              {portadaPreview.length > 0 && (
-                <Box mt={1}>
-                  <img
-                    src={portadaPreview[0].url}
-                    alt="Portada preview"
-                    style={{ maxWidth: '100%', borderRadius: 4 }}
-                  />
-                </Box>
+              {errors.portada && (
+                <Typography color="error" variant="body2">
+                  {errors.portada.message}
+                </Typography>
               )}
+              {portadaPreview.length > 0 &&
+                portadaPreview.map((file, index) =>
+                  file.type.startsWith('image/') ? (
+                    <img
+                      key={index}
+                      src={file.url}
+                      alt={`Portada Preview ${index}`}
+                      style={{ maxHeight: 150, marginRight: 10 }}
+                    />
+                  ) : (
+                    <video
+                      key={index}
+                      src={file.url}
+                      controls
+                      style={{ maxHeight: 150, marginRight: 10 }}
+                    />
+                  )
+                )}
             </Grid>
 
-            {/* Galería Libre */}
-            <Grid item xs={12} sm={6}>
-              <InputLabel>Galería Libre (imágenes/videos)</InputLabel>
+            {/* Galería libre (archivos múltiples) */}
+            <Grid item xs={12}>
+              <InputLabel>Galería libre (imágenes/videos)</InputLabel>
               <input
                 type="file"
                 accept="image/*,video/*"
-                multiple
                 onChange={handleGaleriaLibreChange}
-                style={{ marginTop: '0.5rem' }}
-              />
-              {galeriaLibrePreview.length > 0 && (
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {galeriaLibrePreview.map((item, index) => (
-                    <Box key={index} width={100}>
-                      {item.type.startsWith('image') ? (
-                        <img
-                          src={item.url}
-                          alt={`Galería libre ${index}`}
-                          style={{ width: '100%', borderRadius: 4 }}
-                        />
-                      ) : (
-                        <video width="100%" controls style={{ borderRadius: 4 }}>
-                          <source src={item.url} type={item.type} />
-                          Tu navegador no soporta el video.
-                        </video>
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Grid>
-
-            {/* Galería Restringida */}
-            <Grid item xs={12} sm={6}>
-              <InputLabel>Galería Restringida (imágenes/videos)</InputLabel>
-              <input
-                type="file"
-                accept="image/*,video/*"
                 multiple
-                onChange={handleGaleriaRestringidaChange}
-                disabled={!watch('restringido')}
-                style={{ marginTop: '0.5rem' }}
+                style={{ marginTop: 8, marginBottom: 8 }}
               />
-              {galeriaRestringidaPreview.length > 0 && (
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {galeriaRestringidaPreview.map((item, index) => (
-                    <Box key={index} width={100}>
-                      {item.type.startsWith('image') ? (
-                        <img
-                          src={item.url}
-                          alt={`Galería restringida ${index}`}
-                          style={{ width: '100%', borderRadius: 4 }}
-                        />
-                      ) : (
-                        <video width="100%" controls style={{ borderRadius: 4 }}>
-                          <source src={item.url} type={item.type} />
-                          Tu navegador no soporta el video.
-                        </video>
-                      )}
-                    </Box>
-                  ))}
-                </Box>
-              )}
+              {galeriaLibrePreview.length > 0 &&
+                galeriaLibrePreview.map((file, index) =>
+                  file.type.startsWith('image/') ? (
+                    <img
+                      key={index}
+                      src={file.url}
+                      alt={`Galería libre ${index}`}
+                      style={{ maxHeight: 100, marginRight: 10 }}
+                    />
+                  ) : (
+                    <video
+                      key={index}
+                      src={file.url}
+                      controls
+                      style={{ maxHeight: 100, marginRight: 10 }}
+                    />
+                  )
+                )}
             </Grid>
 
-            {/* Videos Libres */}
-            <Grid item xs={12} sm={6}>
-              <InputLabel>Videos Libres</InputLabel>
+            {/* Galería restringida (archivos múltiples) - solo si restringido */}
+            {restringido && (
+              <Grid item xs={12}>
+                <InputLabel required>Galería restringida (imágenes/videos)</InputLabel>
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleGaleriaRestringidaChange}
+                  multiple
+                  style={{ marginTop: 8, marginBottom: 8 }}
+                />
+                {errors.galeriaRestringida && (
+                  <Typography color="error" variant="body2">
+                    {errors.galeriaRestringida.message}
+                  </Typography>
+                )}
+                {galeriaRestringidaPreview.length > 0 &&
+                  galeriaRestringidaPreview.map((file, index) =>
+                    file.type.startsWith('image/') ? (
+                      <img
+                        key={index}
+                        src={file.url}
+                        alt={`Galería restringida ${index}`}
+                        style={{ maxHeight: 100, marginRight: 10 }}
+                      />
+                    ) : (
+                      <video
+                        key={index}
+                        src={file.url}
+                        controls
+                        style={{ maxHeight: 100, marginRight: 10 }}
+                      />
+                    )
+                  )}
+              </Grid>
+            )}
+
+            {/* Videos libres (archivos múltiples) */}
+            <Grid item xs={12}>
+              <InputLabel>Videos libres</InputLabel>
               <input
                 type="file"
                 accept="video/*"
-                multiple
                 onChange={handleVideosLibresChange}
-                style={{ marginTop: '0.5rem' }}
-              />
-              {videosLibresPreview.length > 0 && (
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {videosLibresPreview.map((item, index) => (
-                    <Box key={index} width={120}>
-                      <video width="100%" controls style={{ borderRadius: 4 }}>
-                        <source src={item.url} type={item.type} />
-                        Tu navegador no soporta el video.
-                      </video>
-                    </Box>
-                  ))}
-                </Box>
-              )}
-            </Grid>
-
-            {/* Videos Restringidos */}
-            <Grid item xs={12} sm={6}>
-              <InputLabel>Videos Restringidos</InputLabel>
-              <input
-                type="file"
-                accept="video/*"
                 multiple
-                onChange={handleVideosRestringidosChange}
-                disabled={!watch('restringido')}
-                style={{ marginTop: '0.5rem' }}
+                style={{ marginTop: 8, marginBottom: 8 }}
               />
-              {videosRestringidosPreview.length > 0 && (
-                <Box mt={1} display="flex" flexWrap="wrap" gap={1}>
-                  {videosRestringidosPreview.map((item, index) => (
-                    <Box key={index} width={120}>
-                      <video width="100%" controls style={{ borderRadius: 4 }}>
-                        <source src={item.url} type={item.type} />
-                        Tu navegador no soporta el video.
-                      </video>
-                    </Box>
-                  ))}
-                </Box>
-              )}
+              {videosLibresPreview.length > 0 &&
+                videosLibresPreview.map((file, index) => (
+                  <video
+                    key={index}
+                    src={file.url}
+                    controls
+                    style={{ maxHeight: 100, marginRight: 10 }}
+                  />
+                ))}
             </Grid>
 
-            {/* Botón enviar */}
+            {/* Videos restringidos (archivos múltiples) - solo si restringido */}
+            {restringido && (
+              <Grid item xs={12}>
+                <InputLabel required>Videos restringidos</InputLabel>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideosRestringidosChange}
+                  multiple
+                  style={{ marginTop: 8, marginBottom: 8 }}
+                />
+                {errors.videosRestringidos && (
+                  <Typography color="error" variant="body2">
+                    {errors.videosRestringidos.message}
+                  </Typography>
+                )}
+                {videosRestringidosPreview.length > 0 &&
+                  videosRestringidosPreview.map((file, index) => (
+                    <video
+                      key={index}
+                      src={file.url}
+                      controls
+                      style={{ maxHeight: 100, marginRight: 10 }}
+                    />
+                  ))}
+              </Grid>
+            )}
+
+            {/* Botón guardar */}
             <Grid item xs={12}>
               <Button
                 variant="contained"
                 color="primary"
                 type="submit"
-                startIcon={<span className="material-icons">save</span>}
                 disabled={subiendo || loadingHook}
-                fullWidth
+                startIcon={
+                  subiendo || loadingHook ? (
+                    <span className="material-icons">hourglass_top</span>
+                  ) : (
+                    <span className="material-icons">save</span>
+                  )
+                }
               >
-                {subiendo ? 'Subiendo...' : 'Crear Contenido'}
+                {subiendo || loadingHook ? 'Subiendo...' : 'Guardar contenido'}
               </Button>
             </Grid>
 
-            {/* Mensaje de estado */}
+            {/* Mensaje */}
             {mensaje && (
               <Grid item xs={12}>
-                <Typography color={mensaje.startsWith('Error') ? 'error' : 'primary'}>
+                <Typography
+                  variant="body1"
+                  color={mensaje.toLowerCase().includes('error') ? 'error' : 'primary'}
+                >
                   {mensaje}
                 </Typography>
-              </Grid>
-            )}
-
-            {/* Cargando categorías / error hook */}
-            {loadingHook && (
-              <Grid item xs={12}>
-                <Typography>Cargando categorías...</Typography>
-              </Grid>
-            )}
-            {errorHook && (
-              <Grid item xs={12}>
-                <Typography color="error">Error: {errorHook.message}</Typography>
               </Grid>
             )}
           </Grid>
@@ -486,4 +541,6 @@ export default function AgregarContenido() {
       </Paper>
     </Container>
   );
-}
+};
+
+export default AgregarContenido;
