@@ -1,4 +1,5 @@
 // src/hooks/useContenido.jsx
+
 import { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { slugify } from '../utils/slugify';
@@ -22,19 +23,15 @@ export function useContenido() {
   useEffect(() => {
     fetchContenidos();
     fetchCategorias();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ------- OBTENER CONTENIDOS -------
   async function fetchContenidos() {
     try {
       setLoading(true);
       const res = await fetch(`${API_URL}/contenidos?populate=deep`);
       const data = await res.json();
 
-      // Si data.data es null o indefinido, lo tratamos como arreglo vacío
       const items = Array.isArray(data.data) ? data.data : [];
-
       const parsed = items.map(item => {
         const a = item.attributes;
         const cat = a.categoria?.data;
@@ -60,7 +57,7 @@ export function useContenido() {
           videos_restringidos: Array.isArray(a.videos_restringidos?.data)
             ? a.videos_restringidos.data.map(v => v.attributes?.url)
             : [],
-          tags: a.tags,
+          tags: Array.isArray(a.tags) ? a.tags.join(',') : (a.tags || ''),
           fecha_publicacion: a.fecha_publicacion,
           resumen: a.resumen,
           categoria: cat
@@ -82,15 +79,12 @@ export function useContenido() {
     }
   }
 
-  // ------- OBTENER CATEGORÍAS -------
   async function fetchCategorias() {
     try {
-      const res = await fetch(`${API_URL}/categorias`);
+      const res = await fetch(`${API_URL}/categorias-contenidos`);
       const data = await res.json();
 
-      // Si data.data es null o indefinido, lo tratamos como arreglo vacío
       const cats = Array.isArray(data.data) ? data.data : [];
-
       const parsed = cats.map(cat => ({
         id: cat.id,
         nombre: cat.attributes.nombre,
@@ -104,19 +98,21 @@ export function useContenido() {
     }
   }
 
-  // ------- CREAR CATEGORÍA -------
   async function crearCategoria(nombre) {
     const slug = slugify(nombre, { lower: true });
-    const res = await fetch(`${API_URL}/categorias`, {
+    const res = await fetch(`${API_URL}/categorias-contenidos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: { nombre, slug } }),
     });
-    if (!res.ok) throw new Error('Error al crear categoría');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al crear categoría:', errData?.error || errData);
+      throw new Error('No se pudo crear la categoría');
+    }
     await fetchCategorias();
   }
 
-  // ------- SUBIR MEDIA -------
   async function subirMedia(files) {
     const formData = new FormData();
     [...files].forEach(file => formData.append('files', file));
@@ -126,66 +122,89 @@ export function useContenido() {
       body: formData,
     });
 
-    if (!res.ok) throw new Error('Error al subir archivos');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al subir archivos:', errData?.error || errData);
+      throw new Error('No se pudo subir el archivo');
+    }
+
     const data = await res.json();
-    // Strapi devuelve un array de objetos con { id, ... }
-    // Así que devolvemos solo los IDs para relacionarlos luego en el contenido
     return data.map(file => file.id);
   }
 
-  // ------- CREAR CONTENIDO -------
   async function crearContenido(nuevo, media = {}) {
-    if (!esEditor) throw new Error('Se requiere rol editor');
+    if (!esEditor) throw new Error('Permiso denegado: se requiere rol editor');
 
     const slug = slugify(nuevo.titulo, { lower: true });
-    const contenido = { ...nuevo, slug };
+    const contenido = {
+      ...nuevo,
+      slug,
+      tags: Array.isArray(nuevo.tags) ? nuevo.tags.join(',') : (nuevo.tags || ''),
+      categoria: Number(nuevo.categoria) || null,
+    };
 
-    // Agrega IDs de medios si existen
     if (media.portada) contenido.portada = media.portada[0];
     if (media.galeria_libre) contenido.galeria_libre = media.galeria_libre;
     if (media.galeria_restringida) contenido.galeria_restringida = media.galeria_restringida;
     if (media.videos_libres) contenido.videos_libres = media.videos_libres;
     if (media.videos_restringidos) contenido.videos_restringidos = media.videos_restringidos;
 
-    const res = await fetch(`${API_URL}/contenidos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: contenido }),
-    });
-    if (!res.ok) throw new Error('Error al crear contenido');
-    await fetchContenidos();
+    try {
+      const res = await fetch(`${API_URL}/contenidos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: contenido }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        console.error('Error al crear contenido:', errData?.error || errData);
+        throw new Error('No se pudo crear el contenido');
+      }
+      await fetchContenidos();
+    } catch (err) {
+      console.error('Excepción al crear contenido:', err);
+      throw err;
+    }
   }
 
-  // ------- EDITAR CONTENIDO -------
   async function editarContenido(id, cambios, media = {}) {
-    const data = { ...cambios };
+    const dataCampos = {
+      ...cambios,
+      tags: Array.isArray(cambios.tags) ? cambios.tags.join(',') : (cambios.tags || ''),
+      categoria: Number(cambios.categoria) || null,
+    };
 
-    // Agrega media si hay nuevos uploads
-    if (media.portada) data.portada = media.portada[0];
-    if (media.galeria_libre) data.galeria_libre = media.galeria_libre;
-    if (media.galeria_restringida) data.galeria_restringida = media.galeria_restringida;
-    if (media.videos_libres) data.videos_libres = media.videos_libres;
-    if (media.videos_restringidos) data.videos_restringidos = media.videos_restringidos;
+    if (media.portada) dataCampos.portada = media.portada[0];
+    if (media.galeria_libre) dataCampos.galeria_libre = media.galeria_libre;
+    if (media.galeria_restringida) dataCampos.galeria_restringida = media.galeria_restringida;
+    if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
+    if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
 
     const res = await fetch(`${API_URL}/contenidos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ data: dataCampos }),
     });
-    if (!res.ok) throw new Error('Error al editar contenido');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al editar contenido:', errData?.error || errData);
+      throw new Error('No se pudo editar el contenido');
+    }
     await fetchContenidos();
   }
 
-  // ------- ELIMINAR CONTENIDO -------
   async function eliminarContenido(id) {
     const res = await fetch(`${API_URL}/contenidos/${id}`, {
       method: 'DELETE',
     });
-    if (!res.ok) throw new Error('Error al eliminar contenido');
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al eliminar contenido:', errData?.error || errData);
+      throw new Error('No se pudo eliminar el contenido');
+    }
     await fetchContenidos();
   }
 
-  // ------- OBTENER CONTENIDO POR ID (incluye filtrar según membresía) -------
   function getContenidoById(id) {
     const c = contenidos.find(c => c.id === id);
     if (!c) return null;
@@ -206,18 +225,16 @@ export function useContenido() {
     };
   }
 
-  // ------- FILTRAR POR CATEGORÍA -------
   function filtrarPorCategoria(slug) {
     return contenidos.filter(c => c.categoria?.slug === slug);
   }
 
-  // ------- BUSCAR POR TEXTO -------
   function buscarPorTexto(texto) {
     const t = texto.toLowerCase();
     return contenidos.filter(c =>
       c.titulo.toLowerCase().includes(t) ||
       c.resumen?.toLowerCase().includes(t) ||
-      c.tags?.join(',').toLowerCase().includes(t)
+      c.tags.toLowerCase().includes(t)
     );
   }
 
@@ -226,11 +243,15 @@ export function useContenido() {
     categorias,
     loading,
     error,
+    tieneMembresia,
+    esEditor,
+    fetchContenidos,
+    fetchCategorias,
     crearCategoria,
+    subirMedia,
     crearContenido,
     editarContenido,
     eliminarContenido,
-    subirMedia,
     getContenidoById,
     filtrarPorCategoria,
     buscarPorTexto,
