@@ -17,6 +17,7 @@ const planes = [
     destacado: false,
     color: '#A3D977',
     stripeButton: true,
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_MENSUAL,
   },
   {
     nombre: 'Semestral',
@@ -29,6 +30,7 @@ const planes = [
     destacado: false,
     color: '#B388EB',
     stripeButton: true,
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_SEMESTRAL,
   },
   {
     nombre: 'Anual',
@@ -41,6 +43,7 @@ const planes = [
     destacado: true,
     color: '#D462F1',
     stripeButton: true,
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_ANUAL,
   }
 ];
 
@@ -94,7 +97,7 @@ const Membresias = () => {
                     ))}
                   </ul>
                   {plan.stripeButton ? (
-                    <BotonMembresia plan={plan.nombre.toLowerCase()} color={plan.color} />
+                    <BotonMembresia priceId={plan.priceId} color={plan.color} />
                   ) : (
                     <Button
                       variant="outlined"

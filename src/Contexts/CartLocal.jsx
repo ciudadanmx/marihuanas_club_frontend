@@ -126,7 +126,7 @@ export const guardarCarritoLocal = async (productoOrId, cantidad) => {
 
     localStorage.setItem("carrito", JSON.stringify(carritoLocal));
 
-    
+
     const itemCount = carritoLocal.reduce((acc, item) => acc + item.cantidad, 0);
 localStorage.setItem("itemCount", itemCount);
 console.log("🔢 itemCount actualizado en localStorage:", itemCount);
@@ -160,6 +160,7 @@ export const sincronizarCarrito = async (
   try {
     // 1) Definimos calcularItem ANTES de usarla:
     const calcularItem = async (item) => {
+      // ********* esta parte hay que arreglar esta línea ********
       const cpDestino = item.cp_destino || "11560"; // puedes ajustar si conoces el CP real del usuario
       const subtotal = item.precio_unitario * item.cantidad;
       const comisionPlataforma = precotizarPlataforma(subtotal);

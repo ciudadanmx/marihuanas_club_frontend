@@ -8,9 +8,21 @@ function BotonMembresia({ plan = 'mensual', color = '#4caf50' }) {
 
   const iniciarCheckout = async () => {
     try {
-      const res = await axios.post("http://localhost:1337/api/checkout", {
+      let priceId;
+      if (plan === 'mensual') {
+        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_MENSUAL;
+      } else if (plan === 'semestral') {
+        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_SEMESTRAL;
+      } else if (plan === 'anual') {
+        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_ANUAL;
+      } else {
+        console.error("Plan no reconocido:", plan);
+        return;
+      }
+
+      const res = await axios.post(`${process.env.REACT_APP_STRAPI_URL}/api/checkout`, {
         email: user.email,
-        plan,
+        priceId,
       });
 
       window.location.href = res.data.url;

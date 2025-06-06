@@ -61,19 +61,19 @@ const Carrito = () => {
     }
   }, [isAuthenticated]);
 
-  const handleVaciarCarrito = async () => {
+    const handleVaciarCarrito = async () => {
     if (!isAuthenticated) {
-  localStorage.removeItem("carrito");
-  setLocalItems([]);
-  setLocalTotal(0);
+    localStorage.removeItem("carrito");
+    setLocalItems([]);
+    setLocalTotal(0);
 
-  // 🔢 También reiniciamos itemCount y notificamos
-  localStorage.setItem("itemCount", "0");
-  console.log("🧹 handleVaciarCarrito - carrito y itemCount eliminados");
-  window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount: 0 } }));
+    // 🔢 También reiniciamos itemCount y notificamos
+    localStorage.setItem("itemCount", "0");
+    console.log("🧹 handleVaciarCarrito - carrito y itemCount eliminados");
+    window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount: 0 } }));
 
-  return;
-}
+    return;
+    }
 
 
     if (!user?.email) {
@@ -142,9 +142,9 @@ const Carrito = () => {
 
 
       const itemCount = carritoLocal.reduce((acc, item) => acc + item.cantidad, 0);
-localStorage.setItem("itemCount", itemCount);
-console.log("🧮 updateLocalQuantity - itemCount actualizado:", itemCount);
-window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount } }));
+      localStorage.setItem("itemCount", itemCount);
+      console.log("🧮 updateLocalQuantity - itemCount actualizado:", itemCount);
+      window.dispatchEvent(new CustomEvent("carritoLocalActualizado", { detail: { itemCount } }));
 
       setLocalItems((prev) => {
         const nuevos = [...prev];
