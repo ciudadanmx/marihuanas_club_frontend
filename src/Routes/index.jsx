@@ -17,6 +17,7 @@ import Tienda from '../Pages/MarketPlace/Tienda.jsx';
 import Producto from '../Pages/MarketPlace/Producto.jsx';
 import MiUbicacion from '../components/MiUbicacion';
 import Carrito from '../Pages/MarketPlace/Carrito.jsx';
+import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
 
 const Rutas = () => (
     <Routes>
@@ -26,6 +27,7 @@ const Rutas = () => (
               <Route path="/lmai" element={<LmAi />} />
               <Route path='/clubs' element={<Clubs />} />
               <Route path='/agregar-club' element={<AgregarClubWrapper />} />
+              <Route path='/blog/agregar-contenido' element={<AgregarContenido />} />
               <Route path='/membresias' element={<Membresias />} />
               <Route path='/mi-membresia' element={<MiMembresia />} />
               <Route path='/registro-vendedor' element={<RegistroTienda />} />

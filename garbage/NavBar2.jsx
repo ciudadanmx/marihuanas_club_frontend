@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Se agregó useNavigate junto con Link
-import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService.jsx';
+import { registerUserInStrapi, findUserInStrapi } from '../src/utils/strapiUserService.jsx';
 import { FaBalanceScale, FaUniversity, FaTools , FaDollarSign } from 'react-icons/fa';
 import { RiHomeSmileFill } from "react-icons/ri";
 import { BiStore } from "react-icons/bi";
@@ -10,17 +10,17 @@ import { IoCalendarNumberOutline } from "react-icons/io5";
 import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 import guestImage from '../../assets/guest.png'; // Ajusta la ruta si es necesario
 import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tienes una imagen predeterminada de perfil
-import BotonCircular from '../Usuarios/BotonCircular.jsx';
-import MenuIcon from './MenuIcon.jsx';
-import NotificationsIcon from './NotificationsIcon.jsx';
-import CartIcon from './CartIcon.jsx';
-import UserMenu from './UserMenu.jsx';
-import NavButton from './NavButton.jsx';
+import BotonCircular from '../src/components/Usuarios/BotonCircular.jsx';
+import MenuIcon from '../src/components/NavBar/MenuIcon.jsx';
+import NotificationsIcon from '../src/components/NavBar/NotificationsIcon.jsx';
+import CartIcon from '../src/components/NavBar/CartIcon.jsx';
+import UserMenu from '../src/components/NavBar/UserMenu.jsx';
+import NavButton from '../src/components/NavBar/NavButton.jsx';
 import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
 import '../../styles/AccountMenu.css';
 
-import Direccionador from '../../utils/Direccionador.jsx';
+import Direccionador from '../src/utils/Direccionador.jsx';
 
 const NavBar = ({ SetIsMenuOpen }) => {
   const { user, isAuthenticated, isLoading, loginWithRedirect, logout } = useAuth0();
