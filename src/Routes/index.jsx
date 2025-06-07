@@ -19,6 +19,8 @@ import MiUbicacion from '../components/MiUbicacion';
 import Carrito from '../Pages/MarketPlace/Carrito.jsx';
 import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
 
+import Contenidos from '../Pages/Blog/Contenidos';
+
 const Rutas = () => (
     <Routes>
               <Route path="/" element={<HomeRoute />} />
@@ -37,6 +39,7 @@ const Rutas = () => (
               <Route path="/carrito" element={<Carrito />} />
               <Route path="/market/producto/:slug" element={<Producto />} />
               
+              <Route path="/contenidos" element={<Contenidos />} />
               <Route path="/ubicacion" element={<MiUbicacion />} />
 
               <Route path="/market/store/:slug" element={<Tienda />}>

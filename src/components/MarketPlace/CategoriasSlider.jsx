@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react';
 import { Box, IconButton, useMediaQuery } from '@mui/material';
-import CategoriaCard from './CategoriaCard';
+import CategoriaCard from './CategoriaCard.jsx';
 import '../../styles/CategoriasSlider.css';
 
 const CategoriasSlider = ({ categorias }) => {

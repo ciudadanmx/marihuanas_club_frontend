@@ -2,14 +2,14 @@ import { useState } from 'react';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
-export function useCategorias() {
+export function useCategorias(tabla = 'store-categories') {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const getCategorias = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${STRAPI_URL}/api/store-categories?populate=imagen`);
+      const res = await fetch(`${STRAPI_URL}/api/${tabla}?populate=imagen`);
       const data = await res.json();
       setLoading(false);
       return data.data;
