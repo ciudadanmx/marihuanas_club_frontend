@@ -4,14 +4,14 @@ import Buscador from '../../components/Blog/Buscador';
 import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 
 import { useCategorias } from '../../hooks/useCategorias';
-import { useContenido } from '../../hooks/useContenido';
+import { useContenido }from '../../hooks/useContenido';
 
 import ContenidoCard from '../../components/Blog/ContenidoCard'; // Asegúrate de que existe
 
 const Contenidos = () => {
   const tabla = 'categorias-contenidos';
   const { getCategorias, loading: loadingCategorias } = useCategorias(tabla);
-  const { contenidos, loading: loadingContenidos, error } = useContenido();
+  const { contenidos, loading: loadingContenidos, error, fetchContenidos } = useContenido();
 
   const [categorias, setCategorias] = useState([]);
 
@@ -24,6 +24,16 @@ const Contenidos = () => {
     };
     fetchCategorias();
   }, []);
+
+useEffect(() => {
+  const cargarContenidos = async () => {
+    console.log('🌀 Obteniendo contenidos...');
+    const datos = await fetchContenidos(); // ← esta sí es la del hook
+    console.log('📂 Contenidos:', datos);
+  };
+
+  cargarContenidos();
+}, []);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>

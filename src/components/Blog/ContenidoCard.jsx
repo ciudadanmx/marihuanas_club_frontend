@@ -6,10 +6,9 @@ import {
   CardMedia,
   Box,
   Button,
-  Chip
 } from '@mui/material';
-import { Link } from 'react-router-dom';
-import productoImg from '../../assets/producto.png'; // imagen de respaldo si no hay portada
+import { useNavigate } from 'react-router-dom';
+import productoImg from '../../assets/producto.png';
 
 const ContenidoCard = ({
   titulo,
@@ -18,77 +17,81 @@ const ContenidoCard = ({
   resumen,
   portada,
   categoria,
+  fecha_publicacion,
 }) => {
-  const imagenSrc = portada || productoImg;
+  const navigate = useNavigate();
+
+  console.log('🧩 ContenidoCard props:', {
+    titulo,
+    slug,
+    autor,
+    resumen,
+    portada,
+    categoria,
+    fecha_publicacion,
+  });
+
+  let imagenUrl = productoImg;
+
+  if (portada) {
+    imagenUrl = `${process.env.REACT_APP_STRAPI_URL}${portada}`;
+    console.log(`🖼️ Portada válida para "${titulo}":`, imagenUrl);
+  } else {
+    console.warn(`⚠️ Portada no válida para "${titulo}", usando imagen por defecto`);
+  }
+
+  const handleClick = () => {
+    navigate(`/contenido/${slug}`);
+  };
 
   return (
     <Card
       sx={{
-        height: '100%',
         display: 'flex',
         flexDirection: 'column',
+        height: '100%',
         borderRadius: 2,
         boxShadow: 3,
-        transition: 'transform 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'scale(1.02)',
-        },
+        overflow: 'hidden',
       }}
     >
       <CardMedia
         component="img"
-        height="160"
-        image={imagenSrc}
+        height="180"
+        image={imagenUrl}
         alt={titulo}
-        sx={{ objectFit: 'cover', borderTopLeftRadius: 8, borderTopRightRadius: 8 }}
+        sx={{ objectFit: 'cover' }}
       />
 
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography variant="h6" component="h2" gutterBottom noWrap>
+        <Typography variant="h6" component="div" gutterBottom>
           {titulo}
         </Typography>
 
-        <Box mb={1}>
-          {categoria && (
-            <Chip
-              label={categoria}
-              size="small"
-              color="warning"
-              sx={{ backgroundColor: '#fff200', fontWeight: 'bold' }}
-            />
-          )}
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {resumen?.substring(0, 120)}{resumen?.length > 120 ? '...' : ''}
-        </Typography>
-
         {autor && (
-          <Typography variant="caption" color="text.secondary">
-            Por {autor}
+          <Typography variant="body2" color="text.secondary">
+            Por: {autor}
           </Typography>
         )}
-      </CardContent>
 
-      <Box textAlign="center" pb={2}>
-        <Button
-          component={Link}
-          to={`/contenido/${slug}`}
-          variant="outlined"
-          color="warning"
-          sx={{
-            borderColor: '#fff200',
-            color: '#6d6e71',
-            fontWeight: 'bold',
-            '&:hover': {
-              backgroundColor: '#fff200',
-              color: '#000',
-            },
-          }}
-        >
-          Ver más
-        </Button>
-      </Box>
+        {categoria && (
+          <Typography variant="caption" color="primary" display="block">
+            Categoría: {categoria}
+          </Typography>
+        )}
+
+        {resumen && (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {resumen.length > 120 ? resumen.substring(0, 120) + '…' : resumen}
+          </Typography>
+        )}
+
+        <Box display="flex" justifyContent="flex-end" mt={2}>
+          <Button onClick={handleClick} variant="outlined" size="small">
+            Leer más
+          </Button>
+        </Box>
+      </CardContent>
     </Card>
   );
 };

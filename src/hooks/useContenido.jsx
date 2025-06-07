@@ -1,5 +1,3 @@
-// src/hooks/useContenido.jsx
-
 import { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { slugify } from '../utils/slugify';
@@ -28,14 +26,15 @@ export function useContenido() {
   async function fetchContenidos() {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/contenidos?populate=deep`);
+      const res = await fetch(`${API_URL}/contenidos?populate=portada,autor`);
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
       const parsed = items.map(item => {
         const a = item.attributes;
         const cat = a.categoria?.data;
-
+        console.log(` * * * * * * * * * * *  useContenidos ${a.titulo}`);
+        console.log(` * * * * * * * * * * *  useContenidos`, a.portada?.data?.attributes?.url);
         return {
           id: item.id,
           titulo: a.titulo,
