@@ -52,6 +52,8 @@ useEffect(() => {
         </Box>
       )}
 
+      <h3>Contenidos Recientes:</h3>
+
       <Grid container spacing={3} mt={4}>
         {loadingContenidos && (
           <Grid item xs={12}>

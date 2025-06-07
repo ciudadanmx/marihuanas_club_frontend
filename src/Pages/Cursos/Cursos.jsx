@@ -25,7 +25,7 @@ const Cursos = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Buscador />
-      <h3><center>Categorías</center></h3>
+      <h3><center>Áreas de Cursos:</center></h3>
 
       {!loadingCategorias && categorias && categorias.length > 0 && (
         <Box mt={4}>

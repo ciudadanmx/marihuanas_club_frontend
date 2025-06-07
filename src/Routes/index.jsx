@@ -20,6 +20,7 @@ import Carrito from '../Pages/MarketPlace/Carrito.jsx';
 import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
 
 import Contenidos from '../Pages/Blog/Contenidos';
+import Contenido from '../Pages/Blog/Contenido';
 import Cursos from '../Pages/Cursos/Cursos';
 
 const Rutas = () => (
@@ -41,6 +42,8 @@ const Rutas = () => (
               <Route path="/market/producto/:slug" element={<Producto />} />
               
               <Route path="/contenidos" element={<Contenidos />} />
+              <Route path="/contenido/:slug" element={<Contenido />}></Route>
+
               <Route path="/cursos" element={<Cursos />} />
               
               <Route path="/ubicacion" element={<MiUbicacion />} />
