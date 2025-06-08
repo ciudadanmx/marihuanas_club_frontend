@@ -200,3 +200,8 @@ body {
     transform: translateY(0);
   }
 }
+
+
+.restringido {
+  margin-top: 40px !important;
+}

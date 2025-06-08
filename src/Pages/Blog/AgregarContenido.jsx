@@ -293,82 +293,85 @@ const AgregarContenido = () => {
               <TextField label="Resumen" fullWidth multiline rows={2} {...register('resumen')} />
             </Grid>
 
-            const restringido = watch('restringido'); // importante para el control reactivo
+            
 
-{/* Contenido libre (WYSIWYG con HTML editable) */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" gutterBottom>
-    Contenido libre (HTML)
-  </Typography>
-  <Controller
-  name="contenido_libre"
-  control={control}
-  render={({ field }) => (
-    <>
-      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-        <Button
-          onClick={() => setHtmlModeLibre(!htmlModeLibre)}
-          variant="outlined"
-          size="small"
-        >
-          {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
-        </Button>
-        {!htmlModeLibre && (
-          <Button
-            onClick={insertLogoLibre}
-            variant="outlined"
-            size="small"
-          >
-            Insertar Logo
-          </Button>
-        )}
-      </Box>
+            {/* Contenido libre (WYSIWYG con HTML editable) */}
+            <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                Contenido libre (HTML)
+                </Typography>
+                <Controller
+                    name="contenido_libre"
+                    control={control}
+                    render={({ field }) => (
+                        <>
+                            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+                                <Button
+                                    onClick={() => setHtmlModeLibre(!htmlModeLibre)}
+                                    variant="outlined"
+                                    size="small"
+                                >
+                                {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
+                                </Button>
+                                {!htmlModeLibre && (
+                                    <Button
+                                    onClick={insertLogoLibre}
+                                    variant="outlined"
+                                    size="small"
+                                    >
+                                    Insertar Logo
+                                    </Button>
+                                )}
+                            </Box>
 
-      {htmlModeLibre ? (
-  <TextField
-  key="html"
-  multiline
-  minRows={8}
-  fullWidth
-  value={field.value ?? ''}
-  onChange={(e) => {
-    console.log('TextField onChange:', e.target.value);
-    field.onChange(e.target.value);
-  }}
-  variant="outlined"
-/>
+                            {htmlModeLibre ? (
+                            <TextField
+                                key="html"
+                                multiline
+                                minRows={8}
+                                fullWidth
+                                value={field.value ?? ''}
+                                onChange={(e) => {
+                                console.log('TextField onChange:', e.target.value);
+                                field.onChange(e.target.value);
+                                }}
+                                variant="outlined"
+                            />
 
-) : (
-  <ReactQuill
-  key={htmlModeLibre ? 'html' : 'visual'}
-  ref={(el) => {
-    quillRefLibre.current = el;
-    console.log('ReactQuill ref asignado:', el);
-  }}
-  theme="snow"
-  value={field.value ?? ''}
-  onChange={(content, delta, source, editor) => {
-    const html = editor.getHTML();
-    console.log('ReactQuill onChange:', { content, html, source });
-    field.onChange(html);
-  }}
-  style={{ height: '200px', marginBottom: '1rem' }}
-  modules={quillModules}
-/>
-)}
+                            ) : (
+                                <ReactQuill
+                                    key={htmlModeLibre ? 'html' : 'visual'}
+                                    ref={(el) => {
+                                    quillRefLibre.current = el;
+                                    console.log('ReactQuill ref asignado:', el);
+                                    }}
+                                    theme="snow"
+                                    value={field.value ?? ''}
+                                    onChange={(content, delta, source, editor) => {
+                                    const html = editor.getHTML();
+                                    console.log('ReactQuill onChange:', { content, html, source });
+                                    field.onChange(html);
+                                    }}
+                                    style={{ height: '200px', marginBottom: '1rem' }}
+                                    modules={quillModules}
+                                />
+                            )}
 
-    </>
-  )}
-/>
-</Grid>
-
-{/* Checkbox para restringido */}
-<Grid item xs={12}>
-  <FormControlLabel
-    control={<Checkbox {...register('restringido')} />}
-    label="¿Contenido restringido?"
-  />
-</Grid>
+                        </>
+                    )}
+                />
+            </Grid>
+            <br /><br />        
+            {/* Checkbox para restringido */}
+            <Grid item xs={12}>
+            <FormControlLabel
+                className="restringido"
+                control={<Checkbox
+                        {...register('restringido')} 
+                    />}
+                label="¿Contenido restringido?"
+            />
+            </Grid>
 
 {/* Contenido restringido (WYSIWYG con HTML editable) */}
 <Grid item xs={12}>
