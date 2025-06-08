@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   Box,
   Container,
@@ -54,6 +54,36 @@ const AgregarContenido = () => {
     },
   });
 
+  const quillModules = useMemo(() => ({
+    toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image', 'video'],
+        ['clean'],
+        ['code-block'],
+    ],
+    htmlEditButton: {
+        debug: true,
+        msg: 'Editar HTML',
+        okText: 'Guardar',
+        cancelText: 'Cancelar',
+        buttonHTML: '&lt;/&gt;',
+        buttonTitle: 'Editar HTML',
+        syntax: true, // muestra resaltado de sintaxis si tienes highlight.js
+    },
+  }), []);
+
+  const quillRefLibre = useRef(null);
+
+  const insertLogoLibre = () => {
+  const editor = quillRefLibre.current?.getEditor();
+  const range = editor?.getSelection();
+  if (range) {
+    editor.insertEmbed(range.index, 'image', '/logo.png');
+  }
+};
+
   const [portadaFiles, setPortadaFiles] = useState([]);
   const [galeriaLibreFiles, setGaleriaLibreFiles] = useState([]);
   const [galeriaRestringidaFiles, setGaleriaRestringidaFiles] = useState([]);
@@ -68,6 +98,11 @@ const AgregarContenido = () => {
 
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
+
+  const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
+  const [htmlModeLibre, setHtmlModeLibre] = useState(false);
+  const [contenidoLibre, setContenidoLibre] = useState('');
+
 
   const crearPreviews = (files) =>
     Array.from(files).map((file) => {
@@ -250,52 +285,111 @@ const AgregarContenido = () => {
               <TextField label="Resumen" fullWidth multiline rows={2} {...register('resumen')} />
             </Grid>
 
-            {/* Contenido libre (WYSIWYG) */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Contenido libre (HTML)
-              </Typography>
-              <Controller
-                name="contenido_libre"
-                control={control}
-                render={({ field }) => (
-                  <ReactQuill
-                    theme="snow"
-                    value={field.value}
-                    onChange={field.onChange}
-                    style={{ height: '200px', marginBottom: '1rem' }}
-                  />
-                )}
-              />
-            </Grid>
+            const restringido = watch('restringido'); // importante para el control reactivo
 
-            {/* Contenido restringido (WYSIWYG) */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Contenido restringido (HTML)
-              </Typography>
-              <Controller
-                name="contenido_restringido"
-                control={control}
-                render={({ field }) => (
-                  <ReactQuill
-                    theme="snow"
-                    value={field.value}
-                    onChange={field.onChange}
-                    style={{ height: '200px', marginBottom: '1rem' }}
-                    readOnly={!restringido}
-                  />
-                )}
-              />
-            </Grid>
+{/* Contenido libre (WYSIWYG con HTML editable) */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" gutterBottom>
+    Contenido libre (HTML)
+  </Typography>
+  <Controller
+  name="contenido_libre"
+  control={control}
+  render={({ field }) => (
+    <>
+      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+        <Button
+          onClick={() => setHtmlModeLibre(!htmlModeLibre)}
+          variant="outlined"
+          size="small"
+        >
+          {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
+        </Button>
+        {!htmlModeLibre && (
+          <Button
+            onClick={insertLogoLibre}
+            variant="outlined"
+            size="small"
+          >
+            Insertar Logo
+          </Button>
+        )}
+      </Box>
 
-            {/* Restringido */}
-            <Grid item xs={12}>
-              <FormControlLabel
-                control={<Checkbox {...register('restringido')} />}
-                label="¿Contenido restringido?"
-              />
-            </Grid>
+      {htmlModeLibre ? (
+        <TextField
+          multiline
+          minRows={8}
+          fullWidth
+          value={field.value || ''}
+          onChange={(e) => field.onChange(e.target.value)}
+          variant="outlined"
+        />
+      ) : (
+        <ReactQuill
+          ref={quillRefLibre}
+          theme="snow"
+          value={field.value || ''}
+          onChange={field.onChange}
+          style={{ height: '200px', marginBottom: '1rem' }}
+        />
+      )}
+    </>
+  )}
+/>
+</Grid>
+
+{/* Checkbox para restringido */}
+<Grid item xs={12}>
+  <FormControlLabel
+    control={<Checkbox {...register('restringido')} />}
+    label="¿Contenido restringido?"
+  />
+</Grid>
+
+{/* Contenido restringido (WYSIWYG con HTML editable) */}
+<Grid item xs={12}>
+  <Typography variant="subtitle1" gutterBottom>
+    Contenido restringido (HTML)
+  </Typography>
+  <Controller
+    name="contenido_restringido"
+    control={control}
+    render={({ field }) => (
+      <>
+        <Button
+          onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
+          variant="outlined"
+          size="small"
+          sx={{ mb: 1 }}
+          disabled={!restringido}
+        >
+          {htmlModeRestringido ? 'Vista WYSIWYG' : 'Editar HTML'}
+        </Button>
+        {htmlModeRestringido ? (
+          <TextField
+            multiline
+            minRows={8}
+            fullWidth
+            value={field.value}
+            onChange={(e) => field.onChange(e.target.value)}
+            variant="outlined"
+            disabled={!restringido}
+          />
+        ) : (
+          <ReactQuill
+            theme="snow"
+            value={field.value}
+            onChange={field.onChange}
+            style={{ height: '200px', marginBottom: '1rem' }}
+            readOnly={!restringido}
+          />
+        )}
+      </>
+    )}
+  />
+</Grid>
+
 
             {/* Status */}
             <Grid item xs={12} sm={6}>
