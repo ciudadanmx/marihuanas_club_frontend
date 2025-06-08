@@ -19,10 +19,11 @@ import MiUbicacion from '../components/MiUbicacion';
 import Carrito from '../Pages/MarketPlace/Carrito.jsx';
 import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
 
-import Contenidos from '../Pages/Blog/Contenidos';
+import ContenidosPage from '../Pages/Blog/Contenidos';
 import Contenido from '../Pages/Blog/Contenido';
+//import ContenidosFiltrados from '../Pages/Blog/Contenido';
 import Cursos from '../Pages/Cursos/Cursos';
-
+//
 const Rutas = () => (
     <Routes>
               <Route path="/" element={<HomeRoute />} />
@@ -31,7 +32,7 @@ const Rutas = () => (
               <Route path="/lmai" element={<LmAi />} />
               <Route path='/clubs' element={<Clubs />} />
               <Route path='/agregar-club' element={<AgregarClubWrapper />} />
-              <Route path='/blog/agregar-contenido' element={<AgregarContenido />} />
+              <Route path='/contenidos/agregar-contenido' element={<AgregarContenido />} />
               <Route path='/membresias' element={<Membresias />} />
               <Route path='/mi-membresia' element={<MiMembresia />} />
               <Route path='/registro-vendedor' element={<RegistroTienda />} />
@@ -41,8 +42,11 @@ const Rutas = () => (
               <Route path="/carrito" element={<Carrito />} />
               <Route path="/market/producto/:slug" element={<Producto />} />
               
-              <Route path="/contenidos" element={<Contenidos />} />
-              <Route path="/contenido/:slug" element={<Contenido />}></Route>
+               <Route path="/contenidos/*" element={<ContenidosPage />} />
+
+                {/* ruta suelta para ver un contenido individual */}
+                <Route path="/contenido/:slug" element={<Contenido />} />
+
 
               <Route path="/cursos" element={<Cursos />} />
               
