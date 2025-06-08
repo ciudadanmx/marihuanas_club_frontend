@@ -19,6 +19,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useContenido } from '../../hooks/useContenido';
 import { useSnackbar } from 'notistack';
+import EditorHTML from '../../components/Blog/EditorHTML';
 
 
 const AgregarContenido = () => {
@@ -83,9 +84,17 @@ const AgregarContenido = () => {
   }), []);
 
   const quillRefLibre = useRef(null);
+  const quillRefRestringido = useRef(null);
 
   const insertLogoLibre = () => {
   const editor = quillRefLibre.current?.getEditor();
+  const range = editor?.getSelection();
+  if (range) {
+    editor.insertEmbed(range.index, 'image', '/logo.png');
+  }
+};
+  const insertLogoRestringido = () => {
+  const editor = quillRefRestringido.current?.getEditor();
   const range = editor?.getSelection();
   if (range) {
     editor.insertEmbed(range.index, 'image', '/logo.png');
@@ -366,52 +375,22 @@ const AgregarContenido = () => {
 <Grid item xs={12}>
   <FormControlLabel
     control={<Checkbox {...register('restringido')} />}
-    label="¿Contenido restringido?"
+    label="¿Contenido extendido exclusivo para miembros?"
   />
 </Grid>
 
-{/* Contenido restringido (WYSIWYG con HTML editable) */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" gutterBottom>
-    Contenido restringido (HTML)
-  </Typography>
-  <Controller
-    name="contenido_restringido"
-    control={control}
-    render={({ field }) => (
-      <>
-        <Button
-          onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
-          variant="outlined"
-          size="small"
-          sx={{ mb: 1 }}
-          disabled={!restringido}
-        >
-          {htmlModeRestringido ? 'Vista WYSIWYG' : 'Editar HTML'}
-        </Button>
-        {htmlModeRestringido ? (
-          <TextField
-            multiline
-            minRows={8}
-            fullWidth
-            value={field.value}
-            onChange={(e) => field.onChange(e.target.value)}
-            variant="outlined"
-            disabled={!restringido}
-          />
-        ) : (
-          <ReactQuill
-            theme="snow"
-            value={field.value}
-            onChange={field.onChange}
-            style={{ height: '200px', marginBottom: '1rem' }}
-            readOnly={!restringido}
-          />
-        )}
-      </>
-    )}
-  />
-</Grid>
+<EditorHTML
+     modo="restringido"
+  disabled={false}
+  quillRef={quillRefRestringido}
+  quillModules={quillModules}
+  insertLogo={insertLogoRestringido}
+  control={control}
+  htmlModeRestringido={htmlModeRestringido}
+  setHtmlModeRestringido={setHtmlModeRestringido}
+  register={register}
+></EditorHTML>
+
 
 
             {/* Status */}
