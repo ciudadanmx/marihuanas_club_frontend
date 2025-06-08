@@ -1,11 +1,16 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+
 import {
   Box,
+  Button,
+  Dialog,
+  DialogActions, 
+  DialogContent, 
+  DialogTitle,
   Container,
   Paper,
   Grid,
   TextField,
-  Button,
   Typography,
   MenuItem,
   FormControlLabel,
@@ -19,6 +24,19 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useContenido } from '../../hooks/useContenido';
 import { useSnackbar } from 'notistack';
+
+import '../../components/Blog/quillConfig';
+import Quill from 'quill';
+import htmlEditButton from 'quill-html-edit-button';
+
+// IMPORTA highlight.js y su CSS de tema
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github.css';  // o el tema que prefieras
+
+// Haz que el módulo lo encuentre
+window.hljs = hljs;
+
+Quill.register('modules/htmlEditButton', htmlEditButton);
 
 
 const AgregarContenido = () => {
@@ -55,34 +73,66 @@ const AgregarContenido = () => {
   });
   
 
-  const quillModules = useMemo(() => ({
+  const modules = useMemo(() => ({
     toolbar: [
-        [{ header: [1, 2, 3, 4, 5, 6, false] }],
-    [{ font: [] }],
-    [{ size: ['small', false, 'large', 'huge'] }],
-    ['bold', 'italic', 'underline', 'strike'],
-    [{ color: [] }, { background: [] }],
-    [{ script: 'sub' }, { script: 'super' }],
-    [{ list: 'ordered' }, { list: 'bullet' }],
-    [{ indent: '-1' }, { indent: '+1' }],
-    [{ align: [] }],
-    ['blockquote', 'code-block'],
-    [{ direction: 'rtl' }],
-    ['link', 'image', 'video'],
-    ['clean']
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      [{ font: [] }],
+      [{ size: ['small', false, 'large', 'huge'] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ color: [] }, { background: [] }],
+      [{ script: 'sub' }, { script: 'super' }],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ indent: '-1' }, { indent: '+1' }],
+      [{ align: [] }],
+      ['blockquote', 'code-block'],
+      [{ direction: 'rtl' }],
+      ['link', 'image', 'video'],
+      ['clean'],
+      ['html'],
     ],
     htmlEditButton: {
-        debug: true,
-        msg: 'Editar HTML',
-        okText: 'Guardar',
-        cancelText: 'Cancelar',
-        buttonHTML: '&lt;/&gt;',
-        buttonTitle: 'Editar HTML',
-        syntax: true, // muestra resaltado de sintaxis si tienes highlight.js
-    },
+    debug: true,
+    syntax: false,       // <— desactivamos highlight.js para forzar que funcione sin él
+    msg: 'Editar HTML',
+    okText: 'Guardar',
+    cancelText: 'Cancelar',
+    buttonHTML: '&lt;/&gt;',
+    buttonTitle: 'Editar HTML',
+  },
+  handlers: {
+        html() {
+          // Abre tu diálogo en lugar de usar htmlEditButton
+          setDialogValue(quillRef.current?.getEditor().root.innerHTML || '');
+          setOpenDialog(true);
+        }
+      }
+
   }), []);
 
   const quillRefLibre = useRef(null);
+
+    const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
+  const [htmlModeLibre, setHtmlModeLibre] = useState(false);
+  const [contenidoLibre, setContenidoLibre] = useState('');
+
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogValue, setDialogValue] = useState('');
+    const quillRef = useRef(null);
+
+
+
+    const handleDialogSave = () => {
+    setEditorValue(dialogValue);
+    setOpenDialog(false);
+  };
+
+    // Cuando pasamos de modo HTML a WYSIWYG, actualizamos el form con el contenido actual
+  useEffect(() => {
+    if (!htmlModeLibre) {
+      // el campo se actualiza directamente en handleQuillChange
+    }
+  }, [htmlModeLibre]);
 
   const insertLogoLibre = () => {
   const editor = quillRefLibre.current?.getEditor();
@@ -107,10 +157,9 @@ const AgregarContenido = () => {
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
-  const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
-  const [htmlModeLibre, setHtmlModeLibre] = useState(false);
-  const [contenidoLibre, setContenidoLibre] = useState('');
 
+
+  const [editorValue, setEditorValue] = useState('');
 
   const crearPreviews = (files) =>
     Array.from(files).map((file) => {
@@ -301,65 +350,62 @@ const AgregarContenido = () => {
     Contenido libre (HTML)
   </Typography>
   <Controller
-  name="contenido_libre"
-  control={control}
-  render={({ field }) => (
-    <>
-      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-        <Button
-          onClick={() => setHtmlModeLibre(!htmlModeLibre)}
-          variant="outlined"
-          size="small"
-        >
-          {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
-        </Button>
-        {!htmlModeLibre && (
-          <Button
-            onClick={insertLogoLibre}
-            variant="outlined"
-            size="small"
-          >
-            Insertar Logo
-          </Button>
+        name="contenido_libre"
+        control={control}
+        defaultValue=""
+        render={({ field }) => (
+          <>
+            <Box sx={{ mb: 2 }}>
+              <Button onClick={() => setIsHtmlMode(m => !m)}>
+                {isHtmlMode ? 'Vista WYSIWYG' : 'Editar HTML'}
+              </Button>
+            </Box>
+
+            {isHtmlMode ? (
+              <TextField
+                multiline
+                minRows={8}
+                fullWidth
+                value={editorValue}
+                onChange={e => {
+                  setEditorValue(e.target.value);
+                  field.onChange(e.target.value);
+                }}
+              />
+            ) : (
+              <ReactQuill
+                ref={quillRef}
+                theme="snow"
+                value={editorValue}
+                onChange={value => {
+                  setEditorValue(value);
+                  field.onChange(value);
+                }}
+                modules={modules}
+                style={{ height: 200 }}
+              />
+            )}
+
+            {/* 3) Tu diálogo de edición HTML */}
+            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
+              <DialogTitle>Editar HTML</DialogTitle>
+              <DialogContent>
+                <TextField
+                  multiline
+                  minRows={10}
+                  fullWidth
+                  value={dialogValue}
+                  onChange={e => setDialogValue(e.target.value)}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
+                <Button onClick={handleDialogSave} variant="contained">Guardar</Button>
+              </DialogActions>
+            </Dialog>
+          </>
         )}
-      </Box>
-
-      {htmlModeLibre ? (
-  <TextField
-  key="html"
-  multiline
-  minRows={8}
-  fullWidth
-  value={field.value ?? ''}
-  onChange={(e) => {
-    console.log('TextField onChange:', e.target.value);
-    field.onChange(e.target.value);
-  }}
-  variant="outlined"
-/>
-
-) : (
-  <ReactQuill
-  key={htmlModeLibre ? 'html' : 'visual'}
-  ref={(el) => {
-    quillRefLibre.current = el;
-    console.log('ReactQuill ref asignado:', el);
-  }}
-  theme="snow"
-  value={field.value ?? ''}
-  onChange={(content, delta, source, editor) => {
-    const html = editor.getHTML();
-    console.log('ReactQuill onChange:', { content, html, source });
-    field.onChange(html);
-  }}
-  style={{ height: '200px', marginBottom: '1rem' }}
-  modules={quillModules}
-/>
-)}
-
-    </>
-  )}
-/>
+      />
 </Grid>
 
 {/* Checkbox para restringido */}
@@ -379,6 +425,7 @@ const AgregarContenido = () => {
     name="contenido_restringido"
     control={control}
     render={({ field }) => (
+        
       <>
         <Button
           onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
@@ -404,7 +451,7 @@ const AgregarContenido = () => {
             theme="snow"
             value={field.value}
             onChange={field.onChange}
-            style={{ height: '200px', marginBottom: '1rem' }}
+            style={{ height: '200px', marginBottom: '5rem' }}
             readOnly={!restringido}
           />
         )}

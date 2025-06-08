@@ -2,6 +2,7 @@ import React from 'react';
 import { TextField, Button } from '@mui/material';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+import './quillConfig';
 
 const EditorHTML = ({ value, onChange, htmlMode, setHtmlMode, disabled = false }) => {
   return (
