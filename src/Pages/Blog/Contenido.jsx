@@ -1,78 +1,195 @@
-import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useContenido } from '../../hooks/useContenido';
 import {
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Skeleton,
-  Paper,
   Box,
+  Container,
+  Paper,
+  Typography,
+  Chip,
+  Grid,
+  CardMedia,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
+import { useEffect, useState } from 'react';
 
-const BASE_URL = process.env.REACT_APP_STRAPI_URL;
-
-export default function Contenido() {
+const ContenidoDetalle = () => {
   const { slug } = useParams();
   const { contenidos, loading } = useContenido();
+  const [contenido, setContenido] = useState(null);
 
-  const contenido = contenidos.find(c => c.slug === slug);
+  useEffect(() => {
+    if (contenidos.length) {
+      const encontrado = contenidos.find(c => c.slug === slug);
+      setContenido(encontrado);
+    }
+  }, [contenidos, slug]);
 
   if (loading) {
     return (
-      <Box p={3}>
-        <Skeleton variant="rectangular" width="100%" height={300} />
-        <Skeleton width="60%" height={40} style={{ marginTop: 16 }} />
-        <Skeleton width="100%" height={200} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <CircularProgress color="warning" />
       </Box>
     );
   }
 
   if (!contenido) {
     return (
-      <Paper elevation={4} sx={{ padding: 4, margin: 3 }}>
-        <Typography variant="h5" color="error">
-          Contenido no encontrado
-        </Typography>
-      </Paper>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+        <Typography variant="h6">Contenido no encontrado</Typography>
+      </Box>
     );
   }
 
+  const renderGaleria = (imagenes) => (
+    <Grid container spacing={2}>
+      {imagenes.map((img, i) => (
+        <Grid item xs={6} sm={4} key={i}>
+          <CardMedia
+            component="img"
+            image={process.env.REACT_APP_STRAPI_URL + img}
+            alt={`imagen-${i}`}
+            sx={{ borderRadius: 2 }}
+          />
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  const renderVideos = (videos) => (
+    <Grid container spacing={2}>
+      {videos.map((video, i) => (
+        <Grid item xs={12} md={6} key={i}>
+          <Box
+            component="iframe"
+            src={video}
+            width="100%"
+            height="250"
+            style={{ borderRadius: 8, border: 'none' }}
+            allowFullScreen
+            title={`video-${i}`}
+          />
+        </Grid>
+      ))}
+    </Grid>
+  );
+
+  const renderHtml = (htmlContent) => (
+    <Box
+      sx={{
+        mt: 2,
+        p: 2,
+        borderRadius: 2,
+        border: '1px solid #e0e0e0',
+        backgroundColor: '#f9f9f9',
+      }}
+      dangerouslySetInnerHTML={{ __html: htmlContent }}
+    />
+  );
+
   return (
-    <Box p={2} display="flex" justifyContent="center">
-      <Card sx={{ maxWidth: 800, width: '100%' }} elevation={6}>
+    <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         {contenido.portada && (
           <CardMedia
             component="img"
-            height="400"
-            image={`${BASE_URL}${contenido.portada}`}
-            alt={`Portada de ${contenido.titulo}`}
+            height="300"
+            image={process.env.REACT_APP_STRAPI_URL + contenido.portada}
+            alt={contenido.titulo}
+            sx={{ borderRadius: 2, mb: 2 }}
           />
         )}
-        <CardContent>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {contenido.titulo}
-          </Typography>
 
-          <Typography variant="subtitle2" color="textSecondary" gutterBottom>
-            Por {contenido.autor} | {contenido.fecha_publicacion}
-          </Typography>
+        <Typography variant="h4" gutterBottom color="primary">
+          {contenido.titulo}
+        </Typography>
 
-          {contenido.resumen && (
-            <Typography variant="body1" color="textSecondary" sx={{ marginBottom: 2 }}>
-              {contenido.resumen}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+          <Typography variant="subtitle2" color="text.secondary">
+            Publicado por: {contenido.autor}
+          </Typography>
+          <Typography variant="subtitle2" color="text.secondary">
+            {contenido.fecha_publicacion}
+          </Typography>
+        </Box>
+
+        {contenido.tags && (
+          <Box sx={{ mb: 2 }}>
+            {contenido.tags.split(',').map(tag => (
+              <Chip
+                key={tag}
+                label={`#${tag.trim()}`}
+                size="small"
+                sx={{ mr: 1, mb: 1 }}
+                color="warning"
+              />
+            ))}
+          </Box>
+        )}
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Contenido Libre */}
+        {contenido.contenido_libre && (
+          <>
+            {renderHtml(contenido.contenido_libre)}
+          </>
+        )}
+
+        {/* Galería Libre */}
+        {contenido.galeria_libre.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+              Galería Libre 
             </Typography>
-          )}
+            {renderGaleria(contenido.galeria_libre)}
+          </>
+        )}
 
-          {contenido.contenido_libre && (
-            <div
-              dangerouslySetInnerHTML={{ __html: contenido.contenido_libre }}
-              style={{ lineHeight: '1.6em' }}
-            />
-          )}
-        </CardContent>
-      </Card>
-    </Box>
+        {/* Videos Libres */}
+        {contenido.videos_libres.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+              Videos Libres
+            </Typography>
+            {renderVideos(contenido.videos_libres)}
+          </>
+        )}
+
+        <Divider sx={{ my: 4 }} />
+
+        {/* Contenido Restringido */}
+        {contenido.contenido_restringido && (
+          <>
+            <Typography variant="h6" gutterBottom>
+              Contenido Restringido
+            </Typography>
+            {renderHtml(contenido.contenido_restringido)}
+          </>
+        )}
+
+        {/* Galería Restringida */}
+        {contenido.galeria_restringida.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+              Galería Restringida
+            </Typography>
+            {renderGaleria(contenido.galeria_restringida)}
+          </>
+        )}
+
+        {/* Videos Restringidos */}
+        {contenido.videos_restringidos.length > 0 && (
+          <>
+            <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>
+              Videos Restringidos
+            </Typography>
+            {renderVideos(contenido.videos_restringidos)}
+          </>
+        )}
+      </Paper>
+    </Container>
   );
-}
+};
+
+export default ContenidoDetalle;

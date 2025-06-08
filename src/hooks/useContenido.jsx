@@ -26,7 +26,7 @@ export function useContenido() {
   async function fetchContenidos() {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/contenidos?populate=portada,autor`);
+      const res = await fetch(`${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida`);
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
@@ -34,7 +34,7 @@ export function useContenido() {
         const a = item.attributes;
         const cat = a.categoria?.data;
         console.log(` * * * * * * * * * * *  useContenidos ${a.titulo}`);
-        console.log(` * * * * * * * * * * *  useContenidos`, a.portada?.data?.attributes?.url);
+        console.log(` * * * * * * * * * * *  useContenidos`, a);
         return {
           id: item.id,
           titulo: a.titulo,
