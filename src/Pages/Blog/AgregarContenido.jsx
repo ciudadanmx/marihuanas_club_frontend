@@ -53,15 +53,23 @@ const AgregarContenido = () => {
       categoria: '',
     },
   });
+  
 
   const quillModules = useMemo(() => ({
     toolbar: [
-        [{ header: [1, 2, 3, false] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        ['link', 'image', 'video'],
-        ['clean'],
-        ['code-block'],
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+    [{ font: [] }],
+    [{ size: ['small', false, 'large', 'huge'] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ script: 'sub' }, { script: 'super' }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ indent: '-1' }, { indent: '+1' }],
+    [{ align: [] }],
+    ['blockquote', 'code-block'],
+    [{ direction: 'rtl' }],
+    ['link', 'image', 'video'],
+    ['clean']
     ],
     htmlEditButton: {
         debug: true,
@@ -317,23 +325,38 @@ const AgregarContenido = () => {
       </Box>
 
       {htmlModeLibre ? (
-        <TextField
-          multiline
-          minRows={8}
-          fullWidth
-          value={field.value || ''}
-          onChange={(e) => field.onChange(e.target.value)}
-          variant="outlined"
-        />
-      ) : (
-        <ReactQuill
-          ref={quillRefLibre}
-          theme="snow"
-          value={field.value || ''}
-          onChange={field.onChange}
-          style={{ height: '200px', marginBottom: '1rem' }}
-        />
-      )}
+  <TextField
+  key="html"
+  multiline
+  minRows={8}
+  fullWidth
+  value={field.value ?? ''}
+  onChange={(e) => {
+    console.log('TextField onChange:', e.target.value);
+    field.onChange(e.target.value);
+  }}
+  variant="outlined"
+/>
+
+) : (
+  <ReactQuill
+  key={htmlModeLibre ? 'html' : 'visual'}
+  ref={(el) => {
+    quillRefLibre.current = el;
+    console.log('ReactQuill ref asignado:', el);
+  }}
+  theme="snow"
+  value={field.value ?? ''}
+  onChange={(content, delta, source, editor) => {
+    const html = editor.getHTML();
+    console.log('ReactQuill onChange:', { content, html, source });
+    field.onChange(html);
+  }}
+  style={{ height: '200px', marginBottom: '1rem' }}
+  modules={quillModules}
+/>
+)}
+
     </>
   )}
 />
