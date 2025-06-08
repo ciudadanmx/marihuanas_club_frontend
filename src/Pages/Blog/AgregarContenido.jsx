@@ -141,6 +141,13 @@ const AgregarContenido = () => {
     editor.insertEmbed(range.index, 'image', '/logo.png');
   }
 };
+  const insertLogoRestringido = () => {
+  const editor = quillRefRestringido.current?.getEditor();
+  const range = editor?.getSelection();
+  if (range) {
+    editor.insertEmbed(range.index, 'image', '/logo.png');
+  }
+};
 
   const [portadaFiles, setPortadaFiles] = useState([]);
   const [galeriaLibreFiles, setGaleriaLibreFiles] = useState([]);
@@ -412,7 +419,7 @@ const AgregarContenido = () => {
 <Grid item xs={12}>
   <FormControlLabel
     control={<Checkbox {...register('restringido')} />}
-    label="¿Contenido restringido?"
+    label="¿Contenido extendido exclusivo para miembros?"
   />
 </Grid>
 
