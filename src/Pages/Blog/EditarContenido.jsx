@@ -1,206 +1,398 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useContenido } from '../../hooks/useContenido';
 import {
   Box,
   Container,
   Paper,
-  Typography,
+  Grid,
   TextField,
   Button,
+  Typography,
   MenuItem,
+  FormControlLabel,
+  Checkbox,
   CircularProgress,
-  Stack,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers';
+import { useForm, Controller } from 'react-hook-form';
+import dayjs from 'dayjs';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { useContenido } from '../../hooks/useContenido';
+import { useSnackbar } from 'notistack';
+import '../../quillConfig.js'; // registro de módulos personalizados
 
 const EditarContenido = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-
+  const { enqueueSnackbar } = useSnackbar();
   const {
     contenidos,
     categorias,
-    loading,
+    loading: loadingHook,
     editarContenido,
-    eliminarContenido,
+    subirMedia,
   } = useContenido();
 
-  const [contenido, setContenido] = useState(null);
-  const [form, setForm] = useState({
-    titulo: '',
-    contenido_libre: '',
-    contenido_restringido: '',
-    tags: '',
-    categoria: '',
+  const [cargando, setCargando] = useState(true);
+  const [initialMediaUrls, setInitialMediaUrls] = useState({});
+
+  const {
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    getValues,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: {
+      titulo: '',
+      resumen: '',
+      contenido_libre: '',
+      contenido_restringido: '',
+      restringido: false,
+      status: 'borrador',
+      tags: '',
+      fecha_publicacion: dayjs(),
+      categoria: '',
+    },
   });
-  const [media, setMedia] = useState({
+
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ header: [1, 2, false] }],
+      ['bold', 'italic', 'underline'],
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      ['link', 'image'],
+      ['clean'],
+    ],
+  }), []);
+
+  const quillRefLibre = useRef();
+  const quillRefRestringido = useRef();
+
+  // archivos nuevos
+  const [files, setFiles] = useState({
     portada: null,
-    galeria_libre: [],
-    galeria_restringida: [],
+    galeria_libre: null,
+    galeria_restringida: null,
+    videos_libres: null,
+    videos_restringidos: null,
   });
-  const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    if (contenidos.length) {
-      const encontrado = contenidos.find((c) => c.slug === slug);
-      if (encontrado) {
-        setContenido(encontrado);
-        setForm({
-          titulo: encontrado.titulo || '',
-          contenido_libre: encontrado.contenido_libre || '',
-          contenido_restringido: encontrado.contenido_restringido || '',
-          tags: (encontrado.tags || '').split(',').join(', '),
-          categoria: String(encontrado.categoria?.id || ''),
-        });
+    console.log('[EditarContenido] useEffect:', loadingHook, contenidos);
+    if (!loadingHook && contenidos.length) {
+      const dato = contenidos.find(c => c.slug === slug);
+      console.log('[EditarContenido] dato encontrado:', dato);
+      if (!dato) {
+        enqueueSnackbar('Contenido no encontrado', { variant: 'error' });
+        navigate('/contenidos');
+        return;
       }
+      reset({
+        titulo: dato.titulo || '',
+        resumen: dato.resumen || '',
+        contenido_libre: dato.contenido_libre || '',
+        contenido_restringido: dato.contenido_restringido || '',
+        restringido: !!dato.restringido,
+        status: dato.status || 'borrador',
+        tags: (dato.tags || []).join(', '),
+        fecha_publicacion: dayjs(dato.fecha_publicacion),
+        categoria: String(dato.categoria?.id || ''),
+      });
+      setInitialMediaUrls({
+        portada: dato.portada?.url || null,
+        galeria_libre: dato.galeria_libre?.map(m => m.url) || [],
+        galeria_restringida: dato.galeria_restringida?.map(m => m.url) || [],
+        videos_libres: dato.videos_libres?.map(m => m.url) || [],
+        videos_restringidos: dato.videos_restringidos?.map(m => m.url) || [],
+      });
+      setCargando(false);
+      console.log('[EditarContenido] formulario inicializado');
     }
-  }, [contenidos, slug]);
+  }, [loadingHook, contenidos, slug, reset, enqueueSnackbar, navigate]);
 
-  if (loading || !contenido) {
+  const handleFileChange = e => {
+    const { name, files: f } = e.target;
+    console.log('[EditarContenido] archivo cambiado:', name, f);
+    setFiles(prev => ({ ...prev, [name]: f }));
+  };
+
+  const onSubmit = async data => {
+    console.log('[EditarContenido] onSubmit data:', data);
+    console.log('[EditarContenido] onSubmit files:', files);
+    const id = contenidos.find(c => c.slug === slug)?.id;
+    console.log('[EditarContenido] onSubmit id:', id);
+    try {
+      const mediaPayload = {};
+      for (const key of Object.keys(files)) {
+        if (files[key]?.length) {
+          console.log('[EditarContenido] subiendo media:', key);
+          const up = await subirMedia(files[key]);
+          console.log('[EditarContenido] media subida:', key, up);
+          mediaPayload[key] = up;
+        }
+      }
+      const payload = {
+        ...data,
+        tags: data.tags.split(',').map(t => t.trim()).filter(Boolean),
+        fecha_publicacion: data.fecha_publicacion.toISOString(),
+        categoria: Number(data.categoria) || null,
+      };
+      console.log('[EditarContenido] payload final:', payload);
+      const res = await editarContenido(id, payload, mediaPayload);
+      console.log('[EditarContenido] editarContenido res:', res);
+      enqueueSnackbar('Contenido actualizado con éxito', { variant: 'success' });
+      navigate(`/contenido/${slug}`);
+    } catch (err) {
+      console.error('[EditarContenido] error onSubmit:', err);
+      enqueueSnackbar(`Error: ${err.message}`, { variant: 'error' });
+    }
+  };
+
+  if (cargando) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
         <CircularProgress />
       </Box>
     );
   }
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-    if (name === 'portada') {
-      setMedia((m) => ({ ...m, portada: files }));
-    } else {
-      setMedia((m) => ({ ...m, [name]: Array.from(files) }));
-    }
-  };
-
-  const handleGuardar = async () => {
-    setSaving(true);
-    try {
-      await editarContenido(contenido.id, form, media);
-      navigate(`/contenido/${contenido.slug}`);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleCancelar = () => {
-    navigate(-1);
-  };
-
-  const handleEliminar = async () => {
-    if (window.confirm('¿Seguro que deseas eliminar este contenido?')) {
-      setDeleting(true);
-      try {
-        await eliminarContenido(contenido.id);
-        navigate('/contenidos');
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setDeleting(false);
-      }
-    }
-  };
+  const restringido = watch('restringido');
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
-      <Typography variant="h5" gutterBottom>
-        Editar Contenido
-      </Typography>
+    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
-        <Stack spacing={2}>
-          <TextField
-            label="Título"
-            name="titulo"
-            value={form.titulo}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Contenido Libre"
-            name="contenido_libre"
-            value={form.contenido_libre}
-            onChange={handleChange}
-            multiline
-            rows={4}
-            fullWidth
-          />
-          <TextField
-            label="Contenido Restringido"
-            name="contenido_restringido"
-            value={form.contenido_restringido}
-            onChange={handleChange}
-            multiline
-            rows={4}
-            fullWidth
-          />
-          <TextField
-            label="Tags (separados por coma)"
-            name="tags"
-            value={form.tags}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            select
-            label="Categoría"
-            name="categoria"
-            value={form.categoria}
-            onChange={handleChange}
-            fullWidth
-          >
-            {categorias && categorias.map((cat) => (
-              <MenuItem key={cat.id} value={String(cat.id)}>
-                {cat.nombre}
-              </MenuItem>
+        <Typography variant="h5" gutterBottom>
+          Editar Contenido
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Grid container spacing={2}>
+            {/* Título */}
+            <Grid item xs={12}>
+              <Controller
+                name="titulo"
+                control={control}
+                rules={{ required: 'El título es obligatorio' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Título"
+                    fullWidth
+                    error={!!errors.titulo}
+                    helperText={errors.titulo?.message}
+                  />
+                )}
+              />
+            </Grid>
+            {/* Resumen */}
+            <Grid item xs={12}>
+              <Controller
+                name="resumen"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Resumen"
+                    fullWidth
+                    multiline
+                    rows={2}
+                  />
+                )}
+              />
+            </Grid>
+            {/* Contenido Libre */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1">Contenido libre</Typography>
+              <Controller
+                name="contenido_libre"
+                control={control}
+                render={({ field }) => (
+                  <ReactQuill
+                    ref={quillRefLibre}
+                    theme="snow"
+                    value={field.value}
+                    onChange={html => field.onChange(html)}
+                    modules={quillModules}
+                    style={{ height: 200, marginBottom: 16 }}
+                  />
+                )}
+              />
+            </Grid>
+            {/* Contenido Restringido */}
+            {restringido && (
+              <Grid item xs={12}>
+                <Typography variant="subtitle1">Contenido restringido</Typography>
+                <Controller
+                  name="contenido_restringido"
+                  control={control}
+                  render={({ field }) => (
+                    <ReactQuill
+                      ref={quillRefRestringido}
+                      theme="snow"
+                      value={field.value}
+                      onChange={html => field.onChange(html)}
+                      modules={quillModules}
+                      style={{ height: 200, marginBottom: 16 }}
+                    />
+                  )}
+                />
+              </Grid>
+            )}
+            {/* Chequeo restringido */}
+            <Grid item xs={12}>
+              <Controller
+                name="restringido"
+                control={control}
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={<Checkbox {...field} checked={field.value} />}
+                    label="¿Contenido restringido?"
+                  />
+                )}
+              />
+            </Grid>
+            {/* Tags */}
+            <Grid item xs={12}>
+              <Controller
+                name="tags"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    label="Tags (separados por coma)"
+                    fullWidth
+                  />
+                )}
+              />
+            </Grid>
+            {/* Fecha y status */}
+            <Grid item xs={6}>
+              <Controller
+                name="fecha_publicacion"
+                control={control}
+                render={({ field }) => (
+                  <DatePicker
+                    label="Fecha de publicación"
+                    value={field.value}
+                    onChange={val => field.onChange(val)}
+                    renderInput={params => <TextField fullWidth {...params} />}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Controller
+                name="status"
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    label="Status"
+                    fullWidth
+                  >
+                    <MenuItem value="borrador">Borrador</MenuItem>
+                    <MenuItem value="publicado">Publicado</MenuItem>
+                  </TextField>
+                )}
+              />
+            </Grid>
+            {/* Categoría */}
+            <Grid item xs={12}>
+              <Controller
+                name="categoria"
+                control={control}
+                rules={{ required: 'Selecciona una categoría' }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    select
+                    label="Categoría"
+                    fullWidth
+                    error={!!errors.categoria}
+                    helperText={errors.categoria?.message}
+                  >
+                    {categorias.map(cat => (
+                      <MenuItem key={cat.id} value={String(cat.id)}>
+                        {cat.nombre}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </Grid>
+            {/* Media: Portada */}
+            <Grid item xs={12}>
+              <Typography>Portada existente:</Typography>
+              {initialMediaUrls.portada && (
+                <Box
+                  component="img"
+                  src={initialMediaUrls.portada}
+                  sx={{ maxWidth: 200, mb: 1 }}
+                />
+              )}
+              <Button variant="contained" component="label">
+                Cambiar portada
+                <input
+                  type="file"
+                  hidden
+                  name="portada"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </Button>
+            </Grid>
+            {/* Galerías y videos */}
+            {['galeria_libre', 'galeria_restringida', 'videos_libres', 'videos_restringidos'].map(name => (
+              <Grid item xs={12} key={name}>
+                <Typography>{name.replace('_', ' ')} existente:</Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                  {initialMediaUrls[name]?.map((url, i) => (
+                    /\.(mp4|webm)$/.test(url)
+                      ? <video key={i} src={url} width={120} controls />
+                      : <Box component="img" key={i} src={url} width={120} />
+                  ))}
+                </Box>
+                <Button variant="outlined" component="label">
+                  Subir nuevos {name.replace('_', ' ')}
+                  <input
+                    type="file"
+                    hidden
+                    multiple
+                    name={name}
+                    accept={name.startsWith('videos') ? 'video/*' : 'image/*'}
+                    onChange={handleFileChange}
+                  />
+                </Button>
+              </Grid>
             ))}
-          </TextField>
-          <TextField
-            type="file"
-            name="portada"
-            inputProps={{ accept: 'image/*' }}
-            onChange={handleFileChange}
-          />
-          <TextField
-            type="file"
-            name="galeria_libre"
-            inputProps={{ accept: 'image/*', multiple: true }}
-            onChange={handleFileChange}
-          />
-          <TextField
-            type="file"
-            name="galeria_restringida"
-            inputProps={{ accept: 'image/*', multiple: true }}
-            onChange={handleFileChange}
-          />
-          <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-            <Button
-              variant="contained"
-              onClick={handleGuardar}
-              disabled={saving}
-            >
-              {saving ? 'Guardando...' : 'Guardar'}
+            {/* Botones */}
+            <Grid item xs={12} sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                <Button
+                    type="button"
+                    variant="contained"
+                    disabled={isSubmitting}
+                    onClick={e => {
+                    console.group('🔘 BOTÓN Guardar Click');
+                    console.log(' getValues():', getValues());
+                    console.log(' files state:', files);
+                    console.log(' errors actuales:', errors);
+                    console.log(' isSubmitting:', isSubmitting);
+                    console.log('> Ahora llamando a handleSubmit(onSubmit)…');
+                    handleSubmit(onSubmit)(e);
+                    console.groupEnd();
+                    }}
+                >
+                    {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+            <Button variant="outlined" onClick={() => navigate(-1)}>
+                Cancelar
             </Button>
-            <Button variant="outlined" onClick={handleCancelar}>
-              Cancelar
-            </Button>
-            <Button
-              variant="text"
-              color="error"
-              onClick={handleEliminar}
-              disabled={deleting}
-            >
-              {deleting ? 'Eliminando...' : 'Eliminar'}
-            </Button>
-          </Box>
-        </Stack>
+            </Grid>
+          </Grid>
+        </Box>
       </Paper>
     </Container>
   );

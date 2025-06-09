@@ -225,30 +225,70 @@ const [autoresMap, setAutoresMap] = useState({});
 
 
   async function editarContenido(id, cambios, media = {}) {
-    const dataCampos = {
-      ...cambios,
-      tags: Array.isArray(cambios.tags) ? cambios.tags.join(',') : (cambios.tags || ''),
-      categoria: Number(cambios.categoria) || null,
-    };
+  // 1. Log inicial
+  console.log('[useContenido] editarContenido llamado con:', { id, cambios, media });
 
-    if (media.portada) dataCampos.portada = media.portada[0];
-    if (media.galeria_libre) dataCampos.galeria_libre = media.galeria_libre;
-    if (media.galeria_restringida) dataCampos.galeria_restringida = media.galeria_restringida;
-    if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
-    if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
+  // 2. Construir dataCampos
+  const dataCampos = {
+    ...cambios,
+    tags: Array.isArray(cambios.tags)
+      ? cambios.tags.join(',')
+      : (cambios.tags || ''),
+    categoria: Number(cambios.categoria) || null,
+  };
+  if (media.portada) dataCampos.portada = media.portada[0];
+  if (media.galeria_libre) dataCampos.galeria_libre = media.galeria_libre;
+  if (media.galeria_restringida) dataCampos.galeria_restringida = media.galeria_restringida;
+  if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
+  if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
+  console.log('[useContenido] dataCampos preparados:', dataCampos);
 
-    const res = await fetch(`${STRAPI_URL}/contenidos/${id}`, {
+  // 3. Preparar petición
+  const url = `${STRAPI_URL}/api/contenidos/${id}`;
+  const body = JSON.stringify({ data: dataCampos });
+  console.log('[useContenido] Preparando PUT a:', url);
+  console.log('[useContenido] Body:', body);
+
+  // 4. Ejecutar fetch
+  let res;
+  try {
+    res = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: dataCampos }),
+      body,
     });
-    if (!res.ok) {
-      const errData = await res.json().catch(() => null);
-      console.error('Error al editar contenido:', errData?.error || errData);
-      throw new Error('No se pudo editar el contenido');
-    }
-    await fetchContenidos();
+  } catch (networkErr) {
+    console.error('[useContenido] Error de red al hacer PUT:', networkErr);
+    throw new Error(`Error de red: ${networkErr.message}`);
   }
+
+  console.log('[useContenido] Response received. Status:', res.status, 'ok:', res.ok);
+
+  // 5. Leer cuerpo de respuesta
+  let text;
+  try {
+    text = await res.text();
+    console.log('[useContenido] Response body text:', text);
+  } catch (e) {
+    console.warn('[useContenido] No se pudo leer body como texto:', e);
+  }
+
+  // 6. Manejo de errores HTTP
+  if (!res.ok) {
+    let errData = null;
+    try {
+      errData = JSON.parse(text);
+    } catch {}
+    console.error('[useContenido] Error al editar contenido:', res.status, errData);
+    throw new Error(`No se pudo editar el contenido (${res.status})`);
+  }
+
+  // 7. Refrescar lista de contenidos
+  console.log('[useContenido] Éxito en PUT. Actualizando lista de contenidos…');
+  await fetchContenidos();
+  console.log('[useContenido] Lista de contenidos actualizada');
+}
+
 
   async function eliminarContenido(id) {
     const res = await fetch(`${STRAPI_URL}/api/contenidos/${id}`, {
