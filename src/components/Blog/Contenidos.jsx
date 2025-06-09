@@ -18,6 +18,7 @@ import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
 import { useContenido } from '../../hooks/useContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
+import ContenidoDetalle from '../../Pages/Blog/Contenido'; // <-- Importación añadida
 
 const Contenidos = ({ filtros, parametros }) => {
   //TODO  REEMPLAZAR POR CONTEXTO
@@ -75,6 +76,7 @@ const Contenidos = ({ filtros, parametros }) => {
 console.log('CONTENIDOS:', contenidos);
 return authorId === usuarioLogueado;
 }
+   
     if (filtros === 'categoria') {
   // Debug: muestra la estructura de categoría
   console.log('DATA.categoria →', data.categoria);
@@ -270,50 +272,54 @@ return authorId === usuarioLogueado;
         <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
           Contenidos Recientes
         </Typography>
-        <Grid container spacing={2}>
-          {loading && (
-            <Grid item xs={12}>
-              <Typography align="center">Cargando contenidos...</Typography>
-            </Grid>
-          )}
-          {error && (
-            <Grid item xs={12}>
-              <Typography color="error" align="center">
-                Error al cargar contenidos
-              </Typography>
-            </Grid>
-          )}
-          {!loading && toRender.length === 0 && (
-            <Grid item xs={12}>
-              <Typography align="center">No hay contenidos aún.</Typography>
-            </Grid>
-          )}
-          {toRender.map((item, i) => {
-            const { categoria, ...restData } = item.attributes ?? item;
-            const data = restData;
-            const categoriaNombre = categoria?.nombre || null;
-            const isVis = visible[item.id];
-            return (
-              <Grid
-                key={item.id}
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                data-id={item.id}
-                className="contenido-card"
-                sx={{
-                  opacity: isVis ? 1 : 0,
-                  transform: isVis ? 'translateY(0)' : 'translateY(20px)',
-                  transition: `all 0.6s ease ${i * 0.1}s`,
-                }}
-              >
-                <ContenidoCard {...data} categoria={categoriaNombre} id={item.id} />
-              </Grid>
-            );
-          })}
-        </Grid>
 
+        {filtros === 'editar' ? (
+          <ContenidoDetalle slug={parametros} />
+        ) : (
+          <Grid container spacing={2}>
+            {loading && (
+              <Grid item xs={12}>
+                <Typography align="center">Cargando contenidos...</Typography>
+              </Grid>
+            )}
+            {error && (
+              <Grid item xs={12}>
+                <Typography color="error" align="center">
+                  Error al cargar contenidos
+                </Typography>
+              </Grid>
+            )}
+            {!loading && toRender.length === 0 && (
+              <Grid item xs={12}>
+                <Typography align="center">No hay contenidos aún.</Typography>
+              </Grid>
+            )}
+            {toRender.map((item, i) => {
+              const { categoria, ...restData } = item.attributes ?? item;
+              const data = restData;
+              const categoriaNombre = categoria?.nombre || null;
+              const isVis = visible[item.id];
+              return (
+                <Grid
+                  key={item.id}
+                  item
+                  xs={12}
+                  sm={6}
+                  md={4}
+                  data-id={item.id}
+                  className="contenido-card"
+                  sx={{
+                    opacity: isVis ? 1 : 0,
+                    transform: isVis ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `all 0.6s ease ${i * 0.1}s`,
+                  }}
+                >
+                  <ContenidoCard {...data} categoria={categoriaNombre} id={item.id} />
+                </Grid>
+              );
+            })}
+          </Grid>
+        )}
           
         {!loading && paginar === true  && (
           <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>

@@ -45,6 +45,10 @@ const ContenidoCard = ({
     navigate(`/contenido/${slug}`);
   };
 
+  const handleEdit = () => {
+    navigate(`/contenidos/editar/${slug}`);
+  };
+
   return (
     <Card
       sx={{
@@ -87,8 +91,13 @@ const ContenidoCard = ({
           </Typography>
         )}
 
-        <Box display="flex" justifyContent="flex-end" mt={2}>
+        <Box display="flex" justifyContent="space-between" mt={2}>
+          <Button onClick={handleEdit} variant="outlined" size="small" sx={{ display: 'flex', alignItems: 'center' }}>
+            <span className="material-icons" style={{ marginRight: 4 }}>edit</span>
+            Editar
+          </Button>
           <Button onClick={handleClick} variant="outlined" size="small">
+            <span className="material-icons" style={{ marginRight: 4 }}>chevron_right</span>
             Leer más
           </Button>
         </Box>

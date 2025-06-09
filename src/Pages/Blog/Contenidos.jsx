@@ -43,6 +43,11 @@ const ContenidosCategoria = () => {
   return <Contenidos filtros="categoria" parametros={slug} />;
 };
 
+const ContenidosEditar = () => {
+  const { slug } = useParams();
+  return <Contenidos filtros="editar" parametros={slug} />;
+};
+
 const ContenidosPage = () => {
   return (
     <Routes>
@@ -54,6 +59,8 @@ const ContenidosPage = () => {
       <Route path="busqueda/:cadena" element={<ContenidosBusqueda />} />
       {/* /contenidos/categoria/:slug */}
       <Route path="categoria/:slug" element={<ContenidosCategoria />} />
+      {/* /contenidos/editar/:slug */}
+      <Route path="categoria/:slug" element={<ContenidosEditar />} />
     </Routes>
   );
 };

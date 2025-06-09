@@ -14,7 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import FechaCdmx from '../../utils/FechaCdmx';
 
-const ContenidoDetalle = () => {
+const EditarContenido = () => {
     console.warn('****************** entrando a contenido');
   const membresia = true;
   const { slug } = useParams();
@@ -92,6 +92,7 @@ const ContenidoDetalle = () => {
 
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
+        <h1>Editar Contenido...</h1>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
         {contenido.portada && (
           <CardMedia
@@ -203,4 +204,4 @@ const ContenidoDetalle = () => {
   );
 };
 
-export default ContenidoDetalle;
+export default EditarContenido;
