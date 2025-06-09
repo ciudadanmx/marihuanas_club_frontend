@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import FechaCdmx from '../../utils/FechaCdmx';
 
 const ContenidoDetalle = () => {
   const { slug } = useParams();
@@ -109,7 +110,7 @@ const ContenidoDetalle = () => {
             Publicado por: {contenido.autor}
           </Typography>
           <Typography variant="subtitle2" color="text.secondary">
-            {contenido.fecha_publicacion}
+            {FechaCdmx(contenido.fecha_publicacion)}
           </Typography>
         </Box>
 
