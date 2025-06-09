@@ -23,6 +23,7 @@ export default function FechaCdmx(fechaISO) {
   let weekday = map.weekday || '';
   weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
   let month = (map.month || '').replace(/\.$/, '');
+  month = month.charAt(0).toUpperCase() + month.slice(1);
 
   // 4) Construye la cadena final
   const day = map.day;
