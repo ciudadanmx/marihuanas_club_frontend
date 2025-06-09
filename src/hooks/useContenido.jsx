@@ -37,8 +37,8 @@ const [autoresMap, setAutoresMap] = useState({});
       setLoading(true);
       let urlFiltrada = `${STRAPI_URL}/api/contenidos?populate=portada,autor,autor_nombre,autor_email,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria`;
       
-      if (filtros === 'usuario') {
-        urlFiltrada += `&filters[autor_email][$eq]=yizuzimix@gmail.com`;
+      if (filtros === 'mis-contenidos') {
+        urlFiltrada += ``;
       }
 
       else {
@@ -64,6 +64,7 @@ const [autoresMap, setAutoresMap] = useState({});
           titulo: a.titulo,
           slug: a.slug,
           autor: a.autor_nombre || 'Anónimo',
+          autor_email: a.autor_email || '',
           contenido_libre: DOMPurify.sanitize(a.contenido_libre || ''),
           contenido_restringido: DOMPurify.sanitize(a.contenido_restringido || ''),
           status: a.status,

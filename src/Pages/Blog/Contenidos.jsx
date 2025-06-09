@@ -6,7 +6,8 @@ import Contenidos from '../../components/Blog/Contenidos';
 // Wrappers to extract URL params and pass props to Contenidos
 const ContenidosUsuario = () => {
   const { user } = useAuth0();
-  return <Contenidos filtros="mis-contenidos" parametros={user.email} />;
+  const usuario = user?.email || ''; // Verifica si user existe antes de acceder a .email
+  return <Contenidos filtros="mis-contenidos" parametros={usuario} />;
 };
 
 const ContenidosBusqueda = () => {

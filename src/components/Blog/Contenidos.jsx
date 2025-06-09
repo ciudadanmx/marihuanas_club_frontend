@@ -69,10 +69,12 @@ const Contenidos = ({ filtros, parametros }) => {
   const filtered = (contenidos || []).filter((item) => {
     const data = item.attributes ?? item;
     if (!filtros) return true;
-    if (filtros === 'usuario') {
-      const authorId = data.author?.data?.id ?? data.author?.id;
-      return authorId?.toString() === parametros;
-    }
+    if (filtros === 'mis-contenidos') {
+  const authorId = (data.autor_email ?? '').trim().toLowerCase();
+const miEmail = authorId;
+console.log('CONTENIDOS:', contenidos);
+return authorId === miEmail;
+}
     if (filtros === 'categoria') {
   // Debug: muestra la estructura de categoría
   console.log('DATA.categoria →', data.categoria);
@@ -169,12 +171,12 @@ const Contenidos = ({ filtros, parametros }) => {
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
               onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                if (e.key === 'Enter') {
                     console.log('buscaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaandooooooooooo', e.target.value);
                     setBusqueda(e.target.value); // Ejecuta la búsqueda al presionar Enter
                     handleBuscar();
-                    }
-                }}
+                }
+              }}
               sx={{
                 flex: 1,
                 minWidth: { xs: '100%', md: '250px' },
