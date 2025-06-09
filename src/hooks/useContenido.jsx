@@ -43,8 +43,7 @@ const [autoresMap, setAutoresMap] = useState({});
       const parsed = items.map(item => {
         const a = item.attributes;
         const cat = a.categoria?.data;
-        console.log(` * * * * * * * * * * *  useContenidos ${a.titulo}`);
-        console.log(` * * * * * * * * * * *  useContenidos`, a);
+        //TODO:    EXTRAER AL USUARIO DEL CAMPO DE RELACIÓN AUTOR  CON LA COLECCIÓN USUARIOS DE STRAPI
         return {
           id: item.id,
           titulo: a.titulo,

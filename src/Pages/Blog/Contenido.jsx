@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import FechaCdmx from '../../utils/FechaCdmx';
 
 const ContenidoDetalle = () => {
-  const mostrar_restringido = false;
+  const mostrar_restringido = true;
   const { slug } = useParams();
   const { contenidos, loading } = useContenido();
   const [contenido, setContenido] = useState(null);
