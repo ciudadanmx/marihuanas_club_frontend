@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 import FechaCdmx from '../../utils/FechaCdmx';
 
 const ContenidoDetalle = () => {
-  const mostrar_restringido = true;
+  const membresia = true;
   const { slug } = useParams();
   const { contenidos, loading } = useContenido();
   const [contenido, setContenido] = useState(null);
@@ -140,7 +140,7 @@ const ContenidoDetalle = () => {
 
         {/* Contenido Restringido o llamada a adquirir membresía */}
         {contenido.contenido_restringido ? (
-        mostrar_restringido ? (
+        membresia ? (
             <>
             <Typography variant="h6" gutterBottom>
                 Contenido Restringido

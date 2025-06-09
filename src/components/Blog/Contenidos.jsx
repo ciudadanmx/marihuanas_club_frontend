@@ -20,6 +20,8 @@ import { useContenido } from '../../hooks/useContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
 
 const Contenidos = ({ filtros, parametros }) => {
+  //TODO  REEMPLAZAR POR CONTEXTO
+  const editor = true;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
   const { getCategorias } = useCategorias('categorias-contenidos');
@@ -186,6 +188,7 @@ const Contenidos = ({ filtros, parametros }) => {
             >
               <span className="material-icons">search</span>
             </Button>
+            {editor === true ? (
             <Button
               onClick={handleMis}
               variant="outlined"
@@ -204,6 +207,9 @@ const Contenidos = ({ filtros, parametros }) => {
               </span>
               Mis contenidos
             </Button>
+            ): (<></>)
+            }
+            {editor === true ? ( 
             <Button
               onClick={handleAgregar}
               variant="contained"
@@ -217,6 +223,9 @@ const Contenidos = ({ filtros, parametros }) => {
             >
               <span className="material-icons">add_circle</span>
             </Button>
+            ): (<></>)
+            }
+
           </Stack>
         </Box>
       </Slide>
