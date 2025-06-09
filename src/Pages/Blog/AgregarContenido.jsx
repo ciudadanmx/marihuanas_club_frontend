@@ -370,6 +370,7 @@ const AgregarContenido = () => {
                                     onChange={field.onChange}
                                     style={{ height: '200px', marginBottom: '1rem' }}
                                     readOnly={!restringido}
+                                    modules={quillModules}
                                 />
                                 )}
                             </>
