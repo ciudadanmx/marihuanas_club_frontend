@@ -19,6 +19,8 @@ export function useContenido() {
   const [error, setError] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [porPagina, setPorPagina] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
+
 
   useEffect(() => {
     fetchContenidos();
@@ -34,6 +36,7 @@ export function useContenido() {
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
+      setTotalItems(data.meta.pagination.total);
       const parsed = items.map(item => {
         const a = item.attributes;
         const cat = a.categoria?.data;
@@ -262,5 +265,6 @@ export function useContenido() {
     setPagina,
     porPagina,
     setPorPagina,
+    totalItems,
   };
 }
