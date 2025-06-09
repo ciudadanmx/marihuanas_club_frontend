@@ -139,20 +139,20 @@ const ContenidoDetalle = () => {
         )}
 
         {/* Contenido Restringido o llamada a adquirir membresía */}
-{contenido.contenido_restringido ? (
-  mostrar_restringido ? (
-    <>
-      <Typography variant="h6" gutterBottom>
-        Contenido Restringido
-      </Typography>
-      {renderHtml(contenido.contenido_restringido)}
-    </>
-  ) : (
-    <Typography variant="h6" gutterBottom>
-        <h1><font color="red">Contenido VIP</font></h1>
-      </Typography>
-  )
-) : null}
+        {contenido.contenido_restringido ? (
+        mostrar_restringido ? (
+            <>
+            <Typography variant="h6" gutterBottom>
+                Contenido Restringido
+            </Typography>
+            {renderHtml(contenido.contenido_restringido)}
+            </>
+        ) : (
+            <Typography variant="h6" gutterBottom>
+                <h1><font color="red">Contenido VIP</font></h1>
+            </Typography>
+        )
+        ) : null}
 
         {/* Galería Libre */}
         {contenido.galeria_libre.length > 0 && (

@@ -15,6 +15,8 @@ const [autoresMap, setAutoresMap] = useState({});
   //const { user } = useAuth0();
   const esEditor = useRolEditor(user?.email);
 
+  const [total, setTotal] = useState(0);
+
   const [contenidos, setContenidos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,15 +32,28 @@ const [autoresMap, setAutoresMap] = useState({});
 }, [pagina, porPagina, user]);
 
 
-  async function fetchContenidos() {
+  async function fetchContenidos(filtros, parametros) {
     try {
       setLoading(true);
+      let urlFiltrada = `${STRAPI_URL}/api/contenidos?populate=portada,autor,autor_nombre,autor_email,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria`;
+      
+      if (filtros === 'usuario') {
+        urlFiltrada += `&filters[autor_email][$eq]=yizuzimix@gmail.com`;
+      }
+
+      else {
+        urlFiltrada += `&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`;
+      }
+      
+      console.warn(`* * * * - * - * / * - */ / * / * /* / * /* / * /* / * /*  `, urlFiltrada);
       const res = await fetch(
-        `${STRAPI_URL}/api/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`
+        urlFiltrada
       );
+      
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
+      //setTotal(res.data.meta.pagination.total);
       setTotalItems(data.meta.pagination.total);
       const parsed = items.map(item => {
         const a = item.attributes;
@@ -111,7 +126,7 @@ const [autoresMap, setAutoresMap] = useState({});
   if (!user) return;
   try {
     const res = await fetch(
-      `${STRAPI_URL}/users?filters[email][$eq]=${encodeURIComponent(user.email)}`
+      `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(user.email)}`
     );
     const json = await res.json();
     const data = json.data || [];
@@ -301,5 +316,6 @@ const [autoresMap, setAutoresMap] = useState({});
     porPagina,
     setPorPagina,
     totalItems,
+    total
   };
 }

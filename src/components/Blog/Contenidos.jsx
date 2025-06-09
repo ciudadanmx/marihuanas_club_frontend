@@ -71,9 +71,22 @@ const Contenidos = ({ filtros, parametros }) => {
       return authorId?.toString() === parametros;
     }
     if (filtros === 'categoria') {
-      const slug = data.category?.data?.attributes?.slug ?? data.category?.slug;
-      return slug === parametros;
-    }
+  // Debug: muestra la estructura de categoría
+  console.log('DATA.categoria →', data.categoria);
+
+  // Extrae el slug según la forma que venga
+  let catSlug;
+  if (data.categoria?.data?.attributes?.slug) {
+    // Forma anidada Strapi
+    catSlug = data.categoria.data.attributes.slug;
+  } else if (data.categoria?.slug) {
+    // Forma plana que viste en consola
+    catSlug = data.categoria.slug;
+  }
+
+  console.log('Comparando slug de categoría:', catSlug, 'vs parámetros:', parametros);
+  return catSlug === parametros;
+}
     if (filtros === 'busqueda') {
       const term = parametros?.toLowerCase() || '';
       const titulo = (data.titulo ?? data.nombre ?? '').toLowerCase();
@@ -121,6 +134,11 @@ const Contenidos = ({ filtros, parametros }) => {
     document.querySelectorAll('.contenido-card').forEach((c) => observer.current.observe(c));
     return () => observer.current.disconnect();
   }, [toRender]);
+
+
+  const paginar=toRender.length >= porPagina || pagina > 1; 
+    //const paginar=true;
+  
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
@@ -276,26 +294,29 @@ const Contenidos = ({ filtros, parametros }) => {
           })}
         </Grid>
 
-        <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
-          {/* Paginación con Material UI */}
+          
+        {!loading && paginar === true  && (
+          <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
+            {/* Paginación con Material UI */}
             <Pagination
-                count={Math.ceil(totalItems / porPagina)}
-                page={pagina}
-                onChange={(_, v) => setPagina(v)}
+              count={Math.ceil(totalItems / porPagina)}
+              page={pagina}
+              onChange={(_, v) => setPagina(v)}
             />
             <TextField
-                select
-                value={porPagina}
-                onChange={(e) => setPorPagina(Number(e.target.value))}
-                SelectProps={{ native: true }}
-                size="small"
-                sx={{ width: 80, ml: 2 }}
+              select
+              value={porPagina}
+              onChange={(e) => setPorPagina(Number(e.target.value))}
+              SelectProps={{ native: true }}
+              size="small"
+              sx={{ width: 80, ml: 2 }}
             >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
             </TextField>
-        </Grid>
+          </Grid>
+        )}
       </Box>
     </Container>
   );
