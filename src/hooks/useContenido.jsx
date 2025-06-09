@@ -17,16 +17,20 @@ export function useContenido() {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagina, setPagina] = useState(1);
+  const [porPagina, setPorPagina] = useState(10);
 
   useEffect(() => {
     fetchContenidos();
     fetchCategorias();
-  }, []);
+  }, [pagina, porPagina]);
 
   async function fetchContenidos() {
     try {
       setLoading(true);
-      const res = await fetch(`${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida`);
+      const res = await fetch(
+        `${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}`
+      );
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
@@ -254,5 +258,9 @@ export function useContenido() {
     getContenidoById,
     filtrarPorCategoria,
     buscarPorTexto,
+    pagina,
+    setPagina,
+    porPagina,
+    setPorPagina,
   };
 }

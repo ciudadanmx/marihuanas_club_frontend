@@ -21,7 +21,16 @@ import ContenidoCard from '../../components/Blog/ContenidoCard';
 const Contenidos = ({ filtros, parametros }) => {
   const STRAPI_URL  = process.env.REACT_APP_STRAPI_URL;
   const { getCategorias } = useCategorias('categorias-contenidos');
-  const { contenidos, loading, error, fetchContenidos } = useContenido();
+  const {
+    contenidos,
+    loading,
+    error,
+    pagina,
+    setPagina,
+    porPagina,
+    setPorPagina,
+    fetchContenidos
+  } = useContenido();
 
   const [categorias, setCategorias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
@@ -46,10 +55,10 @@ const Contenidos = ({ filtros, parametros }) => {
     })();
   }, []);
 
-  // Fetch contenidos
+  // Fetch contenidos whenever pagina o porPagina cambian
   useEffect(() => {
     fetchContenidos();
-  }, []);
+  }, [pagina, porPagina]);
 
   // Filter logic
   const filtered = (contenidos || []).filter((item) => {
@@ -156,7 +165,10 @@ const Contenidos = ({ filtros, parametros }) => {
           {error && <Grid item xs={12}><Typography color="error" align="center">Error al cargar contenidos</Typography></Grid>}
           {!loading && toRender.length === 0 && <Grid item xs={12}><Typography align="center">No hay contenidos aún.</Typography></Grid>}
           {toRender.map((item, i) => {
-            const data = item.attributes ?? item;
+            // Extraemos sólo datos primitivos para evitar pasar objetos que React no pueda renderizar directamente
+            const { categoria, ...restData } = item.attributes ?? item;
+            const data = restData;
+            const categoriaNombre = categoria?.nombre || null;
             const isVis = visible[item.id];
             return (
               <Grid
@@ -166,10 +178,33 @@ const Contenidos = ({ filtros, parametros }) => {
                 className="contenido-card"
                 sx={{ opacity: isVis ? 1 : 0, transform: isVis ? 'translateY(0)' : 'translateY(20px)', transition: `all 0.6s ease ${i * 0.1}s` }}
               >
-                <ContenidoCard {...data} id={item.id} />
+                <ContenidoCard {...data} categoria={categoriaNombre} id={item.id} />
               </Grid>
             );
-          })}
+          })
+          }
+        </Grid>
+
+        <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
+          <Button disabled={pagina === 1} onClick={() => setPagina(p => p - 1)} sx={{ mr: 2 }}>
+            Anterior
+          </Button>
+          <Typography> Página {pagina} </Typography>
+          <Button onClick={() => setPagina(p => p + 1)} sx={{ mx: 2 }}>
+            Siguiente
+          </Button>
+          <TextField
+            select
+            value={porPagina}
+            onChange={e => setPorPagina(Number(e.target.value))}
+            SelectProps={{ native: true }}
+            size="small"
+            sx={{ width: 80 }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+          </TextField>
         </Grid>
       </Box>
     </Container>
