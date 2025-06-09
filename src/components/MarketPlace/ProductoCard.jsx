@@ -24,9 +24,10 @@ const ProductoCard = ({
   vendidos,
   total,
 }) => {
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const navigate = useNavigate();
 
-  const imagenValida = imagen && imagen !== `${process.env.REACT_APP_STRAPI_URL}` ? imagen : productoImg;
+  const imagenValida = imagen && imagen !== `${STRAPI_URL}` ? imagen : productoImg;
 
   const estrellas = [];
   if (numeroCalificaciones > 0 && calificacion) {

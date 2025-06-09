@@ -19,6 +19,7 @@ import { useContenido } from '../../hooks/useContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
 
 const Contenidos = ({ filtros, parametros }) => {
+  const STRAPI_URL  = process.env.REACT_APP_STRAPI_URL;
   const { getCategorias } = useCategorias('categorias-contenidos');
   const { contenidos, loading, error, fetchContenidos } = useContenido();
 
@@ -138,7 +139,7 @@ const Contenidos = ({ filtros, parametros }) => {
             <CategoriasSlider
               categorias={
                 Array.isArray(categorias)
-                  ? categorias.map((c) => ({ nombre: c.attributes.nombre, slug: c.attributes.slug, imagen: `${process.env.REACT_APP_STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}` }))
+                  ? categorias.map((c) => ({ nombre: c.attributes.nombre, slug: c.attributes.slug, imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}` }))
                   : []
               }
             />

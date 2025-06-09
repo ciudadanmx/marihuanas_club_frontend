@@ -24,6 +24,7 @@ const DetalleProducto = ({
   cantidad,
   handleCantidadChange
 }) => {
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const [costoEnvio, setCostoEnvio] = useState('Calculando...');
   const { addToCart } = useCart();
 
@@ -36,7 +37,7 @@ const DetalleProducto = ({
       const alto= 2;
       const peso= 2;
 
-      const response = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`, {
+      const response = await fetch(`${STRAPI_URL}/api/shipping/calcular`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cp_origen, cp_destino, cantidad, largo, ancho, alto, peso })

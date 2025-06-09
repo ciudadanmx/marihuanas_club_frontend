@@ -202,25 +202,6 @@ body {
 }
 
 
-<<<<<<< HEAD
-.ql-html {
-  /* Tamaño y color del ícono/texto */
-  width: 1.5em;
-  height: 1.5em;
-  line-height: 1.5em;
-  text-align: center;
-  font-weight: bold;
-  color: #444;            /* color visible */
-  background-color: red !important;
-  border: none;
-  cursor: pointer;
-}
-
-/* Opcional: al pasar el mouse */
-.ql-html:hover {
-  color: #000;
-=======
 .restringido {
   margin-top: 40px !important;
->>>>>>> dev
 }

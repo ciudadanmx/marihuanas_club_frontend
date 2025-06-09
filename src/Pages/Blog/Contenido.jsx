@@ -12,8 +12,10 @@ import {
   CircularProgress,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
+import FechaCdmx from '../../utils/FechaCdmx';
 
 const ContenidoDetalle = () => {
+  const mostrar_restringido = false;
   const { slug } = useParams();
   const { contenidos, loading } = useContenido();
   const [contenido, setContenido] = useState(null);
@@ -109,7 +111,7 @@ const ContenidoDetalle = () => {
             Publicado por: {contenido.autor}
           </Typography>
           <Typography variant="subtitle2" color="text.secondary">
-            {contenido.fecha_publicacion}
+            {FechaCdmx(contenido.fecha_publicacion)}
           </Typography>
         </Box>
 
@@ -136,6 +138,22 @@ const ContenidoDetalle = () => {
           </>
         )}
 
+        {/* Contenido Restringido o llamada a adquirir membresía */}
+{contenido.contenido_restringido ? (
+  mostrar_restringido ? (
+    <>
+      <Typography variant="h6" gutterBottom>
+        Contenido Restringido
+      </Typography>
+      {renderHtml(contenido.contenido_restringido)}
+    </>
+  ) : (
+    <Typography variant="h6" gutterBottom>
+        <h1><font color="red">Contenido VIP</font></h1>
+      </Typography>
+  )
+) : null}
+
         {/* Galería Libre */}
         {contenido.galeria_libre.length > 0 && (
           <>
@@ -158,15 +176,7 @@ const ContenidoDetalle = () => {
 
         <Divider sx={{ my: 4 }} />
 
-        {/* Contenido Restringido */}
-        {contenido.contenido_restringido && (
-          <>
-            <Typography variant="h6" gutterBottom>
-              Contenido Restringido
-            </Typography>
-            {renderHtml(contenido.contenido_restringido)}
-          </>
-        )}
+        
 
         {/* Galería Restringida */}
         {contenido.galeria_restringida.length > 0 && (

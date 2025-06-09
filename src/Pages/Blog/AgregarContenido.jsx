@@ -1,16 +1,11 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-
+import React, { useState, useMemo, useRef } from 'react';
 import {
   Box,
-  Button,
-  Dialog,
-  DialogActions, 
-  DialogContent, 
-  DialogTitle,
   Container,
   Paper,
   Grid,
   TextField,
+  Button,
   Typography,
   MenuItem,
   FormControlLabel,
@@ -24,19 +19,6 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { useContenido } from '../../hooks/useContenido';
 import { useSnackbar } from 'notistack';
-
-import '../../components/Blog/quillConfig';
-import Quill from 'quill';
-import htmlEditButton from 'quill-html-edit-button';
-
-// IMPORTA highlight.js y su CSS de tema
-import hljs from 'highlight.js';
-import 'highlight.js/styles/github.css';  // o el tema que prefieras
-
-// Haz que el módulo lo encuentre
-window.hljs = hljs;
-
-Quill.register('modules/htmlEditButton', htmlEditButton);
 
 
 const AgregarContenido = () => {
@@ -73,76 +55,37 @@ const AgregarContenido = () => {
   });
   
 
-  const modules = useMemo(() => ({
+  const quillModules = useMemo(() => ({
     toolbar: [
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      [{ font: [] }],
-      [{ size: ['small', false, 'large', 'huge'] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ color: [] }, { background: [] }],
-      [{ script: 'sub' }, { script: 'super' }],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ indent: '-1' }, { indent: '+1' }],
-      [{ align: [] }],
-      ['blockquote', 'code-block'],
-      [{ direction: 'rtl' }],
-      ['link', 'image', 'video'],
-      ['clean'],
-      ['html'],
+        [{ header: [1, 2, 3, 4, 5, 6, false] }],
+    [{ font: [] }],
+    [{ size: ['small', false, 'large', 'huge'] }],
+    ['bold', 'italic', 'underline', 'strike'],
+    [{ color: [] }, { background: [] }],
+    [{ script: 'sub' }, { script: 'super' }],
+    [{ list: 'ordered' }, { list: 'bullet' }],
+    [{ indent: '-1' }, { indent: '+1' }],
+    [{ align: [] }],
+    ['blockquote', 'code-block'],
+    [{ direction: 'rtl' }],
+    ['link', 'image', 'video'],
+    ['clean']
     ],
     htmlEditButton: {
-    debug: true,
-    syntax: false,       // <— desactivamos highlight.js para forzar que funcione sin él
-    msg: 'Editar HTML',
-    okText: 'Guardar',
-    cancelText: 'Cancelar',
-    buttonHTML: '&lt;/&gt;',
-    buttonTitle: 'Editar HTML',
-  },
-  handlers: {
-        html() {
-          // Abre tu diálogo en lugar de usar htmlEditButton
-          setDialogValue(quillRef.current?.getEditor().root.innerHTML || '');
-          setOpenDialog(true);
-        }
-      }
-
+        debug: true,
+        msg: 'Editar HTML',
+        okText: 'Guardar',
+        cancelText: 'Cancelar',
+        buttonHTML: '&lt;/&gt;',
+        buttonTitle: 'Editar HTML',
+        syntax: true, // muestra resaltado de sintaxis si tienes highlight.js
+    },
   }), []);
 
   const quillRefLibre = useRef(null);
 
-    const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
-  const [htmlModeLibre, setHtmlModeLibre] = useState(false);
-  const [contenidoLibre, setContenidoLibre] = useState('');
-
-  const [isHtmlMode, setIsHtmlMode] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [dialogValue, setDialogValue] = useState('');
-    const quillRef = useRef(null);
-
-
-
-    const handleDialogSave = () => {
-    setEditorValue(dialogValue);
-    setOpenDialog(false);
-  };
-
-    // Cuando pasamos de modo HTML a WYSIWYG, actualizamos el form con el contenido actual
-  useEffect(() => {
-    if (!htmlModeLibre) {
-      // el campo se actualiza directamente en handleQuillChange
-    }
-  }, [htmlModeLibre]);
-
   const insertLogoLibre = () => {
   const editor = quillRefLibre.current?.getEditor();
-  const range = editor?.getSelection();
-  if (range) {
-    editor.insertEmbed(range.index, 'image', '/logo.png');
-  }
-};
-  const insertLogoRestringido = () => {
-  const editor = quillRefRestringido.current?.getEditor();
   const range = editor?.getSelection();
   if (range) {
     editor.insertEmbed(range.index, 'image', '/logo.png');
@@ -164,9 +107,10 @@ const AgregarContenido = () => {
   const [subiendo, setSubiendo] = useState(false);
   const [mensaje, setMensaje] = useState('');
 
+  const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
+  const [htmlModeLibre, setHtmlModeLibre] = useState(false);
+  const [contenidoLibre, setContenidoLibre] = useState('');
 
-
-  const [editorValue, setEditorValue] = useState('');
 
   const crearPreviews = (files) =>
     Array.from(files).map((file) => {
@@ -332,16 +276,16 @@ const AgregarContenido = () => {
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)}>
-          <Grid container spacing={2}>
-            {/* Título */}
+            <Grid container spacing={2}>
+                {/* Título */}
             <Grid item xs={12}>
-              <TextField
-                label="Título"
-                fullWidth
-                {...register('titulo', { required: 'Título obligatorio' })}
-                error={!!errors.titulo}
-                helperText={errors.titulo?.message}
-              />
+                <TextField
+                    label="Título"
+                    fullWidth
+                    {...register('titulo', { required: 'Ingresa un título' })}
+                    error={!!errors.titulo}
+                    helperText={errors.titulo?.message}
+                />
             </Grid>
 
             {/* Resumen */}
@@ -354,7 +298,7 @@ const AgregarContenido = () => {
             {/* Contenido libre (WYSIWYG con HTML editable) */}
             <Grid item xs={12}>
                 <Typography variant="subtitle1" gutterBottom>
-                Contenido libre (HTML)
+                Contenido libre: (HTML)
                 </Typography>
                 <Controller
                     name="contenido_libre"
@@ -429,291 +373,291 @@ const AgregarContenido = () => {
             />
             </Grid>
 
-{/* Contenido restringido (WYSIWYG con HTML editable) */}
-<Grid item xs={12}>
-  <Typography variant="subtitle1" gutterBottom>
-    Contenido restringido (HTML)
-  </Typography>
-  <Controller
-    name="contenido_restringido"
-    control={control}
-    render={({ field }) => (
-        
-      <>
-        <Button
-          onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
-          variant="outlined"
-          size="small"
-          sx={{ mb: 1 }}
-          disabled={!restringido}
-        >
-          {htmlModeRestringido ? 'Vista WYSIWYG' : 'Editar HTML'}
-        </Button>
-        {htmlModeRestringido ? (
-          <TextField
-            multiline
-            minRows={8}
-            fullWidth
-            value={field.value}
-            onChange={(e) => field.onChange(e.target.value)}
-            variant="outlined"
-            disabled={!restringido}
-          />
-        ) : (
-          <ReactQuill
-            theme="snow"
-            value={field.value}
-            onChange={field.onChange}
-            style={{ height: '200px', marginBottom: '5rem' }}
-            readOnly={!restringido}
-          />
-        )}
-      </>
-    )}
-  />
-</Grid>
+            {/* Contenido restringido (WYSIWYG con HTML editable) */}
+            <Grid item xs={12}>
+                <Typography variant="subtitle1" gutterBottom>
+                    Contenido restringido (HTML)
+                </Typography>
+                <Controller
+                    name="contenido_restringido"
+                    control={control}
+                    render={({ field }) => (
+                        <>
+                            <Button
+                                onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
+                                variant="outlined"
+                                size="small"
+                                sx={{ mb: 1 }}
+                                disabled={!restringido}
+                            >
+                            {htmlModeRestringido ? 'Editor Visual' : 'Editar HTML'}
+                            </Button>
+                            {htmlModeRestringido ? (
+                            <TextField
+                                multiline
+                                minRows={8}
+                                fullWidth
+                                value={field.value}
+                                onChange={(e) => field.onChange(e.target.value)}
+                                variant="outlined"
+                                disabled={!restringido}
+                            />
+                            ) : (
+                            <ReactQuill
+                                theme="snow"
+                                value={field.value}
+                                onChange={field.onChange}
+                                style={{ height: '200px', marginBottom: '1rem' }}
+                                readOnly={!restringido}
+                            />
+                            )}
+                        </>
+                    )}
+                />
+            </Grid>
 
 
             {/* Status */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Status"
-                select
-                fullWidth
-                defaultValue="borrador"
-                {...register('status')}
-              >
-                <MenuItem value="borrador">Borrador</MenuItem>
-                <MenuItem value="publicado">Publicado</MenuItem>
-                <MenuItem value="archivado">Archivado</MenuItem>
-              </TextField>
+                <TextField
+                    className="restringido"
+                    label="Status"
+                    select
+                    fullWidth
+                    defaultValue="borrador"
+                    {...register('status')}
+                >
+                    <MenuItem value="borrador">Borrador</MenuItem>
+                    <MenuItem value="publicado">Publicado</MenuItem>
+                    <MenuItem value="archivado">Archivado</MenuItem>
+                </TextField>
             </Grid>
 
             {/* Categoría */}
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label="Categoría"
-                select
-                fullWidth
-                {...register('categoria', { required: 'Categoría obligatoria' })}
-                error={!!errors.categoria}
-                helperText={errors.categoria?.message}
-              >
-                {categorias.map((cat) => (
-                  <MenuItem key={cat.id} value={cat.id}>
-                    {cat.nombre}
-                  </MenuItem>
-                ))}
-              </TextField>
+            <Grid item xs={12} sm={6} className="restringido">
+                <TextField
+                    label="Categoría"
+                    select
+                    fullWidth
+                    {...register('categoria', { required: 'Categoría obligatoria' })}
+                    error={!!errors.categoria}
+                    helperText={errors.categoria?.message}
+                >
+                    {categorias.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.id}>
+                            {cat.nombre}
+                        </MenuItem>
+                    ))}
+                </TextField>
             </Grid>
 
             {/* Fecha de publicación */}
             <Grid item xs={12} sm={6}>
-              <Controller
-                control={control}
-                name="fecha_publicacion"
-                render={({ field }) => (
-                  <DatePicker
-                    label="Fecha de publicación"
-                    value={field.value}
-                    onChange={(date) => field.onChange(date)}
-                    renderInput={(params) => <TextField fullWidth {...params} />}
-                  />
-                )}
-              />
+                <Controller
+                    control={control}
+                    name="fecha_publicacion"
+                    render={({ field }) => (
+                        <DatePicker
+                            label="Fecha de publicación"
+                            value={field.value}
+                            onChange={(date) => field.onChange(date)}
+                            renderInput={(params) => <TextField fullWidth {...params} />}
+                        />
+                    )}
+                />
             </Grid>
 
             {/* Tags */}
             <Grid item xs={12} sm={6}>
-              <TextField
-                label="Tags (separados por coma)"
-                fullWidth
-                {...register('tags')}
-              />
+                <TextField
+                    label="Tags (separados por coma)"
+                    fullWidth
+                    {...register('tags')}
+                />
             </Grid>
 
             {/* Portada (archivo único) */}
             <Grid item xs={12}>
-              <InputLabel required>Portada (imagen o video)</InputLabel>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={handlePortadaChange}
-                multiple={false}
-                style={{ marginTop: 8, marginBottom: 8 }}
-              />
-              {errors.portada && (
+                <InputLabel required>Portada (imagen o video)</InputLabel>
+                <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handlePortadaChange}
+                    multiple={false}
+                    style={{ marginTop: 8, marginBottom: 8 }}
+                />
+                {errors.portada && (
                 <Typography color="error" variant="body2">
-                  {errors.portada.message}
+                    {errors.portada.message}
                 </Typography>
-              )}
-              {portadaPreview.length > 0 &&
+                )}
+                {portadaPreview.length > 0 &&
                 portadaPreview.map((file, index) =>
-                  file.type.startsWith('image/') ? (
+                    file.type.startsWith('image/') ? (
                     <img
-                      key={index}
-                      src={file.url}
-                      alt={`Portada Preview ${index}`}
-                      style={{ maxHeight: 150, marginRight: 10 }}
+                        key={index}
+                        src={file.url}
+                        alt={`Portada Preview ${index}`}
+                        style={{ maxHeight: 150, marginRight: 10 }}
                     />
-                  ) : (
-                    <video
-                      key={index}
-                      src={file.url}
-                      controls
-                      style={{ maxHeight: 150, marginRight: 10 }}
-                    />
-                  )
+                    ) : (
+                        <video
+                            key={index}
+                            src={file.url}
+                            controls
+                            style={{ maxHeight: 150, marginRight: 10 }}
+                        />
+                    )
                 )}
             </Grid>
 
             {/* Galería libre (archivos múltiples) */}
             <Grid item xs={12}>
-              <InputLabel>Galería libre (imágenes/videos)</InputLabel>
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={handleGaleriaLibreChange}
-                multiple
-                style={{ marginTop: 8, marginBottom: 8 }}
-              />
-              {galeriaLibrePreview.length > 0 &&
+                <InputLabel>Galería libre (imágenes/videos)</InputLabel>
+                <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleGaleriaLibreChange}
+                    multiple
+                    style={{ marginTop: 8, marginBottom: 8 }}
+                />
+                {galeriaLibrePreview.length > 0 &&
                 galeriaLibrePreview.map((file, index) =>
-                  file.type.startsWith('image/') ? (
+                    file.type.startsWith('image/') ? (
                     <img
-                      key={index}
-                      src={file.url}
-                      alt={`Galería libre ${index}`}
-                      style={{ maxHeight: 100, marginRight: 10 }}
+                        key={index}
+                        src={file.url}
+                        alt={`Galería libre ${index}`}
+                        style={{ maxHeight: 100, marginRight: 10 }}
                     />
-                  ) : (
+                    ) : (
                     <video
-                      key={index}
-                      src={file.url}
-                      controls
-                      style={{ maxHeight: 100, marginRight: 10 }}
+                        key={index}
+                        src={file.url}
+                        controls
+                        style={{ maxHeight: 100, marginRight: 10 }}
                     />
-                  )
+                    )
                 )}
             </Grid>
 
             {/* Galería restringida (archivos múltiples) - solo si restringido */}
             {restringido && (
-              <Grid item xs={12}>
-                <InputLabel required>Galería restringida (imágenes/videos)</InputLabel>
+            <Grid item xs={12}>
+                <InputLabel>Galería restringida (imágenes/videos)</InputLabel>
                 <input
-                  type="file"
-                  accept="image/*,video/*"
-                  onChange={handleGaleriaRestringidaChange}
-                  multiple
-                  style={{ marginTop: 8, marginBottom: 8 }}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleGaleriaRestringidaChange}
+                    multiple
+                    style={{ marginTop: 8, marginBottom: 8 }}
                 />
                 {errors.galeriaRestringida && (
-                  <Typography color="error" variant="body2">
-                    {errors.galeriaRestringida.message}
-                  </Typography>
+                    <Typography color="error" variant="body2">
+                        {errors.galeriaRestringida.message}
+                    </Typography>
                 )}
                 {galeriaRestringidaPreview.length > 0 &&
-                  galeriaRestringidaPreview.map((file, index) =>
+                    galeriaRestringidaPreview.map((file, index) =>
                     file.type.startsWith('image/') ? (
-                      <img
-                        key={index}
-                        src={file.url}
-                        alt={`Galería restringida ${index}`}
-                        style={{ maxHeight: 100, marginRight: 10 }}
-                      />
+                        <img
+                            key={index}
+                            src={file.url}
+                            alt={`Galería restringida ${index}`}
+                            style={{ maxHeight: 100, marginRight: 10 }}
+                        />
                     ) : (
-                      <video
-                        key={index}
-                        src={file.url}
-                        controls
-                        style={{ maxHeight: 100, marginRight: 10 }}
-                      />
+                        <video
+                            key={index}
+                            src={file.url}
+                            controls
+                            style={{ maxHeight: 100, marginRight: 10 }}
+                        />
                     )
-                  )}
-              </Grid>
+                )}
+            </Grid>
             )}
 
             {/* Videos libres (archivos múltiples) */}
             <Grid item xs={12}>
-              <InputLabel>Videos libres</InputLabel>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleVideosLibresChange}
-                multiple
-                style={{ marginTop: 8, marginBottom: 8 }}
-              />
-              {videosLibresPreview.length > 0 &&
+                <InputLabel>Videos libres</InputLabel>
+                <input
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideosLibresChange}
+                    multiple
+                    style={{ marginTop: 8, marginBottom: 8 }}
+                />
+                {videosLibresPreview.length > 0 &&
                 videosLibresPreview.map((file, index) => (
-                  <video
+                    <video
                     key={index}
                     src={file.url}
                     controls
                     style={{ maxHeight: 100, marginRight: 10 }}
-                  />
+                    />
                 ))}
             </Grid>
 
             {/* Videos restringidos (archivos múltiples) - solo si restringido */}
             {restringido && (
-              <Grid item xs={12}>
-                <InputLabel required>Videos restringidos</InputLabel>
+            <Grid item xs={12}>
+                <InputLabel>Videos restringidos</InputLabel>
                 <input
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideosRestringidosChange}
-                  multiple
-                  style={{ marginTop: 8, marginBottom: 8 }}
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideosRestringidosChange}
+                    multiple
+                    style={{ marginTop: 8, marginBottom: 8 }}
                 />
                 {errors.videosRestringidos && (
-                  <Typography color="error" variant="body2">
-                    {errors.videosRestringidos.message}
-                  </Typography>
+                    <Typography color="error" variant="body2">
+                        {errors.videosRestringidos.message}
+                    </Typography>
                 )}
                 {videosRestringidosPreview.length > 0 &&
-                  videosRestringidosPreview.map((file, index) => (
-                    <video
-                      key={index}
-                      src={file.url}
-                      controls
-                      style={{ maxHeight: 100, marginRight: 10 }}
-                    />
-                  ))}
-              </Grid>
+                    videosRestringidosPreview.map((file, index) => (
+                        <video
+                            key={index}
+                            src={file.url}
+                            controls
+                            style={{ maxHeight: 100, marginRight: 10 }}
+                        />
+                    ))}
+            </Grid>
             )}
 
             {/* Botón guardar */}
             <Grid item xs={12}>
-              <Button
-                variant="contained"
-                color="primary"
-                type="submit"
-                disabled={subiendo || loadingHook}
-                startIcon={
-                  subiendo || loadingHook ? (
-                    <span className="material-icons">hourglass_top</span>
-                  ) : (
-                    <span className="material-icons">save</span>
-                  )
-                }
-              >
-                {subiendo || loadingHook ? 'Subiendo...' : 'Guardar contenido'}
-              </Button>
+                <Button
+                    variant="contained"
+                    color="primary"
+                    type="submit"
+                    disabled={subiendo || loadingHook}
+                    startIcon={
+                        subiendo || loadingHook ? (
+                        <span className="material-icons">hourglass_top</span>
+                        ) : (
+                        <span className="material-icons">save</span>
+                        )
+                    }
+                >
+                    {subiendo || loadingHook ? 'Subiendo...' : 'Guardar contenido'}
+                </Button>
             </Grid>
 
             {/* Mensaje */}
             {mensaje && (
-              <Grid item xs={12}>
+            <Grid item xs={12}>
                 <Typography
-                  variant="body1"
-                  color={mensaje.toLowerCase().includes('error') ? 'error' : 'primary'}
+                    variant="body1"
+                    color={mensaje.toLowerCase().includes('error') ? 'error' : 'primary'}
                 >
-                  {mensaje}
+                    {mensaje}
                 </Typography>
-              </Grid>
+            </Grid>
             )}
-          </Grid>
+        </Grid>
         </Box>
       </Paper>
     </Container>

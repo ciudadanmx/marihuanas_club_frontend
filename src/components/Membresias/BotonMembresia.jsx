@@ -6,15 +6,19 @@ import '../../styles/membresias.css';
 function BotonMembresia({ plan = 'mensual', color = '#4caf50' }) {
   const { user } = useAuth0();
 
+  const mensual = process.env.REACT_APP_PRICE_ID_MENSUAL;
+  const semestral = process.env.REACT_APP_PRICE_ID_SEMESTRAL;
+  const anual = process.env.REACT_APP_PRICE_ID_ANUAL;
+
   const iniciarCheckout = async () => {
     try {
       let priceId;
       if (plan === 'mensual') {
-        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_MENSUAL;
+        priceId = mensual;
       } else if (plan === 'semestral') {
-        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_SEMESTRAL;
+        priceId = semestral;
       } else if (plan === 'anual') {
-        priceId = process.env.REACT_APP_STRIPE_PRICE_ID_ANUAL;
+        priceId = anual;
       } else {
         console.error("Plan no reconocido:", plan);
         return;

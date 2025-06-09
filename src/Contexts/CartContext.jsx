@@ -5,6 +5,7 @@ import { guardarCarritoLocal, sincronizarCarrito } from './CartLocal';
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const { user, isAuthenticated } = useAuth0();
   const [items, setItems] = useState([]);
   const [total, setTotal] = useState(0);
@@ -45,7 +46,7 @@ export const CartProvider = ({ children }) => {
         cantidad
       );
       const res = await fetch(
-        `${process.env.REACT_APP_STRAPI_URL}/api/shipping/calcular`,
+        `${STRAPI_URL}/api/shipping/calcular`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

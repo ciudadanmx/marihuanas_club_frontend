@@ -19,6 +19,7 @@ const ContenidoCard = ({
   categoria,
   fecha_publicacion,
 }) => {
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const navigate = useNavigate();
 
   console.log('🧩 ContenidoCard props:', {
@@ -34,7 +35,7 @@ const ContenidoCard = ({
   let imagenUrl = productoImg;
 
   if (portada) {
-    imagenUrl = `${process.env.REACT_APP_STRAPI_URL}${portada}`;
+    imagenUrl = `${STRAPI_URL}${portada}`;
     console.log(`🖼️ Portada válida para "${titulo}":`, imagenUrl);
   } else {
     console.warn(`⚠️ Portada no válida para "${titulo}", usando imagen por defecto`);
