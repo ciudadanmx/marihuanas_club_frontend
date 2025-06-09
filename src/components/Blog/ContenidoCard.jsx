@@ -8,6 +8,7 @@ import {
   Button,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import BotonEditar from './BotonEditar';
 import productoImg from '../../assets/producto.png';
 
 const ContenidoCard = ({
@@ -92,10 +93,9 @@ const ContenidoCard = ({
         )}
 
         <Box display="flex" justifyContent="space-between" mt={2}>
-          <Button onClick={handleEdit} variant="outlined" size="small" sx={{ display: 'flex', alignItems: 'center' }}>
-            <span className="material-icons" style={{ marginRight: 4 }}>edit</span>
-            Editar
-          </Button>
+          <BotonEditar 
+            handleEdit={handleEdit}
+          />
           <Button onClick={handleClick} variant="outlined" size="small">
             <span className="material-icons" style={{ marginRight: 4 }}>chevron_right</span>
             Leer más
