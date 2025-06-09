@@ -5,12 +5,14 @@ import { useMembresia } from './useMembresia.jsx';
 import { useRolEditor } from './useRolEditor.jsx';
 import { useAuth0 } from '@auth0/auth0-react';
 
-const API_URL = `${process.env.REACT_APP_STRAPI_URL}/api`;
-const UPLOAD_URL = `${process.env.REACT_APP_STRAPI_URL}/api/upload`;
+const STRAPI_URL = `${process.env.REACT_APP_STRAPI_URL}`;
+const UPLOAD_URL = `${STRAPI_URL}/api/upload`;
 
 export function useContenido() {
+const { user, getAccessTokenSilently } = useAuth0();
+const [autoresMap, setAutoresMap] = useState({});
   const tieneMembresia = useMembresia();
-  const { user } = useAuth0();
+  //const { user } = useAuth0();
   const esEditor = useRolEditor(user?.email);
 
   const [contenidos, setContenidos] = useState([]);
@@ -21,17 +23,18 @@ export function useContenido() {
   const [porPagina, setPorPagina] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-
   useEffect(() => {
-    fetchContenidos();
-    fetchCategorias();
-  }, [pagina, porPagina]);
+  fetchContenidos();
+  fetchCategorias();
+  fetchAutores();           // <— añade esta llamada
+}, [pagina, porPagina, user]);
+
 
   async function fetchContenidos() {
     try {
       setLoading(true);
       const res = await fetch(
-        `${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`
+        `${STRAPI_URL}/api/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`
       );
       const data = await res.json();
 
@@ -46,7 +49,7 @@ export function useContenido() {
           id: item.id,
           titulo: a.titulo,
           slug: a.slug,
-          autor: a.autor?.data?.attributes?.username || 'Anónimo',
+          autor: a.autor_nombre || 'Anónimo',
           contenido_libre: DOMPurify.sanitize(a.contenido_libre || ''),
           contenido_restringido: DOMPurify.sanitize(a.contenido_restringido || ''),
           status: a.status,
@@ -87,7 +90,7 @@ export function useContenido() {
 
   async function fetchCategorias() {
     try {
-      const res = await fetch(`${API_URL}/categorias-contenidos`);
+      const res = await fetch(`${STRAPI_URL}/api/categorias-contenidos`);
       const data = await res.json();
 
       const cats = Array.isArray(data.data) ? data.data : [];
@@ -104,9 +107,29 @@ export function useContenido() {
     }
   }
 
+
+  async function fetchAutores() {
+  if (!user) return;
+  try {
+    const res = await fetch(
+      `${STRAPI_URL}/users?filters[email][$eq]=${encodeURIComponent(user.email)}`
+    );
+    const json = await res.json();
+    const data = json.data || [];
+    if (data.length) {
+      setAutoresMap(prev => ({
+        ...prev,
+        [user.email]: data[0].id,
+      }));
+    }
+  } catch (err) {
+    console.error('Error al obtener autor Strapi:', err);
+  }
+}
+
   async function crearCategoria(nombre) {
     const slug = slugify(nombre, { lower: true });
-    const res = await fetch(`${API_URL}/categorias-contenidos`, {
+    const res = await fetch(`${STRAPI_URL}/api/categorias-contenidos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: { nombre, slug } }),
@@ -139,39 +162,52 @@ export function useContenido() {
   }
 
   async function crearContenido(nuevo, media = {}) {
-    if (!esEditor) throw new Error('Permiso denegado: se requiere rol editor');
+  if (!esEditor) throw new Error('Permiso denegado: se requiere rol editor');
 
-    const slug = slugify(nuevo.titulo, { lower: true });
-    const contenido = {
-      ...nuevo,
-      slug,
-      tags: Array.isArray(nuevo.tags) ? nuevo.tags.join(',') : (nuevo.tags || ''),
-      categoria: Number(nuevo.categoria) || null,
-    };
+  const slug = slugify(nuevo.titulo || '', { lower: true });
+   const autorId = autoresMap[user.email] || null;
 
-    if (media.portada) contenido.portada = media.portada[0];
-    if (media.galeria_libre) contenido.galeria_libre = media.galeria_libre;
-    if (media.galeria_restringida) contenido.galeria_restringida = media.galeria_restringida;
-    if (media.videos_libres) contenido.videos_libres = media.videos_libres;
-    if (media.videos_restringidos) contenido.videos_restringidos = media.videos_restringidos;
+  const contenido = {
+    ...nuevo,
+    slug,
+    tags: Array.isArray(nuevo.tags)
+      ? nuevo.tags.join(',')
+      : nuevo.tags || '',
+    categoria: nuevo.categoria ? Number(nuevo.categoria) : null,
+    autor_email: user.email,                                     // guarda el email
+    autor_nombre: user.name || user.nickname || '',
+    ...(autorId && { autor: autorId }),
 
-    try {
-      const res = await fetch(`${API_URL}/contenidos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: contenido }),
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        console.error('Error al crear contenido:', errData?.error || errData);
-        throw new Error('No se pudo crear el contenido');
-      }
-      await fetchContenidos();
-    } catch (err) {
-      console.error('Excepción al crear contenido:', err);
-      throw err;
+  };
+
+  if (media.portada?.[0]) contenido.portada = media.portada[0];
+  if (Array.isArray(media.galeria_libre)) contenido.galeria_libre = media.galeria_libre;
+  if (Array.isArray(media.galeria_restringida)) contenido.galeria_restringida = media.galeria_restringida;
+  if (Array.isArray(media.videos_libres)) contenido.videos_libres = media.videos_libres;
+  if (Array.isArray(media.videos_restringidos)) contenido.videos_restringidos = media.videos_restringidos;
+
+  try {
+    const res = await fetch(`${STRAPI_URL}/api/contenidos`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ data: contenido }),
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al crear contenido:', errData?.error || errData);
+      throw new Error('No se pudo crear el contenido');
     }
+
+    await fetchContenidos(); // Actualiza los contenidos si todo salió bien
+  } catch (err) {
+    console.error('Excepción al crear contenido:', err);
+    throw err;
   }
+}
+
 
   async function editarContenido(id, cambios, media = {}) {
     const dataCampos = {
@@ -186,7 +222,7 @@ export function useContenido() {
     if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
     if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
 
-    const res = await fetch(`${API_URL}/contenidos/${id}`, {
+    const res = await fetch(`${STRAPI_URL}/contenidos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: dataCampos }),
@@ -200,7 +236,7 @@ export function useContenido() {
   }
 
   async function eliminarContenido(id) {
-    const res = await fetch(`${API_URL}/contenidos/${id}`, {
+    const res = await fetch(`${STRAPI_URL}/api/contenidos/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok) {

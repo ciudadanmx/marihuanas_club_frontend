@@ -12,6 +12,9 @@ import {
   Checkbox,
   InputLabel,
 } from '@mui/material';
+
+import '../../quillConfig.js';     // esto que corre la línea de registro
+
 import { DatePicker } from '@mui/x-date-pickers';
 import { useForm, Controller } from 'react-hook-form';
 import dayjs from 'dayjs';
@@ -71,15 +74,7 @@ const AgregarContenido = () => {
     ['link', 'image', 'video'],
     ['clean']
     ],
-    htmlEditButton: {
-        debug: true,
-        msg: 'Editar HTML',
-        okText: 'Guardar',
-        cancelText: 'Cancelar',
-        buttonHTML: '&lt;/&gt;',
-        buttonTitle: 'Editar HTML',
-        syntax: true, // muestra resaltado de sintaxis si tienes highlight.js
-    },
+    
   }), []);
 
   const quillRefLibre = useRef(null);
@@ -301,65 +296,57 @@ const AgregarContenido = () => {
                 Contenido libre: (HTML)
                 </Typography>
                 <Controller
-                    name="contenido_libre"
-                    control={control}
-                    render={({ field }) => (
-                        <>
-                            <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                                <Button
-                                    onClick={() => setHtmlModeLibre(!htmlModeLibre)}
-                                    variant="outlined"
-                                    size="small"
-                                >
-                                {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
-                                </Button>
-                                {!htmlModeLibre && (
-                                    <Button
-                                    onClick={insertLogoLibre}
-                                    variant="outlined"
-                                    size="small"
-                                    >
-                                    Insertar Logo
-                                    </Button>
-                                )}
-                            </Box>
+  name="contenido_libre"
+  control={control}
+  defaultValue=""    // <-- Aquí garantizamos un string, nunca undefined
+  render={({ field }) => (
+    <>
+      <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+        <Button
+          onClick={() => setHtmlModeLibre(!htmlModeLibre)}
+          variant="outlined"
+          size="small"
+        >
+          {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
+        </Button>
+        {!htmlModeLibre && (
+          <Button
+            onClick={insertLogoLibre}
+            variant="outlined"
+            size="small"
+          >
+            Insertar Logo
+          </Button>
+        )}
+      </Box>
 
-                            {htmlModeLibre ? (
-                            <TextField
-                                key="html"
-                                multiline
-                                minRows={8}
-                                fullWidth
-                                value={field.value ?? ''}
-                                onChange={(e) => {
-                                console.log('TextField onChange:', e.target.value);
-                                field.onChange(e.target.value);
-                                }}
-                                variant="outlined"
-                            />
+      {htmlModeLibre ? (
+        <TextField
+          key="html"
+          multiline
+          minRows={8}
+          fullWidth
+          value={field.value}           // field.value siempre es un string
+          onChange={e => field.onChange(e.target.value)}
+          variant="outlined"
+        />
+      ) : (
+        <ReactQuill
+          key="visual"
+          ref={quillRefLibre}           // guardamos la ref pero sin el log
+          theme="snow"
+          value={field.value}           // idem, nunca undefined
+          onChange={(content, delta, source, editor) => {
+            field.onChange(editor.getHTML());
+          }}
+          style={{ height: '200px', marginBottom: '1rem' }}
+          modules={quillModules}
+        />
+      )}
+    </>
+  )}
+/>
 
-                            ) : (
-                                <ReactQuill
-                                    key={htmlModeLibre ? 'html' : 'visual'}
-                                    ref={(el) => {
-                                    quillRefLibre.current = el;
-                                    console.log('ReactQuill ref asignado:', el);
-                                    }}
-                                    theme="snow"
-                                    value={field.value ?? ''}
-                                    onChange={(content, delta, source, editor) => {
-                                    const html = editor.getHTML();
-                                    console.log('ReactQuill onChange:', { content, html, source });
-                                    field.onChange(html);
-                                    }}
-                                    style={{ height: '200px', marginBottom: '1rem' }}
-                                    modules={quillModules}
-                                />
-                            )}
-
-                        </>
-                    )}
-                />
             </Grid>
             <br /><br />        
             {/* Checkbox para restringido */}
