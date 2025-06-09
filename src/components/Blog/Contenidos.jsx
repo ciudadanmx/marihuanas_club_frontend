@@ -168,6 +168,13 @@ const Contenidos = ({ filtros, parametros }) => {
               placeholder="Buscar contenido..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
+              onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                    console.log('buscaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaandooooooooooo', e.target.value);
+                    setBusqueda(e.target.value); // Ejecuta la búsqueda al presionar Enter
+                    handleBuscar();
+                    }
+                }}
               sx={{
                 flex: 1,
                 minWidth: { xs: '100%', md: '250px' },
