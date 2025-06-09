@@ -21,6 +21,7 @@ import ContenidoCard from '../../components/Blog/ContenidoCard';
 
 const Contenidos = ({ filtros, parametros }) => {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
+  const clasifica = "contenidos";
   const { getCategorias } = useCategorias('categorias-contenidos');
   const {
     contenidos,
@@ -241,6 +242,7 @@ const Contenidos = ({ filtros, parametros }) => {
                     }))
                   : []
               }
+              clasifica={'contenidos'}
             />
           </Box>
         </Fade>

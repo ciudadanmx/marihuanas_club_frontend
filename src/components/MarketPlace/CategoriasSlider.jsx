@@ -3,7 +3,7 @@ import { Box, IconButton, useMediaQuery } from '@mui/material';
 import CategoriaCard from './CategoriaCard.jsx';
 import '../../styles/CategoriasSlider.css';
 
-const CategoriasSlider = ({ categorias }) => {
+const CategoriasSlider = ({ categorias, clasifica }) => {
   const scrollRef = useRef();
   const isDesktop = useMediaQuery('(min-width: 768px)');
   const [showArrows, setShowArrows] = useState(false);
@@ -45,6 +45,7 @@ const CategoriasSlider = ({ categorias }) => {
               nombre={cat.nombre} 
               imagen={cat.imagen} 
               slug={cat.slug} 
+              clasifica={clasifica}
             />
           </Box>
         ))}
