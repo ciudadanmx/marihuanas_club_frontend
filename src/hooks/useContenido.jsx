@@ -31,7 +31,7 @@ export function useContenido() {
     try {
       setLoading(true);
       const res = await fetch(
-        `${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}`
+        `${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`
       );
       const data = await res.json();
 
