@@ -71,9 +71,9 @@ const Contenidos = ({ filtros, parametros }) => {
     if (!filtros) return true;
     if (filtros === 'mis-contenidos') {
   const authorId = (data.autor_email ?? '').trim().toLowerCase();
-const miEmail = authorId;
+  const usuarioLogueado = (parametros ?? '').trim().toLowerCase();
 console.log('CONTENIDOS:', contenidos);
-return authorId === miEmail;
+return authorId === usuarioLogueado;
 }
     if (filtros === 'categoria') {
   // Debug: muestra la estructura de categoría

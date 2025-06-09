@@ -1,12 +1,35 @@
 import React from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
+import { CircularProgress, Box, Typography } from '@mui/material';
 import Contenidos from '../../components/Blog/Contenidos';
 
 // Wrappers to extract URL params and pass props to Contenidos
 const ContenidosUsuario = () => {
-  const { user } = useAuth0();
-  const usuario = user?.email || ''; // Verifica si user existe antes de acceder a .email
+  const { user, isLoading, isAuthenticated } = useAuth0();
+
+  // Mientras se carga la sesión de usuario
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Si no está autenticado, muestra un mensaje
+  if (!isAuthenticated || !user) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant="body1">
+          Para ver tus contenidos debes iniciar sesión.
+        </Typography>
+      </Box>
+    );
+  }
+
+  // Usuario ya cargado y autenticado: pasamos su email
+  const usuario = user.email;
   return <Contenidos filtros="mis-contenidos" parametros={usuario} />;
 };
 
