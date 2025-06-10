@@ -50,7 +50,7 @@ const AgregarContenido = () => {
       contenido_libre: '',
       contenido_restringido: '',
       restringido: false,
-      status: 'borrador',
+      status: 'publicado',
       tags: '',
       fecha_publicacion: dayjs(),
       categoria: '',
@@ -78,15 +78,6 @@ const AgregarContenido = () => {
   }), []);
 
   const quillRefLibre = useRef(null);
-
-  const insertLogoLibre = () => {
-  const editor = quillRefLibre.current?.getEditor();
-  const range = editor?.getSelection();
-  if (range) {
-    editor.insertEmbed(range.index, 'image', '/logo.png');
-  }
-};
-
   const [portadaFiles, setPortadaFiles] = useState([]);
   const [galeriaLibreFiles, setGaleriaLibreFiles] = useState([]);
   const [galeriaRestringidaFiles, setGaleriaRestringidaFiles] = useState([]);
@@ -105,6 +96,7 @@ const AgregarContenido = () => {
   const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
   const [htmlModeLibre, setHtmlModeLibre] = useState(false);
   const [contenidoLibre, setContenidoLibre] = useState('');
+  const [contenidoRestringido, setContenidoRestringido] = useState('');
 
 
   const crearPreviews = (files) =>
@@ -163,6 +155,7 @@ const AgregarContenido = () => {
 
 
   const onSubmit = async (data) => {
+    console.log("Galería restringida:", galeriaRestringidaFiles);
     setMensaje('');
     clearErrors();
     if (!validarArchivos()) {
@@ -183,6 +176,8 @@ const AgregarContenido = () => {
       }
       if (galeriaRestringidaFiles.length) {
         media.galeria_restringida = await subirMedia(galeriaRestringidaFiles);
+        //console.log("Galería restringida:", e.target.files.galeria_restringida);
+        console.log('Galería restringida subida:', media.galeria_restringida);
       }
       if (videosLibresFiles.length) {
         media.videos_libres = await subirMedia(videosLibresFiles);
@@ -190,6 +185,9 @@ const AgregarContenido = () => {
       if (videosRestringidosFiles.length) {
         media.videos_restringidos = await subirMedia(videosRestringidosFiles);
       }
+
+      console.log("Galería restringida subida:", media.galeria_restringida);
+
 
       const payload = {
         titulo: data.titulo,
