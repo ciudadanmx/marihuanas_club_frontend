@@ -222,274 +222,273 @@ const EditarContenido = () => {
 
     const restringido = watch('restringido');
 
-  return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-                🪶 Editar Contenido
-            </Typography>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-          <Grid container spacing={2}>
-            {/* Título */}
-            <Grid item xs={12}>
-              <Controller
-                name="titulo"
-                control={control}
-                rules={{ required: 'El título es obligatorio' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Título"
-                    fullWidth
-                    error={!!errors.titulo}
-                    helperText={errors.titulo?.message}
-                  />
-                )}
-              />
-            </Grid>
-            {/* Resumen */}
-            <Grid item xs={12}>
-              <Controller
-                name="resumen"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Resumen"
-                    fullWidth
-                    multiline
-                    rows={2}
-                  />
-                )}
-              />
-            </Grid>
-            {/* Contenido Libre */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1">Contenido libre</Typography>
-              <Controller
-                name="contenido_libre"
-                control={control}
-                render={({ field }) => (
-                  <ReactQuill
-                    ref={quillRefLibre}
-                    theme="snow"
-                    value={field.value}
-                    onChange={html => field.onChange(html)}
-                    modules={quillModules}
-                    style={{ height: 200, marginBottom: 16 }}
-                  />
-                )}
-              />
-            </Grid>
-            {/* Contenido Restringido */}
-            {restringido && (
-              <Grid item xs={12}>
-                <Typography variant="subtitle1">Contenido restringido</Typography>
-                <Controller
-                  name="contenido_restringido"
-                  control={control}
-                  render={({ field }) => (
-                    <ReactQuill
-                      ref={quillRefRestringido}
-                      theme="snow"
-                      value={field.value}
-                      onChange={html => field.onChange(html)}
-                      modules={quillModules}
-                      style={{ height: 200, marginBottom: 16 }}
+    return (
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+            <Paper sx={{ p: 3 }}>
+                    <Typography variant="h5" gutterBottom>
+                        🪶 Editar Contenido
+                    </Typography>
+                <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+                <Grid container spacing={2}>
+                    {/* Título */}
+                    <Grid item xs={12}>
+                    <Controller
+                        name="titulo"
+                        control={control}
+                        rules={{ required: 'El título es obligatorio' }}
+                        render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Título"
+                            fullWidth
+                            error={!!errors.titulo}
+                            helperText={errors.titulo?.message}
+                        />
+                        )}
                     />
-                  )}
-                />
-              </Grid>
-            )}
-            {/* Chequeo restringido */}
-            <Grid item xs={12}>
-              <Controller
-                name="restringido"
-                control={control}
-                render={({ field }) => (
-                  <FormControlLabel
-                    control={<Checkbox {...field} checked={field.value} />}
-                    label="¿Contenido restringido?"
-                  />
-                )}
-              />
-            </Grid>
-            {/* Tags */}
-            <Grid item xs={12}>
-              <Controller
-                name="tags"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    label="Tags (separados por coma)"
-                    fullWidth
-                  />
-                )}
-              />
-            </Grid>
-            {/* Fecha y status */}
-            <Grid item xs={6}>
-              <Controller
-                name="fecha_publicacion"
-                control={control}
-                render={({ field }) => (
-                  <DatePicker
-                    label="Fecha de publicación"
-                    value={field.value}
-                    onChange={val => field.onChange(val)}
-                    renderInput={params => <TextField fullWidth {...params} />}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <Controller
-                name="status"
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Status"
-                    fullWidth
-                  >
-                    <MenuItem value="borrador">Borrador</MenuItem>
-                    <MenuItem value="publicado">Publicado</MenuItem>
-                  </TextField>
-                )}
-              />
-            </Grid>
-            {/* Categoría */}
-            <Grid item xs={12}>
-              <Controller
-                name="categoria"
-                control={control}
-                rules={{ required: 'Selecciona una categoría' }}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    select
-                    label="Categoría"
-                    fullWidth
-                    error={!!errors.categoria}
-                    helperText={errors.categoria?.message}
-                  >
-                    {categorias.map(cat => (
-                      <MenuItem key={cat.id} value={String(cat.id)}>
-                        {cat.nombre}
-                      </MenuItem>
+                    </Grid>
+                    {/* Resumen */}
+                    <Grid item xs={12}>
+                    <Controller
+                        name="resumen"
+                        control={control}
+                        render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Resumen"
+                            fullWidth
+                            multiline
+                            rows={2}
+                        />
+                        )}
+                    />
+                    </Grid>
+                    {/* Contenido Libre */}
+                    <Grid item xs={12}>
+                    <Typography variant="subtitle1">Contenido libre</Typography>
+                    <Controller
+                        name="contenido_libre"
+                        control={control}
+                        render={({ field }) => (
+                            <ReactQuill
+                                ref={quillRefLibre}
+                                theme="snow"
+                                value={field.value}
+                                onChange={html => field.onChange(html)}
+                                modules={quillModules}
+                                style={{ height: 200, marginBottom: 16 }}
+                            />
+                        )}
+                    />
+                    </Grid>
+                    {/* Contenido Restringido */}
+                    {restringido && (
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1">Contenido restringido</Typography>
+                        <Controller
+                        name="contenido_restringido"
+                        control={control}
+                        render={({ field }) => (
+                            <ReactQuill
+                            ref={quillRefRestringido}
+                            theme="snow"
+                            value={field.value}
+                            onChange={html => field.onChange(html)}
+                            modules={quillModules}
+                            style={{ height: 200, marginBottom: 16 }}
+                            />
+                        )}
+                        />
+                    </Grid>
+                    )}
+                    {/* Chequeo restringido */}
+                    <Grid item xs={12}>
+                    <Controller
+                        name="restringido"
+                        control={control}
+                        render={({ field }) => (
+                        <FormControlLabel
+                            control={<Checkbox {...field} checked={field.value} />}
+                            label="¿Contenido restringido?"
+                        />
+                        )}
+                    />
+                    </Grid>
+                    {/* Tags */}
+                    <Grid item xs={12}>
+                    <Controller
+                        name="tags"
+                        control={control}
+                        render={({ field }) => (
+                        <TextField
+                            {...field}
+                            label="Tags (separados por coma)"
+                            fullWidth
+                        />
+                        )}
+                    />
+                    </Grid>
+                    {/* Fecha y status */}
+                    <Grid item xs={6}>
+                    <Controller
+                        name="fecha_publicacion"
+                        control={control}
+                        render={({ field }) => (
+                        <DatePicker
+                            label="Fecha de publicación"
+                            value={field.value}
+                            onChange={val => field.onChange(val)}
+                            renderInput={params => <TextField fullWidth {...params} />}
+                        />
+                        )}
+                    />
+                    </Grid>
+                    <Grid item xs={6}>
+                    <Controller
+                        name="status"
+                        control={control}
+                        render={({ field }) => (
+                        <TextField
+                            {...field}
+                            select
+                            label="Status"
+                            fullWidth
+                        >
+                            <MenuItem value="borrador">Borrador</MenuItem>
+                            <MenuItem value="publicado">Publicado</MenuItem>
+                        </TextField>
+                        )}
+                    />
+                    </Grid>
+                    {/* Categoría */}
+                    <Grid item xs={12}>
+                    <Controller
+                        name="categoria"
+                        control={control}
+                        rules={{ required: 'Selecciona una categoría' }}
+                        render={({ field }) => (
+                        <TextField
+                            {...field}
+                            select
+                            label="Categoría"
+                            fullWidth
+                            error={!!errors.categoria}
+                            helperText={errors.categoria?.message}
+                        >
+                            {categorias.map(cat => (
+                            <MenuItem key={cat.id} value={String(cat.id)}>
+                                {cat.nombre}
+                            </MenuItem>
+                            ))}
+                        </TextField>
+                        )}
+                    />
+                    </Grid>
+                    {/* Media: Portada */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1">Portada existente:</Typography>
+
+                        {/* 1. Imagen actual (si aún no se ha seleccionado nueva) */}
+                        {!files.portada && initialMediaUrls.portada && (
+                            <Box sx={{ my: 2 }}>
+                                <Box
+                                    component="img"
+                                    src={initialMediaUrls.portada}
+                                    alt="Portada actual"
+                                    sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
+                                />
+                            </Box>
+                        )}
+
+                        {/* 2. Previsualización de la nueva portada */}
+                        {files.portada && files.portada[0] && (
+                            <Box sx={{ my: 2 }}>
+                                <Box
+                                    component="img"
+                                    src={URL.createObjectURL(files.portada[0])}
+                                    alt="Nueva portada"
+                                    sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
+                                />
+                            </Box>
+                        )}
+
+                        {/* 3. Botón y input oculto */}
+                        <Button variant="contained" component="label">
+                            Cambiar portada
+                            <input
+                                type="file"
+                                hidden
+                                name="portada"
+                                accept="image/*"
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                    </Grid>
+                    {/* Galerías y videos */}
+                    {['galeria_libre', 'galeria_restringida', 'videos_libres', 'videos_restringidos'].map(name => (
+                    <Grid item xs={12} key={name}>
+                        <Typography variant="subtitle1">{name.replace('_', ' ')} existente:</Typography>
+                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                        {initialMediaUrls[name]?.map((url, i) => (
+                            /\.(mp4|webm)$/.test(url)
+                            ? <video key={i} src={url} width={120} controls style={{ borderRadius: 8 }} />
+                            : <Box component="img" key={i} src={url} width={120} sx={{ borderRadius: 1 }} />
+                        ))}
+                        </Box>
+                        {files[name] && files[name].length > 0 && (
+                            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                                {Array.from(files[name]).map((file, idx) => (
+                                /\.(mp4|webm)$/.test(file.name)
+                                    ? <video key={idx} src={URL.createObjectURL(file)} width={120} controls style={{ borderRadius: 8 }} />
+                                    : <Box component="img" key={idx} src={URL.createObjectURL(file)} width={120} sx={{ borderRadius: 1 }} />
+                                ))}
+                            </Box>
+                        )}
+                        <Button variant="outlined" component="label">
+                            Subir nuevos {name.replace('_', ' ')}
+                            <input
+                                type="file"
+                                hidden
+                                multiple
+                                name={name}
+                                accept={name.startsWith('videos') ? 'video/*' : 'image/*'}
+                                onChange={handleFileChange}
+                            />
+                        </Button>
+                    </Grid>
                     ))}
-                  </TextField>
-                )}
-              />
-            </Grid>
-            {/* Media: Portada */}
-            <Grid item xs={12}>
-                <Typography variant="subtitle1">Portada existente:</Typography>
-
-                {/* 1. Imagen actual (si aún no se ha seleccionado nueva) */}
-                {!files.portada && initialMediaUrls.portada && (
-                    <Box sx={{ my: 2 }}>
-                        <Box
-                            component="img"
-                            src={initialMediaUrls.portada}
-                            alt="Portada actual"
-                            sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
-                        />
-                    </Box>
-                )}
-
-                {/* 2. Previsualización de la nueva portada */}
-                {files.portada && files.portada[0] && (
-                    <Box sx={{ my: 2 }}>
-                        <Box
-                            component="img"
-                            src={URL.createObjectURL(files.portada[0])}
-                            alt="Nueva portada"
-                            sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
-                        />
-                    </Box>
-                )}
-
-                {/* 3. Botón y input oculto */}
-                <Button variant="contained" component="label">
-                    Cambiar portada
-                    <input
-                        type="file"
-                        hidden
-                        name="portada"
-                        accept="image/*"
-                        onChange={handleFileChange}
+                    {/* Botones */}
+                    <Grid item xs={12} sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                        <Button
+                            type="button"
+                            variant="contained"
+                            disabled={isSubmitting}
+                            onClick={e => {
+                                console.group('🔘 BOTÓN Guardar Click');
+                                console.log(' getValues():', getValues());
+                                console.log(' files state:', files);
+                                console.log(' errors actuales:', errors);
+                                console.log(' isSubmitting:', isSubmitting);
+                                console.log('> Ahora llamando a handleSubmit(onSubmit)…');
+                                handleSubmit(onSubmit)(e);
+                                console.groupEnd();
+                            }}
+                        >
+                            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                        </Button>
+                    <Button variant="outlined" onClick={() => navigate(-1)}>
+                        Cancelar
+                    </Button>
+                    
+                    <BotonEliminar 
+                        handleDelete={handleDelete}
+                        autor_email={autorEmail}
                     />
-                </Button>
-            </Grid>
-            {/* Galerías y videos */}
-            {['galeria_libre', 'galeria_restringida', 'videos_libres', 'videos_restringidos'].map(name => (
-              <Grid item xs={12} key={name}>
-                <Typography variant="subtitle1">{name.replace('_', ' ')} existente:</Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                  {initialMediaUrls[name]?.map((url, i) => (
-                    /\.(mp4|webm)$/.test(url)
-                      ? <video key={i} src={url} width={120} controls style={{ borderRadius: 8 }} />
-                      : <Box component="img" key={i} src={url} width={120} sx={{ borderRadius: 1 }} />
-                  ))}
+                    </Grid>
+                </Grid>
                 </Box>
-                {files[name] && files[name].length > 0 && (
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-                    {Array.from(files[name]).map((file, idx) => (
-                      /\.(mp4|webm)$/.test(file.name)
-                        ? <video key={idx} src={URL.createObjectURL(file)} width={120} controls style={{ borderRadius: 8 }} />
-                        : <Box component="img" key={idx} src={URL.createObjectURL(file)} width={120} sx={{ borderRadius: 1 }} />
-                    ))}
-                  </Box>
-                )}
-                <Button variant="outlined" component="label">
-                  Subir nuevos {name.replace('_', ' ')}
-                  <input
-                    type="file"
-                    hidden
-                    multiple
-                    name={name}
-                    accept={name.startsWith('videos') ? 'video/*' : 'image/*'}
-                    onChange={handleFileChange}
-                  />
-                </Button>
-              </Grid>
-            ))}
-            {/* Botones */}
-            <Grid item xs={12} sx={{ display: 'flex', gap: 2, mt: 2 }}>
-                <Button
-                    type="button"
-                    variant="contained"
-                    disabled={isSubmitting}
-                    onClick={e => {
-                    console.group('🔘 BOTÓN Guardar Click');
-                    console.log(' getValues():', getValues());
-                    console.log(' files state:', files);
-                    console.log(' errors actuales:', errors);
-                    console.log(' isSubmitting:', isSubmitting);
-                    console.log('> Ahora llamando a handleSubmit(onSubmit)…');
-                    handleSubmit(onSubmit)(e);
-                    console.groupEnd();
-                    }}
-                >
-                    {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
-                </Button>
-            <Button variant="outlined" onClick={() => navigate(-1)}>
-                Cancelar
-            </Button>
-            
-            <BotonEliminar 
-                handleDelete={handleDelete}
-                autor_email={autorEmail}
-            />
-            </Grid>
-          </Grid>
-        </Box>
-      </Paper>
-    </Container>
-  );
+            </Paper>
+        </Container>
+    );
 };
-
 export default EditarContenido;
