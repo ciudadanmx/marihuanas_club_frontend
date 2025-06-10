@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { useContenido } from '../../hooks/useContenido';
+import BotonEditar from '../../components/Blog/BotonEditar';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -15,11 +17,17 @@ import { useEffect, useState } from 'react';
 import FechaCdmx from '../../utils/FechaCdmx';
 
 const ContenidoDetalle = () => {
-    console.warn('****************** entrando a contenido');
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
+  const navigate = useNavigate();
+  console.warn('****************** entrando a contenido');
   const membresia = true;
   const { slug } = useParams();
   const { contenidos, loading } = useContenido();
   const [contenido, setContenido] = useState(null);
+
+  const handleEdit = () => {
+    navigate(`/contenidos/editar/${slug}`);
+  };
 
   useEffect(() => {
     if (contenidos.length) {
@@ -50,7 +58,7 @@ const ContenidoDetalle = () => {
         <Grid item xs={6} sm={4} key={i}>
           <CardMedia
             component="img"
-            image={process.env.REACT_APP_STRAPI_URL + img}
+            image={STRAPI_URL + img}
             alt={`imagen-${i}`}
             sx={{ borderRadius: 2 }}
           />
@@ -93,11 +101,17 @@ const ContenidoDetalle = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+            <BotonEditar 
+                handleEdit={handleEdit}
+                autor_email={contenido.autor_email}
+            />
+        </Box>
         {contenido.portada && (
           <CardMedia
             component="img"
             height="300"
-            image={process.env.REACT_APP_STRAPI_URL + contenido.portada}
+            image={STRAPI_URL + contenido.portada}
             alt={contenido.titulo}
             sx={{ borderRadius: 2, mb: 2 }}
           />
