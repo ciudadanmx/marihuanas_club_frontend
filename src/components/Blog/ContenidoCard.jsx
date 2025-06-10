@@ -15,6 +15,7 @@ const ContenidoCard = ({
   titulo,
   slug,
   autor,
+  autor_email,
   resumen,
   portada,
   categoria,
@@ -27,6 +28,7 @@ const ContenidoCard = ({
     titulo,
     slug,
     autor,
+    autor_email,
     resumen,
     portada,
     categoria,
@@ -95,6 +97,7 @@ const ContenidoCard = ({
         <Box display="flex" justifyContent="space-between" mt={2}>
           <BotonEditar 
             handleEdit={handleEdit}
+            autor_email={autor_email}
           />
           <Button onClick={handleClick} variant="outlined" size="small">
             <span className="material-icons" style={{ marginRight: 4 }}>chevron_right</span>
