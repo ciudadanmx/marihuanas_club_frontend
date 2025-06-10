@@ -23,6 +23,8 @@ import { useContenido } from '../../hooks/useContenido';
 import { useSnackbar } from 'notistack';
 import '../../quillConfig.js'; // registro de módulos personalizados
 
+const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
+
 const EditarContenido = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -109,13 +111,41 @@ const EditarContenido = () => {
         categoria: String(dato.categoria?.id || ''),
       });
       setAutorEmail('dato.autor_email');
-      setInitialMediaUrls({
-        portada: dato.portada?.url || null,
-        galeria_libre: dato.galeria_libre?.map(m => m.url) || [],
-        galeria_restringida: dato.galeria_restringida?.map(m => m.url) || [],
-        videos_libres: dato.videos_libres?.map(m => m.url) || [],
-        videos_restringidos: dato.videos_restringidos?.map(m => m.url) || [],
-      });
+      // Reemplázalo por esto:
+        const portadaPath = dato.portada?.url || dato.portada || null;
+        setInitialMediaUrls({
+            portada: portadaPath ? `${STRAPI_URL}${portadaPath}` : null,
+            galeria_libre: dato.galeria_libre?.map((m) => {
+                const path = m.url || m;
+                return `${STRAPI_URL}${path}`;
+            }) || [],
+            galeria_restringida: dato.galeria_restringida?.map((m) => {
+                const path = m.url || m;
+                return `${STRAPI_URL}${path}`;
+            }) || [],
+            videos_libres: dato.videos_libres?.map((m) => {
+                const path = m.url || m;
+                return `${STRAPI_URL}${path}`;
+            }) || [],
+            videos_restringidos: dato.videos_restringidos?.map((m) => {
+                const path = m.url || m;
+                return `${STRAPI_URL}${path}`;
+            }) || [],
+        });
+        console.log('[EditarContenido] initialMediaUrls ajustado:', {
+            portada: portadaPath,
+            galeria_libre: dato.galeria_libre,
+            galeria_restringida: dato.galeria_restringida,
+            videos_libres: dato.videos_libres,
+            videos_restringidos: dato.videos_restringidos,
+        });
+        console.log('[EditarContenido] initialMediaUrls:', {
+        portada: dato.portada?.url,
+        galeria_libre: dato.galeria_libre,
+        galeria_restringida: dato.galeria_restringida,
+        videos_libres: dato.videos_libres,
+        videos_restringidos: dato.videos_restringidos,
+    });
       setCargando(false);
       console.log('[EditarContenido] formulario inicializado');
     }
@@ -124,12 +154,19 @@ const EditarContenido = () => {
   const handleFileChange = e => {
     const { name, files: f } = e.target;
     console.log('[EditarContenido] archivo cambiado:', name, f);
+    console.log('[EditarContenido] handleFileChange → name:', name, 'files:', f);
     setFiles(prev => ({ ...prev, [name]: f }));
   };
 
   const onSubmit = async data => {
+    console.warn('///////////////////');
+    console.error('*************');
     console.log('[EditarContenido] onSubmit data:', data);
     console.log('[EditarContenido] onSubmit files:', files);
+    console.warn('///////////////////');
+    console.warn('*************');
+    console.log('[EditarContenido] onSubmit → form values:', data);
+    console.log('[EditarContenido] onSubmit → files state:', files);
     const id = contenidos.find(c => c.slug === slug)?.id;
     console.log('[EditarContenido] onSubmit id:', id);
     try {
@@ -148,7 +185,11 @@ const EditarContenido = () => {
         fecha_publicacion: data.fecha_publicacion.toISOString(),
         categoria: Number(data.categoria) || null,
       };
+      console.warn('==================');
+      console.error('============');
       console.log('[EditarContenido] payload final:', payload);
+      console.log('[EditarContenido] onSubmit → mediaPayload:', mediaPayload);
+      console.log('[EditarContenido] onSubmit → final payload:', payload);
       const res = await editarContenido(id, payload, mediaPayload);
       console.log('[EditarContenido] editarContenido res:', res);
       enqueueSnackbar('Contenido actualizado con éxito', { variant: 'success' });
@@ -333,36 +374,64 @@ const EditarContenido = () => {
             </Grid>
             {/* Media: Portada */}
             <Grid item xs={12}>
-              <Typography>Portada existente:</Typography>
-              {initialMediaUrls.portada && (
-                <Box
-                  component="img"
-                  src={initialMediaUrls.portada}
-                  sx={{ maxWidth: 200, mb: 1 }}
-                />
-              )}
-              <Button variant="contained" component="label">
-                Cambiar portada
-                <input
-                  type="file"
-                  hidden
-                  name="portada"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                />
-              </Button>
+                <Typography variant="subtitle1">Portada existente:</Typography>
+
+                {/* 1. Imagen actual (si aún no se ha seleccionado nueva) */}
+                {!files.portada && initialMediaUrls.portada && (
+                    <Box sx={{ my: 2 }}>
+                        <Box
+                            component="img"
+                            src={initialMediaUrls.portada}
+                            alt="Portada actual"
+                            sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
+                        />
+                    </Box>
+                )}
+
+                {/* 2. Previsualización de la nueva portada */}
+                {files.portada && files.portada[0] && (
+                    <Box sx={{ my: 2 }}>
+                        <Box
+                            component="img"
+                            src={URL.createObjectURL(files.portada[0])}
+                            alt="Nueva portada"
+                            sx={{ width: '100%', maxHeight: 300, objectFit: 'cover', borderRadius: 2 }}
+                        />
+                    </Box>
+                )}
+
+                {/* 3. Botón y input oculto */}
+                <Button variant="contained" component="label">
+                    Cambiar portada
+                    <input
+                        type="file"
+                        hidden
+                        name="portada"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
+                </Button>
             </Grid>
             {/* Galerías y videos */}
             {['galeria_libre', 'galeria_restringida', 'videos_libres', 'videos_restringidos'].map(name => (
               <Grid item xs={12} key={name}>
-                <Typography>{name.replace('_', ' ')} existente:</Typography>
+                <Typography variant="subtitle1">{name.replace('_', ' ')} existente:</Typography>
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
                   {initialMediaUrls[name]?.map((url, i) => (
                     /\.(mp4|webm)$/.test(url)
-                      ? <video key={i} src={url} width={120} controls />
-                      : <Box component="img" key={i} src={url} width={120} />
+                      ? <video key={i} src={url} width={120} controls style={{ borderRadius: 8 }} />
+                      : <Box component="img" key={i} src={url} width={120} sx={{ borderRadius: 1 }} />
                   ))}
                 </Box>
+                {files[name] && files[name].length > 0 && (
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
+                    {Array.from(files[name]).map((file, idx) => (
+                      /\.(mp4|webm)$/.test(file.name)
+                        ? <video key={idx} src={URL.createObjectURL(file)} width={120} controls style={{ borderRadius: 8 }} />
+                        : <Box component="img" key={idx} src={URL.createObjectURL(file)} width={120} sx={{ borderRadius: 1 }} />
+                    ))}
+                  </Box>
+                )}
                 <Button variant="outlined" component="label">
                   Subir nuevos {name.replace('_', ' ')}
                   <input
