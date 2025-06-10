@@ -19,10 +19,29 @@ import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
 import { useContenido } from '../../hooks/useContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
-import ContenidoDetalle from '../../Pages/Blog/Contenido'; // <-- Importación añadida
+import ContenidoDetalle from '../../Pages/Blog/Contenido'; 
+import '../../styles/Contenidos.css';
 
 const Contenidos = ({ filtros, parametros }) => {
-  //TODO  REEMPLAZAR POR CONTEXTO
+
+    if (filtros === 'busqueda') {
+        var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+    }
+    else if (filtros === 'categoria'){
+        var titulo = "Contenidos en Categoría  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+        var mostrarCategorias = false;
+    }
+    else if (filtros === 'mis-contenidos'){
+        var titulo ="»» Tus Contenidos ««:";
+        var mostrarCategorias = false;
+    }
+
+    else {
+        var titulo = '';
+        var mostrarCategorias = true;
+    }
+
+    //TODO  REEMPLAZAR POR CONTEXTO
   const editor = true;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
@@ -50,6 +69,7 @@ const Contenidos = ({ filtros, parametros }) => {
   const handleAgregar = () => navigate('/contenidos/agregar-contenido');
   const handleBuscar = () => {
     const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!slug ) return;
     navigate(`/contenidos/busqueda/${slug}`);
   };
   const handleMis = () => navigate('/contenidos/mis-contenidos');
@@ -243,13 +263,29 @@ return authorId === usuarioLogueado;
       </Box>
     </Slide>
 
-    {/* Categorías */}
-    {categorias.length > 0 && (
-      <Fade in timeout={400}>
-        <Box>
+
+
+    
+
+
+    {/* Contenidos */}
+    <Box mt={5}>
+      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+        <u className="contenidos-titulo">{ titulo }</u>
+      </Typography>
+
+
+      {categorias.length > 0 && (
+  <Fade in timeout={400}>
+    <Box>
+      
+
+      {mostrarCategorias === true && (
+        <>
           <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
-            Categorías
+            <u className="contenidos-titulo">Categorías</u>
           </Typography>
+
           <CategoriasSlider
             categorias={Array.isArray(categorias)
               ? categorias.map((c) => ({
@@ -260,15 +296,49 @@ return authorId === usuarioLogueado;
               : []}
             clasifica={'contenidos'}
           />
-        </Box>
-      </Fade>
-    )}
+          <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+            <u className="contenidos-titulo">Contenidos Recientes:...</u>
+          </Typography>
+        </>
+      )}
 
-    {/* Contenidos */}
-    <Box mt={5}>
-      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-        Contenidos Recientes
-      </Typography>
+      {mostrarCategorias !== true && (
+        <Fade in timeout={400}>
+          <Box
+            onClick={() => navigate('/contenidos')}
+             sx={{
+                backgroundColor: '#e6f4ea',
+                borderRadius: 1,
+                px: 1.5,
+                py: 0.5,
+                mb: 2,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold',
+                color: 'green',
+                fontSize: '0.875rem',
+                boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
+                marginTop: '-20px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease-in-out',
+                '&:hover': {
+                backgroundColor: '#d0ebdc',
+                textDecoration: 'underline',
+                transform: 'scale(1.02)',
+                },
+            }}
+          >
+            « Volver a Directorio de Contenidos
+          </Box>
+        </Fade>
+      )}
+
+
+    </Box>
+  </Fade>
+)}
+
 
       {filtros === 'editar' ? (
         <ContenidoDetalle slug={parametros} />

@@ -2,6 +2,21 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import BotonEliminar from '../../components/Blog/BotonEliminar';
 import {
+    colorBotonSecundario,
+    colorBordeBotonSecundario,
+    colorFondoBotonSecundario,
+    colorBotonSecundarioHoover,
+    colorFondoBotonSecundarioHoover,
+    colorBordeBotonSecundarioHoover,
+    colorControlSecundario,
+    colorControlSecundarioHoover,
+    degradadoIconos,
+    botonEditor,
+    botonEditorBorde,
+    botonEditorFondoHoover,
+    botonEditorBordeHoover,
+} from '../../styles/ColoresBotones';
+import {
   Box,
   Container,
   Paper,
@@ -226,7 +241,26 @@ const EditarContenido = () => {
         <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
             <Paper sx={{ p: 3 }}>
                     <Typography variant="h5" gutterBottom>
-                        🪶 Editar Contenido
+                        <Box
+                                component="span"
+                                    sx={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: 24,
+                                        width: 36,
+                                        height: 36,
+                                        borderRadius: '50%',
+                                        background: degradadoIconos,
+                                        color: '#000',
+                                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+                                        mr: 1.5,
+                                        transform: 'rotate(-6deg)',
+                                    }}
+                                >
+                            🪶
+                        </Box>
+                         Editar Contenido
                     </Typography>
                 <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
                 <Grid container spacing={2}>
@@ -308,7 +342,16 @@ const EditarContenido = () => {
                         control={control}
                         render={({ field }) => (
                         <FormControlLabel
-                            control={<Checkbox {...field} checked={field.value} />}
+                            control={<Checkbox
+                                 {...field}
+                                 checked={field.value}
+                                 sx={{
+                                        color: colorControlSecundario,
+                                        '&.Mui-checked': {
+                                        color: colorControlSecundario,
+                                        },
+                                    }}
+                                 />}
                             label="¿Contenido restringido?"
                         />
                         )}
@@ -413,7 +456,21 @@ const EditarContenido = () => {
                         )}
 
                         {/* 3. Botón y input oculto */}
-                        <Button variant="contained" component="label">
+                        <Button 
+                            variant="contained"
+                            component="label"
+                            sx={{
+                                color: colorBotonSecundario,
+                                borderColor: colorBordeBotonSecundario,
+                                backgroundColor: colorFondoBotonSecundario,
+                                '&:hover': {
+                                backgroundColor: colorFondoBotonSecundarioHoover,
+                                borderColor: colorBotonSecundarioHoover,
+                                color: colorBotonSecundarioHoover,
+                                },
+                                mt: 1, mb: 1
+                            }}
+                        >
                             Cambiar portada
                             <input
                                 type="file"
@@ -425,7 +482,7 @@ const EditarContenido = () => {
                         </Button>
                     </Grid>
                     {/* Galerías y videos */}
-                    {['galeria_libre', 'galeria_restringida', 'videos_libres', 'videos_restringidos'].map(name => (
+                    {['galeria_libre', 'galeria_restringida'].map(name => (
                     <Grid item xs={12} key={name}>
                         <Typography variant="subtitle1">{name.replace('_', ' ')} existente:</Typography>
                         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
@@ -444,7 +501,21 @@ const EditarContenido = () => {
                                 ))}
                             </Box>
                         )}
-                        <Button variant="outlined" component="label">
+                        <Button 
+                            variant="outlined" 
+                            component="label"
+                            sx={{
+                                color: colorBotonSecundario,
+                                borderColor: colorBordeBotonSecundario,
+                                backgroundColor: colorFondoBotonSecundario,
+                                '&:hover': {
+                                    backgroundColor: colorFondoBotonSecundarioHoover,
+                                    borderColor: colorBordeBotonSecundarioHoover,
+                                    color: colorBotonSecundarioHoover,
+                                },
+                                transition: 'all 0.3s ease',
+                            }}
+                        >
                             Subir nuevos {name.replace('_', ' ')}
                             <input
                                 type="file"
@@ -460,30 +531,76 @@ const EditarContenido = () => {
                     {/* Botones */}
                     <Grid item xs={12} sx={{ display: 'flex', gap: 2, mt: 2 }}>
                         <Button
-                            type="button"
-                            variant="contained"
-                            disabled={isSubmitting}
-                            onClick={e => {
-                                console.group('🔘 BOTÓN Guardar Click');
-                                console.log(' getValues():', getValues());
-                                console.log(' files state:', files);
-                                console.log(' errors actuales:', errors);
-                                console.log(' isSubmitting:', isSubmitting);
-                                console.log('> Ahora llamando a handleSubmit(onSubmit)…');
-                                handleSubmit(onSubmit)(e);
-                                console.groupEnd();
+                                type="button"
+                                variant="contained"
+                                disabled={isSubmitting}
+                                sx={{
+                                    bgcolor: '#6e862ae0',
+                                    '&:hover': {
+                                        bgcolor: '#8CC701',
+                                    },
+                                    transition: 'all 0.3s ease',
+                                }}
+                                startIcon={
+                                    isSubmitting ? (
+                                        <span className="material-icons">hourglass_top</span>
+                                    ) : (
+                                        <span className="material-icons">save</span>
+                                    )
+                                }
+                                onClick={e => {
+                                    console.group('🔘 BOTÓN Guardar Click');
+                                    console.log(' getValues():', getValues());
+                                    console.log(' files state:', files);
+                                    console.log(' errors actuales:', errors);
+                                    console.log(' isSubmitting:', isSubmitting);
+                                    console.log('> Ahora llamando a handleSubmit(onSubmit)…');
+                                    handleSubmit(onSubmit)(e);
+                                    console.groupEnd();
+                                }}
+                            >
+                                {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                        </Button>
+
+                        <Button
+                            variant="outlined"
+                            onClick={() => navigate(-1)}
+                            sx={{
+                                color: '#666', // texto gris oscuro
+                                borderColor: '#999', // borde gris medio
+                                backgroundColor: 'transparent',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    backgroundColor: '#f0f0f0',
+                                    borderColor: '#666',
+                                    color: '#333',
+                                },
+                                mr: 2, // margen derecho
                             }}
                         >
-                            {isSubmitting ? 'Guardando...' : 'Guardar cambios'}
+                            <span className="material-icons" style={{ marginRight: 6 }}>close</span>
+                            Cancelar
                         </Button>
-                    <Button variant="outlined" onClick={() => navigate(-1)}>
-                        Cancelar
-                    </Button>
-                    
-                    <BotonEliminar 
-                        handleDelete={handleDelete}
-                        autor_email={autorEmail}
-                    />
+
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={() => handleDelete(autorEmail)}
+                            sx={{
+                                color: '#d32f2f', // rojo MUI error
+                                borderColor: '#d32f2f',
+                                backgroundColor: 'transparent',
+                                transition: 'all 0.3s ease',
+                                '&:hover': {
+                                    backgroundColor: '#ffebee',
+                                    borderColor: '#b71c1c',
+                                    color: '#b71c1c',
+                                },
+                            }}
+                        >
+                            <span className="material-icons" style={{ marginRight: 6 }}>delete</span>
+                            Eliminar
+                        </Button>
                     </Grid>
                 </Grid>
                 </Box>

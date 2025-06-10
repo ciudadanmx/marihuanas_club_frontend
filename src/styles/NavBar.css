@@ -27,11 +27,9 @@
 
 .navbar-abajo {
   position: relative;
-
   z-index: 4 !important;
-  background-color: rgb(231, 231, 83);
-  filter: brightness(1); /* Ajusta este valor para más o menos brillo */
-
+  background: linear-gradient(23deg, #ffe600,  rgba(152, 219, 37, 0.896));
+  filter: brightness(1); /* Opcional para ajustar brillo */
 }
 
 /* Al pasar el cursor, cambia a mano y crece suavemente */

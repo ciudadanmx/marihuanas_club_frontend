@@ -1,17 +1,18 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import {
-  Box,
-  Container,
-  Paper,
-  Grid,
-  TextField,
-  Button,
-  Typography,
-  MenuItem,
-  FormControlLabel,
-  Checkbox,
-  InputLabel,
+    Box,
+    Container,
+    Paper,
+    Grid,
+    TextField,
+    Button,
+    Typography,
+    MenuItem,
+    FormControlLabel,
+    Checkbox,
+    InputLabel,
+    Divider,
 } from '@mui/material';
 
 import '../../quillConfig.js';     // esto que corre la línea de registro
@@ -24,6 +25,20 @@ import 'react-quill/dist/quill.snow.css';
 import { useContenido } from '../../hooks/useContenido';
 import { useSnackbar } from 'notistack';
 
+import {
+    colorBotonSecundario,
+    colorBordeBotonSecundario,
+    colorFondoBotonSecundario,
+    colorBotonSecundarioHoover,
+    colorFondoBotonSecundarioHoover,
+    colorControlSecundario,
+    colorControlSecundarioHoover,
+    degradadoIconos,
+    botonEditor,
+    botonEditorBorde,
+    botonEditorFondoHoover,
+    botonEditorBordeHoover,
+} from '../../styles/ColoresBotones';
 
 const AgregarContenido = () => {
     const { enqueueSnackbar } = useSnackbar();
@@ -47,40 +62,37 @@ const AgregarContenido = () => {
         formState: { errors },
     } = useForm({
         defaultValues: {
-        titulo: '',
-        resumen: '',
-        contenido_libre: '',
-        contenido_restringido: '',
-        restringido: false,
-        status: 'Publicado',
-        tags: '',
-        fecha_publicacion: dayjs(),
-        categoria: '',
+            titulo: '',
+            resumen: '',
+            contenido_libre: '',
+            contenido_restringido: '',
+            restringido: false,
+            status: 'publicado',
+            tags: '',
+            fecha_publicacion: dayjs(),
+            categoria: '',
         },
     });
 
-    const categoriaSeleccionada = watch('categoria'); // ✅ aquí está bien 
+    const categoriaSeleccionada = watch('categoria');  
     
-
     const quillModules = useMemo(() => ({
         toolbar: [
             [{ header: [1, 2, 3, 4, 5, 6, false] }],
-        [{ font: [] }],
-        [{ size: ['small', false, 'large', 'huge'] }],
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ color: [] }, { background: [] }],
-        [{ script: 'sub' }, { script: 'super' }],
-        [{ list: 'ordered' }, { list: 'bullet' }],
-        [{ indent: '-1' }, { indent: '+1' }],
-        [{ align: [] }],
-        ['blockquote', 'code-block'],
-        [{ direction: 'rtl' }],
-        ['link', 'image', 'video'],
-        ['clean']
-        ],
-        
+            [{ font: [] }],
+            [{ size: ['small', false, 'large', 'huge'] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ align: [] }],
+            ['blockquote', 'code-block'],
+            [{ direction: 'rtl' }],
+            ['link', 'image', 'video'],
+            ['clean']
+        ],    
     }), []);
-
     const quillRefLibre = useRef(null);
     const [portadaFiles, setPortadaFiles] = useState([]);
     const [galeriaLibreFiles, setGaleriaLibreFiles] = useState([]);
@@ -93,15 +105,10 @@ const AgregarContenido = () => {
     const [galeriaRestringidaPreview, setGaleriaRestringidaPreview] = useState([]);
     const [videosLibresPreview, setVideosLibresPreview] = useState([]);
     const [videosRestringidosPreview, setVideosRestringidosPreview] = useState([]);
-
     const [subiendo, setSubiendo] = useState(false);
     const [mensaje, setMensaje] = useState('');
-
     const [htmlModeRestringido, setHtmlModeRestringido] = useState(false);
     const [htmlModeLibre, setHtmlModeLibre] = useState(false);
-    const [contenidoLibre, setContenidoLibre] = useState('');
-    const [contenidoRestringido, setContenidoRestringido] = useState('');
-
 
     const crearPreviews = (files) =>
     Array.from(files).map((file) => {
@@ -131,19 +138,6 @@ const AgregarContenido = () => {
         setGaleriaRestringidaFiles(files);
         setGaleriaRestringidaPreview(crearPreviews(files));
         clearErrors('galeriaRestringida');
-    };
-
-    const handleVideosLibresChange = (e) => {
-        const files = e.target.files;
-        setVideosLibresFiles(files);
-        setVideosLibresPreview(crearPreviews(files));
-    };
-
-    const handleVideosRestringidosChange = (e) => {
-        const files = e.target.files;
-        setVideosRestringidosFiles(files);
-        setVideosRestringidosPreview(crearPreviews(files));
-        clearErrors('videosRestringidos');
     };
 
     // Validación antes de enviar para archivos
@@ -241,12 +235,6 @@ const AgregarContenido = () => {
 
     const restringido = watch('restringido');
 
-    const categoriaDefault = categorias.find(
-        (cat) =>
-            cat.slug?.toLowerCase() === 'no-clasificados' ||
-            cat.nombre?.toLowerCase() === 'no clasificados'
-    );
-
     useEffect(() => {
         console.log('Categorías cargadas:', categorias);
 
@@ -282,7 +270,7 @@ const AgregarContenido = () => {
                                 width: 36,
                                 height: 36,
                                 borderRadius: '50%',
-                                background: 'linear-gradient(135deg,rgb(40, 219, 37), #ffe600)',
+                                background: degradadoIconos,
                                 color: '#000',
                                 boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
                                 mr: 1.5,
@@ -291,8 +279,7 @@ const AgregarContenido = () => {
                         >
                     📝
                     </Box>
-
-                Agregar Contenido
+                    Agregar Contenido
                 </Typography>
 
                 <Box component="form" onSubmit={handleSubmit(onSubmit)}>
@@ -331,28 +318,47 @@ const AgregarContenido = () => {
                                             onClick={() => setHtmlModeLibre(!htmlModeLibre)}
                                             variant="outlined"
                                             size="small"
+                                            sx={{
+                                                color: botonEditor,
+                                                borderColor: botonEditorBorde,
+                                                '&:hover': {
+                                                backgroundColor: botonEditorFondoHoover,
+                                                borderColor: botonEditorBordeHoover,
+                                                color: botonEditorBordeHoover,
+                                                },
+                                            }}
                                         >
                                             {htmlModeLibre ? 'Editor Visual' : 'Editor HTML'}
                                         </Button>
                                         
                                     </Box>
-
+                                    <Box sx={{ 
+                                                display: 'flex', 
+                                                gap: 1, 
+                                                mb: 1,
+                                                height: '100%',
+                                                marginBottom: '1rem',
+                                                border: '2px solid #6e862a',
+                                                borderRadius: 8,
+                                                color: '#2e2e2e',
+                                            }}>
                                     {htmlModeLibre ? (
+                                        
                                         <TextField
                                             key="html"
                                             multiline
                                             minRows={8}
                                             fullWidth
-                                            value={field.value}           // field.value siempre es un string
+                                            value={field.value} 
                                             onChange={e => field.onChange(e.target.value)}
                                             variant="outlined"
                                         />
                                     ) : (
                                         <ReactQuill
                                             key="visual"
-                                            ref={quillRefLibre}           // guardamos la ref pero sin el log
+                                            ref={quillRefLibre} 
                                             theme="snow"
-                                            value={field.value}           // idem, nunca undefined
+                                            value={field.value}
                                             onChange={(content, delta, source, editor) => {
                                                 field.onChange(editor.getHTML());
                                             }}
@@ -360,22 +366,32 @@ const AgregarContenido = () => {
                                             modules={quillModules}
                                         />
                                     )}
+                                </Box>
                                 </>
                             )}
                         />
 
-                    </Grid>
+                    </Grid><Box>
+                    <Divider style={{ marginTop: '5px', marginBottom: '5px' }} />
                     <br /><br />        
                     {/* Checkbox para restringido */}
                     <Grid item xs={12}>
                     <FormControlLabel
                         className="restringido"
-                        control={<Checkbox
-                                {...register('restringido')} 
-                            />}
+                        control={
+                            <Checkbox
+                                {...register('restringido')}
+                                sx={{
+                                    color: colorControlSecundario,
+                                    '&.Mui-checked': {
+                                    color: colorControlSecundario,
+                                    },
+                                }}
+                            />
+                        }
                         label="¿Contenido restringido?"
                     />
-                    </Grid>
+                    </Grid></Box>
 
                     {/* Contenido restringido (WYSIWYG con HTML editable) */}
                     <Grid item xs={12}>
@@ -391,10 +407,18 @@ const AgregarContenido = () => {
                                         onClick={() => setHtmlModeRestringido(!htmlModeRestringido)}
                                         variant="outlined"
                                         size="small"
-                                        sx={{ mb: 1 }}
+                                        sx={{
+                                            color: botonEditor,
+                                            borderColor: botonEditorBorde,
+                                            '&:hover': {
+                                                backgroundColor: botonEditorFondoHoover,
+                                                borderColor: botonEditorBordeHoover,
+                                                color: botonEditorBordeHoover,
+                                            },
+                                        }}
                                         disabled={!restringido}
                                     >
-                                    {htmlModeRestringido ? 'Editor Visual' : 'Editar HTML'}
+                                        {htmlModeRestringido ? 'Editor Visual' : 'Editar HTML'}
                                     </Button>
                                     {htmlModeRestringido ? (
                                     <TextField
@@ -421,7 +445,6 @@ const AgregarContenido = () => {
                         />
                     </Grid>
 
-
                     {/* Status */}
                     <Grid item xs={12} sm={6}>
                         <TextField
@@ -431,11 +454,35 @@ const AgregarContenido = () => {
                             fullWidth
                             defaultValue="publicado"
                             {...register('status')}
+                            sx={{
+                                '& label': {
+                                    color: colorControlSecundario,
+                                },
+                                '& .MuiInputBase-root': {
+                                    color: colorControlSecundario, // texto seleccionado
+                                    borderColor: colorControlSecundario,
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: colorControlSecundario, // borde normal
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: colorControlSecundarioHoover, // borde hover
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: colorControlSecundarioHoover, // borde al enfocar
+                                    },
+                                },
+                                '& .MuiSvgIcon-root': {
+                                    color: colorControlSecundario, // ícono del desplegable
+                                },
+                            }}
                         >
                             <MenuItem value="borrador">Borrador</MenuItem>
                             <MenuItem value="publicado">Publicado</MenuItem>
                             <MenuItem value="archivado">Archivado</MenuItem>
                         </TextField>
+
                     </Grid>
 
                     {/* Categoría */} 
@@ -448,6 +495,29 @@ const AgregarContenido = () => {
                             {...register('categoria', { required: 'Categoría obligatoria' })}
                             error={!!errors.categoria}
                             helperText={errors.categoria?.message}
+                            sx={{
+                                '& label': {
+                                    color: colorControlSecundario,
+                                },
+                                '& .MuiInputBase-root': {
+                                    color: colorControlSecundario,
+                                    borderColor: colorControlSecundario,
+                                },
+                                '& .MuiOutlinedInput-root': {
+                                    '& fieldset': {
+                                        borderColor: colorControlSecundario,
+                                    },
+                                    '&:hover fieldset': {
+                                        borderColor: colorControlSecundarioHoover,
+                                    },
+                                    '&.Mui-focused fieldset': {
+                                        borderColor: colorControlSecundario, 
+                                    },
+                                },
+                                '& .MuiSvgIcon-root': {
+                                    color: colorControlSecundario,
+                                },
+                            }}
                         >
                             {categorias.map((cat) => (
                                 <MenuItem key={cat.id} value={cat.id}>
@@ -482,50 +552,93 @@ const AgregarContenido = () => {
                         />
                     </Grid>
 
-                    {/* Portada (archivo único) */}
                     <Grid item xs={12}>
                         <InputLabel required>Portada (imagen o video)</InputLabel>
+
                         <input
+                            id="portada-input"
                             type="file"
                             accept="image/*,video/*"
                             onChange={handlePortadaChange}
                             multiple={false}
-                            style={{ marginTop: 8, marginBottom: 8 }}
+                            style={{ display: 'none' }}
                         />
+
+                        <label htmlFor="portada-input">
+                            <Button
+                                variant="outlined"
+                                component="span"
+                                sx={{
+                                    color: colorBotonSecundario,
+                                    borderColor: colorBordeBotonSecundario,
+                                    backgroundColor: colorFondoBotonSecundario,
+                                    '&:hover': {
+                                    backgroundColor: colorFondoBotonSecundarioHoover,
+                                    borderColor: colorBotonSecundarioHoover,
+                                    color: colorBotonSecundarioHoover,
+                                    },
+                                    mt: 1, mb: 1
+                                }}
+                            >
+                                Seleccionar archivo
+                            </Button>
+                        </label>
+
                         {errors.portada && (
-                        <Typography color="error" variant="body2">
-                            {errors.portada.message}
-                        </Typography>
+                            <Typography color="error" variant="body2">
+                                {errors.portada.message}
+                            </Typography>
                         )}
+
                         {portadaPreview.length > 0 &&
-                        portadaPreview.map((file, index) =>
-                            file.type.startsWith('image/') ? (
-                            <img
-                                key={index}
-                                src={file.url}
-                                alt={`Portada Preview ${index}`}
-                                style={{ maxHeight: 150, marginRight: 10 }}
-                            />
-                            ) : (
-                                <video
-                                    key={index}
-                                    src={file.url}
-                                    controls
-                                    style={{ maxHeight: 150, marginRight: 10 }}
-                                />
+                            portadaPreview.map((file, index) =>
+                                file.type.startsWith('image/') ? (
+                                    <img
+                                        key={index}
+                                        src={file.url}
+                                        alt={`Portada Preview ${index}`}
+                                        style={{ maxHeight: 150, marginRight: 10 }}
+                                    />
+                                ) : (
+                                    <video
+                                        key={index}
+                                        src={file.url}
+                                        controls
+                                        style={{ maxHeight: 150, marginRight: 10 }}
+                                    />
+                                )
                             )
-                        )}
+                        }
                     </Grid>
 
                     {/* Galería libre (archivos múltiples) */}
                     <Grid item xs={12}>
                         <InputLabel>Galería libre (imágenes/videos)</InputLabel>
+                        <label htmlFor="galeria-libre-input">
+                            <Button
+                                variant="outlined"
+                                component="span"
+                                sx={{
+                                    color: colorBotonSecundario,
+                                    borderColor: colorBordeBotonSecundario,
+                                    backgroundColor: colorFondoBotonSecundario,
+                                    '&:hover': {
+                                        backgroundColor: colorFondoBotonSecundarioHoover,
+                                        borderColor: colorBotonSecundarioHoover,
+                                        color: colorBotonSecundarioHoover,
+                                    },
+                                }}
+                            >
+                                Subir archivos
+                            </Button>
+                        </label>
                         <input
+                            id="galeria-libre-input"
                             type="file"
                             accept="image/*,video/*"
                             onChange={handleGaleriaLibreChange}
                             multiple
-                            style={{ marginTop: 8, marginBottom: 8 }}
+                            style={{ display: 'none' }}
                         />
                         {galeriaLibrePreview.length > 0 &&
                         galeriaLibrePreview.map((file, index) =>
@@ -551,12 +664,31 @@ const AgregarContenido = () => {
                     {restringido && (
                     <Grid item xs={12}>
                         <InputLabel>Galería restringida (imágenes/videos)</InputLabel>
+                        <label htmlFor="galeria-restringida-input">
+                            <Button
+                                variant="outlined"
+                                component="span"
+                                sx={{
+                                    color: colorBotonSecundario,
+                                    borderColor: colorBordeBotonSecundario,
+                                    backgroundColor: colorFondoBotonSecundario,
+                                    '&:hover': {
+                                        backgroundColor: colorFondoBotonSecundarioHoover,
+                                        borderColor: colorBotonSecundarioHoover,
+                                        color: colorBotonSecundarioHoover,
+                                    },
+                                }}
+                            >
+                                Subir archivos
+                            </Button>
+                        </label>
                         <input
+                            id="galeria-restringida-input"
                             type="file"
                             accept="image/*,video/*"
                             onChange={handleGaleriaRestringidaChange}
                             multiple
-                            style={{ marginTop: 8, marginBottom: 8 }}
+                            style={{ display: 'none' }}
                         />
                         {errors.galeriaRestringida && (
                             <Typography color="error" variant="body2">
@@ -590,16 +722,22 @@ const AgregarContenido = () => {
                     <Grid item xs={12}>
                         <Button
                             variant="contained"
-                            color="primary"
                             type="submit"
                             disabled={subiendo || loadingHook}
                             startIcon={
                                 subiendo || loadingHook ? (
-                                <span className="material-icons">hourglass_top</span>
+                                    <span className="material-icons">hourglass_top</span>
                                 ) : (
-                                <span className="material-icons">save</span>
+                                    <span className="material-icons">save</span>
                                 )
                             }
+                            sx={{
+                                bgcolor:' #6e862ae0',           
+                                '&:hover': {
+                                bgcolor: '#8CC701',         
+                                },
+                                transition: 'all 0.3s ease',  
+                            }}
                         >
                             {subiendo || loadingHook ? 'Subiendo...' : 'Guardar contenido'}
                         </Button>
@@ -607,14 +745,14 @@ const AgregarContenido = () => {
 
                     {/* Mensaje */}
                     {mensaje && (
-                    <Grid item xs={12}>
-                        <Typography
-                            variant="body1"
-                            color={mensaje.toLowerCase().includes('error') ? 'error' : 'primary'}
-                        >
-                            {mensaje}
-                        </Typography>
-                    </Grid>
+                        <Grid item xs={12}>
+                            <Typography
+                                variant="body1"
+                                color={mensaje.toLowerCase().includes('error') ? 'error' : 'primary'}
+                            >
+                                {mensaje}
+                            </Typography>
+                        </Grid>
                     )}
                 </Grid>
                 </Box>
