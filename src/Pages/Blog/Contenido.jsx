@@ -59,18 +59,43 @@ const ContenidoDetalle = () => {
                 const isVideo = src.match(/\.(mp4|webm|ogg)$/i);
 
                 return (
-                    <Grid item xs={6} sm={4} key={i}>
+                    <Grid item xs={12} sm={6} md={4} key={i}>
                         {isVideo ? (
-                            <Box component="video" controls width="100%" style={{ borderRadius: 8 }}>
-                                <source src={src} type="video/mp4" />
-                                Tu navegador no soporta la etiqueta de video.
+                            <Box
+                                sx={{
+                                    position: 'relative',
+                                    paddingTop: '56.25%', // 16:9 aspect ratio
+                                    borderRadius: 2,
+                                    overflow: 'hidden',
+                                }}
+                            >
+                            <Box
+                                component="video"
+                                src={src}
+                                controls
+                                muted
+                                sx={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    borderRadius: 2,
+                                }}
+                            />
                             </Box>
                         ) : (
                             <CardMedia
                                 component="img"
                                 image={src}
                                 alt={`imagen-${i}`}
-                                sx={{ borderRadius: 2 }}
+                                sx={{
+                                    borderRadius: 2,
+                                    width: '100%',
+                                    height: 250,
+                                    objectFit: 'cover',
+                                }}
                             />
                         )}
                     </Grid>
@@ -78,6 +103,7 @@ const ContenidoDetalle = () => {
             })}
         </Grid>
     );
+
 
     const renderVideos = (videos) => (
         <Grid container spacing={2}>
