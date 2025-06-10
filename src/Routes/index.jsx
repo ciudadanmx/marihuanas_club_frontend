@@ -21,6 +21,7 @@ import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
 
 import ContenidosPage from '../Pages/Blog/Contenidos';
 import EditarContenido from '../Pages/Blog/EditarContenido';
+import EliminarContenido from '../Pages/Blog/EliminarContenido';
 import Contenido from '../Pages/Blog/Contenido';
 import Cursos from '../Pages/Cursos/Cursos';
 
@@ -28,6 +29,10 @@ import Cursos from '../Pages/Cursos/Cursos';
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
   return <EditarContenido filtros="editar" parametros={slug} />;
+};
+const EliminarContenidoWrapper = () => {
+  const { slug } = useParams();
+  return <EliminarContenido filtros="eliminar" parametros={slug} />;
 };
 
 const Rutas = () => (
@@ -50,6 +55,8 @@ const Rutas = () => (
 
     {/* Ruta para editar contenido */}
     <Route path="/contenidos/editar/:slug" element={<EditarContenidoWrapper />} />
+    {/* Ruta para editar contenido */}
+    <Route path="/contenidos/eliminar/:slug" element={<EliminarContenidoWrapper />} />
 
     <Route path="/contenidos/*" element={<ContenidosPage />} />
 

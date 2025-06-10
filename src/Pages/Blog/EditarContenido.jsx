@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import BotonEliminar from '../../components/Blog/BotonEliminar';
 import {
   Box,
   Container,
@@ -35,6 +36,7 @@ const EditarContenido = () => {
   } = useContenido();
 
   const [cargando, setCargando] = useState(true);
+  const [autorEmail, setAutorEmail] = useState(true);
   const [initialMediaUrls, setInitialMediaUrls] = useState({});
 
   const {
@@ -80,6 +82,10 @@ const EditarContenido = () => {
     videos_restringidos: null,
   });
 
+  const handleDelete = () => {
+    navigate(`/contenidos/eliminar/${slug}`);
+  };
+
   useEffect(() => {
     console.log('[EditarContenido] useEffect:', loadingHook, contenidos);
     if (!loadingHook && contenidos.length) {
@@ -92,6 +98,7 @@ const EditarContenido = () => {
       }
       reset({
         titulo: dato.titulo || '',
+        autor_email: dato.autor_email || '',
         resumen: dato.resumen || '',
         contenido_libre: dato.contenido_libre || '',
         contenido_restringido: dato.contenido_restringido || '',
@@ -101,6 +108,7 @@ const EditarContenido = () => {
         fecha_publicacion: dayjs(dato.fecha_publicacion),
         categoria: String(dato.categoria?.id || ''),
       });
+      setAutorEmail('dato.autor_email');
       setInitialMediaUrls({
         portada: dato.portada?.url || null,
         galeria_libre: dato.galeria_libre?.map(m => m.url) || [],
@@ -164,9 +172,9 @@ const EditarContenido = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Editar Contenido
-        </Typography>
+            <Typography variant="h5" gutterBottom>
+                🪶 Editar Contenido
+            </Typography>
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <Grid container spacing={2}>
             {/* Título */}
@@ -390,6 +398,11 @@ const EditarContenido = () => {
             <Button variant="outlined" onClick={() => navigate(-1)}>
                 Cancelar
             </Button>
+            
+            <BotonEliminar 
+                handleDelete={handleDelete}
+                autor_email={autorEmail}
+            />
             </Grid>
           </Grid>
         </Box>

@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import EliminarContenido  from '../../Pages/Blog/EliminarContenido';
 import {
   Box,
   Grid,
@@ -273,9 +274,11 @@ return authorId === usuarioLogueado;
           Contenidos Recientes
         </Typography>
 
-        {filtros === 'editar' ? (
-          <ContenidoDetalle slug={parametros} />
-        ) : (
+            {filtros === 'editar' ? (
+                <ContenidoDetalle slug={parametros} />
+                ) : filtros === 'eliminar' ? (
+                <EliminarContenido slug={parametros} />
+            ) : (
           <Grid container spacing={2}>
             {loading && (
               <Grid item xs={12}>

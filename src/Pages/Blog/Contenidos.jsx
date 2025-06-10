@@ -48,6 +48,11 @@ const ContenidosEditar = () => {
   return <Contenidos filtros="editar" parametros={slug} />;
 };
 
+const ContenidosEliminar = () => {
+  const { slug } = useParams();
+  return <Contenidos filtros="eliminar" parametros={slug} />;
+};
+
 const ContenidosPage = () => {
   return (
     <Routes>
@@ -61,6 +66,8 @@ const ContenidosPage = () => {
       <Route path="categoria/:slug" element={<ContenidosCategoria />} />
       {/* /contenidos/editar/:slug */}
       <Route path="categoria/:slug" element={<ContenidosEditar />} />
+      {/* /contenidos/eliminar/:slug */}
+      <Route path="categoria/:slug" element={<ContenidosEliminar />} />
     </Routes>
   );
 };
