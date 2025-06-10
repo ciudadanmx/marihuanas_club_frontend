@@ -26,189 +26,201 @@ import '../../quillConfig.js'; // registro de módulos personalizados
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
 const EditarContenido = () => {
-  const { slug } = useParams();
-  const navigate = useNavigate();
-  const { enqueueSnackbar } = useSnackbar();
-  const {
-    contenidos,
-    categorias,
-    loading: loadingHook,
-    editarContenido,
-    subirMedia,
-  } = useContenido();
+    const { slug } = useParams();
+    const navigate = useNavigate();
+    const { enqueueSnackbar } = useSnackbar();
+    const {
+        contenidos,
+        categorias,
+        loading: loadingHook,
+        editarContenido,
+        subirMedia,
+    } = useContenido();
 
-  const [cargando, setCargando] = useState(true);
-  const [autorEmail, setAutorEmail] = useState(true);
-  const [initialMediaUrls, setInitialMediaUrls] = useState({});
+    const [cargando, setCargando] = useState(true);
+    const [autorEmail, setAutorEmail] = useState(true);
+    const [initialMediaUrls, setInitialMediaUrls] = useState({});
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    watch,
-    getValues,
-    formState: { errors, isSubmitting },
-  } = useForm({
-    defaultValues: {
-      titulo: '',
-      resumen: '',
-      contenido_libre: '',
-      contenido_restringido: '',
-      restringido: false,
-      status: 'borrador',
-      tags: '',
-      fecha_publicacion: dayjs(),
-      categoria: '',
-    },
-  });
+    const {
+        handleSubmit,
+        control,
+        reset,
+        watch,
+        getValues,
+        formState: { errors, isSubmitting },
+    } = useForm({
+        defaultValues: {
+        titulo: '',
+        resumen: '',
+        contenido_libre: '',
+        contenido_restringido: '',
+        restringido: false,
+        status: 'borrador',
+        tags: '',
+        fecha_publicacion: dayjs(),
+        categoria: '',
+        },
+    });
 
-  const quillModules = useMemo(() => ({
-    toolbar: [
-      [{ header: [1, 2, false] }],
-      ['bold', 'italic', 'underline'],
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      ['link', 'image'],
-      ['clean'],
-    ],
-  }), []);
+    const quillModules = useMemo(() => ({
+        toolbar: [
+        [{ header: [1, 2, false] }],
+        ['bold', 'italic', 'underline'],
+        [{ list: 'ordered' }, { list: 'bullet' }],
+        ['link', 'image'],
+        ['clean'],
+        ],
+    }), []);
 
-  const quillRefLibre = useRef();
-  const quillRefRestringido = useRef();
+    const quillRefLibre = useRef();
+    const quillRefRestringido = useRef();
 
-  // archivos nuevos
-  const [files, setFiles] = useState({
-    portada: null,
-    galeria_libre: null,
-    galeria_restringida: null,
-    videos_libres: null,
-    videos_restringidos: null,
-  });
+    // archivos nuevos
+    const [files, setFiles] = useState({
+        portada: null,
+        galeria_libre: [],
+        galeria_restringida: [],
+        videos_libres: [],
+        videos_restringidos: [],
+    });
 
-  const handleDelete = () => {
-    navigate(`/contenidos/eliminar/${slug}`);
-  };
+    const handleDelete = () => {
+        navigate(`/contenidos/eliminar/${slug}`);
+    };
 
-  useEffect(() => {
-    console.log('[EditarContenido] useEffect:', loadingHook, contenidos);
-    if (!loadingHook && contenidos.length) {
-      const dato = contenidos.find(c => c.slug === slug);
-      console.log('[EditarContenido] dato encontrado:', dato);
-      if (!dato) {
-        enqueueSnackbar('Contenido no encontrado', { variant: 'error' });
-        navigate('/contenidos');
-        return;
-      }
-      reset({
-        titulo: dato.titulo || '',
-        autor_email: dato.autor_email || '',
-        resumen: dato.resumen || '',
-        contenido_libre: dato.contenido_libre || '',
-        contenido_restringido: dato.contenido_restringido || '',
-        restringido: !!dato.restringido,
-        status: dato.status || 'borrador',
-        tags: (dato.tags || []).join(', '),
-        fecha_publicacion: dayjs(dato.fecha_publicacion),
-        categoria: String(dato.categoria?.id || ''),
-      });
-      setAutorEmail('dato.autor_email');
-      // Reemplázalo por esto:
-        const portadaPath = dato.portada?.url || dato.portada || null;
-        setInitialMediaUrls({
-            portada: portadaPath ? `${STRAPI_URL}${portadaPath}` : null,
-            galeria_libre: dato.galeria_libre?.map((m) => {
-                const path = m.url || m;
-                return `${STRAPI_URL}${path}`;
-            }) || [],
-            galeria_restringida: dato.galeria_restringida?.map((m) => {
-                const path = m.url || m;
-                return `${STRAPI_URL}${path}`;
-            }) || [],
-            videos_libres: dato.videos_libres?.map((m) => {
-                const path = m.url || m;
-                return `${STRAPI_URL}${path}`;
-            }) || [],
-            videos_restringidos: dato.videos_restringidos?.map((m) => {
-                const path = m.url || m;
-                return `${STRAPI_URL}${path}`;
-            }) || [],
+    useEffect(() => {
+        console.log('[EditarContenido] useEffect:', loadingHook, contenidos);
+        if (!loadingHook && contenidos.length) {
+        const dato = contenidos.find(c => c.slug === slug);
+        console.log('[EditarContenido] dato encontrado:', dato);
+        if (!dato) {
+            enqueueSnackbar('Contenido no encontrado', { variant: 'error' });
+            navigate('/contenidos');
+            return;
+        }
+        reset({
+            titulo: dato.titulo || '',
+            autor_email: dato.autor_email || '',
+            resumen: dato.resumen || '',
+            contenido_libre: dato.contenido_libre || '',
+            contenido_restringido: dato.contenido_restringido || '',
+            restringido: !!dato.restringido,
+            status: dato.status || 'borrador',
+            tags: (dato.tags || []).join(', '),
+            fecha_publicacion: dayjs(dato.fecha_publicacion),
+            categoria: String(dato.categoria?.id || ''),
         });
-        console.log('[EditarContenido] initialMediaUrls ajustado:', {
-            portada: portadaPath,
+            setAutorEmail('dato.autor_email');
+            // Reemplázalo por esto:
+            const portadaPath = dato.portada?.url || dato.portada || null;
+            setInitialMediaUrls({
+                portada: portadaPath ? `${STRAPI_URL}${portadaPath}` : null,
+                galeria_libre: dato.galeria_libre?.map((m) => {
+                    const path = m.url || m;
+                    return `${STRAPI_URL}${path}`;
+                }) || [],
+                galeria_restringida: dato.galeria_restringida?.map((m) => {
+                    const path = m.url || m;
+                    return `${STRAPI_URL}${path}`;
+                }) || [],
+                videos_libres: dato.videos_libres?.map((m) => {
+                    const path = m.url || m;
+                    return `${STRAPI_URL}${path}`;
+                }) || [],
+                videos_restringidos: dato.videos_restringidos?.map((m) => {
+                    const path = m.url || m;
+                    return `${STRAPI_URL}${path}`;
+                }) || [],
+            });
+            console.log('[EditarContenido] initialMediaUrls ajustado:', {
+                portada: portadaPath,
+                galeria_libre: dato.galeria_libre,
+                galeria_restringida: dato.galeria_restringida,
+                videos_libres: dato.videos_libres,
+                videos_restringidos: dato.videos_restringidos,
+            });
+            console.log('[EditarContenido] initialMediaUrls:', {
+            portada: dato.portada?.url,
             galeria_libre: dato.galeria_libre,
             galeria_restringida: dato.galeria_restringida,
             videos_libres: dato.videos_libres,
             videos_restringidos: dato.videos_restringidos,
         });
-        console.log('[EditarContenido] initialMediaUrls:', {
-        portada: dato.portada?.url,
-        galeria_libre: dato.galeria_libre,
-        galeria_restringida: dato.galeria_restringida,
-        videos_libres: dato.videos_libres,
-        videos_restringidos: dato.videos_restringidos,
-    });
-      setCargando(false);
-      console.log('[EditarContenido] formulario inicializado');
-    }
-  }, [loadingHook, contenidos, slug, reset, enqueueSnackbar, navigate]);
-
-  const handleFileChange = e => {
-    const { name, files: f } = e.target;
-    console.log('[EditarContenido] archivo cambiado:', name, f);
-    console.log('[EditarContenido] handleFileChange → name:', name, 'files:', f);
-    setFiles(prev => ({ ...prev, [name]: f }));
-  };
-
-  const onSubmit = async data => {
-    console.warn('///////////////////');
-    console.error('*************');
-    console.log('[EditarContenido] onSubmit data:', data);
-    console.log('[EditarContenido] onSubmit files:', files);
-    console.warn('///////////////////');
-    console.warn('*************');
-    console.log('[EditarContenido] onSubmit → form values:', data);
-    console.log('[EditarContenido] onSubmit → files state:', files);
-    const id = contenidos.find(c => c.slug === slug)?.id;
-    console.log('[EditarContenido] onSubmit id:', id);
-    try {
-      const mediaPayload = {};
-      for (const key of Object.keys(files)) {
-        if (files[key]?.length) {
-          console.log('[EditarContenido] subiendo media:', key);
-          const up = await subirMedia(files[key]);
-          console.log('[EditarContenido] media subida:', key, up);
-          mediaPayload[key] = up;
+        setCargando(false);
+        console.log('[EditarContenido] formulario inicializado');
         }
-      }
-      const payload = {
-        ...data,
-        tags: data.tags.split(',').map(t => t.trim()).filter(Boolean),
-        fecha_publicacion: data.fecha_publicacion.toISOString(),
-        categoria: Number(data.categoria) || null,
-      };
-      console.warn('==================');
-      console.error('============');
-      console.log('[EditarContenido] payload final:', payload);
-      console.log('[EditarContenido] onSubmit → mediaPayload:', mediaPayload);
-      console.log('[EditarContenido] onSubmit → final payload:', payload);
-      const res = await editarContenido(id, payload, mediaPayload);
-      console.log('[EditarContenido] editarContenido res:', res);
-      enqueueSnackbar('Contenido actualizado con éxito', { variant: 'success' });
-      navigate(`/contenido/${slug}`);
-    } catch (err) {
-      console.error('[EditarContenido] error onSubmit:', err);
-      enqueueSnackbar(`Error: ${err.message}`, { variant: 'error' });
+    }, [loadingHook, contenidos, slug, reset, enqueueSnackbar, navigate]);
+
+    const handleFileChange = (e) => {
+        const { name, files: f } = e.target;
+        console.log('[EditarContenido] archivo cambiado:', name, f);
+
+        if (name === 'portada') {
+            // portada se mantiene como FileList único
+            setFiles((prev) => ({ ...prev, [name]: f }));
+        } else {
+            // galerías y vídeos: append al array existente
+            const nuevos = Array.from(f);
+            setFiles((prev) => ({
+            ...prev,
+            [name]: prev[name]
+                ? [...prev[name], ...nuevos]
+                : nuevos
+            }));
+        }
+    };
+
+    const onSubmit = async data => {
+        console.warn('///////////////////');
+        console.error('*************');
+        console.log('[EditarContenido] onSubmit data:', data);
+        console.log('[EditarContenido] onSubmit files:', files);
+        console.warn('///////////////////');
+        console.warn('*************');
+        console.log('[EditarContenido] onSubmit → form values:', data);
+        console.log('[EditarContenido] onSubmit → files state:', files);
+        const id = contenidos.find(c => c.slug === slug)?.id;
+        console.log('[EditarContenido] onSubmit id:', id);
+        try {
+        const mediaPayload = {};
+        for (const key of Object.keys(files)) {
+            if (files[key]?.length) {
+            console.log('[EditarContenido] subiendo media:', key);
+            const up = await subirMedia(files[key]);
+            console.log('[EditarContenido] media subida:', key, up);
+            mediaPayload[key] = up;
+            }
+        }
+        const payload = {
+            ...data,
+            tags: data.tags.split(',').map(t => t.trim()).filter(Boolean),
+            fecha_publicacion: data.fecha_publicacion.toISOString(),
+            categoria: Number(data.categoria) || null,
+        };
+        console.warn('==================');
+        console.error('============');
+        console.log('[EditarContenido] payload final:', payload);
+        console.log('[EditarContenido] onSubmit → mediaPayload:', mediaPayload);
+        console.log('[EditarContenido] onSubmit → final payload:', payload);
+        const res = await editarContenido(id, payload, mediaPayload);
+        console.log('[EditarContenido] editarContenido res:', res);
+        enqueueSnackbar('Contenido actualizado con éxito', { variant: 'success' });
+        navigate(`/contenido/${slug}`);
+        } catch (err) {
+        console.error('[EditarContenido] error onSubmit:', err);
+        enqueueSnackbar(`Error: ${err.message}`, { variant: 'error' });
+        }
+    };
+
+    if (cargando) {
+        return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+            <CircularProgress />
+        </Box>
+        );
     }
-  };
 
-  if (cargando) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  const restringido = watch('restringido');
+    const restringido = watch('restringido');
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
