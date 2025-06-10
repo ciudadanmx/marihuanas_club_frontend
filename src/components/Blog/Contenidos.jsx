@@ -23,7 +23,7 @@ import ContenidoDetalle from '../../Pages/Blog/Contenido'; // <-- Importación a
 
 const Contenidos = ({ filtros, parametros }) => {
   //TODO  REEMPLAZAR POR CONTEXTO
-  const editor = true;
+  const editor = false;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
   const { getCategorias } = useCategorias('categorias-contenidos');
@@ -149,206 +149,202 @@ return authorId === usuarioLogueado;
   
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-      {/* Search & controls */}
-      <Slide direction="down" in timeout={400}>
-        <Box
-          sx={{
-            mb: 3,
-            backgroundColor: '#fff',
-            p: 2,
-            borderRadius: 3,
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-          }}
+  <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+    {/* Search & Controls */}
+    <Slide direction="down" in timeout={400}>
+      <Box
+        sx={{
+          mb: 3,
+          backgroundColor: '#fff',
+          p: 2,
+          borderRadius: 3,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+        }}
+      >
+        <Stack
+          direction={{ xs: 'column', md: 'row' }}
+          spacing={2}
+          alignItems="center"
+          justifyContent="space-between"
         >
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            spacing={2}
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Buscar contenido..."
-              value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                    console.log('buscaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaandooooooooooo', e.target.value);
-                    setBusqueda(e.target.value); // Ejecuta la búsqueda al presionar Enter
-                    handleBuscar();
-                }
-              }}
-              sx={{
-                flex: 1,
-                minWidth: { xs: '100%', md: '250px' },
-                backgroundColor: '#f9f9f9',
-                borderRadius: 2,
-              }}
-            />
-            <Button
-              onClick={handleBuscar}
-              variant="contained"
-              size="small"
-              sx={{
-                backgroundColor: '#000',
-                color: '#fff200',
-                borderRadius: 2,
-                '&:hover': { backgroundColor: '#222', transform: 'scale(1.05)' },
-              }}
-            >
-              <span className="material-icons">search</span>
-            </Button>
-            {editor === true ? (
-            <Button
-              onClick={handleMis}
-              variant="outlined"
-              size="small"
-              sx={{
-                color: '#000',
-                borderColor: '#000',
-                borderRadius: 2,
-                textTransform: 'none',
-                fontWeight: 600,
-                '&:hover': { backgroundColor: '#f0f0f0', transform: 'scale(1.03)' },
-              }}
-            >
-              <span className="material-icons" style={{ marginRight: 6 }}>
-                article
-              </span>
-              Mis contenidos
-            </Button>
-            ): (<></>)
-            }
-            {editor === true ? ( 
-            <Button
-              onClick={handleAgregar}
-              variant="contained"
-              size="small"
-              sx={{
-                backgroundColor: '#fff200',
-                color: '#000',
-                borderRadius: 2,
-                '&:hover': { backgroundColor: '#e6d900', transform: 'scale(1.05)' },
-              }}
-            >
-              <span className="material-icons">add_circle</span>
-            </Button>
-            ): (<></>)
-            }
-
-          </Stack>
-        </Box>
-      </Slide>
-      {/* Categorías */}
-      {categorias.length > 0 && (
-        <Fade in timeout={400}>
-          <Box>
-            <Typography
-              variant="h6"
-              align="center"
-              fontWeight={700}
-              sx={{ mb: 2 }}
-            >
-              Categorías
-            </Typography>
-            <CategoriasSlider
-              categorias={
-                Array.isArray(categorias)
-                  ? categorias.map((c) => ({
-                      nombre: c.attributes.nombre,
-                      slug: c.attributes.slug,
-                      imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
-                    }))
-                  : []
+          {/* Buscar */}
+          <TextField
+            variant="outlined"
+            size="small"
+            placeholder="Buscar contenido..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                console.log('Buscando:', e.target.value);
+                setBusqueda(e.target.value);
+                handleBuscar();
               }
-              clasifica={'contenidos'}
-            />
-          </Box>
-        </Fade>
-      )}
-      {/* Contenidos */}
-      <Box mt={5}>
-        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
-          Contenidos Recientes
-        </Typography>
+            }}
+            sx={{
+              flex: 1,
+              minWidth: { xs: '100%', md: '250px' },
+              backgroundColor: '#f9f9f9',
+              borderRadius: 2,
+            }}
+          />
 
-            {filtros === 'editar' ? (
-                <ContenidoDetalle slug={parametros} />
-                ) : filtros === 'eliminar' ? (
-                <EliminarContenido slug={parametros} />
-            ) : (
-          <Grid container spacing={2}>
-            {loading && (
-              <Grid item xs={12}>
-                <Typography align="center">Cargando contenidos...</Typography>
-              </Grid>
-            )}
-            {error && (
-              <Grid item xs={12}>
-                <Typography color="error" align="center">
-                  Error al cargar contenidos
-                </Typography>
-              </Grid>
-            )}
-            {!loading && toRender.length === 0 && (
-              <Grid item xs={12}>
-                <Typography align="center">No hay contenidos aún.</Typography>
-              </Grid>
-            )}
-            {toRender.map((item, i) => {
-              const { categoria, ...restData } = item.attributes ?? item;
-              const data = restData;
-              const categoriaNombre = categoria?.nombre || null;
-              const isVis = visible[item.id];
-              return (
-                <Grid
-                  key={item.id}
-                  item
-                  xs={12}
-                  sm={6}
-                  md={4}
-                  data-id={item.id}
-                  className="contenido-card"
-                  sx={{
-                    opacity: isVis ? 1 : 0,
-                    transform: isVis ? 'translateY(0)' : 'translateY(20px)',
-                    transition: `all 0.6s ease ${i * 0.1}s`,
-                  }}
-                >
-                  <ContenidoCard {...data} categoria={categoriaNombre} id={item.id} />
-                </Grid>
-              );
-            })}
-          </Grid>
-        )}
-          
-        {!loading && paginar === true  && (
-          <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
-            {/* Paginación con Material UI */}
-            <Pagination
-              count={Math.ceil(totalItems / porPagina)}
-              page={pagina}
-              onChange={(_, v) => setPagina(v)}
-            />
-            <TextField
-              select
-              value={porPagina}
-              onChange={(e) => setPorPagina(Number(e.target.value))}
-              SelectProps={{ native: true }}
-              size="small"
-              sx={{ width: 80, ml: 2 }}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-            </TextField>
-          </Grid>
-        )}
+          <Button
+            onClick={handleBuscar}
+            variant="contained"
+            size="small"
+            sx={{
+              backgroundColor: '#000',
+              color: '#fff200',
+              borderRadius: 2,
+              '&:hover': { backgroundColor: '#222', transform: 'scale(1.05)' },
+            }}
+          >
+            <span className="material-icons">search</span>
+          </Button>
+
+          {/* Botones de editor */}
+          {editor && (
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Button
+                onClick={handleMis}
+                variant="outlined"
+                size="small"
+                sx={{
+                  color: '#000',
+                  borderColor: '#000',
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': { backgroundColor: '#f0f0f0', transform: 'scale(1.03)' },
+                }}
+                startIcon={<span className="material-icons">article</span>}
+              >
+                Mis contenidos
+              </Button>
+
+              <Button
+                onClick={handleAgregar}
+                variant="contained"
+                size="small"
+                sx={{
+                  backgroundColor: '#fff200',
+                  color: '#000',
+                  borderRadius: 2,
+                  '&:hover': { backgroundColor: '#e6d900', transform: 'scale(1.05)' },
+                }}
+                startIcon={<span className="material-icons">add_circle</span>}
+              >
+                Agregar
+              </Button>
+            </Stack>
+          )}
+        </Stack>
       </Box>
-    </Container>
-  );
+    </Slide>
+
+    {/* Categorías */}
+    {categorias.length > 0 && (
+      <Fade in timeout={400}>
+        <Box>
+          <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+            Categorías
+          </Typography>
+          <CategoriasSlider
+            categorias={Array.isArray(categorias)
+              ? categorias.map((c) => ({
+                  nombre: c.attributes.nombre,
+                  slug: c.attributes.slug,
+                  imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
+                }))
+              : []}
+            clasifica={'contenidos'}
+          />
+        </Box>
+      </Fade>
+    )}
+
+    {/* Contenidos */}
+    <Box mt={5}>
+      <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+        Contenidos Recientes
+      </Typography>
+
+      {filtros === 'editar' ? (
+        <ContenidoDetalle slug={parametros} />
+      ) : filtros === 'eliminar' ? (
+        <EliminarContenido slug={parametros} />
+      ) : (
+        <Grid container spacing={2}>
+          {loading && (
+            <Grid item xs={12}>
+              <Typography align="center">Cargando contenidos...</Typography>
+            </Grid>
+          )}
+          {error && (
+            <Grid item xs={12}>
+              <Typography color="error" align="center">
+                Error al cargar contenidos
+              </Typography>
+            </Grid>
+          )}
+          {!loading && toRender.length === 0 && (
+            <Grid item xs={12}>
+              <Typography align="center">No hay contenidos aún.</Typography>
+            </Grid>
+          )}
+          {toRender.map((item, i) => {
+            const { categoria, ...restData } = item.attributes ?? item;
+            const data = restData;
+            const categoriaNombre = categoria?.nombre || null;
+            const isVis = visible[item.id];
+            return (
+              <Grid
+                key={item.id}
+                item
+                xs={12}
+                sm={6}
+                md={4}
+                data-id={item.id}
+                className="contenido-card"
+                sx={{
+                  opacity: isVis ? 1 : 0,
+                  transform: isVis ? 'translateY(0)' : 'translateY(20px)',
+                  transition: `all 0.6s ease ${i * 0.1}s`,
+                }}
+              >
+                <ContenidoCard {...data} categoria={categoriaNombre} id={item.id} />
+              </Grid>
+            );
+          })}
+        </Grid>
+      )}
+
+      {/* Paginación */}
+      {!loading && paginar === true && (
+        <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
+          <Pagination
+            count={Math.ceil(totalItems / porPagina)}
+            page={pagina}
+            onChange={(_, v) => setPagina(v)}
+          />
+          <TextField
+            select
+            value={porPagina}
+            onChange={(e) => setPorPagina(Number(e.target.value))}
+            SelectProps={{ native: true }}
+            size="small"
+            sx={{ width: 80, ml: 2 }}
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={25}>25</option>
+          </TextField>
+        </Grid>
+      )}
+    </Box>
+  </Container>
+);
 };
 
 export default Contenidos;
