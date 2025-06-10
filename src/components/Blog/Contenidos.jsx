@@ -23,7 +23,7 @@ import ContenidoDetalle from '../../Pages/Blog/Contenido'; // <-- Importación a
 
 const Contenidos = ({ filtros, parametros }) => {
   //TODO  REEMPLAZAR POR CONTEXTO
-  const editor = false;
+  const editor = true;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
   const { getCategorias } = useCategorias('categorias-contenidos');
@@ -235,7 +235,7 @@ return authorId === usuarioLogueado;
                 }}
                 startIcon={<span className="material-icons">add_circle</span>}
               >
-                Agregar
+                Crear
               </Button>
             </Stack>
           )}

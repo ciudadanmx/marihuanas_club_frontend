@@ -246,9 +246,26 @@ const AgregarContenido = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 3 }}>
             <Typography variant="h4" gutterBottom>
-            <span className="material-icons" style={{ verticalAlign: 'middle', marginRight: 8 }}>
-                add_circle
-            </span>
+                <Box
+                    component="span"
+                        sx={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 24,
+                            width: 36,
+                            height: 36,
+                            borderRadius: '50%',
+                            background: 'linear-gradient(135deg,rgb(40, 219, 37), #ffe600)',
+                            color: '#000',
+                            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
+                            mr: 1.5,
+                            transform: 'rotate(-6deg)',
+                        }}
+                    >
+                📝
+                </Box>
+
             Agregar Contenido
             </Typography>
 
