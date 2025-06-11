@@ -13,7 +13,7 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     min-width: 42vw;
 
-    z-index: 1000;
+    /* z-index: 1000; */
     border-radius: 6%;
 
 }
@@ -37,7 +37,7 @@
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     display: none;
-    z-index: 1000;
+    /* z-index: 1000; */
     box-sizing: border-box; /* Asegura que el padding y borde se incluyan en el tamaño total */
 }
 
@@ -78,7 +78,7 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     width: 50vw;
     height:96vh;
-    z-index: 5000;
+    /* z-index: 5000; */
 }
 
 .message-menu.open {
@@ -179,7 +179,7 @@
         width: 100vw;
         padding: 4vw;
 
-        z-index: 1000;
+        /* z-index: 1000; */
         min-height: 90vh;
         border-radius: 2%;
     }
@@ -201,7 +201,7 @@
         width: 13vw;
         padding: 1.5vw;
 
-        z-index: 1000;
+        /* z-index: 1000; */
         max-height: 90vh;
         border-radius: 2%;
     }

@@ -164,6 +164,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
 
       <section className="navbar"
         style={{
+          width: "100%",
           backgroundImage: "url('/fondo.png')",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -172,7 +173,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
         }}
       >
         <div>
-        <div className='nav-links columnas columnax'>
+        <div className='nav-links columnas'>
             
             <div className="logo-container" alt="MaRiHuaNaS.CLuB --> Red de Clubs 4.20 Mex." onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
 
@@ -243,7 +244,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
         </div>
         </section>
         <section>
-        <div clasName="invisible">
+        <div>
             <span className="nav-links navbar-abajo">
             {["clubs", "legal", "membresias", "market", "contenidos", "cursos", "herramientas","eventos", "comunidad", "gana"].map((section) => (
                 <NavButton className="nav-links"
