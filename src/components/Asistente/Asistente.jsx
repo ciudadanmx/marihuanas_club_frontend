@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import asistenteMin from "../../assets/asistente_min.png";
-//import TTS from "./TTS";
+import TTS from "./TTS";
 import "../../styles/Asistente.css";
 
 const Asistente = () => {
@@ -51,7 +51,7 @@ const Asistente = () => {
           </button>
 
           {/* El componente TTS maneja la animación de la boca */}
-          {/* <TTS /> */}
+           <TTS />
         </div>
       )}
     </div>
