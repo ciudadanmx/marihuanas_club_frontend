@@ -1,6 +1,6 @@
 .menu-menu {
     position: absolute;
-    top: 30%;
+    /* top: 30%; */
     /* background-color: white;
     padding: 20px;
     border-radius: 10px;
@@ -12,8 +12,8 @@
     /* top: 33px;
     display: none;  */
 
-    right: -90%;  /* Alínea a la izquierda */
-    right: 0; /* Alínea a la derecha */
+    /* right: -90%;  
+    right: 0; 
     margin-top: 5px;
     
     background-color: white;
@@ -22,7 +22,17 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     width: 200px;
     display: none;
-    /* z-index: 5000; */
+    z-index: 5000;  */
+
+  position: relative;
+  top: 33%; /* Alinea el menú justo debajo del ícono */
+  right: 20%; /* Se adapta al tamaño del contenedor padre */
+  background-color: white;
+  display: none;
+
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 33vw;
 }
 
 menu-menu.open {
@@ -50,14 +60,15 @@ menu-menu.open {
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr); /* Grid 3x3 */
-    gap: 20px; /* Espaciado entre elementos */
+    gap: 13px; /* Espaciado entre elementos */
     justify-items: center; /* Centra los items horizontalmente */
     align-items: center; /* Centra los items verticalmente */
     background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 50vw;
-    margin-left: -20vw;
+    padding: 13px;
+    border-radius: 13px;
+    height: 33vh;
+    margin-left: -30vw;
+    top: 30vw;
 }
 
 .grid-item {

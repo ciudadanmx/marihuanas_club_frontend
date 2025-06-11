@@ -36,6 +36,7 @@
 }
 
 .notifications-menu.open {
+  width: auto;
   display: block;
   overflow-y: visible;
   /* z-index: 99999 !important; */
@@ -45,6 +46,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 27vw;
 }
 
 .notifications-menu li {
