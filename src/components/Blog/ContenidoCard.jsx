@@ -10,12 +10,6 @@ import {
 import { useNavigate } from 'react-router-dom';
 import BotonEditar from './BotonEditar';
 import productoImg from '../../assets/producto.png';
-import {
-  colorControlSecundario,
-  colorControlSecundarioHoover,
-  botonEditor,
-  botonEditorBorde,
-} from '../../styles/ColoresBotones';
 
 const ContenidoCard = ({
   titulo,
@@ -41,17 +35,14 @@ const ContenidoCard = ({
     fecha_publicacion,
   });
 
-  // Determinar URL de media
-  let mediaUrl = productoImg;
-  if (portada) {
-    mediaUrl = `${STRAPI_URL}${portada}`;
-    console.log(`🖼️ Media válida para "${titulo}":`, mediaUrl);
-  } else {
-    console.warn(`⚠️ Media no válida para "${titulo}", usando imagen por defecto`);
-  }
+  let imagenUrl = productoImg;
 
-  // Detectar si es video por extensión
-  const isVideo = /\.(mp4|webm|ogg)$/i.test(mediaUrl);
+  if (portada) {
+    imagenUrl = `${STRAPI_URL}${portada}`;
+    console.log(`🖼️ Portada válida para "${titulo}":`, imagenUrl);
+  } else {
+    console.warn(`⚠️ Portada no válida para "${titulo}", usando imagen por defecto`);
+  }
 
   const handleClick = () => {
     navigate(`/contenido/${slug}`);
@@ -72,27 +63,13 @@ const ContenidoCard = ({
         overflow: 'hidden',
       }}
     >
-      {/* Media: imagen o video responsive */}
-      {isVideo ? (
-        <Box
-          component="video"
-          src={mediaUrl}
-          controls
-          sx={{
-            width: '100%',
-            height: { xs: 120, sm: 150, md: 180 },
-            objectFit: 'cover',
-          }}
-        />
-      ) : (
-        <CardMedia
-          component="img"
-          height="180"
-          image={mediaUrl}
-          alt={titulo}
-          sx={{ objectFit: 'cover' }}
-        />
-      )}
+      <CardMedia
+        component="img"
+        height="180"
+        image={imagenUrl}
+        alt={titulo}
+        sx={{ objectFit: 'cover' }}
+      />
 
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant="h6" component="div" gutterBottom>
@@ -118,23 +95,11 @@ const ContenidoCard = ({
         )}
 
         <Box display="flex" justifyContent="space-between" mt={2}>
-          <BotonEditar
+          <BotonEditar 
             handleEdit={handleEdit}
             autor_email={autor_email}
           />
-          <Button
-            onClick={handleClick}
-            variant="outlined"
-            size="small"
-            sx={{
-              color: botonEditor,
-              borderColor: botonEditorBorde,
-              '&:hover': {
-                color: botonEditorBorde,
-                borderColor: botonEditor,
-              },
-            }}
-          >
+          <Button onClick={handleClick} variant="outlined" size="small">
             <span className="material-icons" style={{ marginRight: 4 }}>chevron_right</span>
             Leer más
           </Button>
