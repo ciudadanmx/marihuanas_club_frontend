@@ -26,10 +26,12 @@
 }
 
 .navbar-abajo {
-  /* position: relative; */
-  /* 1ndex: 4 !important; */
-  background: linear-gradient(23deg, #ffe600,  rgba(152, 219, 37, 0.896));
-  filter: brightness(1); /* Opcional para ajustar brillo */
+  position: relative;
+
+  z-index: 4 !important;
+  background-color: rgb(231, 231, 83);
+  filter: brightness(1); /* Ajusta este valor para más o menos brillo */
+
 }
 
 /* Al pasar el cursor, cambia a mano y crece suavemente */
@@ -122,7 +124,7 @@
   font-size: 33px;
   color: #000;
   margin: 10px; /* Margen entre íconos */
-  /* bottom: -30px; */
+  bottom: -30px;
 }
 
 /* Mostrar el texto a la derecha del ícono en escritorio */
@@ -169,12 +171,11 @@
 
 /* 3 Columnas de la fila superrior de la NavBar */
 .columnas {
-  /* position:sticky; */
+  position:sticky;
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
-  width: 100vw;
-  top: 40px;
+  min-width: 100%;
 
 }
 
@@ -236,7 +237,7 @@
     flex-direction: row; /* Mostrar los íconos en fila en móvil */
     justify-content: space-around;
     align-items: center;
-    /* z-index: -33 !important; */
+    z-index: -33 !important;
   }
 
 

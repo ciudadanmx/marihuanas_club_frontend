@@ -8,14 +8,12 @@ import {
   Button,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import BotonEditar from './BotonEditar';
 import productoImg from '../../assets/producto.png';
 
 const ContenidoCard = ({
   titulo,
   slug,
   autor,
-  autor_email,
   resumen,
   portada,
   categoria,
@@ -28,7 +26,6 @@ const ContenidoCard = ({
     titulo,
     slug,
     autor,
-    autor_email,
     resumen,
     portada,
     categoria,
@@ -46,10 +43,6 @@ const ContenidoCard = ({
 
   const handleClick = () => {
     navigate(`/contenido/${slug}`);
-  };
-
-  const handleEdit = () => {
-    navigate(`/contenidos/editar/${slug}`);
   };
 
   return (
@@ -94,13 +87,8 @@ const ContenidoCard = ({
           </Typography>
         )}
 
-        <Box display="flex" justifyContent="space-between" mt={2}>
-          <BotonEditar 
-            handleEdit={handleEdit}
-            autor_email={autor_email}
-          />
+        <Box display="flex" justifyContent="flex-end" mt={2}>
           <Button onClick={handleClick} variant="outlined" size="small">
-            <span className="material-icons" style={{ marginRight: 4 }}>chevron_right</span>
             Leer más
           </Button>
         </Box>

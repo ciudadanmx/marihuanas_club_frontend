@@ -2,20 +2,13 @@ import { Typography, CardActionArea } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import './CategoriaCard.css';
 
-const CategoriaCard = ({ nombre, imagen, slug, clasifica }) => {
+const CategoriaCard = ({ nombre, imagen, slug }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
     console.log('click * - * - * - * - / -');
-    if (clasifica && clasifica === 'contenidos') {
-      if (slug) {
-        navigate(`/contenidos/categoria/${slug}`);
-      }
-    }
-    else {
-      if (slug) {
-        navigate(`/market/store/${slug}`);
-      }
+    if (slug) {
+      navigate(`/market/store/${slug}`);
     }
   };
 

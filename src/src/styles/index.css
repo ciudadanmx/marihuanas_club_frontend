@@ -1,0 +1,206 @@
+@import url('https://fonts.googleapis.com/css2?family=Delicious+Handrawn&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap');
+
+body {
+  background-color: #f0f8ff;
+    margin: 0;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: clamp(1.5rem, 4vw, 1rem);
+
+  }
+  
+  .page {
+    margin: 12px 40px !important;
+    width: 95%;
+    overflow: hidden; /* Opcional, oculta cualquier contenido que se desborde del div */
+  }
+
+
+.no-list-style {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.separar {
+  display: flex;
+  align-items: center;
+}
+
+.atras {
+  /* z-index: -2; */
+  position: fixed;
+  
+}
+
+.intro {
+  margin-top: -120px;
+  margin-left: 14px;
+}
+
+.zeparador {
+  height: 300px;
+}
+
+.beneficios {
+  margin-top: -100px;
+}
+
+.image-home {
+  width: 20vw;
+  min-width: 120px;
+  max-width: 240px;
+  height: auto;
+  object-fit: contain;
+  flex-shrink: 0;
+  height: auto;
+  top: 36vh;
+}
+
+ .page h1 {
+  margin: 8px auto;
+  padding: 0 10px;
+  font-family: 'Modak', cursive;
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  color: rgb(5, 94, 5);
+  background-color: rgba(255, 251, 3, 0.349);
+  text-align: center;
+  max-width: 100%;
+  word-wrap: break-word;
+  white-space: normal;
+  overflow-wrap: break-word;
+  letter-spacing: 0.5em;
+
+  text-shadow:
+    0 0 3px #7fff00,
+    0 0 5px #7fff00,
+    0 0 8px #00ff00,
+    0 0 13px #32cd32,
+    0 0 17px #00fa9a;
+
+  animation: pulse-glow 2.5s infinite alternate ease-in-out;
+  position: relative;
+}
+
+@keyframes pulse-glow {
+  0% {
+    transform: scale(1);
+    text-shadow:
+      0 0 3px #7fff00,
+      0 0 5px #7fff00,
+      0 0 8px #00ff00,
+      0 0 13px #32cd32,
+      0 0 17px #00fa9a;
+  }
+  100% {
+    transform: scale(1.01);
+    text-shadow:
+      0 0 4px #adff2f,
+      0 0 6px #adff2f,
+      0 0 12px #7fff00,
+      0 0 16px #32cd32,
+      0 0 21px #00fa9a;
+  }
+}
+
+
+.page h1::after {
+  content: "";
+  display: block;
+  margin: 2px auto 0;
+  height: 3px;
+  width: 80%;
+  background: linear-gradient(90deg, orange, #ffcc00, orange);
+  border-radius: 2px;
+  animation: glow-bar 2s infinite linear;
+  background-size: 200% 100%;
+}
+  .page img {
+    margin-top: -11%;
+    width: 100%;
+    height: 100%;
+    object-fit:contain   ; /* Esto asegura que la imagen se escale para cubrir el div sin distorsionarse */
+  }
+  
+  .page ul li {
+    margin: 20px 0;
+  }
+  
+  
+  .wrapper {
+    padding-left: 20px;
+    padding-right: 20px;
+    
+    
+    max-width: 100vw; /* Ajusta el ancho máximo del contenedor según tus necesidades */
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    margin-top: -20px;
+  }
+  
+  
+  code {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+  }
+  
+  
+  @media (max-width: 768px) {
+    .home {
+      background-image: url('../assets/ciudadanMobile.jpg'); /* Imagen para pantallas pequeñas */
+      object-fit:cover  ; 
+    }
+  
+    .home img {
+      display: none;
+    }
+  }
+
+
+
+
+  .tab-button {
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  outline: none;
+  border-bottom: 3px solid transparent;
+  font-weight: normal;
+  transition: border-bottom 0.3s ease, font-weight 0.3s ease;
+}
+
+.tab-button.active {
+  border-bottom: 3px solid #4caf50;
+  font-weight: bold;
+}
+
+.estrella {
+  font-size: 24px; /* más grande que los 16px originales */
+  color: #ffc107;  /* color amarillo típico de rating */
+  line-height: 1;
+}
+
+.estrella.vacia {
+  opacity: 0.5; /* opción: menos saturada la estrella vacía */
+}
+
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.restringido {
+  margin-top: 40px !important;
+}

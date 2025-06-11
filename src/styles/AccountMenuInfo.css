@@ -10,14 +10,14 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-/*   z-index: 999999; */
+  z-index: 999999;
   height: 50vh;
 }
 
 .account-menu.open {
   display: block;
   position: relative;
-/*   z-index: 999999; */
+  z-index: 999999;
     background: rgb(90, 185, 82);
 
 }

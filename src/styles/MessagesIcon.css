@@ -1,23 +1,21 @@
 /* MessagesIcon.css */
 .message-icon-container {
-  width: fit-content;
     position: relative;
     display: inline-block;
     margin: 30px;
     filter: brightness(0.9); /* Ajusta este valor para más o menos brillo */
-  z-index: 100 !important;
   }
   
   .message-icon {
     font-size: 54px; /* Ajusta el tamaño del ícono según tus necesidades */
     color: rgba(206, 250, 119, 0.911); /* Color del ícono */
-    /* z-index: 999999 !important; */
+    z-index: 999999 !important;
   }
   
   .message-icon-small {
     font-size: 33px; /* Ajusta el tamaño del ícono según tus necesidades */
     color: #000; /* Color del ícono */
-   /*  z-index: 999999 !important; */
+    z-index: 999999 !important;
   }
 
   .message-count {
@@ -30,7 +28,7 @@
     padding: 4px 8px;
     font-size: 18px;
     font-weight: bold;
-    /* z-index: 999 !important; */
+    z-index: 999 !important;
       border: 2px solid yellow; /* ✅ Estilo del borde incluido */
 
   }

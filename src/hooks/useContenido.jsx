@@ -5,66 +5,41 @@ import { useMembresia } from './useMembresia.jsx';
 import { useRolEditor } from './useRolEditor.jsx';
 import { useAuth0 } from '@auth0/auth0-react';
 
-const STRAPI_URL = `${process.env.REACT_APP_STRAPI_URL}`;
-const UPLOAD_URL = `${STRAPI_URL}/api/upload`;
+const API_URL = `${process.env.REACT_APP_STRAPI_URL}/api`;
+const UPLOAD_URL = `${process.env.REACT_APP_STRAPI_URL}/api/upload`;
 
 export function useContenido() {
-const { user, getAccessTokenSilently } = useAuth0();
-const [autoresMap, setAutoresMap] = useState({});
   const tieneMembresia = useMembresia();
-  //const { user } = useAuth0();
+  const { user } = useAuth0();
   const esEditor = useRolEditor(user?.email);
-
-  const [total, setTotal] = useState(0);
 
   const [contenidos, setContenidos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [pagina, setPagina] = useState(1);
-  const [porPagina, setPorPagina] = useState(10);
-  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
-  fetchContenidos();
-  fetchCategorias();
-  fetchAutores();           // <— añade esta llamada
-}, [pagina, porPagina, user]);
+    fetchContenidos();
+    fetchCategorias();
+  }, []);
 
-
-  async function fetchContenidos(filtros, parametros) {
+  async function fetchContenidos() {
     try {
       setLoading(true);
-      let urlFiltrada = `${STRAPI_URL}/api/contenidos?populate=portada,autor,autor_nombre,autor_email,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria`;
-      
-      if (filtros === 'mis-contenidos') {
-        urlFiltrada += ``;
-      }
-
-      else {
-        urlFiltrada += `&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`;
-      }
-      
-      console.warn(`* * * * - * - * / * - */ / * / * /* / * /* / * /* / * /*  `, urlFiltrada);
-      const res = await fetch(
-        urlFiltrada
-      );
-      
+      const res = await fetch(`${API_URL}/contenidos?populate=portada,autor,galeria_libre,galeria_restringida`);
       const data = await res.json();
 
       const items = Array.isArray(data.data) ? data.data : [];
-      //setTotal(res.data.meta.pagination.total);
-      setTotalItems(data.meta.pagination.total);
       const parsed = items.map(item => {
         const a = item.attributes;
         const cat = a.categoria?.data;
-        //TODO:    EXTRAER AL USUARIO DEL CAMPO DE RELACIÓN AUTOR  CON LA COLECCIÓN USUARIOS DE STRAPI
+        console.log(` * * * * * * * * * * *  useContenidos ${a.titulo}`);
+        console.log(` * * * * * * * * * * *  useContenidos`, a);
         return {
           id: item.id,
           titulo: a.titulo,
           slug: a.slug,
-          autor: a.autor_nombre || 'Anónimo',
-          autor_email: a.autor_email || '',
+          autor: a.autor?.data?.attributes?.username || 'Anónimo',
           contenido_libre: DOMPurify.sanitize(a.contenido_libre || ''),
           contenido_restringido: DOMPurify.sanitize(a.contenido_restringido || ''),
           status: a.status,
@@ -105,7 +80,7 @@ const [autoresMap, setAutoresMap] = useState({});
 
   async function fetchCategorias() {
     try {
-      const res = await fetch(`${STRAPI_URL}/api/categorias-contenidos`);
+      const res = await fetch(`${API_URL}/categorias-contenidos`);
       const data = await res.json();
 
       const cats = Array.isArray(data.data) ? data.data : [];
@@ -122,29 +97,9 @@ const [autoresMap, setAutoresMap] = useState({});
     }
   }
 
-
-  async function fetchAutores() {
-  if (!user) return;
-  try {
-    const res = await fetch(
-      `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(user.email)}`
-    );
-    const json = await res.json();
-    const data = json.data || [];
-    if (data.length) {
-      setAutoresMap(prev => ({
-        ...prev,
-        [user.email]: data[0].id,
-      }));
-    }
-  } catch (err) {
-    console.error('Error al obtener autor Strapi:', err);
-  }
-}
-
   async function crearCategoria(nombre) {
     const slug = slugify(nombre, { lower: true });
-    const res = await fetch(`${STRAPI_URL}/api/categorias-contenidos`, {
+    const res = await fetch(`${API_URL}/categorias-contenidos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: { nombre, slug } }),
@@ -177,121 +132,68 @@ const [autoresMap, setAutoresMap] = useState({});
   }
 
   async function crearContenido(nuevo, media = {}) {
-  if (!esEditor) throw new Error('Permiso denegado: se requiere rol editor');
+    if (!esEditor) throw new Error('Permiso denegado: se requiere rol editor');
 
-  const slug = slugify(nuevo.titulo || '', { lower: true });
-   const autorId = autoresMap[user.email] || null;
+    const slug = slugify(nuevo.titulo, { lower: true });
+    const contenido = {
+      ...nuevo,
+      slug,
+      tags: Array.isArray(nuevo.tags) ? nuevo.tags.join(',') : (nuevo.tags || ''),
+      categoria: Number(nuevo.categoria) || null,
+    };
 
-  const contenido = {
-    ...nuevo,
-    slug,
-    tags: Array.isArray(nuevo.tags)
-      ? nuevo.tags.join(',')
-      : nuevo.tags || '',
-    categoria: nuevo.categoria ? Number(nuevo.categoria) : null,
-    autor_email: user.email,                                     // guarda el email
-    autor_nombre: user.name || user.nickname || '',
-    ...(autorId && { autor: autorId }),
+    if (media.portada) contenido.portada = media.portada[0];
+    if (media.galeria_libre) contenido.galeria_libre = media.galeria_libre;
+    if (media.galeria_restringida) contenido.galeria_restringida = media.galeria_restringida;
+    if (media.videos_libres) contenido.videos_libres = media.videos_libres;
+    if (media.videos_restringidos) contenido.videos_restringidos = media.videos_restringidos;
 
-  };
-
-  if (media.portada?.[0]) contenido.portada = media.portada[0];
-  if (Array.isArray(media.galeria_libre)) contenido.galeria_libre = media.galeria_libre;
-  if (Array.isArray(media.galeria_restringida)) contenido.galeria_restringida = media.galeria_restringida;
-  if (Array.isArray(media.videos_libres)) contenido.videos_libres = media.videos_libres;
-  if (Array.isArray(media.videos_restringidos)) contenido.videos_restringidos = media.videos_restringidos;
-
-  try {
-    const res = await fetch(`${STRAPI_URL}/api/contenidos`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ data: contenido }),
-    });
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => null);
-      console.error('Error al crear contenido:', errData?.error || errData);
-      throw new Error('No se pudo crear el contenido');
+    try {
+      const res = await fetch(`${API_URL}/contenidos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ data: contenido }),
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        console.error('Error al crear contenido:', errData?.error || errData);
+        throw new Error('No se pudo crear el contenido');
+      }
+      await fetchContenidos();
+    } catch (err) {
+      console.error('Excepción al crear contenido:', err);
+      throw err;
     }
-
-    await fetchContenidos(); // Actualiza los contenidos si todo salió bien
-  } catch (err) {
-    console.error('Excepción al crear contenido:', err);
-    throw err;
   }
-}
-
 
   async function editarContenido(id, cambios, media = {}) {
-  // 1. Log inicial
-  console.log('[useContenido] editarContenido llamado con:', { id, cambios, media });
+    const dataCampos = {
+      ...cambios,
+      tags: Array.isArray(cambios.tags) ? cambios.tags.join(',') : (cambios.tags || ''),
+      categoria: Number(cambios.categoria) || null,
+    };
 
-  // 2. Construir dataCampos
-  const dataCampos = {
-    ...cambios,
-    tags: Array.isArray(cambios.tags)
-      ? cambios.tags.join(',')
-      : (cambios.tags || ''),
-    categoria: Number(cambios.categoria) || null,
-  };
-  if (media.portada) dataCampos.portada = media.portada[0];
-  if (media.galeria_libre) dataCampos.galeria_libre = media.galeria_libre;
-  if (media.galeria_restringida) dataCampos.galeria_restringida = media.galeria_restringida;
-  if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
-  if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
-  console.log('[useContenido] dataCampos preparados:', dataCampos);
+    if (media.portada) dataCampos.portada = media.portada[0];
+    if (media.galeria_libre) dataCampos.galeria_libre = media.galeria_libre;
+    if (media.galeria_restringida) dataCampos.galeria_restringida = media.galeria_restringida;
+    if (media.videos_libres) dataCampos.videos_libres = media.videos_libres;
+    if (media.videos_restringidos) dataCampos.videos_restringidos = media.videos_restringidos;
 
-  // 3. Preparar petición
-  const url = `${STRAPI_URL}/api/contenidos/${id}`;
-  const body = JSON.stringify({ data: dataCampos });
-  console.log('[useContenido] Preparando PUT a:', url);
-  console.log('[useContenido] Body:', body);
-
-  // 4. Ejecutar fetch
-  let res;
-  try {
-    res = await fetch(url, {
+    const res = await fetch(`${API_URL}/contenidos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body,
+      body: JSON.stringify({ data: dataCampos }),
     });
-  } catch (networkErr) {
-    console.error('[useContenido] Error de red al hacer PUT:', networkErr);
-    throw new Error(`Error de red: ${networkErr.message}`);
+    if (!res.ok) {
+      const errData = await res.json().catch(() => null);
+      console.error('Error al editar contenido:', errData?.error || errData);
+      throw new Error('No se pudo editar el contenido');
+    }
+    await fetchContenidos();
   }
-
-  console.log('[useContenido] Response received. Status:', res.status, 'ok:', res.ok);
-
-  // 5. Leer cuerpo de respuesta
-  let text;
-  try {
-    text = await res.text();
-    console.log('[useContenido] Response body text:', text);
-  } catch (e) {
-    console.warn('[useContenido] No se pudo leer body como texto:', e);
-  }
-
-  // 6. Manejo de errores HTTP
-  if (!res.ok) {
-    let errData = null;
-    try {
-      errData = JSON.parse(text);
-    } catch {}
-    console.error('[useContenido] Error al editar contenido:', res.status, errData);
-    throw new Error(`No se pudo editar el contenido (${res.status})`);
-  }
-
-  // 7. Refrescar lista de contenidos
-  console.log('[useContenido] Éxito en PUT. Actualizando lista de contenidos…');
-  await fetchContenidos();
-  console.log('[useContenido] Lista de contenidos actualizada');
-}
-
 
   async function eliminarContenido(id) {
-    const res = await fetch(`${STRAPI_URL}/api/contenidos/${id}`, {
+    const res = await fetch(`${API_URL}/contenidos/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok) {
@@ -352,11 +254,5 @@ const [autoresMap, setAutoresMap] = useState({});
     getContenidoById,
     filtrarPorCategoria,
     buscarPorTexto,
-    pagina,
-    setPagina,
-    porPagina,
-    setPorPagina,
-    totalItems,
-    total
   };
 }
