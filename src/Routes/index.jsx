@@ -24,6 +24,7 @@ import EditarContenido from '../Pages/Blog/EditarContenido';
 import EliminarContenido from '../Pages/Blog/EliminarContenido';
 import Contenido from '../Pages/Blog/Contenido';
 import Cursos from '../Pages/Cursos/Cursos';
+import Prueba from '../Pages/Prueba.jsx';
 
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarContenidoWrapper = () => {
@@ -66,6 +67,7 @@ const Rutas = () => (
     <Route path="/cursos" element={<Cursos />} />
 
     <Route path="/ubicacion" element={<MiUbicacion />} />
+    <Route path="/prueba" element={<Prueba />} />
 
     <Route path="/market/store/:slug" element={<Tienda />}>
       <Route path="agregar-producto" element={<AgregarProducto />} />

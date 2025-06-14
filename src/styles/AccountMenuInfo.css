@@ -3,7 +3,7 @@
 }
 
 .account-menu-contenedor {
-  position: absolute;
+  position: relative;
   top: 5px;
   right: 0;
   background: rgb(90, 185, 82);

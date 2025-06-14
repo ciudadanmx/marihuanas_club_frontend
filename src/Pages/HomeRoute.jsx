@@ -3,7 +3,7 @@ import marihuanasImg from '../assets/marihuanas_club_home.png';
 
 const HomeRoute = () => {
   return (
-    <section className="atras">
+    <section>
     <div className="page max-w-6xl mx-auto px-4">
       <h1 className="mb-4">
         Bienvenid<font color="#ff4dff">@</font> a la Red de Club's Cannábicos, Segura y Legal en México

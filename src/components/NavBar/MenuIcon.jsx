@@ -5,7 +5,7 @@ import NotificationsMenu from './NotificationsMenu';
 import MenuInfo from './MenuInfo';
 import '../../styles/MessagesIcon.css';
 
-const MenuIcon = ({ count = 33, handleLogout, action = 'info' }) => {
+const MenuIcon = ({ count = 0, handleLogout, action = 'info' }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {

@@ -16,6 +16,7 @@ import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tien
 import BotonCircular from './../Usuarios/BotonCircular.jsx';
 
 import MenuIcon from './MenuIcon';
+import UserIcon from './UserIcon.jsx'
 //import MessagesIcon from './MessagesIcon';
 import CartIcon from './CartIcon';
 import NotificationsIcon from './NotificationsIcon';
@@ -62,16 +63,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
     setIsMenuOpen(!isMenuOpen);
   }; */
 
-  useEffect(() => {
-    const handleResize = () => {
-      setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/ciudadan_logo.png");
-    };
 
-    handleResize(); // 🔥 Se ejecuta al montar el componente
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
   
   // Actualizamos activeTab en el evento onClick y navegamos
   const handleNavigation = (path) => {
@@ -88,6 +80,22 @@ const NavBar = ({ SetIsMenuOpen }) => {
       setIsMenuOpen(false);
     }
   };
+
+useEffect(() => {
+  const handleResize = () => {
+    setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/ciudadan_logo.png");
+  };
+
+  // 🔥 Obtenemos el primer path de la URL actual
+  const path = `/${window.location.pathname.split('/')[1]}`;
+  handleNavigation(path);
+
+  handleResize(); // Se ejecuta al montar el componente
+
+  window.addEventListener("resize", handleResize);
+  return () => window.removeEventListener("resize", handleResize);
+}, []);
+
 
   const handleLinkClick = (path) => {
     // Realiza la navegación
@@ -144,7 +152,8 @@ const NavBar = ({ SetIsMenuOpen }) => {
     logout({ returnTo: window.location.origin });
     setIsMenuOpen(false);
   };
-
+  //********************quitar !!!!! */
+const count=33;
   return (
     <>
 
@@ -201,13 +210,15 @@ const NavBar = ({ SetIsMenuOpen }) => {
                 />
               </span>
               <span className="nav-linky">
-                <NotificationsIcon
+                <MenuIcon
+                  action='notifications'
                   isOpen={isMenuOpen}
                   onClose={() => setIsMenuOpen(false)}
                   authenticated={isAuthenticated}
                   userData={user}
                   className="cuenta-icon"
                   handleLogout={handleLogout}
+                  count={count}
                   //ok
                 />
               </span>
@@ -220,16 +231,8 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   className="cuenta-icon"
                 />
               </span>
-              <span className="nav-linky">
-                <div className="cuenta-icon-container" onClick={() => { isAuthenticated ? toggleDropdown() : handleLogin(); }}>
-                  <img
-                    src={isAuthenticated ? (user?.picture || defaultProfileImage) : guestImage}
-                    alt="Profile"
-                    className="cuenta-icon"
-                  />
-                </div>
-              </span>
-              <UserMenu 
+              
+              <UserIcon 
                 handleLogin={handleLogin}
                 isMenuOpen={isMenuOpen}
                 setIsMenuOpen={setIsMenuOpen}
