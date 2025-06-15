@@ -4,11 +4,11 @@ import '../../styles/NotificationsMenu.css';
 //import Sesion from './Sesion';
 //import { gapi } from 'gapi-script';
 import { useState, useEffect } from 'react';
-import wikiImage from '../../assets/wikiciudadan.png'; 
+import wikiImage from '../../assets/wiki_marihuanas_club.png'; 
 import quienesImage from '../../assets/quienes.png'; 
-import tokensImage from '../../assets/tokens.jpeg'; 
+import logoImage from '../../assets/logo_cuadro.png'; 
 import helpImage from '../../assets/help.png'; 
-import contactImage from '../../assets/contacto.jpeg'; 
+import contactImage from '../../assets/faq.png'; 
 import VideosImage from '../../assets/videos.png'; 
 
 import '../../styles/MenuInfo.css';
@@ -17,21 +17,21 @@ import '../../styles/MenuInfo.css';
 const MenuInfo = ({ handleLogout, isOpen, onClose,  onLogout }) => {
 
     const items = [
-      { href: "https://wiki.ciudadan.org", img: wikiImage, alt: "Wiki Ciudadan", label: "Wiki", target: "_blank" },
-      { href: "/info/quienes", img: quienesImage, alt: "¿Quiénes somos?", label: "¿Quiénes somos?" },
-      { href: "/cartera/tokens", img: tokensImage, alt: "Comprar Tokens", label: "Comprar Token$" },
+      { href: "/", img: logoImage, alt: "Presentación", label: "Presentación" },
+      { href: "/info/quienes", img: quienesImage, alt: "¿Quiénes Somos?", label: "¿Quiénes Somos?" },
+      { href: "https://wiki.marihuanas.club", img: wikiImage, alt: "Wiki Ciudadan", label: "Wiki", target: "_blank" },
+      { href: "/info/contacto", img: contactImage, alt: "Preguntas Frecuentes", label: "Preguntas Frecuentes" },
       { href: "/info/ayuda", img: helpImage, alt: "Ayuda", label: "Ayuda" },
-      { href: "/info/contacto", img: contactImage, alt: "Contacto", label: "Contactos" },
-      { href: "/info/videoteca", img: VideosImage, alt: "Videoteca", label: "Videoteca", target: "_blank" },
+      { href: "/info/videoteca", img: VideosImage, alt: "Canal YT", label: "Canal YT", target: "_blank" },
     ];
 
 
 
   return (
-    <div className={`notifications-menu ${isOpen ? 'open' : 'closed'}`}>
-    <div className="grid-container">
+    <div className={`notifications-menu ${isOpen ? 'open' : 'closed'} verde`}>
+    <div className="grid-container verde">
         {items.map((item, index) => (
-          <div className="grid-item" key={index} onClick={onClose}>
+          <div className="grid-item margin-bot" key={index} onClick={onClose}>
             <a 
               href={item.href} 
               target={item.target || "_self"} /* Abre en una nueva pestaña si está definido, de lo contrario en la misma */

@@ -81,20 +81,21 @@ const NavBar = ({ SetIsMenuOpen }) => {
     }
   };
 
-useEffect(() => {
-  const handleResize = () => {
-    setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/ciudadan_logo.png");
-  };
+  useEffect(() => {
+    const handleResize = () => {
+      setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/marihuanasclub_logo.png");
+    };
 
-  // 🔥 Obtenemos el primer path de la URL actual
-  const path = `/${window.location.pathname.split('/')[1]}`;
-  handleNavigation(path);
+    // 🔥 Obtenemos el primer path de la URL actual
+    const path = `/${window.location.pathname.split('/')[1]}`;
+    //llamammos a handlenavigation para que haga setActiveTab y se haga el efecto en el botón de la sección activa
+    handleNavigation(path);
 
-  handleResize(); // Se ejecuta al montar el componente
+    handleResize(); // Se ejecuta al montar el componente
 
-  window.addEventListener("resize", handleResize);
-  return () => window.removeEventListener("resize", handleResize);
-}, []);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
 
   const handleLinkClick = (path) => {
@@ -122,17 +123,6 @@ useEffect(() => {
     handleUserRegistration();
   }, [isAuthenticated, user]);
 
-  
-  
-
- 
-
-  
-
-  const toggleDropdown = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   const handleLogin = () => {
     // Guarda la URL actual antes de hacer login
     const currentUrl = window.location.pathname + window.location.search;
@@ -157,19 +147,6 @@ const count=33;
   return (
     <>
 
-    {/* Componente direccionador: 
-           eventUrl: URL del endpoint de streaming (ajusta la URL si es necesario)
-           eventKey: palabra clave para detectar la redirección (ej. "llamar a taxi")
-           redirectPath: ruta a la que se redirige (ej. "/taxi")
-      */}
- 
- 
- {/*      <Direccionador 
-        eventUrl="http://localhost:8000/chat" 
-        eventKey="ya estoy invocando a la función llamar a taxi" 
-        redirectPath="/taxi" 
-      />
- */}
 
       <section className="navbar"
         style={{
@@ -190,10 +167,10 @@ const count=33;
                     src={logoSrc} 
                     alt="Marihuanas.Club Logo" 
                     name="Marihuanas.Club - Red de Clubs 4.20 Mex. - Logo"
-                    className={`logo-img ${isHomeOrInfo ? "en-home" : ""}`}
+                    className={'logo-img en-home'}
                 />
                 
-                <CiudadanBadge />
+                
             </div>
             
             

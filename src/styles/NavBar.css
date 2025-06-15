@@ -21,15 +21,23 @@
   justify-content: center;
   align-items: center;
   padding: 10px;
+  margin-bottom: 20px;
   background-color: #fff200; /* Color de fondo amarillo */
   margin-bottom: 0px;
 }
 
 .navbar-abajo {
-  /* position: relative; */
-  /* 1ndex: 4 !important; */
-  background: linear-gradient(23deg, #ffe600,  rgba(152, 219, 37, 0.896));
-  filter: brightness(1); /* Opcional para ajustar brillo */
+  display: flex;
+  flex-wrap: nowrap;         /* ❌ Que no se vayan a segunda fila */
+  overflow-x: auto;          /* ✅ Scroll si se desbordan */
+  white-space: nowrap;       /* ✅ Que los textos no se partan */
+  background: linear-gradient(23deg, #ffe600, rgba(152, 219, 37, 0.896));
+  filter: brightness(1);
+  gap: 20px;
+  scrollbar-width: none; /* Oculta scrollbar en Firefox */
+}
+.navbar-abajo::-webkit-scrollbar {
+    display: none; /* Oculta scrollbar en Chrome/Safari */
 }
 
 /* Al pasar el cursor, cambia a mano y crece suavemente */
@@ -46,9 +54,9 @@
 }
 
 .logo-img {
-  width: 20vw; /* Tamaño grande del logo, ajusta según sea necesario */
+  width: 18vw; /* Tamaño grande del logo, ajusta según sea necesario */
   height: auto;
-  margin-bottom: 10px;
+  margin-top: 10px !important;
   transition: all 0.3s ease-in-out;
 }
 
@@ -94,6 +102,21 @@
   margin-top: -7px !important;
 }
 
+.nav-link {
+ flex-shrink: 0;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 0.8em;
+    color: rgb(3, 39, 3);
+    cursor: pointer;
+    padding-top: 10px;
+    padding-bottom: 20px;
+    text-align: center;
+}
+
 
 .nav-links {
   display: flex;
@@ -106,15 +129,6 @@
 
 }
 
-  /* texto de los botones */
-.nav-link {
-  text-align: center;
-  font-size: 24px;
-  color: rgb(3, 39, 3); /* Color del texto */
-  margin: 10px; /* Margen entre íconos */
-  margin-left: 40px;
-  margin-right: 40px;
-}
   
 /* Agrupar los iconos en una sola línea para el primer grupo */
 .nav-linky {
@@ -156,7 +170,7 @@
 .nav-link.active::after {
   content: "";
   position: absolute;
-  bottom: 0;                           
+  bottom: 18px;                           
   left: 50%;
   transform: translateX(-50%);
   width: 80%;                          
@@ -219,14 +233,7 @@
     font-weight: 700;
   }
 
-  .nav-link {
-    font-size: 18px;
-    margin-left: 0px;
-    margin-right: 0px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+
 
   .navbar {
     flex-direction: column;

@@ -63,12 +63,13 @@ menu-menu.open {
     gap: 13px; /* Espaciado entre elementos */
     justify-items: center; /* Centra los items horizontalmente */
     align-items: center; /* Centra los items verticalmente */
-    background-color: white;
+    background-color: rgba(190, 243, 163, 0.925);
     padding: 13px;
     border-radius: 13px;
     height: 33vh;
     margin-left: -30vw;
     top: 30vw;
+    padding-bottom:30px;
 }
 
 .grid-item {

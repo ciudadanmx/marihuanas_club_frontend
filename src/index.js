@@ -36,8 +36,10 @@ root.render(
         window.location.replace(returnTo);
         document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";        
       }}
+      cacheLocation="localstorage"       // importante para persistir sesión
+    useRefreshTokens={true}            // ayuda a mantener la sesión viva
     >
-      <AuthProvider>
+      {/* <AuthProvider> */}
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
         <RolesProvider>
           <CartProvider>
@@ -54,7 +56,7 @@ root.render(
           </CartProvider>
         </RolesProvider>
       </LocalizationProvider>
-      </AuthProvider>
+     {/*  </AuthProvider> */}
     </Auth0Provider>
   </React.StrictMode>
 );

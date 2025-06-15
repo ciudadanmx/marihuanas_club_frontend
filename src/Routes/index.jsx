@@ -18,6 +18,13 @@ import Producto from '../Pages/MarketPlace/Producto.jsx';
 import MiUbicacion from '../components/MiUbicacion';
 import Carrito from '../Pages/MarketPlace/Carrito.jsx';
 import AgregarContenido from '../Pages/Blog/AgregarContenido.jsx';
+import LegalPage from '../Pages/Legal/LegalPage';
+import TestConsumoResponsable from '../Pages/Herramientas/TestConsumoResponsable';
+import HerramientasPage from '../Pages/Herramientas/HerramientasPage';
+import ComunidadPage from '../Pages/ComunidadPage';
+import EventosPage from '../components/Eventos/index.jsx';
+import Gana from '../Pages/Gana/Gana.jsx';
+
 
 import ContenidosPage from '../Pages/Blog/Contenidos';
 import EditarContenido from '../Pages/Blog/EditarContenido';
@@ -39,11 +46,15 @@ const EliminarContenidoWrapper = () => {
 const Rutas = () => (
   <Routes>
     <Route path="/" element={<HomeRoute />} />
+    
+    <Route path="/test-consumo" element={<TestConsumoResponsable />} />
+    <Route path="/herramientas" element={<HerramientasPage />} />
+    
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/perfil/:username" element={<Perfil />} />
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/clubs" element={<Clubs />} />
-    <Route path="/agregar-club" element={<AgregarClubWrapper />} />
+    <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
     <Route path="/membresias" element={<Membresias />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
@@ -54,6 +65,13 @@ const Rutas = () => (
     <Route path="/carrito" element={<Carrito />} />
     <Route path="/market/producto/:slug" element={<Producto />} />
 
+    <Route path="/legal" element={<LegalPage />} />
+    <Route path="/comunidad" element={<ComunidadPage />} />
+    <Route path="/eventos" element={<EventosPage />} />
+    <Route path="/gana" element={<Gana />} />
+    
+    
+    
     {/* Ruta para editar contenido */}
     <Route path="/contenidos/editar/:slug" element={<EditarContenidoWrapper />} />
     {/* Ruta para editar contenido */}

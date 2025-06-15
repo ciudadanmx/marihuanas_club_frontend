@@ -21,6 +21,7 @@ const Cursos = () => {
     fetchCategorias();
   }, []);
 
+  const forma = 'cuadrado';
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -30,9 +31,11 @@ const Cursos = () => {
       {!loadingCategorias && categorias && categorias.length > 0 && (
         <Box mt={4}>
           <CategoriasSlider
+          forma = {forma}
             categorias={categorias.map((cat) => ({
               nombre: cat.attributes.nombre,
               slug: cat.attributes.slug,
+              forma: {forma},
               imagen: `${process.env.REACT_APP_STRAPI_URL}${cat.attributes.imagen?.data?.attributes?.url}`,
             }))}
           />

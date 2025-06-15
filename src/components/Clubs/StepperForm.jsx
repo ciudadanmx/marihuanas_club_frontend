@@ -11,9 +11,18 @@ import DatosGenerales from "./steps/DatosGenerales";
 import Direccion from "./steps/Direccion";
 import Confirmacion from "./steps/Confirmacion";
 import Archivos from "./steps/Archivos";
-import Contacto from "./steps/Contacto.jsx"
+import Contacto from "./steps/Contacto.jsx";
 
-export default function StepperForm({ form, setForm, user, isAuthenticated, userId, loginWithRedirect }) {
+const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
+
+export default function StepperForm({
+  form,
+  setForm,
+  user,
+  isAuthenticated,
+  userId,
+  loginWithRedirect,
+}) {
   const steps = [
     { label: "Datos Generales", component: <DatosGenerales form={form} setForm={setForm} /> },
     { label: "Dirección", component: <Direccion form={form} setForm={setForm} /> },
@@ -25,19 +34,32 @@ export default function StepperForm({ form, setForm, user, isAuthenticated, user
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const handleNext = () => setActiveStep((prev) => prev + 1);
-  const handleBack = () => setActiveStep((prev) => prev - 1);
+  const handleNext = () => {
+    console.log("🔜 Avanzando al paso", activeStep + 1);
+    setActiveStep((prev) => prev + 1);
+  };
+  const handleBack = () => {
+    console.log("🔙 Volviendo al paso", activeStep - 1);
+    setActiveStep((prev) => prev - 1);
+  };
 
   const handleSubmit = async () => {
-    if (!isAuthenticated || !user || !userId) {
-      loginWithRedirect();
+    console.log("🚀 handleSubmit iniciado");
+    console.log("Form state:", form);
+    console.log("User authenticated:", isAuthenticated, "UserId:", userId);
+
+    // 💥 Quitamos la redirección para que no se pierda el log en consola
+    if (!isAuthenticated || !userId) {
+      console.warn("❗ Usuario no autenticado o sin userId — no se envía nada, revisa tu sesión");
       return;
     }
 
     setLoading(true);
+    console.warn("📡 Enviando club a Strapi en", STRAPI_URL);
+
     try {
       const dataToSend = new FormData();
-      dataToSend.append("data", JSON.stringify({
+      const payload = {
         nombre_club: form.nombre_club,
         direccion: form.direccion,
         nombre_titular: form.nombre_titular,
@@ -48,36 +70,51 @@ export default function StepperForm({ form, setForm, user, isAuthenticated, user
         productos: form.productos,
         servicios: form.servicios,
         users_permissions_user: userId,
-        auth_name: user.name || "desconocido",
+        auth_name: user?.name || "desconocido",
         horarios: form.horarios,
         whatsapp: form.whatsapp,
-      }));
+      };
+
+      console.log("📦 Payload JSON:", payload);
+      dataToSend.append("data", JSON.stringify(payload));
 
       if (form.foto_perfil) {
-        dataToSend.append("files.foto_de_perfil", form.foto_perfil);
+        console.log("🖼️ Adjuntando foto_perfil:", form.foto_perfil.name);
+        dataToSend.append("files.foto_perfil", form.foto_perfil);
       }
-      form.fotos_club.forEach((foto) => {
-        dataToSend.append("files.fotos", foto);
+
+      form.fotos_club.forEach((foto, idx) => {
+        console.log(`🖼️ Adjuntando fotos_club[${idx}]:`, foto.name);
+        dataToSend.append("files.fotos_club", foto);
       });
 
-      const res = await fetch("http://localhost:1337/api/clubs", {
+      console.log("🔍 Revisando FormData:");
+      for (let [key, value] of dataToSend.entries()) {
+        console.log(" ", key, value);
+      }
+
+      const res = await fetch(`${STRAPI_URL}/api/clubs`, {
         method: "POST",
         body: dataToSend,
       });
 
+      console.log("📨 Respuesta HTTP:", res.status, res.statusText);
+
       if (res.ok) {
+        const respuesta = await res.json();
+        console.log("✅ Club creado:", respuesta);
         alert("🎉 Club creado con éxito");
-        // Opcional: resetear formulario y stepper si quieres
-        // setForm(initialFormState);
-        // setActiveStep(0);
       } else {
         const error = await res.json();
+        console.error("❌ Error creando club:", error);
         alert("❌ Error: " + JSON.stringify(error));
       }
     } catch (err) {
+      console.error("🌐 Error de red:", err);
       alert("❌ Error de red: " + err.message);
     } finally {
       setLoading(false);
+      console.log("🏁 handleSubmit terminado");
     }
   };
 

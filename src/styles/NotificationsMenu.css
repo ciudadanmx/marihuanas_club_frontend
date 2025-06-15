@@ -2,7 +2,7 @@
   position: relative;
   top: 33%; /* Alinea el menú justo debajo del ícono */
   right: 20%; /* Se adapta al tamaño del contenedor padre */
-  background-color: white;
+  /* background-color: white; */
   display: none;
 
   border-radius: 4px;
@@ -12,13 +12,26 @@
   /*     z-index: 9000; */
 }
 
+.verde {
+  background-color: 'green' !important;
+}
+
+.margin-bot {
+  padding-bottom: 10px;
+  gap: 10px;
+}
+
 .notifications-menu-contenedor.open {
   display: block;
   /* z-index: 99999 !important; */
 }
 
-.notifications-menu {
+.purple {
   background-color: purple;
+}
+
+.notifications-menu {
+  /* background-color: purple; */
   top: 40px;
   position: absolute;
 

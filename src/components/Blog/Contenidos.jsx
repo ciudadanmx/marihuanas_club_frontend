@@ -287,6 +287,7 @@ return authorId === usuarioLogueado;
           </Typography>
 
           <CategoriasSlider
+            forma={'hexagono'}
             categorias={Array.isArray(categorias)
               ? categorias.map((c) => ({
                   nombre: c.attributes.nombre,

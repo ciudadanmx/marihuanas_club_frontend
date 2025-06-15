@@ -2,6 +2,7 @@ import React from 'react';
 import { Grid, Card, CardContent, Typography, Button, Box, Chip, Zoom } from '@mui/material';
 import '../styles/membresias.css';
 import BotonMembresia from '../components/Membresias/BotonMembresia.jsx';
+import membresias from '../assets/como.png'; // <-- Importamos la imagen
 
 const planes = [
   {
@@ -122,6 +123,15 @@ const Membresias = () => {
           </Grid>
         ))}
       </Grid>
+
+      {/* Imagen al final */}
+      <Box mt={6} display="flex" justifyContent="center">
+        <img
+          src={membresias}
+          alt="Cómo funcionan las membresías"
+          style={{ maxWidth: '100%', height: 'auto' }}
+        />
+      </Box>
     </Box>
   );
 };

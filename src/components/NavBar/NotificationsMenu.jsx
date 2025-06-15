@@ -11,7 +11,7 @@ const NotificationsMenu = ({ handleLogout, isOpen, onClose,  onLogout }) => {
 
 
   return (
-    <div className={`notifications-menu ${isOpen ? 'open' : 'closed'}`}>
+    <div className={`notifications-menu ${isOpen ? 'open' : 'closed'} purple`}>
     <ul>
      
         <>
