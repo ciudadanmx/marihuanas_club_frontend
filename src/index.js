@@ -13,6 +13,7 @@ import NavBar from './components/NavBar/NavBar.jsx';
 import Rutas from './Routes/index.jsx';
 import Asistente from './components/Asistente/Asistente';
 import { SnackbarProvider } from 'notistack';
+import { NotificationsProvider } from './Contexts/NotificationsContext';
 import './styles/index.css';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
@@ -78,14 +79,16 @@ root.render(
 
   <AuthProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-         <RolesProvider> 
-          <CartProvider>
-            <Router>
-              <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-                <AppWrapper />
-              </SnackbarProvider>
-            </Router>
-          </CartProvider>
+         <RolesProvider>
+          <NotificationsProvider>
+            <CartProvider>
+              <Router>
+                <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                  <AppWrapper />
+                </SnackbarProvider>
+              </Router>
+            </CartProvider>
+          </NotificationsProvider> 
         </RolesProvider> 
       </LocalizationProvider>
       </AuthProvider>

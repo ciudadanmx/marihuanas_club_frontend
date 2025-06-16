@@ -29,6 +29,9 @@ import '../../styles/AccountMenu.css';
 import Direccionador from '../../utils/Direccionador';
 import CiudadanBadge from '../CiudadanBadge';
 
+import { useNotifications } from '../../Contexts/NotificationsContext';
+
+
 const NavBar = ({ SetIsMenuOpen }) => {
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -174,7 +177,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
     setIsInfoMenuOpen(false);
   };
   
-const count=33;
+  const { notificationsNum } = useNotifications();
   return (
     <>
 
@@ -210,34 +213,34 @@ const count=33;
            
               <span className="nav-linky">
                 <MenuIcon
-  isOpen={isInfoMenuOpen}
-  onClose={() => setIsInfoMenuOpen(false)}
-  authenticated={isAuthenticated}
-  userData={user}
-  className="cuenta-icon"
-  containerRef={InfoRef}
-  setIsOpen={(open) => {
-    closeAllMenus(); // <--- CIERRA LOS DEMÁS
-    setIsInfoMenuOpen(open);
-  }}
-/>
+                  isOpen={isInfoMenuOpen}
+                  onClose={() => setIsInfoMenuOpen(false)}
+                  authenticated={isAuthenticated}
+                  userData={user}
+                  className="cuenta-icon"
+                  containerRef={InfoRef}
+                  setIsOpen={(open) => {
+                    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                    setIsInfoMenuOpen(open);
+                  }}
+                />
               </span>
               <span className="nav-linky">
                 <MenuIcon
-  action='notifications'
-  isOpen={isNotificationMenuOpen}
-  setIsOpen={(open) => {
-    closeAllMenus(); // <--- CIERRA LOS DEMÁS
-    setIsNotificationMenuOpen(open);
-  }}
-  onClose={() => setIsNotificationMenuOpen(false)}
-  authenticated={isAuthenticated}
-  userData={user}
-  containerRef={notifRef}
-  className="cuenta-icon"
-  handleLogout={handleLogout}
-  count={count}
-/>
+                  action='notifications'
+                  isOpen={isNotificationMenuOpen}
+                  setIsOpen={(open) => {
+                    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                    setIsNotificationMenuOpen(open);
+                  }}
+                  onClose={() => setIsNotificationMenuOpen(false)}
+                  authenticated={isAuthenticated}
+                  userData={user}
+                  containerRef={notifRef}
+                  className="cuenta-icon"
+                  handleLogout={handleLogout}
+                  count={notificationsNum()}
+                />
               </span>
               <span className="nav-linky">
                 <CartIcon
@@ -250,19 +253,19 @@ const count=33;
               </span>
               
               <UserIcon 
-  handleLogin={handleLogin}
-  isMenuOpen={isProfileMenuOpen}
-  setIsMenuOpen={(open) => {
-    closeAllMenus(); // <--- CIERRA LOS DEMÁS
-    setIsProfileMenuOpen(open);
-  }}
-  handleLogout={handleLogout}
-  handleLinkClick={handleLinkClick}
-  defaultProfileImage={defaultProfileImage}
-  guestImage={guestImage}
-  Link={Link}
-  containerRef={profileRef}
-/>
+                handleLogin={handleLogin}
+                isMenuOpen={isProfileMenuOpen}
+                setIsMenuOpen={(open) => {
+                  closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                  setIsProfileMenuOpen(open);
+                }}
+                handleLogout={handleLogout}
+                handleLinkClick={handleLinkClick}
+                defaultProfileImage={defaultProfileImage}
+                guestImage={guestImage}
+                Link={Link}
+                containerRef={profileRef}
+              />
             </span>
           </div>
         </div>

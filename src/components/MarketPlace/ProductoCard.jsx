@@ -23,6 +23,7 @@ const ProductoCard = ({
   numeroCalificaciones,
   vendidos,
   total,
+  filtros = '', // por defecto es vacío
 }) => {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const navigate = useNavigate();
@@ -42,6 +43,16 @@ const ProductoCard = ({
     navigate('/comprar');
   };
 
+  const handleVer = (e) => {
+    e.stopPropagation();
+    navigate(`/market/producto/${slug}`);
+  };
+
+  const handleEliminar = (e) => {
+    e.stopPropagation();
+    navigate(`/market/producto/${slug}/eliminar`);
+  };
+
   return (
     <Card
       sx={{
@@ -54,8 +65,53 @@ const ProductoCard = ({
         overflow: 'hidden',
       }}
     >
-      {/* Enlace a la vista del producto */}
-      <Link to={`/market/producto/${slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      {/* Enlace principal (desactivado si filtros es 'mios') */}
+      {filtros !== 'mios' ? (
+        <Link to={`/market/producto/${slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Box>
+            <CardMedia
+              component="img"
+              image={imagenValida}
+              alt={titulo || 'Producto'}
+              sx={{ height: 180, objectFit: 'cover', borderTopLeftRadius: 16, borderTopRightRadius: 16 }}
+            />
+            <CardContent>
+              <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
+                {titulo || 'Sin título'}
+              </Typography>
+
+              <Typography variant="subtitle1" color="primary" fontWeight="bold">
+                {total || (precio ? `$${precio.toFixed(2)}` : 'Precio no disponible')}
+              </Typography>
+
+              {envioAprox && (
+                <Typography variant="body2" color="text.secondary" mt={0.5}>
+                  Envío: {envioAprox}
+                </Typography>
+              )}
+
+              {numeroCalificaciones > 0 && (
+                <Box mt={1} display="flex" alignItems="center" gap={0.5}>
+                  {estrellas}
+                  <Typography variant="caption" color="text.secondary" ml={1}>
+                    ({numeroCalificaciones})
+                  </Typography>
+                </Box>
+              )}
+
+              {(localidad || estado) && (
+                <Typography variant="body2" color="text.secondary" mt={1}>
+                  {localidad}{localidad && estado ? ', ' : ''}{estado}
+                </Typography>
+              )}
+
+              <Typography variant="body2" color="text.secondary" mt={1}>
+                Vendidos: {vendidos || 0}
+              </Typography>
+            </CardContent>
+          </Box>
+        </Link>
+      ) : (
         <Box>
           <CardMedia
             component="img"
@@ -72,21 +128,6 @@ const ProductoCard = ({
               {total || (precio ? `$${precio.toFixed(2)}` : 'Precio no disponible')}
             </Typography>
 
-            {envioAprox && (
-              <Typography variant="body2" color="text.secondary" mt={0.5}>
-                Envío: {envioAprox}
-              </Typography>
-            )}
-
-            {numeroCalificaciones > 0 && (
-              <Box mt={1} display="flex" alignItems="center" gap={0.5}>
-                {estrellas}
-                <Typography variant="caption" color="text.secondary" ml={1}>
-                  ({numeroCalificaciones})
-                </Typography>
-              </Box>
-            )}
-
             {(localidad || estado) && (
               <Typography variant="body2" color="text.secondary" mt={1}>
                 {localidad}{localidad && estado ? ', ' : ''}{estado}
@@ -98,16 +139,29 @@ const ProductoCard = ({
             </Typography>
           </CardContent>
         </Box>
-      </Link>
+      )}
 
-      {/* Botones debajo, fuera del enlace */}
+      {/* Botones según filtro */}
       <Box display="flex" justifyContent="space-between" px={2} pb={2} gap={1}>
-        <Button variant="outlined" color="secondary" fullWidth onClick={handleComprar}>
-          Agregar
-        </Button>
-        <Button variant="contained" color="primary" fullWidth onClick={handleComprar}>
-          Comprar
-        </Button>
+        {filtros === 'mios' ? (
+          <>
+            <Button variant="outlined" color="primary" fullWidth onClick={handleVer}>
+              Ver
+            </Button>
+            <Button variant="contained" color="error" fullWidth onClick={handleEliminar}>
+              Eliminar
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="outlined" color="secondary" fullWidth onClick={handleComprar}>
+              Agregar
+            </Button>
+            <Button variant="contained" color="primary" fullWidth onClick={handleComprar}>
+              Comprar
+            </Button>
+          </>
+        )}
       </Box>
     </Card>
   );

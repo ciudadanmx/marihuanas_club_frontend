@@ -25,6 +25,7 @@ import ComunidadPage from '../Pages/ComunidadPage';
 import EventosPage from '../components/Eventos/index.jsx';
 import Gana from '../Pages/Gana/Gana.jsx';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
+import MisProductos from '../Pages/MarketPlace/MisProductos';
 
 
 import ContenidosPage from '../Pages/Blog/Contenidos';
@@ -92,12 +93,12 @@ const Rutas = () => (
 
     <Route path="/market/store/:slug" element={<Tienda />}>
       <Route path="agregar-producto" element={<AgregarProducto />} />
-      <Route path="pedidos" element={<PreguntasProducto />} />
-      <Route path="entregados" element={<PreguntasProducto />} />
-      <Route path="productos" element={<PreguntasProducto />} />
-      <Route path="preguntas-producto" element={<PreguntasProducto />} />
-      <Route path="pagos" element={<PreguntasProducto />} />
-      <Route path="configuracion" element={<PreguntasProducto />} />
+      <Route path="pedidos" element={<MisProductos />} />
+      <Route path="entregados" element={<MisProductos />} />
+      <Route path="productos" element={<AgregarProducto />} />
+      <Route path="preguntas-producto" element={<MisProductos />} />
+      <Route path="pagos" element={<MisProductos />} />
+      <Route path="configuracion" element={<MisProductos />} />
     </Route>
   </Routes>
 );

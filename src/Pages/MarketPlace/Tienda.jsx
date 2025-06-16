@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate, Outlet } from 'react-router-dom';
-import { useAuthInfo } from '../../Contexts/AuthContext';
-import StoreImage from '../../assets/agencia.png';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import StoreImagePlaceholder from '../../assets/agencia.png';
 import AgregarProducto from './AgregarProducto';
 import PreguntasProducto from '../../components/MarketPlace/PreguntasProducto';
+import { useAuth0 } from '@auth0/auth0-react';
+import axios from 'axios';
+import MisProductos from './MisProductos';
 
 const Tienda = () => {
   const { slug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { auth0User, strapiUser, isLoading, isAuthenticated } = useAuthInfo();
+  const { user, isLoading } = useAuth0();
+
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [storeImageURL, setStoreImageURL] = useState(null);
+  const [productos, setProductos] = useState([]);
 
   const tabs = [
     { label: 'Pedidos a entregar', path: '' },
@@ -29,30 +34,72 @@ const Tienda = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Actualiza tabIndex según la ruta actual
   useEffect(() => {
     const path = location.pathname;
-
     if (path.includes('/agregar')) setTabIndex(3);
     else if (path.includes('/productos')) setTabIndex(2);
     else if (path.includes('/entregados')) setTabIndex(1);
     else if (path.includes('/preguntas')) setTabIndex(4);
     else if (path.includes('/pagos')) setTabIndex(5);
     else if (path.includes('/configuracion')) setTabIndex(6);
-    else setTabIndex(0); // default: pedidos a entregar
+    else setTabIndex(0);
   }, [location.pathname]);
 
   const handleTabClick = (index, path) => {
     setTabIndex(index);
-    // Navegar a la ruta correspondiente, teniendo en cuenta el slug de la tienda
     const basePath = `/market/store/${slug}`;
-    // Si path está vacío, navegamos al basePath
     const newPath = path ? `${basePath}/${path}` : basePath;
     navigate(newPath);
   };
 
+  useEffect(() => {
+    if (!slug) return;
+
+    const fetchStoreData = async () => {
+      try {
+        const baseUrl = process.env.REACT_APP_STRAPI_URL.replace(/\/$/, '');
+        const res = await axios.get(`${baseUrl}/api/stores?filters[slug][$eq]=${slug}&populate=imagen`);
+        console.log('📦 Respuesta de tienda:', res.data);
+
+        const tienda = res.data.data[0];
+        const imagen = tienda?.attributes?.imagen?.data?.attributes?.url;
+
+        if (imagen) {
+          const fullURL = `${baseUrl}${imagen}`;
+          console.log('📷 Imagen encontrada:', fullURL);
+          setStoreImageURL(fullURL);
+        }
+      } catch (error) {
+        console.error('❌ Error al traer datos de la tienda:', error);
+      }
+    };
+
+    fetchStoreData();
+  }, [slug]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    const fetchProductos = async () => {
+      try {
+        const baseUrl = process.env.REACT_APP_STRAPI_URL.replace(/\/$/, '');
+        const url = `${baseUrl}/api/productos?populate=*&filters[store_email][$eq]=${user.email}`;
+        console.log('🔎 URL de productos por email:', url);
+
+        const res = await axios.get(url);
+        console.log('🛒 Productos encontrados:', res.data);
+        setProductos(res.data.data || []);
+      } catch (error) {
+        console.error('❌ Error al cargar productos:', error);
+      }
+    };
+
+    fetchProductos();
+  }, [user]);
+
   if (isLoading) return <p>Cargando...</p>;
-  if (!isAuthenticated || !auth0User) return <p>No estás autenticado.</p>;
+
+  const filtros = 'mios';
 
   return (
     <div
@@ -67,7 +114,7 @@ const Tienda = () => {
       {/* Columna izquierda */}
       <div style={{ flex: '0 0 30%', textAlign: 'center' }}>
         <img
-          src={StoreImage}
+          src={storeImageURL || StoreImagePlaceholder}
           alt="Tienda"
           style={{
             width: '100%',
@@ -80,7 +127,7 @@ const Tienda = () => {
         <h1 style={{ marginTop: '16px', marginBottom: '8px', fontSize: '2rem', fontWeight: 'bold' }}>
           {slug}
         </h1>
-        <p>Productos: <strong>24</strong> &nbsp;&nbsp; Ventas: <strong>700</strong></p>
+        <p>Productos: <strong>{productos.length}</strong> &nbsp;&nbsp; Ventas: <strong>700</strong></p>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '8px' }}>
           <i className="material-icons" style={{ color: '#FFC107' }}>star</i>
           <i className="material-icons" style={{ color: '#FFC107' }}>star</i>
@@ -90,10 +137,7 @@ const Tienda = () => {
           <span style={{ marginLeft: '8px' }}>325 calificaciones</span>
         </div>
         <p style={{ marginTop: '8px' }}>201 reseñas</p>
-        <p>Usuario Auth0: {auth0User.email}</p>
-        <p>
-          Usuario Strapi: {strapiUser ? strapiUser.username || strapiUser.email : 'No registrado en Strapi'}
-        </p>
+        <p>Usuario Auth0: {user.email}</p>
       </div>
 
       {/* Columna derecha */}
@@ -121,14 +165,12 @@ const Tienda = () => {
         <div>
           {tabIndex === 0 && <PreguntasProducto />}
           {tabIndex === 1 && <PreguntasProducto />}
-          {tabIndex === 2 && <PreguntasProducto />}
+          {tabIndex === 2 && <MisProductos filtros={filtros}/>}
           {tabIndex === 3 && <AgregarProducto />}
           {tabIndex === 4 && <PreguntasProducto />}
           {tabIndex === 5 && <PreguntasProducto />}
           {tabIndex === 6 && <PreguntasProducto />}
         </div>
-
-
       </div>
     </div>
   );
