@@ -6,6 +6,10 @@ import PreguntasProducto from '../../components/MarketPlace/PreguntasProducto';
 import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
 import MisProductos from './MisProductos';
+import PedidosPendientes from './PedidosPendientes';
+import PedidosEntregados from './PedidosEntregados';
+import PagosTienda from './PagosTienda';
+import ConfiguracionTienda from './ConfiguracionTienda';
 
 const Tienda = () => {
   const { slug } = useParams();
@@ -163,13 +167,13 @@ const Tienda = () => {
         </div>
 
         <div>
-          {tabIndex === 0 && <PreguntasProducto />}
-          {tabIndex === 1 && <PreguntasProducto />}
+          {tabIndex === 0 && <PedidosPendientes />}
+          {tabIndex === 1 && <PedidosEntregados />}
           {tabIndex === 2 && <MisProductos filtros={filtros}/>}
           {tabIndex === 3 && <AgregarProducto />}
           {tabIndex === 4 && <PreguntasProducto />}
-          {tabIndex === 5 && <PreguntasProducto />}
-          {tabIndex === 6 && <PreguntasProducto />}
+          {tabIndex === 5 && <PagosTienda />}
+          {tabIndex === 6 && <ConfiguracionTienda />}
         </div>
       </div>
     </div>
