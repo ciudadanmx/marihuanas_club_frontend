@@ -2,7 +2,12 @@ import React from 'react';
 import { Grid, Card, CardContent, Typography, Button, Box, Chip, Zoom } from '@mui/material';
 import '../styles/membresias.css';
 import BotonMembresia from '../components/Membresias/BotonMembresia.jsx';
-import membresias from '../assets/como.png'; // <-- Importamos la imagen
+import membresiasImg from '../assets/como.png'; // <-- Importamos la imagen
+
+// Importar contexto de roles/membresía
+import { useRoles } from '../Contexts/RolesContext';
+
+import MiMembresia from '../components/Membresias/MiMembresia.jsx';
 
 const planes = [
   {
@@ -49,10 +54,18 @@ const planes = [
 ];
 
 const Membresias = () => {
+  const { isActivaMembresia } = useRoles();
+
+  // Si el usuario tiene membresía activa, mostrar componente MiMembresia
+  if (isActivaMembresia()) {
+    return <MiMembresia />;
+  }
+
+  // De lo contrario, mostrar el listado de planes
   return (
     <Box className="membresias-container">
       <Typography variant="h4" align="center" gutterBottom className="membresias-titulo">
-          Elige tu Membresía Cannábica
+        Elige tu Membresía Cannábica
       </Typography>
       <Typography variant="subtitle1" align="center" className="membresias-subtitulo">
         Accede a beneficios únicos, asesoría legal y espacios de autoconsumo.
@@ -127,7 +140,7 @@ const Membresias = () => {
       {/* Imagen al final */}
       <Box mt={6} display="flex" justifyContent="center">
         <img
-          src={membresias}
+          src={membresiasImg}
           alt="Cómo funcionan las membresías"
           style={{ maxWidth: '100%', height: 'auto' }}
         />

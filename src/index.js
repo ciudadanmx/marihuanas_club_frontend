@@ -1,62 +1,94 @@
+// src/index.js
+import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { RolesProvider } from './Contexts/RolesContext'; 
+import { Auth0Provider } from '@auth0/auth0-react';
+import { AuthProvider } from './Contexts/AuthContext'; 
+import { RolesProvider } from './Contexts/RolesContext';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Auth0Provider } from '@auth0/auth0-react';  // Importa Auth0Provider
-import { SnackbarProvider } from 'notistack';
+import { CartProvider }  from './Contexts/CartContext';
 import NavBar from './components/NavBar/NavBar.jsx';
 import Rutas from './Routes/index.jsx';
 import Asistente from './components/Asistente/Asistente';
-import { AuthProvider } from './Contexts/AuthContext'; 
-import { CartProvider }  from './Contexts/CartContext';
+import { SnackbarProvider } from 'notistack';
 import './styles/index.css';
 
-// Función global para leer la cookie
-const getReturnUrl = () => {
-  const match = document.cookie.match(new RegExp('(^| )returnTo=([^;]+)'));
-  return match ? decodeURIComponent(match[2]) : '/gana';
+const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
+const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
+const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;   // Si no usas API, quita este prop
+const scope     = 'openid profile email offline_access';
+
+
+const onRedirectCallback = (appState) => {
+  // Usa appState.returnTo si existe, o al home
+  const target = appState?.returnTo || '/';
+  window.history.replaceState({}, document.title, target);
+};
+
+const AppWrapper = () => {
+  const { isLoading } = useAuth0();
+
+  if (isLoading) {
+    return <div>Cargando autenticación...</div>; // o un splash bonito
+  }
+
+  return (
+    <>
+      <NavBar />
+      <Rutas />
+      <Asistente />
+    </>
+  );
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-
 root.render(
   <React.StrictMode>
-    <Auth0Provider
-      domain={process.env.REACT_APP_AUTH0_DOMAIN}
-      clientId={process.env.REACT_APP_AUTH0_CLIENT_ID}
-      authorizationParams={{ 
-        redirect_uri: window.location.origin,
-        audience: 'https://api.ciudadan.org',
-        scope: 'openid profile email',
-       }}
+   {/*  <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      redirectUri={window.location.origin}
       onRedirectCallback={(appState) => {
-        const returnTo = getReturnUrl();
-        window.location.replace(returnTo);
-        document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";        
+        const target = appState?.returnTo || '/';
+        window.history.replaceState({}, document.title, target);
       }}
-      cacheLocation="localstorage"       // importante para persistir sesión
-    useRefreshTokens={true}            // ayuda a mantener la sesión viva
-    >
-      {/* <AuthProvider> */}
+      cacheLocation="localstorage"
+      useRefreshTokens={true}
+      authorizationParams={{
+        audience: audience,
+        scope: {scope},
+      }}
+    > */}
+
+    <Auth0Provider
+  domain={domain}
+  clientId={clientId}
+  redirectUri={window.location.origin}
+  cacheLocation="localstorage"
+  useRefreshTokens={true}
+  authorizationParams={{
+    audience: audience,
+    scope: 'openid profile email offline_access',
+  }}
+  onRedirectCallback={onRedirectCallback}
+  
+>
+
+  <AuthProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-        <RolesProvider>
+         <RolesProvider> 
           <CartProvider>
             <Router>
-              <SnackbarProvider
-               maxSnack={3}
-               anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-              >
-              <NavBar />
-              <Rutas />
-              <Asistente />
+              <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                <AppWrapper />
               </SnackbarProvider>
             </Router>
           </CartProvider>
-        </RolesProvider>
+        </RolesProvider> 
       </LocalizationProvider>
-     {/*  </AuthProvider> */}
+      </AuthProvider>
     </Auth0Provider>
   </React.StrictMode>
 );

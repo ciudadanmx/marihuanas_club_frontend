@@ -6,11 +6,12 @@ import '../../styles/NotificationsMenu.css';
 import { useState, useEffect } from 'react';
 
 
-const NotificationsMenu = ({ handleLogout, isOpen, onClose,  onLogout }) => {
+const NotificationsMenu = ({ handleLogout, isOpen, setIsOpen, containerRef, onClose,  onLogout }) => {
 
 
 
   return (
+    <div ref={containerRef}>
     <div className={`notifications-menu ${isOpen ? 'open' : 'closed'} purple`}>
     <ul>
      
@@ -30,6 +31,7 @@ const NotificationsMenu = ({ handleLogout, isOpen, onClose,  onLogout }) => {
       
       
     </ul>
+  </div>
   </div>
   );
 };

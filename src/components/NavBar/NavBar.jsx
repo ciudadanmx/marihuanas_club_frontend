@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Se agregó useNavigate junto con Link
 import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
@@ -26,11 +26,19 @@ import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
 import '../../styles/AccountMenu.css';
 
-
 import Direccionador from '../../utils/Direccionador';
 import CiudadanBadge from '../CiudadanBadge';
 
 const NavBar = ({ SetIsMenuOpen }) => {
+
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
+
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+  const InfoRef = useRef(null);
+
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
   const navigate = useNavigate();
@@ -82,6 +90,22 @@ const NavBar = ({ SetIsMenuOpen }) => {
   };
 
   useEffect(() => {
+    const handleClickOutside = (event) => {
+  const targets = [profileRef.current, notifRef.current, InfoRef.current];
+  const clickedInside = targets.some(ref => ref && ref.contains(event.target));
+  if (!clickedInside) {
+    closeAllMenus();
+  }
+};
+
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
     const handleResize = () => {
       setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/marihuanasclub_logo.png");
     };
@@ -96,7 +120,6 @@ const NavBar = ({ SetIsMenuOpen }) => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
 
   const handleLinkClick = (path) => {
     // Realiza la navegación
@@ -143,6 +166,14 @@ const NavBar = ({ SetIsMenuOpen }) => {
     setIsMenuOpen(false);
   };
   //********************quitar !!!!! */
+
+
+  const closeAllMenus = () => {
+    setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
+    setIsInfoMenuOpen(false);
+  };
+  
 const count=33;
   return (
     <>
@@ -179,25 +210,34 @@ const count=33;
            
               <span className="nav-linky">
                 <MenuIcon
-                  isOpen={isMenuOpen}
-                  onClose={() => setIsMenuOpen(false)}
-                  authenticated={isAuthenticated}
-                  userData={user}
-                  className="cuenta-icon"
-                />
+  isOpen={isInfoMenuOpen}
+  onClose={() => setIsInfoMenuOpen(false)}
+  authenticated={isAuthenticated}
+  userData={user}
+  className="cuenta-icon"
+  containerRef={InfoRef}
+  setIsOpen={(open) => {
+    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+    setIsInfoMenuOpen(open);
+  }}
+/>
               </span>
               <span className="nav-linky">
                 <MenuIcon
-                  action='notifications'
-                  isOpen={isMenuOpen}
-                  onClose={() => setIsMenuOpen(false)}
-                  authenticated={isAuthenticated}
-                  userData={user}
-                  className="cuenta-icon"
-                  handleLogout={handleLogout}
-                  count={count}
-                  //ok
-                />
+  action='notifications'
+  isOpen={isNotificationMenuOpen}
+  setIsOpen={(open) => {
+    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+    setIsNotificationMenuOpen(open);
+  }}
+  onClose={() => setIsNotificationMenuOpen(false)}
+  authenticated={isAuthenticated}
+  userData={user}
+  containerRef={notifRef}
+  className="cuenta-icon"
+  handleLogout={handleLogout}
+  count={count}
+/>
               </span>
               <span className="nav-linky">
                 <CartIcon
@@ -210,15 +250,19 @@ const count=33;
               </span>
               
               <UserIcon 
-                handleLogin={handleLogin}
-                isMenuOpen={isMenuOpen}
-                setIsMenuOpen={setIsMenuOpen}
-                handleLogout={handleLogout}
-                handleLinkClick={handleLinkClick}
-                defaultProfileImage={defaultProfileImage}
-                guestImage={guestImage}
-                Link={Link}
-              />
+  handleLogin={handleLogin}
+  isMenuOpen={isProfileMenuOpen}
+  setIsMenuOpen={(open) => {
+    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+    setIsProfileMenuOpen(open);
+  }}
+  handleLogout={handleLogout}
+  handleLinkClick={handleLinkClick}
+  defaultProfileImage={defaultProfileImage}
+  guestImage={guestImage}
+  Link={Link}
+  containerRef={profileRef}
+/>
             </span>
           </div>
         </div>

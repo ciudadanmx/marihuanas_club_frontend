@@ -24,6 +24,7 @@ import HerramientasPage from '../Pages/Herramientas/HerramientasPage';
 import ComunidadPage from '../Pages/ComunidadPage';
 import EventosPage from '../components/Eventos/index.jsx';
 import Gana from '../Pages/Gana/Gana.jsx';
+import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
 
 
 import ContenidosPage from '../Pages/Blog/Contenidos';
@@ -64,6 +65,8 @@ const Rutas = () => (
     <Route path="/market" element={<MarketPlace />} />
     <Route path="/carrito" element={<Carrito />} />
     <Route path="/market/producto/:slug" element={<Producto />} />
+    
+    <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/comunidad" element={<ComunidadPage />} />

@@ -14,7 +14,7 @@ import VideosImage from '../../assets/videos.png';
 import '../../styles/MenuInfo.css';
 //import '../../styles/AccountMenu.css';
 
-const MenuInfo = ({ handleLogout, isOpen, onClose,  onLogout }) => {
+const MenuInfo = ({ handleLogout, isOpen, onClose,  onLogout, containerRef, setIsOpen }) => {
 
     const items = [
       { href: "/", img: logoImage, alt: "Presentación", label: "Presentación" },
@@ -28,6 +28,7 @@ const MenuInfo = ({ handleLogout, isOpen, onClose,  onLogout }) => {
 
 
   return (
+    <div ref={containerRef}>
     <div className={`notifications-menu ${isOpen ? 'open' : 'closed'} verde`}>
     <div className="grid-container verde">
         {items.map((item, index) => (
@@ -43,6 +44,7 @@ const MenuInfo = ({ handleLogout, isOpen, onClose,  onLogout }) => {
           </div>
         ))}
       </div>
+  </div>
   </div>
   );
 };
