@@ -15,7 +15,11 @@ const CategoriaCard = ({
   const handleClick = () => {
     if (clasifica === 'contenidos' && slug) {
       navigate(`/contenidos/categoria/${slug}`);
-    } else if (slug) {
+    } else if (clasifica === 'cursos' && slug){
+      navigate(`/cursos/categoria/${slug}`);
+    }
+    
+    else if (slug) {
       navigate(`/market/store/${slug}`);
     }
   };

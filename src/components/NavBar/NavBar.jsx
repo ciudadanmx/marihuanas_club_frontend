@@ -116,7 +116,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
     // 🔥 Obtenemos el primer path de la URL actual
     const path = `/${window.location.pathname.split('/')[1]}`;
     //llamammos a handlenavigation para que haga setActiveTab y se haga el efecto en el botón de la sección activa
-    handleNavigation(path);
+    //handleNavigation(path);
 
     handleResize(); // Se ejecuta al montar el componente
 

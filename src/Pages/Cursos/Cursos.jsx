@@ -1,49 +1,75 @@
-import { useEffect, useState } from 'react';
-import { Box, Container } from '@mui/material';
-import Buscador from '../../components/Blog/Buscador';
-import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
+import React from 'react';
+import { Routes, Route, useParams } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
+import { CircularProgress, Box, Typography } from '@mui/material';
+import Cursos from '../../components/Cursos/Cursos';
 
-import { useCategorias } from '../../hooks/useCategorias';
+// Wrappers to extract URL params and pass props to Contenidos
+const CursosUsuario = () => {
+  const { user, isLoading, isAuthenticated } = useAuth0();
 
-const Cursos = () => {
-  const tabla = 'categorias-cursos';
-  const { getCategorias, loading: loadingCategorias } = useCategorias(tabla);
+  // Mientras se carga la sesión de usuario
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
-  const [categorias, setCategorias] = useState([]);
+  // Si no está autenticado, muestra un mensaje
+  if (!isAuthenticated || !user) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant="body1">
+          Para ver tus cursos debes iniciar sesión.
+        </Typography>
+      </Box>
+    );
+  }
 
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      console.warn('🌀 --------------------------Obteniendo categorías...');
-      const data = await getCategorias();
-      console.log('📂 Categorías:', data);
-      setCategorias(data);
-    };
-    fetchCategorias();
-  }, []);
+  // Usuario ya cargado y autenticado: pasamos su email
+  const usuario = user.email;
+  return <Cursos filtros="mis-cursos" parametros={usuario} />;
+};
 
-  const forma = 'cuadrado';
+const CursosBusqueda = () => {
+  const { cadena } = useParams();
+  return <Cursos filtros="busqueda" parametros={cadena} />;
+};
 
+const CursosCategoria = () => {
+  const { slug } = useParams();
+  return <Cursos filtros="categoria" parametros={slug} />;
+};
+
+const CursosEditar = () => {
+  const { slug } = useParams();
+  return <Cursos filtros="editar" parametros={slug} />;
+};
+
+const CursosEliminar = () => {
+  const { slug } = useParams();
+  return <Cursos filtros="eliminar" parametros={slug} />;
+};
+
+const CursosPage = () => {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Buscador />
-      <h3><center>Áreas de Cursos:</center></h3>
-
-      {!loadingCategorias && categorias && categorias.length > 0 && (
-        <Box mt={4}>
-          <CategoriasSlider
-          forma = {forma}
-            categorias={categorias.map((cat) => ({
-              nombre: cat.attributes.nombre,
-              slug: cat.attributes.slug,
-              forma: {forma},
-              imagen: `${process.env.REACT_APP_STRAPI_URL}${cat.attributes.imagen?.data?.attributes?.url}`,
-            }))}
-          />
-        </Box>
-      )}
-
-    </Container>
+    <Routes>
+      {/* /Cursos */}
+      <Route index element={<Cursos />} />
+      {/* /cursos/mis-cursos */}
+      <Route path="mis-Cursos" element={<CursosUsuario />} />
+      {/* /cursos/busqueda/:cadena */}
+      <Route path="busqueda/:cadena" element={<CursosBusqueda />} />
+      {/* /cursos/categoria/:slug */}
+      <Route path="categoria/:slug" element={<CursosCategoria />} />
+      {/* /cursos/editar/:slug */}
+      <Route path="categoria/:slug" element={<CursosEditar />} />
+      {/* /cursos/eliminar/:slug */}
+      <Route path="categoria/:slug" element={<CursosEliminar />} />
+    </Routes>
   );
 };
 
-export default Cursos;
+export default CursosPage;

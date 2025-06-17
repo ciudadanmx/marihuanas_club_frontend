@@ -27,6 +27,7 @@ import Gana from '../Pages/Gana/Gana.jsx';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
 import MisProductos from '../Pages/MarketPlace/MisProductos';
 
+import CursoDetalle from '../Pages/Cursos/Curso.jsx';
 
 import ContenidosPage from '../Pages/Blog/Contenidos';
 import EditarContenido from '../Pages/Blog/EditarContenido';
@@ -37,6 +38,12 @@ import Prueba from '../Pages/Prueba.jsx';
 import PedidosEntregados from '../Pages/MarketPlace/PedidosEntregados.jsx';
 import PagosTienda from '../Pages/MarketPlace/PagosTienda.jsx';
 import ConfiguracionTienda from '../Pages/MarketPlace/ConfiguracionTienda.jsx';
+import AgregarCurso from '../Pages/Blog/AgregarCurso.jsx';
+import EliminarCurso from '../Pages/Cursos/EliminarCurso.jsx';
+import EditarCurso from '../Pages/Cursos/EditarCurso.jsx';
+
+import Curso from '../Pages/Cursos/Curso.jsx';
+import CursosPage from '../Pages/Cursos/Cursos';
 
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarContenidoWrapper = () => {
@@ -46,6 +53,15 @@ const EditarContenidoWrapper = () => {
 const EliminarContenidoWrapper = () => {
   const { slug } = useParams();
   return <EliminarContenido filtros="eliminar" parametros={slug} />;
+};
+// Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
+const EditarCursoWrapper = () => {
+  const { slug } = useParams();
+  return <EditarCurso filtros="editar" parametros={slug} />;
+};
+const EliminarCursoWrapper = () => {
+  const { slug } = useParams();
+  return <EliminarCurso filtros="eliminar" parametros={slug} />;
 };
 
 const Rutas = () => (
@@ -61,6 +77,9 @@ const Rutas = () => (
     <Route path="/clubs" element={<Clubs />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
+    
+    <Route path="/agregar-curso" element={<AgregarCurso />} />
+
     <Route path="/membresias" element={<Membresias />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/registro-vendedor" element={<RegistroTienda />} />
@@ -77,7 +96,15 @@ const Rutas = () => (
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/gana" element={<Gana />} />
     
-    
+
+
+    {/* Ruta para editar contenido */}
+    <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
+    {/* Ruta para editar contenido */}
+    <Route path="/cursos/eliminar/:slug" element={<EliminarCursoWrapper />} />
+
+    <Route path="/cursos/*" element={<CursosPage />} />
+    <Route path="/curso/:slug" element={<Curso />} />
     
     {/* Ruta para editar contenido */}
     <Route path="/contenidos/editar/:slug" element={<EditarContenidoWrapper />} />
@@ -89,8 +116,8 @@ const Rutas = () => (
     {/* ruta suelta para ver un contenido individual */}
     <Route path="/contenido/:slug" element={<Contenido />} />
 
-    <Route path="/cursos" element={<Cursos />} />
-
+    
+    
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/prueba" element={<Prueba />} />
 

@@ -64,18 +64,18 @@ root.render(
     > */}
 
     <Auth0Provider
-  domain={domain}
-  clientId={clientId}
-  redirectUri={window.location.origin}
-  cacheLocation="localstorage"
-  useRefreshTokens={true}
-  authorizationParams={{
-    audience: audience,
-    scope: 'openid profile email offline_access',
-  }}
-  onRedirectCallback={onRedirectCallback}
+      domain={domain}
+      clientId={clientId}
+      redirectUri={window.location.origin}
+      cacheLocation="localstorage"
+      useRefreshTokens={true}
+      authorizationParams={{
+        audience: audience,
+        scope: 'openid profile email offline_access',
+      }}
+     onRedirectCallback={onRedirectCallback}
   
->
+    >
 
   <AuthProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
