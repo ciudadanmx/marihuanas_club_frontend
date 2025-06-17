@@ -224,6 +224,7 @@ const useProductos = () => {
       const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           populate: '*',
+          'pagination[pageSize]': 150,
           ...params,
         },
       });

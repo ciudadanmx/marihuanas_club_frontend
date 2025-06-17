@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const GuardarProducto = async (params) => {
   const {
-    formData, imagenPredeterminada, imagenes, STRAPI_URL, storeId, userEmail, volumetrico, pesoCobrado
+    formData, imagenPredeterminada, imagenes, STRAPI_URL, storeId, userEmail, volumetrico, pesoCobrado, cp
   } = params;
 
   const data = new FormData();
@@ -24,6 +24,7 @@ export const GuardarProducto = async (params) => {
     peso: parseFloat(formData.peso),
     volumetrico,
     peso_cobrado: pesoCobrado,
+    cp: cp,
     fecha_creacion: new Date().toISOString(),
     slug: formData.nombre.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "")
   };

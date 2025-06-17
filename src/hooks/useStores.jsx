@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { slugify } from '../utils/slugify';
+import axios from 'axios';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
@@ -103,6 +104,19 @@ export function useStores() {
     });
   };
 
+  const createDireccion = async ({ data }) => {
+    try {
+      const res = await axios.post(
+        `${STRAPI_URL}/api/direcciones`,
+        { data }
+      );
+      return res.data;
+    } catch (err) {
+      console.error('Error en createDireccion:', err);
+      throw err;
+    }
+  };
+
   const finishStoreSetup = async (storeId, name) => {
     console.log('terminando !!!!!!!!!');
     return await updateStore(storeId, {
@@ -128,6 +142,7 @@ export function useStores() {
     deleteDuplicateStores,
     onboardingStripe,
     completeStoreSetup,
-    finishStoreSetup
+    finishStoreSetup,
+    createDireccion,
   };
 }

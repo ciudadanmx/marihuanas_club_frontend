@@ -122,11 +122,13 @@ const AgregarProducto = () => {
   };
 
   const handleSubmit = async (e) => {
+    let cp = '11560';
     e.preventDefault();
     if (!storeId) return alert('No se ha vinculado tienda para este usuario.');
     setEnviando(true);
 
     try {
+      cp = '11560';
       await GuardarProducto({
         formData,
         imagenPredeterminada,
@@ -136,6 +138,7 @@ const AgregarProducto = () => {
         userEmail: user.email,
         volumetrico,
         pesoCobrado,
+        cp: cp,
       });
 
       setFormData({
