@@ -41,9 +41,13 @@ import ConfiguracionTienda from '../Pages/MarketPlace/ConfiguracionTienda.jsx';
 import AgregarCurso from '../Pages/Blog/AgregarCurso.jsx';
 import EliminarCurso from '../Pages/Cursos/EliminarCurso.jsx';
 import EditarCurso from '../Pages/Cursos/EditarCurso.jsx';
+import EliminarProducto from '../Pages/MarketPlace/EliminarProducto.jsx';
 
 import Curso from '../Pages/Cursos/Curso.jsx';
 import CursosPage from '../Pages/Cursos/Cursos';
+import ProductosPage from '../Pages/MarketPlace/ProductosPage.jsx';
+import QuienesSomos from '../Pages/Info/QuienesSomos';
+import PreguntasFrecuentes from '../Pages/Info/PreguntasFrecuentes.jsx';
 
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarContenidoWrapper = () => {
@@ -63,6 +67,10 @@ const EliminarCursoWrapper = () => {
   const { slug } = useParams();
   return <EliminarCurso filtros="eliminar" parametros={slug} />;
 };
+const EliminarProductoWrapper = () => {
+  const { slug } = useParams();
+  return <EliminarProducto filtros="eliminar" parametros={slug} />;
+};
 
 const Rutas = () => (
   <Routes>
@@ -74,6 +82,10 @@ const Rutas = () => (
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/perfil/:username" element={<Perfil />} />
     <Route path="/lmai" element={<LmAi />} />
+
+    <Route path="/info/quienes" element={<QuienesSomos />} />
+    <Route path="/info/faq" element={<PreguntasFrecuentes />} />
+
     <Route path="/clubs" element={<Clubs />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
@@ -97,7 +109,12 @@ const Rutas = () => (
     <Route path="/gana" element={<Gana />} />
     
 
+    {/* Ruta para eliminar producto */}
+    <Route path="/productos/eliminar/:slug" element={<EliminarProductoWrapper />} />
 
+    <Route path="/productos/*" element={<ProductosPage />} />
+    
+    
     {/* Ruta para editar contenido */}
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
     {/* Ruta para editar contenido */}

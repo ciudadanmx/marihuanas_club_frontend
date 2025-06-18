@@ -1,5 +1,4 @@
-import React from 'react';
-import EventosPage from '../../components/Eventos/index.jsx'
+import React, { useContext } from 'react';
 import {
   Box,
   Grid,
@@ -9,40 +8,120 @@ import {
   CardContent,
   Button,
   useMediaQuery,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { styled } from '@mui/system';
-import placeholder from '../../assets/placeholder.jpg'
+import placeholder from '../../assets/placeholder.jpg';
+import { useRoles } from '../../Contexts/RolesContext';
 
-// Animación psicodélica ligera
 const CardAnimada = styled(Card)(({ theme }) => ({
   transition: 'transform 0.4s ease, box-shadow 0.4s ease',
   '&:hover': {
     transform: 'scale(1.05)',
-    boxShadow: `0 8px 16px rgba(255, 242, 0, 0.4)`,
+    boxShadow: `0 8px 20px rgba(136, 255, 112, 0.35)`,
   },
-  backgroundColor: '#1f1f1f',
+  backgroundColor: '#252d25',
   color: '#fff',
-  border: '2px solid #fff200',
+  border: '2px solid #b8ff57',
   borderRadius: '16px',
 }));
 
 export default function EventosGrid({ eventos }) {
   const isMobile = useMediaQuery('(max-width:600px)');
+  const { isEditor } = useRoles();
 
-  // Agrupar eventos por día de la semana (0-6)
   const eventosPorDia = Array.from({ length: 7 }, (_, i) =>
     eventos.filter((ev) => new Date(ev.fecha_inicio).getDay() === i)
   );
-
   const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
   return (
     <Box sx={{ px: 2, py: 4 }}>
-      <Typography variant="h4" gutterBottom sx={{ color: '#fff200', textAlign: 'center' }}>
-        Agenda de Eventos
-      </Typography>
+      {/* Título + botón + select */}
+      <Box
+        sx={{
+          mb: 3,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{
+            color: '#b8ff57',
+            textAlign: isMobile ? 'left' : 'center',
+            flexGrow: 1,
+          }}
+        >
+          Agenda de Eventos
+        </Typography>
 
+        {isEditor && (
+          <Button
+            variant="contained"
+            component={Link}
+            to="/admin/crear-evento"
+            sx={{
+              backgroundColor: '#91ff49',
+              color: '#1a1a1a',
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: '#a5ff30',
+              },
+              borderRadius: '12px',
+              px: 3,
+              boxShadow: '0 0 10px #91ff49',
+            }}
+          >
+            + Agregar evento
+          </Button>
+        )}
+
+        <FormControl
+          sx={{
+            minWidth: 150,
+            borderRadius: '12px',
+            background: '#101b10',
+            boxShadow: '0 0 8px #7fff8d66',
+            '& .MuiInputLabel-root': { color: '#7fff8d' },
+            '& .MuiOutlinedInput-root': {
+              color: '#b8ff57',
+              borderColor: '#7fff8d',
+              '& fieldset': {
+                borderColor: '#7fff8d',
+              },
+              '&:hover fieldset': {
+                borderColor: '#91ff49',
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: '#b8ff57',
+              },
+            },
+          }}
+        >
+          <InputLabel id="categoria-label">Categoría</InputLabel>
+          <Select
+            labelId="categoria-label"
+            id="categoria"
+            defaultValue="todos"
+            label="Categoría"
+          >
+            <MenuItem value="todos">Todos</MenuItem>
+            <MenuItem value="musicales">Musicales</MenuItem>
+            <MenuItem value="cursos">Cursos</MenuItem>
+            <MenuItem value="politicos">Políticos</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      {/* Grid de eventos */}
       <Grid container spacing={2}>
         {diasSemana.map((dia, i) => (
           <Grid
@@ -56,7 +135,11 @@ export default function EventosGrid({ eventos }) {
             <Typography
               variant="h6"
               align="center"
-              sx={{ color: '#fff200', mb: 1, borderBottom: '1px solid #fff200' }}
+              sx={{
+                color: '#b8ff57',
+                mb: 1,
+                borderBottom: '1px solid #b8ff57',
+              }}
             >
               {dia}
             </Typography>
@@ -75,7 +158,10 @@ export default function EventosGrid({ eventos }) {
                   }}
                 />
                 <CardContent sx={{ p: 2 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 'bold', color: '#a5ff30' }}
+                  >
                     {evento.titulo}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.7 }}>
@@ -92,10 +178,10 @@ export default function EventosGrid({ eventos }) {
                     to={`/evento/${evento.slug}`}
                     sx={{
                       mt: 1,
-                      color: '#fff200',
-                      borderColor: '#fff200',
+                      color: '#b8ff57',
+                      borderColor: '#b8ff57',
                       '&:hover': {
-                        backgroundColor: '#fff20022',
+                        backgroundColor: '#b8ff5710',
                       },
                     }}
                   >

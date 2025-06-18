@@ -20,7 +20,7 @@ const CategoriaCard = ({
     }
     
     else if (slug) {
-      navigate(`/market/store/${slug}`);
+      navigate(`/productos/categoria/${slug}`);
     }
   };
 

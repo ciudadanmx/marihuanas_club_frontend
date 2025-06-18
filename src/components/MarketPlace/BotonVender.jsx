@@ -10,7 +10,7 @@ const BotonVender = () => {
   const { getStoreByEmail } = useStores();
   const [checking, setChecking] = useState(false);
 
-  const handleClick = async () => {
+  const handleVender = async () => {
     if (!isAuthenticated || isLoading) return;
 
     setChecking(true);
@@ -33,23 +33,27 @@ const BotonVender = () => {
 
   return (
     <Button
-      variant="contained"
-      sx={{
-        background: 'linear-gradient(45deg, #aaffaa, #55dd55)',
-        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-        fontWeight: 'bold',
-        borderRadius: 3,
-        textTransform: 'none',
-        px: 4,
-        py: 1.5,
-        transition: '0.3s',
-        '&:hover': { transform: 'scale(1.05)', background: 'linear-gradient(45deg, #88ff88, #44cc44)' }
-      }}
-      onClick={handleClick}
-      disabled={checking}
-    >
-      Vender
-    </Button>
+                variant="contained"
+                sx={{
+                  background: 'linear-gradient(45deg, #aaffaa, #55dd55)',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                  fontWeight: 'bold',
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  height: '56px',
+                  px: 4,
+                  py: 1.5,
+                  transition: '0.3s',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    background: 'linear-gradient(45deg, #88ff88, #44cc44)'
+                  }
+                }}
+                onClick={handleVender}
+                disabled={false}
+              >
+                Vender
+              </Button>
   );
 };
 
