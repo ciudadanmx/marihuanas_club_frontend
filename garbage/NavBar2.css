@@ -1,0 +1,481 @@
+.circular-image-sesion {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover; /* Asegura que la imagen se ajuste al contenedor sin distorsión */
+  border: 2px solid #ddd; /* Añade un borde opcional alrededor de la imagen */
+}
+
+.ciudadan-text {
+  display: none;
+}
+
+.ciudadan-svg {
+  display: none;
+}
+
+/* Estilo general para la barra de navegación */
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  margin-bottom: 0px;
+
+  width: 100%;
+  box-sizing: border-box; /* importante para evitar desbordes */
+  overflow-x: hidden;     /* también evita scroll en este contenedor */
+  height: auto;
+  overflow-y: hidden;
+  filter: brightness(1.4); /* Ajusta este valor para más o menos brillo */
+  position: relative;
+}
+
+.navbar-abajo {
+  position: relative;
+  margin-top: -20px;
+  background-color: rgb(231, 231, 83);
+  width: 100%;
+  max-width: 100%;
+  padding: 0 20px;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  height: auto;
+  overflow-y: hidden;
+  filter: brightness(1); /* Ajusta este valor para más o menos brillo */
+
+}
+.navbar-arriba {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto;
+  position: relative;
+}
+
+
+
+.logo {
+  filter: drop-shadow(0 0 10px yellow) drop-shadow(0 0 20px yellow);
+    box-shadow: 0 0 10px yellow, 0 0 20px yellow;
+}
+
+/* Al pasar el cursor, cambia a mano y crece suavemente */
+.logo:hover, .logo:focus {
+  cursor: pointer;
+  transform: scale(1.08); /* Efecto de crecimiento sutil */
+  filter: drop-shadow(0 0 16px #ff4dff); /* Glow más fuerte en hover */
+}
+
+/* Efecto clic sofisticado con un rebote elegante */
+.logo:active {
+  transform: scale(0.95); /* Ligero "rebote" al hacer clic */
+  filter: drop-shadow(0 0 20px #ff00ff); /* Glow más intenso momentáneo */
+}
+
+.logo-img {
+  width: 42vw; /* Tamaño grande del logo, ajusta según sea necesario */
+  height: 14vh;
+  margin-bottom: 10px;
+  transition: all 0.3s ease-in-out;
+  filter: drop-shadow(0 0 10px yellow) drop-shadow(0 0 20px yellow);
+
+}
+
+.logo-container:hover .logo-img,
+.logo-container:focus .logo-img {
+  transform: scale(1.1);
+    filter: drop-shadow(0 0 10px yellow) drop-shadow(0 0 20px yellow);
+
+}
+
+  /* Efecto para cuando el usuario está en Home o en /info/*** */
+  .logo.en-home {
+    filter: drop-shadow(0 0 12px #f7a787); /* Glow rosa refinado */
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out;
+  }
+
+.en-home {
+
+  filter: drop-shadow(0px 0px 5px #fcfbfa) drop-shadow(0px 0px 2px #ff69b4);
+  display: inline-block; /* Evita que el padding expanda la caja */
+  padding: 3px; /* Ajusta el espacio sin agrandar demasiado */
+  transition: all 0.3s ease-in-out;
+}
+
+
+
+/* Íconos de la Fila Inferior de la NavBar */
+.small-icon {
+  font-size: 34px;
+  color: rgb(186, 50, 204);
+}
+.big-icon {
+  font-size: 36px;
+  color: rgb(186, 50, 204);
+}
+
+.middium-icon {
+  font-size: 33px;
+  color: rgb(186, 50, 204);
+}
+
+/* acomodadno el botón de taki *** checar ************* */
+.taxi-subido {
+  margin-top: -7px !important;
+}
+
+
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap; /* Asegura que estén en una sola fila */
+  justify-content: center; /* 💡 CENTRA horizontalmente */
+  align-items: center;
+  width: 100%;
+  overflow-x:calc(100dvw); /* Permite desplazamiento si hay muchos elementos */
+  padding: 1px 0;
+  gap: 12px; /* Espaciado uniforme entre íconos */
+  z-index: 1;
+  position: relative;
+}
+
+  /* texto de los botones */
+.nav-link {
+  text-align: center;
+  font-size: 24px;
+  color: green; /* Color del texto */
+  margin: 10px; /* Margen entre íconos */
+  margin: 14px 18px;
+}
+
+/* Agrupar los iconos en una sola línea para el primer grupo */
+.nav-linky {
+  text-align: center;
+  font-size: 42px;
+  color: #000;
+  margin: 10px 4px; /* Margen entre íconos */
+}
+
+/* Mostrar el texto a la derecha del ícono en escritorio */
+.nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nav-text {
+  display: block; /* Mostrar el texto debajo del ícono en escritorio */
+  margin-top: -2px;
+  font-weight: 600;
+}
+
+
+/* Pestaña activa: contorno rosa estilizado y glow */
+.nav-link.active {
+  text-shadow: 0 0 8px #ff4dff;  /* Glow rosa refinado */
+  position: relative;             /* Para posicionar la raya inferior */
+}
+
+/* Glow solo en el icono */
+.nav-link.active .big-icon svg,
+.nav-link.active .middium-icon svg,
+.nav-link.active .small-icon svg {
+  filter: drop-shadow(0 0 8px #ff4dff);
+}
+
+/* Raya inferior en la pestaña activa */
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  height: 4px;
+  background-color: #ff4dff;  /* Mismo rosa estilizado */
+}
+
+
+.nav-link .message-count {
+  position: absolute;
+  top: -13px;
+  right: -25px;
+
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 13px;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #3cb82b; /* Rosa pastel */
+  border: 1px solid #84b382; /* Rosa más oscuro */
+  color: yellow; /* Negro para el número */
+
+}
+
+
+/* 3 Columnas de la fila superrior de la NavBar */
+.columnas {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  min-width: 100%;
+
+}
+
+.columna3 {
+  display: flex;
+  flex-direction: row;
+  align-items: center;     /* Centrado vertical */
+  height: 100%;            /* Estirarse a lo alto del contenedor */
+  position: relative;
+  top: 0;                  /* Elimina el desplazamiento */
+}
+
+.columna2 {
+  position: relative;
+  top: -3px;
+  max-width: 80%;
+  left: -6%;
+}
+
+.wraper {
+  width: 100vw; /* Ocupa todo el ancho de la pantalla */
+  margin-left: 0; /* Asegúrate de que no haya márgenes a la izquierda */
+  margin-right: 0; /* Asegúrate de que no haya márgenes a la derecha */
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  flex-wrap: nowrap;
+}
+
+/* M E D I A  --  Q U E R Y S */
+/* Responsividad para tabletas */
+@media (max-width: 1268px) {
+
+  .logo-img {
+    width: 210px; /* Tamaño grande del logo, ajusta según sea necesario */
+    height: auto;
+    margin-bottom: 10px;
+    max-width: 220px;
+  }
+  .nav-text {
+    display: block; /* Mostrar el texto debajo del ícono en escritorio */
+    margin-top: 5px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .nav-link {
+    font-size: 18px;
+    margin-left: 0px;
+    margin-right: 0px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .navbar {
+    flex-direction: column;
+  }
+
+  .nav-links {
+    flex-direction: row; /* Mostrar los íconos en fila en móvil */
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .nav-link .nav-text {
+    display: block; /* Mostrar el texto debajo de cada ícono en móvil */
+  }
+
+  .nav-link {
+    margin-top: 21px;
+  }
+
+  .nav-link i {
+    font-size: 30px; /* Tamaño de los iconos en móvil */
+  }
+
+  .nav-linky {
+    text-align: center;
+    font-size: 24px;
+    color: #000;
+    margin: 0; /* Sin margen entre íconos en móvil */
+  }
+
+    .columna3 {
+    gap: 1.5vw !important;
+    margin-right: -6vw !important;
+  }
+
+  .correte {
+    margin-top: -10px !important;
+    margin-left: 7px !important;
+  }
+
+  .boton-ia{
+    display: none;
+    max-width: 5vw !important;
+    max-height: 5vw !important;
+  }
+
+}
+
+/* Dispositivos Móviles */
+@media (max-width: 800px) {
+  .correte {
+    display: none !important;
+  }
+
+  .boton-ia {
+    display: flex !important;
+    flex-direction: row;
+    justify-content: center;
+    font-size: 30px; /* Tamaño del icono */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F4A261; /* Fondo negro */
+    border-radius: 50%; /* Para hacer el botón circular */
+
+    color: #fcf8fb; /* Color del icono (blanco) */
+    cursor: pointer; /* Cursor de mano al pasar sobre el botón */
+    border: none; /* Sin borde */
+    outline: none; /* Sin borde de enfoque */
+    transition: background-color 0.3s; /* Suaviza cambios de color */
+    font-weight: 900;
+    max-width: 9vw !important;
+    max-height: 9vw !important;
+    top: -3px;
+    left: -2vw;
+
+    filter: drop-shadow(0 0 4px #b2c767); /* Glow más intenso momentáneo */
+
+
+  }
+
+
+
+  /* Oculta los contadores individuales de cada sección */
+  .nav-link .message-count {
+    display: none;
+  }
+  .columna3 {
+    gap: 20px !important;
+  }
+
+}
+
+/* Pantallas muy pequeñas en dispositivos Móviles */
+@media (max-width: 378px) {
+
+  .logo-img {
+    max-width: 45vw; /* Tamaño grande del logo, ajusta según sea necesario */
+    height: auto;
+    margin-right: -7vw;
+    margin-bottom: 10px;
+  }
+
+  .nav-text {
+    display: none !important; /* Mostrar el texto debajo del ícono en escritorio */
+  }
+  /*íconos */
+  .nav-link {
+    font-size: 12px;
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+
+  .columna3 {
+    margin: 2px;
+    padding: 2px;
+    left: 10px;
+  }
+
+  .cuenta-icon-container {
+    position: relative;
+
+    height: auto !important;
+    right: -1vw !important;
+    margin-left: -10px;
+  }
+}
+
+  /* Ajuste fino del tamaño del Logo */
+  @media (max-width: 490px) {
+
+    .logo-img {
+      max-width: 13vw; /* Tamaño grande del logo, ajusta según sea necesario */
+      height: auto;
+
+      position: absolute;
+      left: 4vw;
+      top: 2.5vw;
+      margin-bottom: 20px;
+
+    }
+
+    .nav-links {
+      margin-top: 3px !important;
+    }
+
+    .nav-text {
+
+      display: none !important;
+    }
+
+    .nav-link {
+      font-size: 10px;
+      margin-left: 0px;
+      margin-right: 0px;
+    }
+
+
+    .ciudadan-text {
+      display: block
+    }
+    .ciudadan-svg {
+      display: block
+    }
+
+
+    .boton-busca {
+      display: block !important;
+      font-size: 21px !important; /* Tamaño del icono */
+      width: 30px !important; /* Ajusta el tamaño del botón */
+      height: 30px !important; /* Ajusta el tamaño del botón */
+    }
+
+  }
+
+
+
+/* Aumento del tamaño de los iconos en escritorio */
+@media (min-width: 1024px) {
+  .nav-link .material-icons {
+    font-size: 36px;
+  }
+}
+
+@media (min-width: 420px) {
+  .boton-ia{
+    display: none;
+    max-width: 7vw !important;
+    max-height: 7vw !important;
+  }
+}
+@media (min-width: 560px) {
+  .boton-ia{
+    display: none;
+    max-width: 5vw !important;
+    max-height: 5vw !important;
+  }
+}

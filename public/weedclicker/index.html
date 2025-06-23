@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <link rel="stylesheet" href="./css/style.css" />
+    <script
+      src="https://kit.fontawesome.com/b36ea12d2e.js"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.satsu.pro/tracker.js"
+      data-site="5dyFBptvgd"
+    ></script>
+    <link rel="icon" type="image/svg+xml" href="./assets/img/favicon.svg" />
+    <title>Clicker de Marihuana</title>
+  </head>
+  <body>
+    <audio id="background-music">
+      <source src="./assets/audio/track_1.mp3" type="audio/mpeg" />
+      Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <header>
+      <nav class="navbar">
+        <a href="" class="btn desktop resetGame">Reiniciar Juego</a>
+        <a href="#" class="musicButton music-control-button" id="music-toggle">
+          <i class="fas fa-music"></i>
+        </a>
+        <div class="music-control">
+          <button id="muteButton" class="mute-button">
+            <i class="fas fa-volume-up"></i>
+          </button>
+          <input
+            type="range"
+            class="desktop volumeSlider"
+            id="volumeSlider"
+            min="0"
+            max="100"
+            value="50"
+          />
+          <button id="prevTrackButton" class="music-control-button">
+            <i class="fas fa-step-backward"></i>
+          </button>
+          <button id="nextTrackButton" class="music-control-button">
+            <i class="fas fa-step-forward"></i>
+          </button>
+        </div>
+
+        <div class="nav-logo">
+          <img src="./assets/img/logo.svg" alt="Logo de Clicker de Marihuana" />
+        </div>
+
+        <div class="hamburger">
+          <i class="fas fa-bars"></i>
+        </div>
+        <ul class="nav-links-mobile">
+          <li>
+            <a href="#" id="achievementTriggerMob">
+              <i class="fas fa-award"></i>
+            </a>
+          </li>
+          <li><a href="../">Volver</a></li>
+          <li>
+            <a target="_blank" href="https://www.github.com/yousifpa98/clicker"
+              ><i class="fab fa-github"></i> Repositorio</a
+            >
+          </li>
+          <li><a href="" class="btn resetGame">Reiniciar Juego</a></li>
+          <li class="ver">ver. <span id="version">0.0.1</span></li>
+        </ul>
+        <ul class="nav-links-desktop">
+          <li></li>
+          <li>
+            <a href="#" id="achievementTrigger">
+              <i class="fas fa-award"></i>
+            </a>
+          </li>
+          <li><a href="../herramientas/juegos">Volver</a></li>
+          <li>
+            <a target="_blank" href="https://www.github.com/yousifpa98/clicker"
+              ><i class="fab fa-github"></i>Repositorio</a
+            >
+          </li>
+          <li class="ver">ver. <span id="version">0.0.1</span></li>
+        </ul>
+      </nav>
+    </header>
+    <main>
+      <section id="game">
+        <div class="click-container">
+          <div class="currentBuds">
+            <p id="buds">0</p>
+            <h2>brote[s] de Marihuana</h2>
+            <h4><span id="bps">0</span> brotes por segundo</h4>
+          </div>
+          <div id="clicker" class="disable-dbl-tap-zoom">
+            <img
+              src="./assets/img/click_img.webp"
+              alt="brote"
+              class="disable-dbl-tap-zoom"
+            />
+          </div>
+        </div>
+        <!-- <div class="items"></div> -->
+        <div class="shop disable-dbl-tap-zoom">
+          <h2>Tienda</h2>
+          <!-- <div class="upgrade-info">
+                <div class="info-title">
+                  <div class="info-title-left">
+                    <img src="./assets/img/click_img.png" alt="fertilizante" />
+                    <div class="info-title-text">
+                      <h3>Fertilizante</h3>
+                      <div class="upgrade-tag">mejora</div>
+                    </div>
+                  </div>
+                  <p class="upgrade-cost"><span id="cost">12341520</span> B.</p>
+                </div>
+                <p id="upgrade-text">Aumenta la producción de brotes de las plantas.</p>
+              </div> -->
+          <div class="upgrade-row" id="upgrade-row"></div>
+          <div class="buildings">
+            <div class="building-controls">
+              <div class="setting">
+                <label for="setting">comprar</label>
+                <input type="radio" name="setting" id="buy" />
+                <label for="setting">vender</label>
+                <input type="radio" name="setting" id="sell" />
+              </div>
+              <div class="amount">
+                <label for="onePer">1</label>
+                <input type="radio" name="amount" id="onePer" checked />
+                <label for="tenPer">10</label>
+                <input type="radio" name="amount" id="tenPer" />
+                <label for="hundredPer">100</label>
+                <input type="radio" name="amount" id="hundredPer" />
+              </div>
+            </div>
+            <div class="building-shop" id="building-shop"></div>
+          </div>
+        </div>
+        <div class="stats-container">
+          <h2>Estadísticas</h2>
+          <div id="basicStats">
+            <h3>Estadísticas Básicas</h3>
+            <table class="stats-table">
+              <tr>
+                <td>Total de Brotes Cosechados:</td>
+                <td id="totalBuds">0</td>
+              </tr>
+              <tr>
+                <td>Total de Clics:</td>
+                <td id="totalClicks">0</td>
+              </tr>
+              <tr>
+                <td>Brotes por Segundo Actual:</td>
+                <td id="currentBps">0</td>
+              </tr>
+              <tr>
+                <td>Brotes por Clic Actual:</td>
+                <td id="currentBpc">1</td>
+              </tr>
+            </table>
+          </div>
+          <div id="buildingStats">
+            <h3>Estadísticas de Edificios</h3>
+            <table class="stats-table">
+              <tr>
+                <td>Estilos de Edificios Poseídos:</td>
+                <td id="totalBuildingsOwned">0</td>
+              </tr>
+              <tr>
+                <td>Edificio Más Popular:</td>
+                <td id="mostPopularBuilding">Ninguno</td>
+              </tr>
+            </table>
+          </div>
+          <div id="upgradeStats">
+            <h3>Estadísticas de Mejoras</h3>
+            <table class="stats-table">
+              <tr>
+                <td>Mejoras Adquiridas:</td>
+                <td id="totalUpgradesAcquired">0</td>
+              </tr>
+              <tr>
+                <td>Mejor Mejora:</td>
+                <td id="bestUpgrade">Ninguna</td>
+              </tr>
+            </table>
+          </div>
+          <div id="miscStats">
+            <h3>Estadísticas Variadas</h3>
+            <table class="stats-table">
+              <tr>
+                <td>Tiempo Total de Juego:</td>
+                <td id="totalPlaytime">0</td>
+              </tr>
+              <tr>
+                <td>Brotes Totales de Edificios:</td>
+                <td id="totalBudsFromBuildings">0</td>
+              </tr>
+              <tr>
+                <td>Brotes Obtenidos al Hacer Clic:</td>
+                <td id="budsByClicking">0</td>
+              </tr>
+              <tr>
+                <td>Total de Edificios Comprados:</td>
+                <td id="totalBuildingsBought">0</td>
+              </tr>
+              <tr>
+                <td>Clics por Segundo:</td>
+                <td id="clicksPerSecond">0</td>
+              </tr>
+              <!--  <tr>
+                <td>Potenciador de Clic Favorito:</td>
+                <td id="favoriteClickBooster">Ninguno</td>
+              </tr> -->
+            </table>
+          </div>
+          <div id="funStats">
+            <h3>Estadísticas Divertidas</h3>
+            <table class="stats-table">
+              <tr>
+                <td>Total de Brotes Fumados:</td>
+                <td id="totalBudsSmoked">0</td>
+              </tr>
+              <tr>
+                <td>Veces Colocado:</td>
+                <td id="timesStoned">0</td>
+              </tr>
+              <tr>
+                <td>Ingresos Totales Generados:</td>
+                <td id="totalRevenueGenerated">$0</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </section>
+      <div id="leaf-container"></div>
+    </main>
+    <footer>
+      <p>
+        &copy; 2024
+        <a target="_blank" href="https://www.yousifpaulus.dev">Yousif Paulus</a>
+      </p>
+      <ul class="footer-socials">
+        <li>
+          <a target="_blank" href="https://www.github.com/yousifpa98"
+            ><i class="fab fa-github"></i
+          ></a>
+        </li>
+      </ul>
+    </footer>
+    <!-- Reset Game Modal -->
+    <div id="resetModal" class="modal">
+      <div class="modal-content">
+        <h2>¿Estás seguro?</h2>
+        <p>Esta acción restablecerá todo tu progreso.</p>
+        <button id="confirmReset" class="btn btn-danger">Sí, Reiniciar</button>
+        <button id="cancelReset" class="btn btn-cancel">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Achievement Modal -->
+    <div id="achivModal" class="achiv-modal">
+      <div class="achiv-modal-content">
+        <span id="achivModalClose" class="achiv-modal-close">&times;</span>
+        <h2>Logros Desbloqueados</h2>
+        <div id="achivDetails" class="achiv-details">
+          <h3 id="achivName">Pasa el cursor sobre un logro</h3>
+          <p id="achivDesc">Los detalles del logro se mostrarán aquí.</p>
+        </div>
+        <div id="achivModalList" class="achiv-list"></div>
+        <!-- Aquí se insertarán los logros -->
+      </div>
+    </div>
+
+    <script src="./js/buildings.js"></script>
+    <script src="./js/upgrades.js"></script>
+    <script src="./js/playlist.js"></script>
+    <script src="./js/music.js"></script>
+    <script src="./js/script.js"></script>
+    <script src="./js/achievements.js"></script>
+    <script src="./js/cosmetics.js"></script>
+  </body>
+</html>

@@ -1,0 +1,245 @@
+// src/components/Gana.jsx
+import React from 'react';
+import { Box, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
+
+const W = 180;
+const H = Math.sqrt(3) / 2 * W;
+const HALF_H = H / 2;
+
+export default function Gana() {
+  let imgCounter = 1;
+
+  const topHalves = [];
+  const fullRows = [];
+  const bottomHalves = [];
+
+  const visibleIds = [12, 13, 16, 17, 18, 30, 31];
+
+  const buttonConfig = {
+    12: { label: 'Promueve las membresías', path: '/gana/promueve' },
+    13: { label: 'Vende', path: '/gana/vende' },
+    16: { label: 'Afilia tu Club', path: '/gana/afilia-club' },
+    17: { label: 'Genera Contenido', path: '/gana/genera-contenidos' },
+    18: { label: 'Invierte en Tokens', path: '/gana/invierte' },
+    30: { label: 'Ser repartidor', path: '/gana/delivery' },
+    31: { label: 'Abrir Franquicia en mi país', path: '/gana/internacionaliza' },
+  };
+
+  const getAnimation = (count) => {
+    switch (count) {
+      case 13:
+        return { animation: 'enterTopRight 1s ease-out forwards' };
+      case 12:
+        return { animation: 'enterTopLeft 1s ease-out forwards' };
+      case 16:
+        return { animation: 'enterLeft 1s ease-out forwards' };
+      case 17:
+        return { animation: 'fadeExplode 0.8s ease-out forwards' };
+      case 18:
+        return { animation: 'enterRight 1s ease-out forwards' };
+      case 30:
+        return { animation: 'enterBottomLeft 1s ease-out forwards' };
+      case 31:
+        return { animation: 'enterBottomRight 1s ease-out forwards' };
+      default:
+        return {};
+    }
+  };
+
+  const animationStyles = `
+    @keyframes enterTopRight { 0% { transform: translate(100px, -100px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
+    @keyframes enterTopLeft  { 0% { transform: translate(-100px, -100px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
+    @keyframes enterLeft     { 0% { transform: translateX(-150px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes enterRight    { 0% { transform: translateX(150px); opacity: 0; } 100% { transform: translateX(0); opacity: 1; } }
+    @keyframes enterBottomLeft { 0% { transform: translate(-100px, 100px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
+    @keyframes enterBottomRight{ 0% { transform: translate(100px, 100px); opacity: 0; } 100% { transform: translate(0, 0); opacity: 1; } }
+    @keyframes fadeExplode   { 0% { opacity: 0; transform: scale(0.3); } 100% { opacity: 1; transform: scale(1); } }
+  `;
+
+  // Styles comunes para hover
+  const hoverSx = {
+    transition: 'transform 0.3s ease',
+    cursor: 'pointer',
+    '&:hover': { transform: 'translateY(20px)' }
+  };
+
+  // 1) MEDIA FILA SUPERIOR
+  for (let col = 0; col < 5; col++) {
+    const count = imgCounter;
+    const src = require(`../../assets/hexagono${count}.png`);
+    imgCounter++;
+    const sx = {
+      boxShadow: '10px 10px 8px #0f0, 10px 10px 10px #0f0',
+      border: '10px solid #0f0',
+      position: 'absolute', width: W, height: H,
+      left: col * W, top: -HALF_H,
+      objectFit: 'cover',
+      clipPath: 'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
+      visibility: visibleIds.includes(count) ? 'visible' : 'hidden',
+      zIndex: visibleIds.includes(count) ? 20 : 2,
+      opacity: 0,
+      transition: 'transform 0.3s ease',
+      ...getAnimation(count),
+      ...(visibleIds.includes(count) ? hoverSx : {})
+    };
+    topHalves.push(
+    <Box
+  key={count}
+  sx={{
+    position: 'absolute',
+    width: W,
+    height: H,
+
+    overflow: 'hidden',                // recorta la imagen
+    '&:hover img': {
+      transform: 'translateY(20px)',  // mueve la img al hacer hover
+      cursor: 'pointer'
+    }
+  }}
+>
+    <Box key={`t1-${col}`} component="img" src={src} sx={sx} /></Box>);
+    if (visibleIds.includes(count)) {
+      const btn = buttonConfig[count];
+      topHalves.push(
+        <Button
+          key={`btn-${count}`} component={Link} to={btn.path}
+          sx={{
+            position: 'absolute', left: col * W + W / 2, top: -HALF_H + H / 2,
+            transform: 'translate(-50%,-50%)',
+            backgroundColor: '#fff200', color: '#000', fontWeight: 'bold',
+            fontSize: '0.75rem', px: 2, py: 0.5, borderRadius: '999px', textTransform: 'none', zIndex: 20000
+          }}
+        >{btn.label}</Button>
+      );
+    }
+  }
+
+  // 1b) MEDIA FILA SUPERIOR DESPLAZADA
+  for (let col = 0; col < 5; col++) {
+    const count = imgCounter;
+    const src = require(`../../assets/hexagono${count}.png`);
+    imgCounter++;
+    const sx = {
+      boxShadow: '10px 10px 8px #0f0, 10px 10px 4px #0f0',
+      border: '10px solid #0f0',
+      position: 'absolute', width: W, height: H,
+      marginLeft: HALF_H + W,
+      top: -HALF_H,
+      objectFit: 'cover',
+      clipPath: 'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
+      visibility: visibleIds.includes(count) ? 'visible' : 'hidden',
+      zIndex: visibleIds.includes(count) ? 20 : 2,
+      opacity: 0,
+      ...getAnimation(count),
+      ...(visibleIds.includes(count) ? hoverSx : {})
+    };
+    topHalves.push(<Box key={`t2-${col}`} component="img" src={src} sx={sx} />);
+    if (visibleIds.includes(count)) {
+      const btn = buttonConfig[count];
+      topHalves.push(
+        <Button
+          key={`btn-${count}`} component={Link} to={btn.path}
+          sx={{
+            position: 'absolute', left: HALF_H + W + W / 2, top: -HALF_H + H / 2,
+            transform: 'translate(-50%,-50%)',
+            backgroundColor: '#fff200', color: '#000', fontWeight: 'bold',
+            fontSize: '0.75rem', px: 2, py: 0.5, borderRadius: '999px', textTransform: 'none', zIndex: 20000
+          }}
+        >{btn.label}</Button>
+      );
+    }
+  }
+
+  // 2) FILAS COMPLETAS
+  for (let row = 0; row < 4; row++) {
+    for (let col = 0; col < 4; col++) {
+      const count = imgCounter;
+      const src = require(`../../assets/hexagono${count}.png`);
+      imgCounter++;
+      const left = count >= 11 && count <= 15 ? col * W - HALF_H : row * col * W - HALF_H - 100;
+      const top = count === 15 ? row * HALF_H + 70 - 100 : count >= 11 && count <= 15 ? row * HALF_H + 50 : row * HALF_H + 100;
+      const sx = {
+        boxShadow: '10px 10px 8px #0f0, 10px 10px 10px #0f0',
+        border: '10px solid #0f0',
+        position: 'absolute', width: W, height: H,
+        left, top,
+        objectFit: 'cover',
+        clipPath: 'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
+        visibility: visibleIds.includes(count) ? 'visible' : 'hidden',
+        zIndex: count === 15 ? 10000 : visibleIds.includes(count) ? 20 : 2,
+        opacity: 0,
+        ...getAnimation(count),
+        ...(visibleIds.includes(count) ? hoverSx : {})
+      };
+      fullRows.push(
+      
+      <Box key={`f-${row}-${col}`} component="img" src={src} sx={sx} />);
+      if (visibleIds.includes(count)) {
+        const btn = buttonConfig[count];
+        fullRows.push(
+          <Button
+            key={`btn-${count}`} component={Link} to={btn.path}
+            sx={{
+              position: 'absolute', left: left + W / 2, top: top + H / 2,
+              transform: 'translate(-50%,-50%)',
+              backgroundColor: '#fff200', color: '#000', fontWeight: 'bold',
+              fontSize: '0.75rem', px: 2, py: 0.5, borderRadius: '999px', textTransform: 'none', zIndex: 20000
+            }}
+          >{btn.label}</Button>
+        );
+      }
+    }
+  }
+
+  // 3) MEDIA FILA INFERIOR
+  for (let col = 0; col < 6; col++) {
+    const count = imgCounter;
+    const src = require(`../../assets/hexagono${count}.png`);
+    imgCounter++;
+    const left = col * W - 450;
+    const top = HALF_H + 230;
+    const sx = {
+      boxShadow: '10px 10px 8px #0f0, 10px 10px 10px #0f0',
+      border: '10px solid #0f0',
+      position: 'absolute', width: W, height: H,
+      left, top,
+      objectFit: 'cover',
+      clipPath: 'polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%)',
+      visibility: visibleIds.includes(count) ? 'visible' : 'hidden',
+      zIndex: visibleIds.includes(count) ? 20 : 2,
+      opacity: 0,
+      ...getAnimation(count),
+      ...(visibleIds.includes(count) ? hoverSx : {})
+    };
+    bottomHalves.push(<Box key={`b-${col}`} component="img" src={src} sx={sx} />);
+    if (visibleIds.includes(count)) {
+      const btn = buttonConfig[count];
+      bottomHalves.push(
+        <Button
+          key={`btn-${count}`} component={Link} to={btn.path}
+          sx={{
+            position: 'absolute', left: left + W / 2, top: top + H / 2,
+            transform: 'translate(-50%,-50%)',
+            backgroundColor: '#fff200', color: '#000', fontWeight: 'bold',
+            fontSize: '0.75rem', px: 2, py: 0.5, borderRadius: '999px', textTransform: 'none', zIndex: 20000
+          }}
+        >{btn.label}</Button>
+      );
+    }
+  }
+
+  const containerW = 3 * W;
+  const containerH = H + 3 * (H * 0.75) + HALF_H;
+
+  return (
+    <Box sx={{ background: '#0f1f17', py: 6, px: 2, mt: '-100px', overflow: 'hidden' }}>
+      <style>{animationStyles}</style>
+      <Box sx={{ position: 'relative', width: containerW, height: containerH, mx: 'auto', overflow: 'hidden' }}>
+        {topHalves}
+        {fullRows}
+        {bottomHalves}
+      </Box>
+    </Box>
+  );
+}
