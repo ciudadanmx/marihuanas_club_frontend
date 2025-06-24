@@ -1,6 +1,6 @@
 const buildings = [
   {
-    name: "Planta de Hierba",
+    name: "Planta de Marihuana",
     cost: 10,
     bps: 0.5,
     amount: 0,
@@ -16,7 +16,7 @@ const buildings = [
     shown: false,
   },
   {
-    name: "Granja de Hierba",
+    name: "Granja de Marihuana",
     cost: 100,
     bps: 5,
     amount: 0,
@@ -24,7 +24,7 @@ const buildings = [
     shown: false,
   },
   {
-    name: "Fábrica de Hierba",
+    name: "Fábrica de Marihuana",
     cost: 1000,
     bps: 15,
     amount: 0,
@@ -32,7 +32,7 @@ const buildings = [
     shown: false,
   },
   {
-    name: "Laboratorio de Hierba",
+    name: "Laboratorio de Marihuana",
     cost: 5000,
     bps: 30,
     amount: 0,
@@ -40,7 +40,7 @@ const buildings = [
     shown: false,
   },
   {
-    name: "Guarida del Marihuano",
+    name: "Guarida del Pacheco",
     cost: 10000,
     bps: 100,
     amount: 0,
@@ -88,7 +88,7 @@ const buildings = [
     shown: false,
   },
   {
-    name: "Trato Callejero de Hierba",
+    name: "Trato Callejero de Marihuana",
     cost: 600000,
     bps: 500,
     amount: 0,

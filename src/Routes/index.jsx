@@ -53,6 +53,7 @@ import PreguntasFrecuentes from '../Pages/Info/PreguntasFrecuentes.jsx';
 import Evento from '../Pages/Eventos/Evento.jsx';
 import DetailViewModelWrapper from '../components/Florateca/detail/DetailViewModelWrapper.jsx';
 import FloratecaLayout from '../components/Florateca/FloratecaLayout.jsx';
+import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
 //import WeedClicker from '../components/Juegos/WeedClicker/WeedClicker.jsx';
 
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
@@ -122,6 +123,8 @@ const Rutas = () => (
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/comunidad" element={<ComunidadPage />} />
     <Route path="/eventos" element={<EventosPage />} />
+    <Route path="/eventos/crear-evento" element={<CrearEvento />} />
+
     <Route path="/gana" element={<Gana />} />
     
 

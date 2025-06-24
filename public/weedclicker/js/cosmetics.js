@@ -63,7 +63,7 @@ if (!leafContainer) {
 const createFloatingBuds = (x, y, budsPerClick) => {
   const floatingText = document.createElement("div");
   floatingText.classList.add("buds-animation");
-  floatingText.textContent = `+ ${budsPerClick} Bud${
+  floatingText.textContent = `+ ${budsPerClick} Cogollo${
     budsPerClick > 1 ? "s" : ""
   }`;
 

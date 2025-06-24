@@ -134,7 +134,7 @@ return (
         <Button
           variant="contained"
           component={Link}
-          to="/admin/crear-evento"
+          to="/eventos/crear-evento"
           sx={{
             backgroundColor: '#91ff49',
             color: '#1a1a1a',
