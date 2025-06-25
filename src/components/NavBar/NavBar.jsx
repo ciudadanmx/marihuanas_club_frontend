@@ -12,8 +12,8 @@ import { IoCalendarNumberOutline } from "react-icons/io5";
 import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 
 import guestImage from '../../assets/guest.png'; // Ajusta la ruta si es necesario
-import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tienes una imagen predeterminada de perfil
-import BotonCircular from './../Usuarios/BotonCircular.jsx';
+//import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tienes una imagen predeterminada de perfil
+//import BotonCircular from './../Usuarios/BotonCircular.jsx';
 
 import MenuIcon from './MenuIcon';
 import UserIcon from './UserIcon.jsx'
@@ -94,12 +94,12 @@ const NavBar = ({ SetIsMenuOpen }) => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-  const targets = [profileRef.current, notifRef.current, InfoRef.current];
-  const clickedInside = targets.some(ref => ref && ref.contains(event.target));
-  if (!clickedInside) {
-    closeAllMenus();
-  }
-};
+      const targets = [profileRef.current, notifRef.current, InfoRef.current];
+      const clickedInside = targets.some(ref => ref && ref.contains(event.target));
+      if (!clickedInside) {
+        closeAllMenus();
+      }
+    };
 
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -189,29 +189,23 @@ const NavBar = ({ SetIsMenuOpen }) => {
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
-          height: "100px",
+          height: "120px",
         }}
       >
         <div>
-        <div className='nav-links columnas'>
-            
+        <div className='nav-links columnas'>            
             <div className="logo-container" alt="MaRiHuaNaS.CLuB --> Red de Clubs 4.20 Mex." onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-
                 <img 
                     src={logoSrc} 
                     alt="Marihuanas.Club Logo" 
                     name="Marihuanas.Club - Red de Clubs 4.20 Mex. - Logo"
                     className={'logo-img en-home'}
-                />
-                
-                
+                />     
             </div>
-            
-            
 
-            <span className="columna3">
+            <div className="columna3">
            
-              <span className="nav-linky">
+              <div className="nav-linky">
                 <MenuIcon
                   isOpen={isInfoMenuOpen}
                   onClose={() => setIsInfoMenuOpen(false)}
@@ -224,8 +218,8 @@ const NavBar = ({ SetIsMenuOpen }) => {
                     setIsInfoMenuOpen(open);
                   }}
                 />
-              </span>
-              <span className="nav-linky">
+              </div>
+              <div className="nav-linky">
                 <MenuIcon
                   action='notifications'
                   isOpen={isNotificationMenuOpen}
@@ -241,8 +235,8 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   handleLogout={handleLogout}
                   count={notificationsNum()}
                 />
-              </span>
-              <span className="nav-linky">
+              </div>
+              <div className="nav-linky">
                 <CartIcon
                   isOpen={isMenuOpen}
                   onClose={() => setIsMenuOpen(false)}
@@ -250,7 +244,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   userData={user}
                   className="cuenta-icon"
                 />
-              </span>
+              </div>
               
               <UserIcon 
                 handleLogin={handleLogin}
@@ -261,29 +255,29 @@ const NavBar = ({ SetIsMenuOpen }) => {
                 }}
                 handleLogout={handleLogout}
                 handleLinkClick={handleLinkClick}
-                defaultProfileImage={defaultProfileImage}
+                defaultProfileImage={guestImage}
                 guestImage={guestImage}
                 Link={Link}
                 containerRef={profileRef}
               />
-            </span>
+            </div>
           </div>
         </div>
         </section>
         <section>
         <div>
-            <span className="nav-links navbar-abajo">
+            <div className="nav-links navbar-abajo">
             {["clubs", "legal", "membresias", "market", "contenidos", "cursos", "herramientas","eventos", "comunidad", "gana"].map((section) => (
-                <NavButton className="nav-links"
-                key={section}
-                section={section}
-                activeTab={activeTab}
-                handleNavigation={handleNavigation}
-                iconMap={iconMap}
-                handleLogout={handleLogout}
+                <NavButton 
+                  key={section}
+                  section={section}
+                  activeTab={activeTab}
+                  handleNavigation={handleNavigation}
+                  iconMap={iconMap}
+                  handleLogout={handleLogout}
                 />
             ))}
-            </span>
+            </div>
         </div>
       
       </section>

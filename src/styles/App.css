@@ -27,6 +27,22 @@
   .App-link {
     color: #61dafb;
   }
+
+
+  .wraper {
+    width: 100vw; /* Ocupa todo el ancho de la pantalla */
+    margin-left: 0; /* Asegúrate de que no haya márgenes a la izquierda */
+    margin-right: 0; /* Asegúrate de que no haya márgenes a la derecha */
+    display: flez;
+    flex-direction: row;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+  }
+
+
+  .invisible {
+    display: none !important;
+  }
   
   @keyframes App-logo-spin {
     from {

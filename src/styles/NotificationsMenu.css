@@ -51,7 +51,7 @@
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 33vw;
+  width: 100vw;
   display: none;
   /* z-index: 99000; */
 }

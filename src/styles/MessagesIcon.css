@@ -3,9 +3,10 @@
   width: fit-content;
     position: relative;
     display: inline-block;
-    margin: 30px;
+    margin: 16px;
+    padding-left: 42px;
     filter: brightness(0.9); /* Ajusta este valor para más o menos brillo */
-  z-index: 100 !important;
+    z-index: 100 !important;
   }
   
   .message-icon {
@@ -35,3 +36,10 @@
 
   }
   
+
+  /* Responsividad para tabletas */
+@media (max-width: 1268px) {
+  .message-icon-container {
+    padding-left: 0px;
+  }
+}

@@ -8,19 +8,19 @@ const NavButton = ({ section, activeTab, handleNavigation, iconMap }) => {
   
 
   return (
-    <span
+    <div
       className={`nav-link ${isActive ? "active" : ""}`}
       onClick={() => handleNavigation(`/${section}`)}
       style={{ cursor: "pointer", position: "relative" }}
     >
-      <span className="small-icon" style={{ position: "relative" }}>
+      <div className="small-icon" style={{ position: "relative" }}>
         {iconMap[section]}
       
-      </span>
-      <span className="nav-text">
+      </div>
+      <div className="nav-text">
         {section.charAt(0).toUpperCase() + section.slice(1)}
-      </span>
-    </span>
+      </div>
+    </div>
   );
 };
 
