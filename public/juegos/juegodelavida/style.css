@@ -1,0 +1,240 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #111;
+  color: white;
+  margin: 0;
+  padding: 1em;
+  overflow-x: hidden;
+}
+canvas {
+  border: 1px solid #fff;
+  background-color: #222;
+  margin-top: 10px;
+}
+.controls {
+  margin-top: 1em;
+}
+button {
+  margin: 0.2em;
+  padding: 0.5em 1em;
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+button:hover {
+  background: #555;
+}
+
+/* Nuevos estilos para el modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-content {
+  background: #222;
+  padding: 2em;
+  border-radius: 8px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto; /* scroll si se desborda */
+}
+
+.modal-content h2,
+.modal-content h3 {
+  margin-top: 1em;
+}
+
+.instructions-body {
+  text-align: left;
+  line-height: 1.5;
+}
+
+.illustration {
+  text-align: center;
+  margin: 0.5em 0;
+}
+
+.illustration-grid {
+  display: flex;
+  justify-content: space-around;
+  margin: 1em 0;
+}
+
+.illustration-grid img {
+  width: 100px;
+  height: auto;
+  border: 1px solid #555;
+}
+
+#closeModal {
+  display: block;
+  margin: 1.5em auto 0;
+}
+
+
+.controls {
+  margin-top: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  justify-content: center;
+}
+
+/* Botón Replay */
+#replay {
+  background: #0066cc;
+}
+#replay:hover {
+  background: #005bb5;
+}
+
+/* Contenedor Volver */
+.back-container {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.back-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 0.2em;
+}
+.back-button {
+  padding: 0.5em 1em;
+  background: #333;
+  color: white;
+  text-decoration: none;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+.back-button:hover {
+  background: #555;
+}
+
+
+
+
+
+
+
+/* --- Estilos globales --- */
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #111;
+  color: white;
+  margin: 0;
+  padding: 1em;
+  overflow-x: hidden;
+}
+canvas {
+  border: 1px solid #fff;
+  background-color: #222;
+  margin-top: 10px;
+}
+.controls {
+  margin-top: 1em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  justify-content: center;
+}
+button {
+  margin: 0.2em;
+  padding: 0.5em 1em;
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+button:hover {
+  background: #555;
+}
+
+/* --- Estados de Replay --- */
+#replay.replay-state0 { background: #0066cc; }
+#replay.replay-state0:hover { background: #005bb5; }
+#replay.replay-state1 { background: #cc6600; }
+#replay.replay-state1:hover { background: #b55b00; }
+#replay.replay-state2 { background: #00cc66; }
+#replay.replay-state2:hover { background: #00b55b; }
+
+/* --- Contenedor Volver --- */
+.back-container {
+  margin-top: 1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.back-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 0.2em;
+}
+.back-button {
+  padding: 0.5em 1em;
+  background: #333;
+  color: white;
+  text-decoration: none;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+.back-button:hover {
+  background: #555;
+}
+
+/* --- Modal --- */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+.modal-content {
+  background: #222;
+  padding: 2em;
+  border-radius: 8px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.instructions-body h3 {
+  margin-top: 1em;
+}
+.illustration,
+.illustration-grid {
+  text-align: center;
+  margin: 0.5em 0;
+}
+.illustration-grid {
+  display: flex;
+  justify-content: space-around;
+}
+.illustration-grid img {
+  width: 100px;
+  border: 1px solid #555;
+}
+#closeModal {
+  display: block;
+  margin: 1.5em auto 0;
+}

@@ -54,6 +54,7 @@ import Evento from '../Pages/Eventos/Evento.jsx';
 import DetailViewModelWrapper from '../components/Florateca/detail/DetailViewModelWrapper.jsx';
 import FloratecaLayout from '../components/Florateca/FloratecaLayout.jsx';
 import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
+import Juegos from '../Pages/Herramientas/Juegos.jsx';
 //import WeedClicker from '../components/Juegos/WeedClicker/WeedClicker.jsx';
 
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
@@ -83,8 +84,10 @@ const Rutas = () => (
   <Routes>
     <Route path="/" element={<HomeRoute />} />
     
-    <Route path="/test-consumo" element={<TestConsumoResponsable />} />
+    <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />
     <Route path="/herramientas" element={<HerramientasPage />} />
+    
+    <Route path="/juegos" element={<Juegos />} />
     
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/perfil/:username" element={<Perfil />} />

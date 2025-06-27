@@ -91,7 +91,7 @@ menu-menu.open {
 /* Responsivo para pantallas pequeñas */
 @media (max-width: 768px) {
     .account-menu {
-        width: 100%; /* Para pantallas más pequeñas, ocupará el 100% del ancho */
+        width: 70vw; /* Para pantallas más pequeñas, ocupará el 100% del ancho */
     }
 
     .grid-container {
@@ -101,6 +101,33 @@ menu-menu.open {
 
 @media (max-width: 480px) {
     .grid-container {
-        grid-template-columns: 1fr; /* Cambia a 1 columna en pantallas muy pequeñas */
+        grid-template-columns: 2fr; /* Cambia a 1 columna en pantallas muy pequeñas */
+    }
+}
+
+
+
+@media (max-width: 1490px) {
+    .grid-container {
+        height: 59vh;
+        gap: 10px;
+        padding-bottom: 5px;
+        padding-top: 5px;
+
+    }
+}
+
+@media (max-width: 770px) {
+    .grid-container {
+        position: fixed;
+        margin-left: 10px;
+        width: 90vw;
+        right: 5vw;
+        left: 3vw;
+        
+        top: 6vh;
+        grid-template-columns: 2fr;
+        gap: 4px;
+        padding: 3px;
     }
 }

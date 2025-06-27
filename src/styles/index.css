@@ -204,3 +204,17 @@ body {
 .restringido {
   margin-top: 40px !important;
 }
+
+
+
+body {
+  background-color: #f0f8ff;
+    margin: 0;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: clamp(1.5rem, 4vw, 1rem);
+
+  }

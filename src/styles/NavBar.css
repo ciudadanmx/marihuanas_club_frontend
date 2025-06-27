@@ -3,7 +3,7 @@
   /* flex-direction: column;  */
   justify-content: center;
   align-items: center;
-  padding: 10px;
+  padding: 1px;
   margin-bottom: 20px;
   background-color: #fff200; /* Color de fondo amarillo */
   margin-bottom: 0px;
@@ -45,6 +45,9 @@
   color: #000;
   margin: 10px; /* Margen entre íconos */
   /* bottom: -30px; */
+
+  align-items: center;    /* centra verticalmente */
+  
 }
 
 
@@ -197,6 +200,8 @@
   flex-direction: row;
   position: relative;
   top: 6px;
+  align-items: center;    /* centra verticalmente */
+  justify-content: center; /* centra horizontalmente */
 }
 
 .columna2 {
@@ -281,41 +286,16 @@
     display: none !important;
   }
 
-  .boton-ia {
-    display: flex !important;
-    flex-direction: row;
-    justify-content: center;
-    font-size: 30px; /* Tamaño del icono */
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #F4A261; /* Fondo negro */
-    border-radius: 50%; /* Para hacer el botón circular */
-    
-    color: #fcf8fb; /* Color del icono (blanco) */
-    cursor: pointer; /* Cursor de mano al pasar sobre el botón */
-    border: none; /* Sin borde */
-    outline: none; /* Sin borde de enfoque */
-    transition: background-color 0.3s; /* Suaviza cambios de color */
-    font-weight: 900;
-    max-width: 9vw !important;
-    max-height: 9vw !important;
-    top: -3px;
-    left: -2vw;
-
-    filter: drop-shadow(0 0 4px #b2c767); /* Glow más intenso momentáneo */
-    
-    
-  }
-
-
-
   /* Oculta los contadores individuales de cada sección */
   .nav-link .message-count {
     display: none;
   }
   .columna3 {
-    gap: 20px !important;
+    gap: 4px !important;
+  }
+
+  .nav-linky {
+    font-size: 17px;
   }
 
 }
@@ -350,9 +330,9 @@
     position: relative;
     
     height: auto !important;
-    right: -1vw !important;
+    right: 3vw !important;
     margin-left: -10px;
-    top: 3px;
+    top: -2px;
     display: none;
   }
 }
@@ -361,14 +341,14 @@
   @media (max-width: 490px) {
 
     .logo-img {
-      max-width: 13vw; /* Tamaño grande del logo, ajusta según sea necesario */
+      max-width: 33vw; /* Tamaño grande del logo, ajusta según sea necesario */
       height: auto;
       
       position: absolute; 
-      left: 4vw;
-      top: 2.5vw;
+      left: -3vw;
+      top: -3vw;
       margin-bottom: 20px;
-
+      padding-bottom: 1vh;
     }
   
     .nav-links {
@@ -411,7 +391,7 @@
   }
 }
 
-/* */
+
 @media (min-width: 420px) {
   .boton-ia{
     display: none;

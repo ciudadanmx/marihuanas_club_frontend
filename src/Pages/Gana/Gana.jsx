@@ -216,13 +216,33 @@ export default function Gana() {
   const containerH = H + 3 * (H * 0.75) + HALF_H;
 
   return (
-    <Box sx={{ background: '#0f1f17', py:6, px:2, mt:'-100px', overflow:'hidden' }}>
-      <style>{animationStyles}</style>
-      <Box sx={{ position:'relative', width:containerW, height:containerH, mx:'auto', overflow:'hidden' }}>
+  <Box sx={{ background: '#0f1f17', py: 6, px: 2, mt: '-100px', overflow: 'hidden' }}>
+    <style>{animationStyles}</style>
+    
+    {/* Contenedor externo que permite scroll horizontal en móvil */}
+    <Box 
+      sx={{ 
+        overflowX: { xs: 'auto', md: 'hidden' }, 
+        px: { xs: 1, md: 0 } 
+      }}
+    >
+      {/* Contenedor interno que sí respeta el tamaño */}
+      <Box 
+        sx={{ 
+          position: 'relative', 
+          width: containerW, 
+          height: containerH, 
+          mx: { xs: 0, md: 'auto' }, 
+          minWidth: containerW 
+        }}
+      >
         {topHalves}
         {fullRows}
         {bottomHalves}
       </Box>
     </Box>
-  );
+    
+  </Box>
+);
+
 }

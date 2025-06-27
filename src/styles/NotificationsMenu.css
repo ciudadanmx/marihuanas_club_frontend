@@ -93,13 +93,21 @@
 
 /* Ajuste para móviles */
 @media (max-width: 768px) {
-  .account-menu {
+  .notifications-menu {
     right: 0; /* Alinea el menú a la derecha en dispositivos móviles */
     left: auto; /* Asegúrate de que esté alineado a la derecha */
     top: 100%; /* Alinea el menú justo debajo del ícono */
     width: 100%; /* Ajusta el ancho del menú para ocupar el 100% del contenedor */
     margin-top: 5px; /* Espacio entre el ícono y el menú */
   }
+
+  .notifications-menu-contenedor {
+  
+  width: 83vw;
+
+  /*     z-index: 9000; */
+}
+
 }
 
 
@@ -194,4 +202,40 @@
 
 .notif-logout:hover {
   background-color: #eee;
+}
+
+
+
+
+
+
+
+
+/* repetido */
+
+@media (max-width: 768px) {
+  .notifications-menu {
+    right: 0; /* Alinea el menú a la derecha en dispositivos móviles */
+    left: auto; /* Asegúrate de que esté alineado a la derecha */
+    top: 100%; /* Alinea el menú justo debajo del ícono */
+    width: 80vw; /* Ajusta el ancho del menú para ocupar el 100% del contenedor */
+    margin-top: 5px; /* Espacio entre el ícono y el menú */
+  }
+
+  .notifications-menu-contenedor {
+  
+  width: 83vw;
+
+  /*     z-index: 9000; */
+}
+
+
+.notifications-menu ul {
+  position: fixed;
+  width: 72vw;
+  left: -28vw;
+  right: 4vw;
+  background-color: purple;
+  top: 6vh;
+}
 }

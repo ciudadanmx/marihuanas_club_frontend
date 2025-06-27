@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+    <title>Un caballo. Una hierba. Y mi ojo de la mente.</title>
+
+    <!-- jQuery Mobile CSS -->
+    <link
+      rel="stylesheet"
+      href="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.css"
+    />
+    <!-- Tu CSS -->
+    <link rel="stylesheet" href="content/style.css" />
+
+    <!-- jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <!-- jQuery Mobile JS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquerymobile/1.4.5/jquery.mobile.min.js"></script>
+    <!-- jquery-csv plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/1.0.11/jquery.csv.min.js"></script>
+    <!-- D3.js -->
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <!-- Tu script principal -->
+    <script src="frontend.js"></script>
+
+    <style>
+      /* Botón Volver estilizado */
+      #volver {
+        display: block;
+        margin: 30px auto 50px auto;
+        padding: 12px 30px;
+        font-size: 18px;
+        font-family: "InterfaceBold", serif;
+        font-style: italic;
+        background: linear-gradient(135deg, #6a2c91, #a633c8);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(106, 44, 145, 0.7);
+        transition: background 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+        text-decoration: none;
+        width: max-content;
+        user-select: none;
+      }
+      #volver:hover {
+        background: linear-gradient(135deg, #8f3ed7, #c56eff);
+        box-shadow: 0 6px 20px rgba(197, 110, 255, 0.9);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrapper" align="center" class="abajo">
+      <img src="./logo.png" width="71" height="71" alt="Logo" />
+      <div id="tagline" class="abajo" hidden>
+        Uno es el nombre de un caballo de carreras.<br />
+        Otro es una variedad de marihuana medicinal.<br />
+        Y otro…
+      </div>
+      <table class="arriba" id="choices" cellspacing="2" cellpadding="0"></table>
+      <div
+        id="restartwrapper"
+        style="position: absolute; top: 70%; left: 47%;"
+        hidden
+      >
+        <button id="restart">¿Otra vez?</button>
+      </div>
+    </div>
+
+    <!-- Botón volver después del juego -->
+    <a href="/juegos" id="volver">Volver</a>
+
+    <div
+      id="footnote"
+      style="position: absolute; top: 98.5%; right: 0; font-size: 9px;"
+      hidden
+    >
+      Creado por <a href="http://www.tetramor.ph/">the tetramorph</a>.<br />
+      Concepto de Seth Romatelli.<br />
+      Inspirado en <a href="http://uhhyeahdude.com/">Uhh Yeah Dude</a>.<br />
+      Paz y amor. Abróchate el cinturón.
+    </div>
+  </body>
+</html>

@@ -30,6 +30,7 @@ import Direccionador from '../../utils/Direccionador';
 import CiudadanBadge from '../CiudadanBadge';
 
 import { useNotifications } from '../../Contexts/NotificationsContext';
+import HearthButton from './HearthButton.jsx';
 
 
 const NavBar = ({ SetIsMenuOpen }) => {
@@ -110,7 +111,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
 
   useEffect(() => {
     const handleResize = () => {
-      setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/marihuanasclub_logo.png");
+      setLogoSrc(window.innerWidth < 490 ? "/logo193.png" : "/marihuanasclub_logo.png");
     };
 
     // 🔥 Obtenemos el primer path de la URL actual
@@ -236,6 +237,18 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   count={notificationsNum()}
                 />
               </div>
+
+              <div className="nav-linky">
+                <HearthButton
+                  isOpen={isMenuOpen}
+                  onClose={() => setIsMenuOpen(false)}
+                  authenticated={isAuthenticated}
+                  userData={user}
+                  className="cuenta-icon"
+                />
+              </div>
+
+
               <div className="nav-linky">
                 <CartIcon
                   isOpen={isMenuOpen}
@@ -246,6 +259,8 @@ const NavBar = ({ SetIsMenuOpen }) => {
                 />
               </div>
               
+              
+
               <UserIcon 
                 handleLogin={handleLogin}
                 isMenuOpen={isProfileMenuOpen}

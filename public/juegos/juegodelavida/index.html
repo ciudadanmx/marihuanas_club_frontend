@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Juego de la Vida - Instrucciones Detalladas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Modal de instrucciones detalladas -->
+  <div id="instructionsModal" class="modal">
+    <div class="modal-content">
+      <h2>📜 Instrucciones Detalladas</h2>
+      <div class="instructions-body">
+        <h3>1. Encender y Apagar Celdas</h3>
+        <p>Haz <strong>clic</strong> en cualquier celda para activarla (verde) o desactivarla (negra).</p>
+        <div class="illustration">
+          <img src="grafico_click.svg" alt="Clic en celda ilustración" />
+        </div>
+
+        <h3>2. Reglas del Juego</h3>
+        <ul>
+          <li>🔹 <strong>Nacimiento:</strong> Una celda muerta con exactamente 3 vecinos vivos <em>gana</em> vida.</li>
+          <li>🔹 <strong>Supervivencia:</strong> Una celda viva con 2 o 3 vecinos vivos <em>sigue</em> viva.</li>
+          <li>🔹 <strong>Muerte:</strong> En cualquier otro caso, la celda <em>muere</em> o <em>permanece muerta</em>.</li>
+        </ul>
+        <div class="illustration-grid">
+          <img src="grafico_nacimiento.svg" alt="Nacimiento gráfico" />
+          <img src="grafico_supervivencia.svg" alt="Supervivencia gráfico" />
+          <img src="grafico_muerte.svg" alt="Muerte gráfico" />
+        </div>
+
+        <h3>3. Controles</h3>
+        <ul>
+          <li>▶️ <strong>Iniciar:</strong> Comienza la simulación.</li>
+          <li>⏸️ <strong>Detener:</strong> Pausa la simulación.</li>
+          <li>🗑️ <strong>Limpiar:</strong> Resetea el tablero vacío.</li>
+          <li>🎲 <strong>Aleatorio:</strong> Genera un patrón inicial aleatorio.</li>
+        </ul>
+
+        <p>Cuando termines de leer, pulsa el botón <strong>¡Jugar!</strong> para comenzar.</p>
+      </div>
+      <button id="closeModal">¡Jugar!</button>
+    </div>
+  </div>
+
+  <h1>Juego de la Vida de Conway</h1>
+  <canvas id="gameCanvas"></canvas>
+  <div class="controls">
+    <div id="genCounter">Generación: 0</div>
+
+<button id="start">Iniciar</button>
+<button id="stop">Detener</button>
+<button id="clear">Limpiar</button>
+<button id="random">Aleatorio</button>
+<button id="replay" class="replay-state0">Replay</button>
+<button id="download" disabled>Descargar JSON</button>
+<button id="load">Cargar JSON</button>
+
+  </div>
+
+  <!-- Botón Volver con logo -->
+  <div class="back-container">
+    <img src="logo.png" alt="Logo" class="back-logo" />
+    <a href="/juegos" class="back-button">Volver</a>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

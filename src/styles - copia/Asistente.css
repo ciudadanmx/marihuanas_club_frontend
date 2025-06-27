@@ -1,0 +1,215 @@
+.asistente-container {
+    position: fixed;
+    bottom: 13vw;
+    right: 6vw;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0); /* Fondo transparente */
+  }
+
+@keyframes destello {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 0, 0.5));
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 255, 0, 0.9));
+  }
+}
+
+.asistente-min {
+  min-width: 10vw;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+  animation: destello 2s ease-in-out infinite, flotar 3s ease-in-out infinite;
+
+}
+
+
+  
+  .asistente-min:hover {
+    transform: scale(1.1);
+  }
+  
+  .asistente-abierto {
+    width: 30%;
+    align-items: left;
+    margin-right: 40px;
+  }
+
+  .hada {
+    position: relative;
+    right: 90%;
+    top: -30%;
+  }
+  .asistente-popup {
+    position: fixed;
+    bottom: 3vw;
+    right: 17vw;
+    width: 42vw;
+    background: #eebcee71 !important; /* Fondo transparente */
+    padding: 15px;
+    border-radius: 10px;
+    height: 42vh;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .asistente-img {
+    min-width: 40vw;
+  }
+  
+  .asistente-cerrar {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 33px;
+    height: 33px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #dde014 !important;
+  }
+  
+  .asistente-cerrar:hover {
+    background: rgb(19, 97, 38);
+  }
+  
+  .boton-microfono {
+    background-color: rgba(255, 255, 255, 0);
+    border: none;
+    cursor: pointer;
+    
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+    color: green;
+    bottom: -5vw;
+    padding-left: 3vw;
+    
+  }
+  
+  .boton-microfono:hover {
+    background-color: rgba(149, 206, 85, 0.596);
+  }
+  
+  .boton-microfono:active {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+  
+  .boton-microfono svg {
+    background-color: white;
+    width: 1.9vw;
+    height: 1.9vw;
+    position: relative;
+    right: 3.1em;
+    top: 0.7em;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    border-radius: 50%; /* Mantiene la forma */
+  }
+  
+  .boton-microfono svg:hover {
+    background-color: rgba(149, 206, 85, 0.596); /* Aparece el óvalo */
+    transform: scaleX(1.8) scaleY(1.2); /* Ensancha para hacer óvalo sin aumentar tamaño */
+  }
+  
+
+
+
+
+
+
+
+  .chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #ff00ff;
+  color: white;
+  border-radius: 12px;
+  padding: 10px;
+  font-family: 'Comic Sans MS', cursive;
+}
+
+.chat-mensajes {
+  flex-grow: 1;
+  height: 30vh;
+  overflow-y: auto;
+  padding-right: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: #7B1FA2 #ff69b4;
+  scroll-behavior: smooth;
+}
+
+.mensaje {
+  padding: 8px 12px;
+  margin: 6px;
+  border-radius: 20px;
+  max-width: 85%;
+  word-wrap: break-word;
+}
+
+.mensaje.bot {
+  background: linear-gradient(145deg, #6A1B9A, #8E24AA);
+  align-self: flex-start;
+}
+
+.mensaje.user {
+  background: linear-gradient(145deg, #43A047, #66BB6A);
+  align-self: flex-end;
+  margin-left: 5vw;
+}
+
+.chat-input-area {
+  display: flex;
+  margin-top: 10px;
+  gap: 5px;
+}
+
+.chat-input {
+  flex-grow: 1;
+  padding: 8px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  background-color: #eeeeee;
+  color: green;
+  font-size: 1.1em;
+}
+
+.chat-enviar {
+  background-color: yellow;
+  color: #6A1B9A;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.chat-enviar:hover {
+  background-color: #9C27B0;
+  color: yellow;
+}
+
+.hada-float {
+  position: absolute;
+  top: -33%;
+  right: 30%;
+}
+
+.hada-img {
+  width: 120px;
+  height: auto;
+  animation: destello 2s ease-in-out infinite, flotar 3s ease-in-out infinite;
+}
+
+@keyframes flotar {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}

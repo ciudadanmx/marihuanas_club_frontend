@@ -1,0 +1,183 @@
+@font-face {
+  font-family: 'InterfaceFont';
+  src: url('./Quattrocento.ttf');
+}
+
+@font-face {
+  font-family: 'InterfaceBold';
+  src: url('./Quattrocento-Bold.ttf');
+}
+
+/* Utilidades de espaciado */
+.arriba {
+  margin-top: 20px;
+}
+
+.abajo {
+  padding-bottom: 10px !important;
+  margin-top: 10px;
+}
+
+/* Estilo base del body */
+body {
+  background-color: #1e2c16 !important;
+  font-size: 14px;
+  font-family: 'InterfaceFont', serif;
+  margin: 0;
+  color: #e0e5dc;
+}
+
+/* Enlaces */
+a:link,
+a:visited {
+  color: #a0f4a0;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #c1ffc1;
+}
+
+/* Contenedor principal */
+.wrapper {
+  margin: 10% auto;
+  position: relative;
+  font-size: 16px;
+  padding: 20px;
+  border: 1px solid #264826;
+  background-color: #263a1f;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+  text-align: center;
+}
+
+/* Texto explicativo */
+#tagline {
+  width: 420px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #d6eacd;
+  margin: 0 auto 40px auto;
+}
+
+/* Texto de candidatos */
+.candidate {
+  font-family: 'InterfaceBold';
+  font-size: 24px;
+  font-style: italic;
+  color: #f4e6ff;
+}
+
+/* Tabla de elecciones: íconos visibles, ordenados y responsivos */
+#choices {
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+/* Botones de elección */
+.guess {
+  border: none;
+  width: 64px;
+  height: 64px;
+  cursor: pointer;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  display: inline-block;
+}
+
+/* Íconos individuales */
+.horse {
+  background-image: url('horse_icon.png');
+}
+
+.weed {
+  background-image: url('weed_icon.png');
+}
+
+.mind {
+  background-image: url('mind_icon.png');
+}
+
+/* Ayuda contextual */
+.guesshelp {
+  font-size: 11px;
+  color: #c4dbc0;
+}
+
+/* Resultados */
+.correct {
+  color: #a6eec1;
+}
+
+.wrong {
+  color: #f07575;
+}
+
+/* Botón de reinicio */
+#restart {
+  border-radius: 5px;
+  background-color: #952da2;
+  border: 1px solid #ffffff;
+  text-decoration: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-style: italic;
+  font-family: "InterfaceBold", serif;
+  color: white;
+  padding: 10px 20px;
+  transition: background 0.3s ease;
+}
+
+#restart:hover {
+  background-color: #b249c0;
+}
+
+/* Estilo de texto SVG (si D3 agrega gráficos) */
+svg {
+  position: absolute;
+  font-size: 11px;
+  font-family: "InterfaceBold";
+  font-style: italic;
+  fill: #b8ffcb;
+}
+
+
+
+/* Responsive para pantallas pequeñas */
+@media (max-width: 480px) {
+  #tagline {
+    width: 90%;
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .candidate {
+    font-size: 20px;
+  }
+
+  #choices {
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .guess {
+    width: 48px;
+    height: 48px;
+  }
+
+  .wrapper {
+    margin: 5% 2%;
+    padding: 15px;
+    font-size: 14px;
+  }
+
+  #restart {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+}

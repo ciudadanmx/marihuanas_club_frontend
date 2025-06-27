@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">  
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shard Slots</title>
+  <link rel="stylesheet" href="./edit.css">
+  <style>
+    #btn-volver {
+      position: fixed;
+      top: 80px;
+      left: 20px;
+      padding: 10px 20px;
+      background-color: #222;
+      color: #aaff00;
+      border: 2px solid #555;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Segoe UI', sans-serif;
+      cursor: pointer;
+      z-index: 10000;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+      transition: background-color 0.3s ease;
+    }
+
+    #btn-volver:hover {
+      background-color: #333;
+    }
+
+    #logo-corner {
+      position: fixed;
+      top: 20px;
+      left: 28px;
+      width: 50px;
+      height: 50px;
+      z-index: 10001;
+    }
+
+    .start-button {
+      margin-top: 20px;
+      padding: 10px 30px;
+      font-size: 18px;
+      border-radius: 12px;
+      background-color: #44aa44;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .start-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #score {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #4b6e04;
+      margin-top: 10px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Logo encima del botón volver -->
+  <img id="logo-corner" src="./logo.png" alt="Logo" />
+
+  <!-- Botón volver -->
+  <button id="btn-volver" onclick="location.href='/juegos/'">← Volver</button>
+
+  <span class="text">3D</span>  
+
+  <div id="container">
+    <div class="window-border">
+      <div class="window">
+        <div class="outer-spacer"></div>
+        <div class="outer-col"><div class="col"></div></div>
+        <div class="outer-spacer"></div>
+        <div class="outer-col"><div class="col"></div></div>
+        <div class="outer-spacer"></div>
+        <div class="outer-col"><div class="col"></div></div>
+        <div class="outer-spacer"></div>
+        <div class="outer-col"><div class="col"></div></div>
+        <div class="outer-spacer"></div>
+        <div class="outer-col"><div class="col"></div></div>
+        <div class="outer-spacer"></div>
+      </div>
+
+      <div id="score">Cargando puntos...</div>
+
+      <div id="mensaje-orientacion" style="display: none; color: red;"></div>
+
+      <input type="button" onclick="spin(this)" class="start-button" value="Spin"/>
+    </div>
+  </div>
+
+  <script src="./edit.js" defer></script>
+</body>
+</html>

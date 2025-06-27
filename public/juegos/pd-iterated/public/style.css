@@ -1,0 +1,16 @@
+.rule { margin:8px 0; }
+.rule select, .rule input { margin-right:4px; }
+#rules-container { padding:8px; border:1px solid #ccc; margin:8px 0; }
+button { margin-right:4px; }
+
+#scoreChart { display:block; margin:16px auto; }
+#tournamentOutput { white-space: pre-wrap; background:#f9f9f9; padding:8px; border:1px solid #ddd; }
+
+
+#step-by-step {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  border: 1px solid #ccc;
+  background: #fdfdfd;
+}

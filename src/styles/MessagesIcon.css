@@ -42,4 +42,7 @@
   .message-icon-container {
     padding-left: 0px;
   }
+  .message-icon {
+    font-size: 33px;
+  }
 }
