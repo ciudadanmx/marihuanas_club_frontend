@@ -134,6 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (a.value === rule.action) opt.selected = true;
       actSel.add(opt);
     });
+    //
 
     // Botón Eliminar Regla
     const delRule = document.createElement('button');
