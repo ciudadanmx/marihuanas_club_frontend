@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- ESTADO ---
   let userStrategy = { rules: [], defaultAction: 'C' };
 
+  let currentChart = null;
+
   // --- MOTOR DE REGLAS ---
   const operations = {
     '==': (a, b) => a == b,
@@ -93,22 +95,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Operador dinámico
     function createOpSel() {
-      const sel = document.createElement('select');
-      const ops = ['round','oppDefectRatio'].includes(varSel.value)
-        ? operators
-        : ['=='];
-      ops.forEach(o => {
-        const option = new Option(o, o);
-        if (o === cond.operator) option.selected = true;
-        sel.add(option);
-      });
-      return sel;
-    }
+  const sel = document.createElement('select');
+  // Lista de variables que usan todos los operadores
+  const numericVars = ['round', 'oppDefectRatio', 'opponentScore', 'myScore'];
+  // Si la variable seleccionada está en numericVars, usar todos los operators
+  const ops = numericVars.includes(varSel.value) ? operators : ['=='];
+  ops.forEach(o => {
+    const option = new Option(o, o);
+    if (o === cond.operator) option.selected = true;
+    sel.add(option);
+  });
+  return sel;
+}
     let opSel = createOpSel();
 
     // Valor dinámico
     function createValEl() {
-      if (['round','oppDefectRatio'].includes(varSel.value)) {
+      if (['round','oppDefectRatio', 'opponentScore', 'myScore'].includes(varSel.value)) {
         const inp = document.createElement('input');
         inp.type = 'number';
         inp.value = cond.value;
@@ -314,10 +317,62 @@ document.addEventListener('DOMContentLoaded', () => {
   runTourBtn.onclick = () => {
     const userStrat = window.getCurrentStrategy();
     const strats = [
-      { name: 'Usuario',     strat: userStrat },
-      { name: 'AlwaysDefect',strat: window.Strategies.AlwaysDefect },
-      { name: 'TitForTat',   strat: window.Strategies.TitForTat }
-    ];
+  { name: 'Usuario', strat: userStrat },
+
+  { name: 'RandomStrategy', strat: window.Strategies.RandomStrategy },
+  { name: 'TitForTat', strat: window.Strategies.TitForTat },
+  { name: 'GrimTrigger', strat: window.Strategies.GrimTrigger },
+  { name: 'APAVLOV', strat: window.Strategies.APAVLOV },
+{ name: 'APAVLO2', strat: window.Strategies.APAVLO2 },
+{ name: 'ARAB', strat: window.Strategies.ARAB },
+{ name: 'ARAB1', strat: window.Strategies.ARAB1 },
+{ name: 'AXELROD2', strat: window.Strategies.AXELROD2 },
+{ name: 'BBS_CC', strat: window.Strategies.BBS_CC },
+{ name: 'BBS_CD', strat: window.Strategies.BBS_CD },
+{ name: 'BBS_DC', strat: window.Strategies.BBS_DC },
+{ name: 'FREDA_2', strat: window.Strategies.FREDA_2 },
+{ name: 'FRED1', strat: window.Strategies.FRED1 },
+{ name: 'FRED2', strat: window.Strategies.FRED2 },
+{ name: 'FRED3', strat: window.Strategies.FRED3 },
+{ name: 'FRED4', strat: window.Strategies.FRED4 },
+{ name: 'FRED5', strat: window.Strategies.FRED5 },
+{ name: 'FRED6', strat: window.Strategies.FRED6 },
+{ name: 'FRED7', strat: window.Strategies.FRED7 },
+{ name: 'FRED8', strat: window.Strategies.FRED8 },
+{ name: 'FRED9', strat: window.Strategies.FRED9 },
+{ name: 'FRED10', strat: window.Strategies.FRED10 },
+{ name: 'GREM', strat: window.Strategies.GREM },
+{ name: 'HARDMAJOR', strat: window.Strategies.HARDMAJOR },
+{ name: 'JOSS', strat: window.Strategies.JOSS },
+{ name: 'K', strat: window.Strategies.K },
+{ name: 'LUCKY', strat: window.Strategies.LUCKY },
+{ name: 'MACHIAVELLI', strat: window.Strategies.MACHIAVELLI },
+{ name: 'MATHGEEK', strat: window.Strategies.MATHGEEK },
+{ name: 'NASTY', strat: window.Strategies.NASTY },
+{ name: 'NICE', strat: window.Strategies.NICE },
+{ name: 'OCOTA', strat: window.Strategies.OCOTA },
+{ name: 'OCOTA1', strat: window.Strategies.OCOTA1 },
+{ name: 'PAVLOV', strat: window.Strategies.PAVLOV },
+{ name: 'PAVLOV1', strat: window.Strategies.PAVLOV1 },
+{ name: 'RANDOM', strat: window.Strategies.RANDOM },
+{ name: 'RANDF', strat: window.Strategies.RANDF },
+{ name: 'REMORSE', strat: window.Strategies.REMORSE },
+{ name: 'REVENGE', strat: window.Strategies.REVENGE },
+{ name: 'SIMPLETON', strat: window.Strategies.SIMPLETON },
+{ name: 'SMOKE', strat: window.Strategies.SMOKE },
+{ name: 'SNEAKY', strat: window.Strategies.SNEAKY },
+{ name: 'SOFTMAJOR', strat: window.Strategies.SOFTMAJOR },
+{ name: 'STRATEGY1', strat: window.Strategies.STRATEGY1 },
+{ name: 'STRATEGY2', strat: window.Strategies.STRATEGY2 },
+{ name: 'STRATEGY3', strat: window.Strategies.STRATEGY3 },
+{ name: 'STRATEGY4', strat: window.Strategies.STRATEGY4 },
+{ name: 'STRATEGY5', strat: window.Strategies.STRATEGY5 },
+{ name: 'TFT', strat: window.Strategies.TFT },
+{ name: 'TFTT', strat: window.Strategies.TFTT },
+{ name: 'TESTER', strat: window.Strategies.TESTER },
+{ name: 'TESTER1', strat: window.Strategies.TESTER1 },
+{ name: 'TRIGGER', strat: window.Strategies.TRIGGER },
+];
     const results = runTournament(strats);
     tournamentOutput.textContent = results
       .map(r => {
