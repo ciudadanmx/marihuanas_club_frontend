@@ -120,11 +120,12 @@ const juegos = [
   { nombre: 'weedcasino', video: weedcasino },
   { nombre: 'helpsnoop', video: helpsnoop },
   { nombre: 'juegodelavida', video: helpsnoop },
+  { nombre: 'dilemadelprisionero', video: helpsnoop },
 ];
 
 export default function Juegos() {
   const navigate = useNavigate();
-  const handleNav = (name) => () => navigate(`/juegos/${name}`);
+  const handleNav = (name) => () => navigate(`/juega/${name}`);
 
   return (
     <Box sx={{ p: 4, backgroundColor: '#1a261a', minHeight: '100vh' }}>

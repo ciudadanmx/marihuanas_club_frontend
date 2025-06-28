@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📚 Dilema del Prisionero - Instrucciones y Historia</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .barra-fixed {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: #222;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+    }
+    .barra-fixed button {
+      background: #ffc107;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+      color: rgb(235, 87, 139);
+      font-weight: 700;
+    }
+    .barra-fixed button:hover {
+      background: #ffda3b;
+      color: purple;
+    }
+    body {
+      padding-bottom: 80px; /* Espacio para que no tape contenido */
+    }
+  </style>
+</head>
+
+<body class="container">
+
+  <header>
+    <h1>🚔 Dilema del Prisionero Iterado</h1>
+    <p><font color="white">Simulador y Constructor de Estrategias basado en los torneos de Axelrod</font></p>
+  </header>
+
+  <section>
+  <h2>📜 <u>¿Qué es el Dilema del Prisionero?</u></h2>
+
+  <div class="intro-flex">
+    
+    <img src="/juega/dilemadelprisionero/dilema_del_prisionero.png" alt="Dilema del Prisionero">
+
+    <div class="intro-text">
+      <p class="intro-text">
+        El Dilema del Prisionero es un juego clásico de la teoría de juegos. Plantea una situación donde dos prisioneros deben decidir si <strong>cooperar</strong> o <strong>traicionar</strong> sin poder comunicarse.
+      </p class="intro-text">
+      <p>
+        Si ambos cooperan, ambos ganan puntos moderados. Si uno traiciona y el otro coopera, el traidor gana mucho y el cooperador pierde todo. Si ambos traicionan, ambos obtienen pocos puntos.
+      </p>
+      <p class="intro-text">
+        En los años 80, el politólogo <strong>Robert Axelrod</strong> organizó torneos computacionales invitando a académicos a enviar programas para jugar el Dilema del Prisionero de forma iterada (varias rondas). Estrategias como <em>Tit For Tat</em> demostraron que la cooperación puede emerger incluso cuando existe incentivo para traicionar.
+      </p>
+    </div>
+    
+  </div>
+</section>
+<hr class="separador">
+
+  <section>
+    <h2>🕹️ Controles Generales de la Aplicación</h2>
+    <p>
+      Este simulador combina <strong>tres áreas principales</strong>:
+    </p>
+    <ol>
+      <li><strong>Visor de Estrategias Originales</strong></li>
+      <li><strong>Constructor Visual de Estrategias Personalizadas</strong></li>
+      <li><strong>Simulador y Torneos</strong></li>
+    </ol>
+    <p>Abajo te explicamos cada sección con ejemplos, recomendaciones y recursos visuales.</p>
+  </section>
+
+  <section>
+    <h2>🔍 Visor de Estrategias Originales</h2>
+    <p>
+      En la parte superior, encontrarás un menú desplegable con nombres de estrategias clásicas: <em>Tit For Tat</em>, <em>Grim Trigger</em>, <em>Random</em>, entre otras.
+    </p>
+    <p>
+      Al seleccionarlas, verás:
+    </p>
+    <ul>
+      <li><strong>Nombre</strong> y breve descripción (puedes agregar tooltips para mostrar la idea principal).</li>
+      <li><strong>Lista de Reglas</strong>: cada regla muestra la condición (ejemplo: “Si el oponente traicionó en la ronda anterior”) y la acción (cooperar, traicionar o aleatorio).</li>
+      <li><strong>Acción por defecto</strong>: comportamiento cuando no se cumple ninguna regla (ejemplo: siempre cooperar).</li>
+    </ul>
+    <p>
+      <strong>[Imagen sugerida: Captura del visor con una estrategia seleccionada, flechas explicando cada parte]</strong>
+    </p>
+  </section>
+
+  <section>
+    <h2>⚙️ Constructor Visual de Estrategias</h2>
+    <p>
+      Esta es la parte más interactiva. Aquí defines cómo se comportará tu propia estrategia.
+    </p>
+    <h3>📌 ¿Qué puedes hacer aquí?</h3>
+    <ul>
+      <li>📌 <strong>Agregar reglas:</strong> Cada regla tiene una o más condiciones.</li>
+      <li>📌 <strong>Combinar condiciones:</strong> Por ejemplo: “Si la ronda es mayor a 50 <em>y</em> el oponente traicionó más de 70% de las veces”.</li>
+      <li>📌 <strong>Seleccionar acción:</strong> ¿Qué hace tu estrategia si se cumple esa regla? Cooperar, traicionar o actuar al azar.</li>
+      <li>📌 <strong>Definir acción por defecto:</strong> ¿Qué pasa si ninguna regla se cumple?</li>
+      <li>📌 <strong>Guardar estrategia:</strong> Descarga tu estrategia como archivo JSON para usarla después.</li>
+      <li>📌 <strong>Cargar estrategia:</strong> Sube un archivo JSON para continuar editando.</li>
+    </ul>
+    <p>
+      <strong>[Imagen sugerida: Constructor con varias reglas y botones de + Regla, + Condición]</strong><br>
+      <strong>[GIF o flechas animadas: Mostrar cómo se añade una regla, se selecciona condición y acción]</strong>
+    </p>
+  </section>
+
+  <section>
+    <h2>💻 Simular Estrategia vs Oponente</h2>
+    <p>
+      Cuando tu estrategia esté lista:
+    </p>
+    <ul>
+      <li>✔️ Selecciona un oponente del menú.</li>
+      <li>✔️ Pulsa <strong>Probar Estrategia</strong>.</li>
+      <li>✔️ Verás un listado de cada ronda:
+        <ul>
+          <li>Ronda</li>
+          <li>Qué decidió tu estrategia</li>
+          <li>Qué decidió el oponente</li>
+          <li>Puntaje obtenido por cada uno en esa ronda</li>
+          <li>Puntaje acumulado</li>
+        </ul>
+      </li>
+    </ul>
+    <p>
+      <strong>[Imagen sugerida: Tabla de rondas con columnas: Ronda, Tú, Oponente, Puntos]</strong>
+    </p>
+  </section>
+
+  <section>
+    <h2>🏆 Ejecutar Torneo Completo</h2>
+    <p>
+      ¿Quieres ver qué tan buena es tu estrategia? Ejecuta el <strong>Torneo</strong>. Tu estrategia compite contra varias estrategias predefinidas.
+    </p>
+    <p>Al terminar, verás:</p>
+    <ul>
+      <li>🏅 <strong>Tabla de Resultados:</strong> Muestra el puntaje final contra cada rival.</li>
+      <li>📈 <strong>Gráfica de Evolución:</strong> Línea de cómo acumula puntos tu estrategia y el oponente en cada ronda.</li>
+      <li>🔍 <strong>Detalles por ronda:</strong> Pestañas con desglose jugada por jugada de cada enfrentamiento.</li>
+    </ul>
+    <p>
+      <strong>[Imagen sugerida: Gráfico de líneas, tabla comparativa y pestañas de rondas]</strong>
+    </p>
+  </section>
+
+  <section>
+    <h2>💡 Consejos y Recomendaciones</h2>
+    <ul>
+      <li>💡 Experimenta con reglas simples primero.</li>
+      <li>💡 Observa cómo se comportan estrategias como <em>Tit For Tat</em> y copia ideas.</li>
+      <li>💡 Combina condiciones para detectar “tramposos”.</li>
+      <li>💡 Ajusta la acción por defecto: una sola acción puede cambiar todo el resultado.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>🚩 <strong>Flujo sugerido:</strong> Explora ➜ Construye ➜ Prueba ➜ Guarda ➜ Ejecuta Torneo ➜ Analiza ➜ Mejora.</p>
+    <p>Este proyecto rinde homenaje al trabajo de Axelrod y la teoría de juegos aplicada a la cooperación.</p>
+  </footer>
+
+  <div class="barra-fixed">
+    <button onclick="location.href='jugar.html'">🎮 Cerrar Instrucciones y Jugar</button>
+    <a href="./index.html" class="volver-btn2">🏡 Volver al Inicio</a>
+  </div>
+
+</body>
+</html>

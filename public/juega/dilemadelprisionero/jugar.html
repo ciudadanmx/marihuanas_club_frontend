@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba Dilema Iterado (sin servidor)</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="container">
+  <h1 class="title">🚔 Dilema del Prisionero</h1>
+  <hr>
+  <h3 class="subtitle">🔎 Visor de Estrategias Originales del Torneo.</h3>
+
+
+
+  <div class="view-rule-section">
+    <label for="view-rule-select" class="view-label">Ver Regla:</label>
+    <select id="view-rule-select" class="control-select invisible"></select>
+    <select id="strategyC" class="control-select"></select>
+    <div id="view-rule-details" class="view-details"></div>
+  </div>
+
+  <hr>
+  <h2 class="subtitle amarillo"><u><font color="yellow">👁️‍🗨️ Constructor Visual de Estrategias: => </font></u></h2>
+
+  <div id="rules-container" class="rules-container"></div>
+  <div class="controls">
+    <button id="add-rule" class="btn btn-add">+ Añadir Regla</button>
+    <label class="control-group">
+      <span>Acción por defecto:</span>
+      <select id="default-action" class="control-select">
+        <option value="C">Cooperar</option>
+        <option value="T">Traicionar</option>
+        <option value="R">Aleatorio</option>
+      </select>
+    </label>
+    <button id="run-simulation" class="btn">▶️ Probar Estrategia</button>
+    <button id="save-strategy" class="btn btn-secondary">💾 Guardar Estrategia</button>
+    <button id="load-strategy" class="btn btn-secondary">📂 Cargar Estrategia</button>
+
+        <div class="borde-azul">
+        <div class="controls">
+  
+            <h3>🧮 Simular 2 Estrategias Originales.</h3>
+
+            <div class="selects-container">
+                <label class="control-group">
+                <span>Estrategia A:</span>
+                <select id="strategyA" class="control-select"></select>
+                </label>
+                
+                <label class="control-group">
+                <span>Estrategia B:</span>
+                <select id="strategyB" class="control-select"></select>
+                </label>
+            </div>
+
+            <button id="runCustom" class="btn">💻 Simular Estrategias</button>
+        </div>
+        </div>
+
+<pre id="output" class="output amarillo dosem"></pre>
+<hr>
+  </div>
+
+  <hr>
+  <h2 class="subtitle">🏆 Simulador de Resultados de Torneo.</h2>
+  <div class="chart-container">
+    <button id="run-tournament" class="btn">🎮 Ejecutar Torneo vs Predefinidas</button>
+    <div class="chart-wrapper">
+      <canvas id="scoreChart"></canvas>
+      <div class="legend" id="chart-legend"></div>
+    </div>
+  </div>
+  <pre id="tournamentOutput" class="output tournament-output"></pre>
+  <h3 class="subtitle">📝 Detalles por Ronda...</h3>
+  <div id="step-by-step" class="tabs"></div>
+
+  <!-- SECCIÓN FINAL ESTILIZADA -->
+<div class="volver-container">
+  <a href="../../../../juegos" class="volver-btn">🏡 Volver al Inicio</a>
+</div>
+
+  <script src="scripts/strategies.js"></script>
+  <script src="scripts/builder.js"></script>
+</body>
+</html>

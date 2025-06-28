@@ -57,6 +57,9 @@ import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
 import Juegos from '../Pages/Herramientas/Juegos.jsx';
 //import WeedClicker from '../components/Juegos/WeedClicker/WeedClicker.jsx';
 
+import JuegoStatic from '../Pages/Herramientas/JuegoStatic';
+
+
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
@@ -88,6 +91,7 @@ const Rutas = () => (
     <Route path="/herramientas" element={<HerramientasPage />} />
     
     <Route path="/juegos" element={<Juegos />} />
+     <Route path="/juega/:nombre" element={<JuegoStatic />} />
     
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/perfil/:username" element={<Perfil />} />

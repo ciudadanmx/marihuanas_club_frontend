@@ -4,7 +4,7 @@
 button { margin-right:4px; }
 
 #scoreChart { display:block; margin:16px auto; }
-#tournamentOutput { white-space: pre-wrap; background:#f9f9f9; padding:8px; border:1px solid #ddd; }
+#tournamentOutput { white-space: pre-wrap; background:#ced784; padding:8px; border:1px solid #ddd; }
 
 
 #step-by-step {
@@ -28,6 +28,8 @@ p, li, h3 {
   color: var(--neon-green);
   /* opcional: añadir un glow */
   text-shadow: 0 0 4px var(--neon-green);
+  font-size: 1.5rem;
+  display: none !important;
 }
 
 .amarillo {
@@ -41,6 +43,10 @@ p, li, h3 {
   text-shadow: 0 0 4px var(--neon-green);
 }
 
+.label {
+    color: yellow;
+}
+
 .invisible {
     display: none;
 }
@@ -52,7 +58,7 @@ body.container {
   font-family: 'Orbitron', sans-serif;
 }
 
-h1.title, h2.subtitle, h3.subtitle {
+h1.title, h2.subtitle, h3.subtitle, h2, h1, h3 {
   color: var(--neon-green);
   text-shadow: 0 0 8px var(--neon-green);
   text-align: center;
@@ -76,7 +82,7 @@ h1.title, h2.subtitle, h3.subtitle {
   color: var(--neon-green);
   text-shadow: 0 0 4px var(--neon-green);
 }
-.control-select, .btn {
+.control-select, .btn, select, button, input {
   padding: 12px;
   font-size: 1rem;
   border-radius: 4px;
@@ -84,6 +90,17 @@ h1.title, h2.subtitle, h3.subtitle {
   background: transparent;
   color: var(--neon-green);
   text-shadow: 0 0 4px var(--neon-green);
+}
+
+.borde-azul {
+    border: 0.3px solid #1ddf8e;
+  box-shadow: 0 0 0.3px #1ddf8e, 0 0 20px #279260, 0 0 30px #11924b;
+  border-radius: 5px;
+}
+
+select option {
+  background-color: rgb(28, 57, 17); /* Color de fondo de las opciones desplegadas */
+  color: yellow;
 }
 .btn {
   cursor: pointer;
@@ -192,3 +209,170 @@ h1.title, h2.subtitle, h3.subtitle {
   h1.title { font-size: 1.8rem; }
   h2.subtitle, h3.subtitle { font-size: 1.4rem; }
 }
+
+
+
+
+
+
+.volver-container {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 0;
+  animation: fadeIn 1s ease forwards;
+}
+
+.volver-btn {
+  display: inline-block;
+  background-color: #111;
+  color: #ffc400;
+  border: 3px solid #ffc400;
+  padding: 1rem 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 1.4rem;
+  box-shadow: 0 0 15px #ffc400, 0 0 30px #ffc400 inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  text-align: center;
+  font-weight: bold;
+}
+
+.volver-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 25px #ffc400, 0 0 50px #ffc400 inset;
+  background-color: #222;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  } 
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.volver-btn2 {
+  display: inline-block;
+  background-color: #111;
+  color: #ffc400;
+  border: 1px solid #ffc400;
+  padding: 8px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 0.7rem;
+  box-shadow: 0 0 3px #ffc400, 0 0 30px #ffc400 inset;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  text-align: center;
+  font-weight: bold;
+}
+
+.volver-btn2:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 25px #ffc400, 0 0 50px #ffc400 inset;
+  background-color: #222;
+}
+
+
+
+
+
+
+
+
+
+.intro-flex {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.intro-flex img {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+}
+
+.intro-text {
+  flex: 1;
+  min-width: 250px;
+  color: yellowgreen;
+}
+
+.separador {
+    border: none;
+  height: 3px;
+  background: #ccff00;
+  box-shadow: 0 0 10px #ccff00, 0 0 20px #ccff00, 0 0 30px #ccff00;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .intro-flex {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .intro-text {
+    text-align: left;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.spinner {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid rgba(0,0,0,0.2);
+  border-top-color: rgba(0,0,0,0.7);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-left: 0.5em;
+}
+.hidden { display: none; }
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+
+/* overlay semi‑transparente centrado */
+.overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+.spinner-large {
+  width: 4em; height: 4em;
+  border: 4px solid rgba(0,0,0,0.2);
+  border-top-color: rgba(0,0,0,0.7);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+.hidden { display: none; }
+
+@keyframes spin { to { transform: rotate(360deg); } }}
