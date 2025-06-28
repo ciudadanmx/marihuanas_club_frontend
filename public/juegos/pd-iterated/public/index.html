@@ -8,76 +8,56 @@
 </head>
 <body>
   <h1>Prueba Motor de Reglas</h1>
-  <button id="test">Probar Tit for Tat vs Always Defect</button>
+
+  <label>
+    Estrategia A:
+    <select id="strategyA"></select>
+  </label>
+  <label>
+    Estrategia B:
+    <select id="strategyB"></select>
+  </label>
+  <button id="runCustom">Probar Estrategia</button>
   <pre id="output"></pre>
 
-
   <hr>
-<h2>Constructor Visual de Estrategias</h2>
-<div id="rules-container"></div>
-<button id="add-rule">+ Añadir Regla</button>
-<label>Acción por defecto:
-  <select id="default-action">
-    <option value="C">Cooperar</option>
-    <option value="T">Traicionar</option>
-    <option value="R">Aleatorio</option>
-  </select>
-</label>
-<button id="run-simulation">Probar Estrategia</button>
 
-  <!-- Controles de guardado/carga -->
+  <label for="view-rule-select">Ver Regla:</label>
+<select id="view-rule-select"></select>
+<select id="strategyC"></select>
+<div id="view-rule-details" style="margin-top:8px;"></div>
+
+<hr>
+
+  <h2>Constructor Visual de Estrategias</h2>
+  <div id="rules-container"></div>
+  <button id="add-rule">+ Añadir Regla</button>
+  <label>Acción por defecto:
+    <select id="default-action">
+      <option value="C">Cooperar</option>
+      <option value="T">Traicionar</option>
+      <option value="R">Aleatorio</option>
+    </select>
+  </label>
+  <button id="run-simulation">Probar Estrategia</button>
+
+
+
+  <!-- Controles de guardado/carga (si los implementas) -->
   <button id="save-strategy">Guardar Estrategia</button>
   <button id="load-strategy">Cargar Estrategia</button>
-<!-- Carga builder -->
-<script src="scripts/builder.js"></script>
 
-<script src="scripts/strategies.js"></script>
-
-
-<hr>
-<h2>Simulador de Torneo</h2>
-<button id="run-tournament">Ejecutar Torneo vs Predefinidas</button>
-<canvas id="scoreChart" width="600" height="300"></canvas>
-<pre id="tournamentOutput"></pre>
-
-<h3>Detalle por Ronda</h3>
+  <hr>
+  <h2>Simulador de Torneo</h2>
+  <button id="run-tournament">Ejecutar Torneo vs Predefinidas</button>
+  <canvas id="scoreChart" width="600" height="300"></canvas>
+  <pre id="tournamentOutput"></pre>
+  <h3>Detalle por Ronda</h3>
   <div id="step-by-step"></div>
 
+  <!-- Carga primero las estrategias, luego el builder -->
+  <script src="scripts/strategies.js"></script>
+  <script src="scripts/builder.js"></script>
 
-<!-- <script src="scripts/simulator.js"></script> -->
-
-
-<hr> 
-<br>
-<h1> Más texto</h1>
-<hr>
-<br>
-
-
-
-  <!-- Carga global de scripts -->
-<!--   <script src="scripts/ruleEngine.js"></script>
-  <script src="scripts/strategies.js"></script> -->
-
-  <script>
-    document.getElementById('test').onclick = () => {
-      const histA = [], histB = [];
-      let out = '';
-      for (let i = 1; i <= 5; i++) {
-        const ctx = { round: i, myScore: 0, opponentScore: 0 };
-        const { moveA, moveB } = step(
-          Strategies.TitForTat, histA,
-          Strategies.AlwaysDefect, histB,
-          ctx
-        );
-        histA.push(moveA);
-        histB.push(moveB);
-        out += `Ronda ${i}: A=${moveA} vs B=${moveB}\n`;
-      }
-      document.getElementById('output').textContent = out;
-    };
-  </script>
-
-  
 </body>
 </html>

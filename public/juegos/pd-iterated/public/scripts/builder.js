@@ -1,5 +1,3 @@
-// public/scripts/builder.js
-
 document.addEventListener('DOMContentLoaded', () => {
   // --- ELEMENTOS DEL DOM ---
   const rulesContainer   = document.getElementById('rules-container');
@@ -12,8 +10,93 @@ document.addEventListener('DOMContentLoaded', () => {
   const stepContainer    = document.getElementById('step-by-step');
   const chartCanvas      = document.getElementById('scoreChart');
   const chartCtx         = chartCanvas.getContext('2d');
+  const saveBtn          = document.getElementById('save-strategy');
+  const loadBtn          = document.getElementById('load-strategy');
 
-  // --- CONFIGURACIÓN ---
+  // --- POBLAR DROPDOWNS DE ESTRATEGIAS ---
+  const selA = document.getElementById('strategyA');
+  const selB = document.getElementById('strategyB');
+  const selC = document.getElementById('strategyC');
+  Object.keys(window.Strategies).forEach(name => {
+    selA.add(new Option(name, name));
+    selB.add(new Option(name, name));
+    selC.add(new Option(name, name));
+  }); // ← aquí cierra el poblado de selects
+
+  // --- DIV DONDE MOSTRAR DETALLES DE strategyC ---
+  const viewDetailsDiv = document.getElementById('view-rule-details');
+
+  // --- FUNCIÓN PARA RENDERIZAR DETALLES DE strategyC ---
+  function renderStrategyDetails(stratName) {
+  const strat = window.Strategies[stratName];
+  if (!strat) {
+    viewDetailsDiv.innerHTML = '<p>Estrategia no encontrada.</p>';
+    return;
+  }
+
+  const actLabels = { C: 'Cooperar', T: 'Traicionar', R: 'Aleatorio' };
+  const varLabels = {
+    round: 'Ronda',
+    ultimoMovimientoOponente: 'Último Movimiento Oponente',
+    lastTwoOpponentMoves: 'Últimos Dos Movimientos Oponente',
+    oppDefectRatio: 'Porcentaje Traiciones Oponente',
+    myScore: 'Mi Puntuación',
+    opponentScore: 'Puntuación Oponente'
+  };
+
+  let html = `<h3>Detalles de ${stratName}</h3>`;
+
+  // Si es función preprogramada
+  if (typeof strat === 'function') {
+    html += '<p><em>Esta estrategia es preprogramada y no tiene reglas configurables.</em></p>';
+  
+  // Si es objeto con reglas configurables
+  } else if (Array.isArray(strat.rules) && strat.rules.length > 0) {
+    html += '<ul>';
+    strat.rules.forEach((rule, idx) => {
+      const conditionsArray = rule.conditions
+        ? rule.conditions
+        : rule.condition
+          ? [rule.condition]
+          : [];
+
+      const condsText = conditionsArray
+        .map(c => {
+          const label = varLabels[c.varName] || c.varName;
+          return `${label} ${c.operator} ${c.value}`;
+        })
+        .join(' y ');
+
+      html += `<li><strong>Regla ${idx + 1}:</strong> Si ${condsText} entonces ${actLabels[rule.action]}</li>`;
+    });
+    html += '</ul>';
+    html += `<p><strong>Acción por defecto:</strong> ${actLabels[strat.defaultAction] || strat.defaultAction}</p>`;
+
+  // Si es objeto pero sin reglas
+  } else {
+    html += '<p><em>No hay reglas configurables para esta estrategia.</em></p>';
+  }
+
+  viewDetailsDiv.innerHTML = html;
+}
+
+// listener
+selC.addEventListener('change', e => renderStrategyDetails(e.target.value));
+if (selC.value) renderStrategyDetails(selC.value);
+
+  // --- Nuevo select de Oponente para el constructor visual ---
+  const visualOpponentSelect = document.createElement('select');
+  visualOpponentSelect.id = 'visual-opponent';
+  Object.keys(window.Strategies).forEach(name => {
+    visualOpponentSelect.add(new Option(name, name));
+  });
+  const visualLabel = document.createElement('label');
+  visualLabel.textContent = 'Oponente: ';
+  visualLabel.appendChild(visualOpponentSelect);
+  const visualTitle = document.querySelector('h2');
+  visualTitle.parentNode.insertBefore(visualLabel, visualTitle.nextSibling);
+
+  // --- CONFIGURACIÓN DE VARIABLES/OPERADORES/ACCIONES ---
   const variables = ['round', 'ultimoMovimientoOponente', 'oppDefectRatio', 'myScore', 'opponentScore'];
   const varLabels = {
     round: 'Ronda',
@@ -29,31 +112,31 @@ document.addEventListener('DOMContentLoaded', () => {
     { label: 'Aleatorio',  value: 'R' }
   ];
 
-  // --- ESTADO ---
+  // --- ESTADO DEL USUARIO ---
   let userStrategy = { rules: [], defaultAction: 'C' };
-
-  let currentChart = null;
 
   // --- MOTOR DE REGLAS ---
   const operations = {
-    '==': (a, b) => a == b,
-    '!=': (a, b) => a != b,
-    '<':  (a, b) => a < b,
-    '>':  (a, b) => a > b,
-    '<=': (a, b) => a <= b,
-    '>=': (a, b) => a >= b
+    '==': (a,b)=>a==b,
+    '!=': (a,b)=>a!=b,
+    '<':  (a,b)=>a<b,
+    '>':  (a,b)=>a>b,
+    '<=': (a,b)=>a<=b,
+    '>=': (a,b)=>a>=b
   };
-
   function evaluateCondition(cond, context) {
     let left;
-    switch (cond.varName) {
+    switch(cond.varName) {
       case 'round': left = context.round; break;
       case 'ultimoMovimientoOponente': left = context.ultimoMovimientoOponente; break;
       case 'myScore': left = context.myScore; break;
       case 'opponentScore': left = context.opponentScore; break;
       case 'oppDefectRatio':
         const hist = context.opponentHistory || [];
-        left = hist.length === 0 ? 0 : hist.filter(m => m === 'T').length / hist.length;
+        left = (hist.length === 0 
+          ? 0 
+          : hist.filter(m => m==='T').length / hist.length
+        ) * 100;
         break;
       default:
         throw new Error(`Variable desconocida: ${cond.varName}`);
@@ -62,19 +145,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!fn) throw new Error(`Operador no soportado: ${cond.operator}`);
     return fn(left, cond.value);
   }
-
   function decideMove(strategy, context) {
-    // asegurarnos de que rule.conditions es siempre un array
     for (const rule of strategy.rules) {
-      const conds = rule.conditions || [];
-      if (conds.every(c => evaluateCondition(c, context))) {
-        return rule.action === 'R'
-          ? (Math.random() < 0.5 ? 'C' : 'T')
+      if ((rule.conditions||[]).every(c => evaluateCondition(c, context))) {
+        return rule.action==='R'
+          ? (Math.random()<0.5?'C':'T')
           : rule.action;
       }
     }
-    return strategy.defaultAction === 'R'
-      ? (Math.random() < 0.5 ? 'C' : 'T')
+    return strategy.defaultAction==='R'
+      ? (Math.random()<0.5?'C':'T')
       : strategy.defaultAction;
   }
   window.decideMove = decideMove;
@@ -85,238 +165,164 @@ document.addEventListener('DOMContentLoaded', () => {
     const div = document.createElement('div');
     div.className = 'condition';
 
-    // Variable
     const varSel = document.createElement('select');
     variables.forEach(v => {
-      const opt = new Option(varLabels[v], v);
-      if (v === cond.varName) opt.selected = true;
-      varSel.add(opt);
+      const o = new Option(varLabels[v], v);
+      if (v===cond.varName) o.selected = true;
+      varSel.add(o);
     });
-
-    // Operador dinámico
     function createOpSel() {
-  const sel = document.createElement('select');
-  // Lista de variables que usan todos los operadores
-  const numericVars = ['round', 'oppDefectRatio', 'opponentScore', 'myScore'];
-  // Si la variable seleccionada está en numericVars, usar todos los operators
-  const ops = numericVars.includes(varSel.value) ? operators : ['=='];
-  ops.forEach(o => {
-    const option = new Option(o, o);
-    if (o === cond.operator) option.selected = true;
-    sel.add(option);
-  });
-  return sel;
-}
-    let opSel = createOpSel();
-
-    // Valor dinámico
-    function createValEl() {
-      if (['round','oppDefectRatio', 'opponentScore', 'myScore'].includes(varSel.value)) {
-        const inp = document.createElement('input');
-        inp.type = 'number';
-        inp.value = cond.value;
-        return inp;
-      }
       const sel = document.createElement('select');
-      actions.slice(0,2).forEach(a => {
-        const option = new Option(a.label, a.value);
-        if (a.value === cond.value) option.selected = true;
-        sel.add(option);
+      const numeric = ['round','oppDefectRatio','opponentScore','myScore'];
+      const ops = numeric.includes(varSel.value) ? operators : ['=='];
+      ops.forEach(o => {
+        const opt = new Option(o,o);
+        if (o===cond.operator) opt.selected = true;
+        sel.add(opt);
       });
       return sel;
     }
+    let opSel = createOpSel();
+    function createValEl() {
+  if (['round', 'porcentajeTraicion'].includes(varSel.value)) {
+    const n = document.createElement('input');
+    n.type = 'number';
+    n.value = cond.value;
+    return n;
+  } else {
+    const sel = document.createElement('select');
+    [
+      { label: 'Cooperar', value: 'C' },
+      { label: 'Traicionar', value: 'T' }
+    ].forEach(opt => {
+      const o = new Option(opt.label, opt.value);
+      if (opt.value === cond.value) o.selected = true;
+      sel.add(o);
+    });
+    return sel;
+  }
+}
     let valEl = createValEl();
-
-    // Al cambiar variable
+    const delBtn = document.createElement('button');
+    delBtn.type='button'; delBtn.textContent='– Condición';
+    delBtn.onclick = () => { userStrategy.rules[rIdx].conditions.splice(cIdx,1); renderRules(); };
+    div.append(varSel, opSel, valEl, delBtn);
     varSel.onchange = () => {
       const newOp = createOpSel();
-      div.replaceChild(newOp, opSel);
-      opSel = newOp;
-
+      div.replaceChild(newOp, opSel); opSel=newOp;
       const newVal = createValEl();
-      div.replaceChild(newVal, valEl);
-      valEl = newVal;
+      div.replaceChild(newVal, valEl); valEl=newVal;
     };
-
-    // Borrar condición
-    const delBtn = document.createElement('button');
-    delBtn.type = 'button';
-    delBtn.textContent = '– Condición';
-    delBtn.onclick = () => {
-      userStrategy.rules[rIdx].conditions.splice(cIdx,1);
-      renderRules();
-    };
-
-    div.append(varSel, opSel, valEl, delBtn);
     return div;
   }
-
   function createRuleElement(idx) {
     const rule = userStrategy.rules[idx];
     const div = document.createElement('div');
-    div.className = 'rule';
-
-    rule.conditions.forEach((_,ci) =>
-      div.appendChild(createConditionElement(idx,ci))
-    );
-
+    div.className='rule';
+    rule.conditions.forEach((_,ci)=>div.appendChild(createConditionElement(idx,ci)));
     const addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.textContent = '+ Condición';
-    addBtn.onclick = () => {
-      rule.conditions.push({varName:'round',operator:'>=',value:1});
-      renderRules();
-    };
-
+    addBtn.type='button'; addBtn.textContent='+ Condición';
+    addBtn.onclick = ()=>{ rule.conditions.push({ varName:'round',operator:'>=',value:1 }); renderRules(); };
     const actSel = document.createElement('select');
-    actSel.className = 'action-select';
-    actions.forEach(a => {
-      const option = new Option(a.label, a.value);
-      if (a.value === rule.action) option.selected = true;
-      actSel.add(option);
+    actSel.className='action-select';
+    actions.forEach(a=>{
+      const opt=new Option(a.label,a.value);
+      if(a.value===rule.action) opt.selected=true;
+      actSel.add(opt);
     });
-
     const delRuleBtn = document.createElement('button');
-    delRuleBtn.type = 'button';
-    delRuleBtn.textContent = '❌ Regla';
-    delRuleBtn.onclick = () => {
-      userStrategy.rules.splice(idx,1);
-      renderRules();
-    };
-
+    delRuleBtn.type='button'; delRuleBtn.textContent='❌ Regla';
+    delRuleBtn.onclick=()=>{ userStrategy.rules.splice(idx,1); renderRules(); };
     div.append(addBtn, actSel, delRuleBtn);
     return div;
   }
-
-  function renderRules() {
-    rulesContainer.innerHTML = '';
-    userStrategy.rules.forEach((_,i) =>
-      rulesContainer.appendChild(createRuleElement(i))
-    );
+  function renderRules(){
+    rulesContainer.innerHTML='';
+    userStrategy.rules.forEach((_,i)=>rulesContainer.appendChild(createRuleElement(i)));
   }
-
   addRuleBtn.onclick = () => {
-    userStrategy.rules.push({
-      conditions: [{varName:'round',operator:'>=',value:1}],
-      action: 'C'
-    });
+    userStrategy.rules.push({ conditions:[{ varName:'round',operator:'>=',value:1 }], action:'C' });
     renderRules();
   };
-
   defaultSelect.value = userStrategy.defaultAction;
-  defaultSelect.onchange = e => {
-    userStrategy.defaultAction = e.target.value;
-  };
-
+  defaultSelect.onchange = e=>{ userStrategy.defaultAction=e.target.value; };
   renderRules();
-  window.getCurrentStrategy = () => JSON.parse(JSON.stringify(userStrategy));
+  window.getCurrentStrategy = ()=>JSON.parse(JSON.stringify(userStrategy));
 
-  // --- SIMULACIÓN ---
-  const payoff = {
-    'C,C': [3,3],
-    'C,T': [0,5],
-    'T,C': [5,0],
-    'T,T': [1,1]
-  };
-
-  function playWithSteps(stratA, stratB, maxRounds = 10) {
-    const steps = [];
-    let scoreA = 0, scoreB = 0;
-    const historyA = [], historyB = [];
-
-    for (let r = 1; r <= maxRounds; r++) {
-      const ctxA = {
-        round: r,
-        myScore: scoreA,
-        opponentScore: scoreB,
-        opponentHistory: [...historyB],
-        ultimoMovimientoOponente: historyB.slice(-1)[0] || null
-      };
-      const ctxB = {
-        round: r,
-        myScore: scoreB,
-        opponentScore: scoreA,
-        opponentHistory: [...historyA],
-        ultimoMovimientoOponente: historyA.slice(-1)[0] || null
-      };
-      const mA = decideMove(stratA, ctxA);
-      const mB = decideMove(stratB, ctxB);
-
-      historyA.push(mA);
-      historyB.push(mB);
-
-      const [pA, pB] = payoff[`${mA},${mB}`];
-      scoreA += pA;
-      scoreB += pB;
-
-      steps.push({ round: r, moveA: mA, moveB: mB, pA, pB, totalA: scoreA, totalB: scoreB });
+  // --- SIMULACIÓN VISUAL ---
+  function playWithSteps(stratA, stratB, maxRounds=10) {
+    const steps=[]; let scoreA=0, scoreB=0; const historyA=[], historyB=[];
+    for(let r=1;r<=maxRounds;r++){
+      const ctxA={ round:r, myScore:scoreA, opponentScore:scoreB, opponentHistory:[...historyB], ultimoMovimientoOponente:historyB.slice(-1)[0]||null };
+      const ctxB={ round:r, myScore:scoreB, opponentScore:scoreA, opponentHistory:[...historyA], ultimoMovimientoOponente:historyA.slice(-1)[0]||null };
+      const mA=decideMove(stratA,ctxA);
+      const mB=decideMove(stratB,ctxB);
+      historyA.push(mA); historyB.push(mB);
+      const payoff={'C,C':[3,3],'C,T':[0,5],'T,C':[5,0],'T,T':[1,1]};
+      const [pA,pB]=payoff[`${mA},${mB}`];
+      scoreA+=pA; scoreB+=pB;
+      steps.push({ round:r, moveA:mA,moveB:mB,pA,pB,totalA:scoreA,totalB:scoreB });
     }
     return steps;
   }
-
-  function runTournament(strats) {
-    return strats.slice(1).map(op => ({
-      a: strats[0].name,
-      b: op.name,
-      steps: playWithSteps(strats[0].strat, op.strat)
-    }));
-  }
-
-  // --- GRAFICA MULTI-LÍNEA ---
-  function renderScoresChart(ctx, results) {
-    const datasets = [];
-    const userHue = 210;
-
-    results.forEach((m,i) => {
-      const light = Math.max(30, 80 - i * 10);
-      datasets.push({
-        label: `Usuario vs ${m.b} (Usuario)`,
-        data: m.steps.map(s => s.totalA),
-        fill: false,
-        borderColor: `hsl(${userHue},70%,${light}%)`
-      });
-      const oppHue = (i * 60 + 30) % 360;
-      datasets.push({
-        label: `Usuario vs ${m.b} (${m.b})`,
-        data: m.steps.map(s => s.totalB),
-        fill: false,
-        borderColor: `hsl(${oppHue},70%,50%)`
-      });
-    });
-
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: results[0].steps.map(s => s.round),
-        datasets
-      },
-      options: { responsive: true }
-    });
-  }
-
   runSimBtn.onclick = () => {
-    document.querySelectorAll('.rule').forEach((d,i) => {
+    document.querySelectorAll('.rule').forEach((d,i)=>{
       userStrategy.rules[i].action = d.querySelector('select.action-select').value;
-      d.querySelectorAll('.condition').forEach((cd,j) => {
-        const [vs, os, inp] = cd.querySelectorAll('select,input');
+      d.querySelectorAll('.condition').forEach((cd,j)=>{
+        const [vs,os,inp] = cd.querySelectorAll('select,input');
         userStrategy.rules[i].conditions[j] = {
           varName: vs.value,
           operator: os.value,
-          value: isNaN(inp.value) ? inp.value : Number(inp.value)
+          value: isNaN(inp.value)?inp.value:Number(inp.value)
         };
       });
     });
     userStrategy.defaultAction = defaultSelect.value;
-    const results = playWithSteps(userStrategy, window.Strategies.AlwaysDefect, 10);
+    const opponentName = visualOpponentSelect.value;
+    const opponentStrat = window.Strategies[opponentName];
+    const results = playWithSteps(userStrategy, opponentStrat, 10);
     outputPre.textContent = results
-      .map(s => `R${s.round}: Tú=${s.moveA}(${s.pA}) vs O=${s.moveB}(${s.pB})`)
-      .join('\n') +
-      `\nTotal: Tú=${results.slice(-1)[0].totalA}, O=${results.slice(-1)[0].totalB}`;
+      .map(s=>`R${s.round}: Tú=${s.moveA}(${s.pA}) vs ${opponentName}=${s.moveB}(${s.pB})`)
+      .join('\n') + `\nTotal: Tú=${results.slice(-1)[0].totalA}, ${opponentName}=${results.slice(-1)[0].totalB}`;
   };
+
+  // --- TORNEO ---
+  function runTournament(strats) {
+  const ROUNDS = Math.floor(Math.random() * (220 - 180 + 1)) + 180;  // número de rondas deseado
+  return strats.slice(1).map(op => ({
+    a: strats[0].name,
+    b: op.name,
+    steps: playWithSteps(strats[0].strat, op.strat, ROUNDS)
+  }));
+}
+
+
+  function renderScoresChart(ctx, results) {
+    const datasets=[]; const userHue=210;
+    results.forEach((m,i)=>{
+      const light=Math.max(30,80 - i*10);
+      datasets.push({
+        label: `Usuario vs ${m.b} (Usuario)`,
+        data: m.steps.map(s=>s.totalA),
+        fill:false, borderColor:`hsl(${userHue},70%,${light}%)`
+      });
+      const oppHue=(i*60+30)%360;
+      datasets.push({
+        label: `Usuario vs ${m.b} (${m.b})`,
+        data: m.steps.map(s=>s.totalB),
+        fill:false, borderColor:`hsl(${oppHue},70%,50%)`
+      });
+    });
+    new Chart(ctx, {
+      type:'line',
+      data:{ labels:results[0].steps.map(s=>s.round), datasets },
+      options:{ responsive:true }
+    });
+  }
 
   runTourBtn.onclick = () => {
     const userStrat = window.getCurrentStrategy();
-    const strats = [
+        const strats = [
   { name: 'Usuario', strat: userStrat },
 
   { name: 'RandomStrategy', strat: window.Strategies.RandomStrategy },
@@ -374,15 +380,101 @@ document.addEventListener('DOMContentLoaded', () => {
 { name: 'TRIGGER', strat: window.Strategies.TRIGGER },
 ];
     const results = runTournament(strats);
-    tournamentOutput.textContent = results
+
+     tournamentOutput.textContent = results
       .map(r => {
         const last = r.steps.slice(-1)[0];
         return `✅ ${r.a} vs ${r.b} ➜ ${last.totalA}-${last.totalB}`;
       })
       .join('\n');
+
     renderScoresChart(chartCtx, results);
-    stepContainer.innerHTML = results[0].steps
-      .map(s => `R${s.round}: A=${s.moveA}(${s.pA}) vs B=${s.moveB}(${s.pB})`)
-      .join('<br>');
+
+    stepContainer.innerHTML = '';
+    const tabsNav = document.createElement('div');
+    tabsNav.className = 'tabs-nav';
+    const tabsContent = document.createElement('div');
+    tabsContent.className = 'tabs-content';
+
+    results.forEach((match, idx) => {
+      const tabBtn = document.createElement('button');
+      tabBtn.textContent = match.b;
+      tabBtn.className = idx === 0 ? 'active' : '';
+      tabBtn.onclick = () => {
+        tabsNav.querySelectorAll('button').forEach((btn, i) => {
+          btn.className = i === idx ? 'active' : '';
+          tabsContent.querySelectorAll('.tab-panel')[i].style.display =
+            i === idx ? 'block' : 'none';
+        });
+      };
+      tabsNav.appendChild(tabBtn);
+
+      const panel = document.createElement('div');
+      panel.className = 'tab-panel';
+      panel.style.display = idx === 0 ? 'block' : 'none';
+      panel.innerHTML = match.steps
+        .map(
+          s =>
+            `<p>R${s.round}: Tú=${s.moveA}(${s.pA}) vs ${match.b}=${s.moveB}(${s.pB}) — Totales: ${s.totalA}-${s.totalB}</p>`
+        )
+        .join('');
+      tabsContent.appendChild(panel);
+    });
+
+    stepContainer.appendChild(tabsNav);
+    stepContainer.appendChild(tabsContent);
+
+    runTourBtn.disabled = true;
+    runTourBtn.style.display = 'none';
+    const restartBtn = document.createElement('button');
+    restartBtn.textContent = 'Reiniciar';
+    restartBtn.style.marginTop = '8px';
+    restartBtn.onclick = () => location.reload();
+    runTourBtn.parentNode.insertBefore(restartBtn, runTourBtn.nextSibling);
   };
-});
+
+  // ————————————————————————————————
+  // Exportar estrategia a JSON y forzar descarga
+  saveBtn.onclick = () => {
+    const dataStr = JSON.stringify(userStrategy, null, 2);
+    const blob    = new Blob([dataStr], { type: 'application/json' });
+    const url     = URL.createObjectURL(blob);
+    const a       = document.createElement('a');
+    a.href        = url;
+    a.download    = 'estrategia.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // ————————————————————————————————
+  // Cargar estrategia desde JSON elegido por el usuario
+  loadBtn.onclick = () => {
+    const input = document.createElement('input');
+    input.type  = 'file';
+    input.accept= '.json';
+    input.onchange = () => {
+      const file = input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const obj = JSON.parse(e.target.result);
+          if (obj.rules && Array.isArray(obj.rules) && obj.defaultAction) {
+            userStrategy = obj;
+            defaultSelect.value = userStrategy.defaultAction;
+            renderRules();
+          } else {
+            alert('JSON inválido: formato de estrategia no reconocido.');
+          }
+        } catch {
+          alert('Error al parsear JSON.');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+}); 
