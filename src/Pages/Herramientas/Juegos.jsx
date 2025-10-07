@@ -151,7 +151,7 @@ export default function Juegos() {
                   onClick={handleNav(nombre)}
                 >
                   <Box component="h3" sx={{ m: 0, textTransform: 'capitalize' }}>
-                    Zona de juegos: {nombre}
+                     {nombre}
                   </Box>
                   <Button
                     onClick={(e) => { e.stopPropagation(); handleNav(nombre)(); }}
