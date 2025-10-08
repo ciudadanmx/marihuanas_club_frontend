@@ -26,6 +26,7 @@ import EventosPage from '../components/Eventos/index.jsx';
 import Gana from '../Pages/Gana/Gana.jsx';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
 import MisProductos from '../Pages/MarketPlace/MisProductos';
+import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
 
 import CursoDetalle from '../Pages/Cursos/Curso.jsx';
 
@@ -133,6 +134,8 @@ const Rutas = () => (
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
 
     <Route path="/gana" element={<Gana />} />
+<Route path="/gana/promueve" element={<PromueveMembresias />} />
+
     
 
     {/* Ruta para eliminar producto */}
