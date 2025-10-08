@@ -11,6 +11,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { CartProvider }  from './Contexts/CartContext';
 import NavBar from './components/NavBar/NavBar.jsx';
 import Rutas from './Routes/index.jsx';
+
 import Asistente from './components/Asistente/Asistente';
 import { SnackbarProvider } from 'notistack';
 import { NotificationsProvider } from './Contexts/NotificationsContext';
