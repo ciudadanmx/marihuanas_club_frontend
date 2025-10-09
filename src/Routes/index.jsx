@@ -24,6 +24,8 @@ import HerramientasPage from '../Pages/Herramientas/HerramientasPage';
 import ComunidadPage from '../Pages/ComunidadPage';
 import EventosPage from '../components/Eventos/index.jsx';
 import Gana from '../Pages/Gana/Gana.jsx';
+import VendePage from '../Pages/Gana/VendePage';
+import UsuarioPage from '../Pages/Usuarios/UsuarioPage';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
 import MisProductos from '../Pages/MarketPlace/MisProductos';
 import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
@@ -133,8 +135,14 @@ const Rutas = () => (
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
 
-    <Route path="/gana" element={<Gana />} />
+   <Route path="/gana" element={<Gana />} />
 <Route path="/gana/promueve" element={<PromueveMembresias />} />
+{/* dentro de <Routes> */}
+<Route path="/gana/vende" element={<VendePage />} />
+
+<Route path="/usuario" element={<UsuarioPage />} />
+
+
 
     
 
