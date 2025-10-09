@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import asistenteMin from "../../assets/asistente_min.png";
+import asistenteMin from "../../assets/asistente_min.gif";
 import TTS from "./TTS";
 import "../../styles/Asistente.css";
 
@@ -40,10 +40,13 @@ const Asistente = () => {
               position: "absolute",
               top: "5px",
               right: "5px",
+              background: "red",
               color: "white",
               border: "none",
               borderRadius: "50%",
-
+              width: "25px",
+              height: "25px",
+              cursor: "pointer",
               zIndex: 1000 // Se aumenta el z-index para asegurar que se pueda hacer clic
             }}
           >
@@ -51,7 +54,7 @@ const Asistente = () => {
           </button>
 
           {/* El componente TTS maneja la animación de la boca */}
-           <TTS />
+          <TTS />
         </div>
       )}
     </div>
