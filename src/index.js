@@ -35,12 +35,14 @@ import Curso from './Pages/Cursos/Curso.jsx';
 import CursoDetalle from './Pages/Cursos/Curso.jsx';
 import ContenidosPage from './Pages/Blog/Contenidos.jsx';
 import Contenido from './Pages/Blog/Contenido.jsx';
-import AgregarContenido from './Pages/Blog/AgregarContenido.jsx';
+//import AgregarContenido from './Pages/Blog/AgregarContenido.jsx';
 import AgregarCurso from './Pages/Blog/AgregarCurso.jsx';
 import EditarContenido from './Pages/Blog/EditarContenido.jsx';
 import EliminarContenido from './Pages/Blog/EliminarContenido.jsx';
 import EditarCurso from './Pages/Cursos/EditarCurso.jsx';
 import EliminarCurso from './Pages/Cursos/EliminarCurso.jsx';
+
+import AgregarTarea from './Pages/Coowork/AgregarTarea.jsx';
 
 /* ---------- Componentes / Pages adicionales ---------- */
 import NavBar from './components/NavBar/NavBar.jsx';
@@ -84,6 +86,8 @@ import Juegos from './Pages/Herramientas/Juegos.jsx';
 import JuegoStatic from './Pages/Herramientas/JuegoStatic.jsx';
 import ITokens from './Pages/Cartera/ITokens.jsx';
 import Catalogo from './Pages/Cartera/FreeBoocks/Catalogo.jsx';
+
+import Coowork from './Pages/Coowork/Coowork.jsx';
 
 /* ---------- Helpers / Wrappers ---------- */
 
@@ -186,7 +190,7 @@ if (!rootElement) {
                 {/* Clubs / Membresías / Marketplace */}
                 <Route path="/clubs" element={<Clubs />} />
                 <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
-                <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
+                <Route path="/herramientas/agregar-tarea" element={<AgregarTarea />} />
                 <Route path="/agregar-curso" element={<AgregarCurso />} />
                 <Route path="/membresias" element={<Membresias />} />
                 <Route path="/mi-membresia" element={<MiMembresia />} />
@@ -230,6 +234,8 @@ if (!rootElement) {
                 <Route path="/herramientas/test-consumo" element={<TestConsumoResponsable />} />
                 <Route path="/herramientas/juegos" element={<Juegos />} />
                 <Route path="/herramientas/juego-static" element={<JuegoStatic />} />
+
+                <Route path="/mcowork" element={<Coowork />} />
 
                 {/* Florateca (wrappers/landing específicos) - rutas ejemplo */}
                 <Route path="/florateca" element={<FloratecaLayout />}>

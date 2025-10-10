@@ -1,10 +1,11 @@
 import React from 'react';
-import OpWalletManager from '../components/Cartera/OpWalletManager';
+//import OpWalletManager from '../components/Cartera/OpWalletManager';
+import Billetera from '../Pages/Cartera/Billetera.jsx';
 
 const OpWalletRoute = () => {
   return (
     <div>
-      <OpWalletManager />
+      <Billetera />
     </div>
   );
 };
