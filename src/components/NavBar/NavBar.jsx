@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom'; // Se agregó useNavigate junto con Link
 import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
@@ -12,7 +12,7 @@ import AIInput from './AIInput';
 import MenuIcon from './MenuIcon';
 import MessagesIcon from './MessagesIcon';
 import NotificationsIcon from './NotificationsIcon';
-import UserMenu from './UserMenu.jsx';
+import UserIcon from './UserIcon.jsx';
 import NavButton from './NavButton.jsx';
 import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
@@ -23,6 +23,14 @@ import Direccionador from '../../utils/Direccionador';
 import CiudadanBadge from '../CiudadanBadge';
 
 const NavBar = ({ SetIsMenuOpen }) => {
+
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
+  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
+
+  const profileRef = useRef(null);
+  const notifRef = useRef(null);
+  const InfoRef = useRef(null);
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
   const navigate = useNavigate();
@@ -49,23 +57,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
     comunidad: <AiOutlineApartment />,
   };
 
-  /*   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  }; */
-
-  useEffect(() => {
-    const handleResize = () => {
-      setLogoSrc(window.innerWidth < 490 ? "/logo192.png" : "/ciudadan_logo.png");
-    };
-
-    handleResize(); // 🔥 Se ejecuta al montar el componente
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-  
-  // Actualizamos activeTab en el evento onClick y navegamos
-  const handleNavigation = (path) => {
+    const handleNavigation = (path) => {
     setActiveTab(path);
     if (path === lastRoute) {
       const newRepeat = routeRepeat + 1;
@@ -79,6 +71,42 @@ const NavBar = ({ SetIsMenuOpen }) => {
       setIsMenuOpen(false);
     }
   };
+
+  /*   const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  }; */
+
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+      const targets = [profileRef.current, notifRef.current, InfoRef.current];
+      const clickedInside = targets.some(ref => ref && ref.contains(event.target));
+      if (!clickedInside) {
+        closeAllMenus();
+      }
+    };
+
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setLogoSrc(window.innerWidth < 490 ? "/logo193.png" : "/marihuanasclub_logo.png");
+    };
+
+    // 🔥 Obtenemos el primer path de la URL actual
+    const path = `/${window.location.pathname.split('/')[1]}`;
+    //llamammos a handlenavigation para que haga setActiveTab y se haga el efecto en el botón de la sección activa
+    //handleNavigation(path);
+
+    handleResize(); // Se ejecuta al montar el componente
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLinkClick = (path) => {
     // Realiza la navegación
@@ -105,17 +133,6 @@ const NavBar = ({ SetIsMenuOpen }) => {
     handleUserRegistration();
   }, [isAuthenticated, user]);
 
-  
-  
-
- 
-
-  
-
-  const toggleDropdown = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   const handleLogin = () => {
     // Guarda la URL actual antes de hacer login
     const currentUrl = window.location.pathname + window.location.search;
@@ -127,6 +144,7 @@ const NavBar = ({ SetIsMenuOpen }) => {
   };
 
   const handleLogout = () => {
+    console.log('cerrando sesión');
     // Elimina la cookie de retorno antes de cerrar sesión
     document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
     console.log("Cookie de returnTo eliminada antes de logout");
@@ -134,6 +152,26 @@ const NavBar = ({ SetIsMenuOpen }) => {
     logout({ returnTo: window.location.origin });
     setIsMenuOpen(false);
   };
+  //********************quitar !!!!! */
+
+
+  const closeAllMenus = () => {
+    setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
+    setIsInfoMenuOpen(false);
+  };
+  
+  
+
+ 
+
+  
+
+  const toggleDropdown = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+
 
   return (
     <>
@@ -179,11 +217,16 @@ const NavBar = ({ SetIsMenuOpen }) => {
               </div>
               <div className="nav-linky">
                 <MenuIcon
-                  isOpen={isMenuOpen}
-                  onClose={() => setIsMenuOpen(false)}
+                  isOpen={isInfoMenuOpen}
+                  onClose={() => setIsInfoMenuOpen(false)}
                   authenticated={isAuthenticated}
                   userData={user}
                   className="cuenta-icon"
+                  containerRef={InfoRef}
+                  setIsOpen={(open) => {
+                    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                    setIsInfoMenuOpen(open);
+                  }}
                 />
               </div>
               <div className="nav-linky">
@@ -204,24 +247,20 @@ const NavBar = ({ SetIsMenuOpen }) => {
                   className="cuenta-icon"
                 />
               </div>
-              <div className="nav-linky">
-                <div className="cuenta-icon-container" onClick={() => { isAuthenticated ? toggleDropdown() : handleLogin(); }}>
-                  <img
-                    src={isAuthenticated ? (user?.picture || defaultProfileImage) : guestImage}
-                    alt="Profile"
-                    className="cuenta-icon"
-                  />
-                </div>
-              </div>
-              <UserMenu 
+              
+              <UserIcon 
                 handleLogin={handleLogin}
-                isMenuOpen={isMenuOpen}
-                setIsMenuOpen={setIsMenuOpen}
+                isMenuOpen={isProfileMenuOpen}
+                setIsMenuOpen={(open) => {
+                  closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                  setIsProfileMenuOpen(open);
+                }}
                 handleLogout={handleLogout}
                 handleLinkClick={handleLinkClick}
-                defaultProfileImage={defaultProfileImage}
+                defaultProfileImage={guestImage}
                 guestImage={guestImage}
                 Link={Link}
+                containerRef={profileRef}
               />
             </div>
           </div>

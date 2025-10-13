@@ -27,6 +27,7 @@ import HerramientrasGrid from './../../components/Cowork/HerramientrasGrid.jsx';
 const neonGreen = '#00ff99';
 const amarilloCiudadan = '#f5c400';
 const darkGray = '#1a1a1a';
+const fondoVerdeOscuro = '#022b23'; // 🟢 Nuevo color de fondo
 
 // 🔹 Tabs principales (barra amarilla)
 const StyledTab = styled(Tab)(({ theme }) => ({
@@ -117,14 +118,21 @@ const CooWork = () => {
   const handleSubTabChange = (event, newValue) => setSubTab(newValue);
 
   return (
-    <>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100%',
+        bgcolor: fondoVerdeOscuro, // 🟢 Fondo aplicado aquí
+        color: 'white',
+        pb: 6,
+      }}
+    >
       {/* 🟨 Barra amarilla de tabs principales */}
       <Box
         sx={{
           width: '100%',
-          bgcolor: 'black',
+          bgcolor: 'purple',
           color: 'white',
-          position: 'sticky',
           top: 64,
           zIndex: 1000,
           boxShadow: '0 2px 10px rgba(0,0,0,0.5)',
@@ -186,7 +194,7 @@ const CooWork = () => {
       </AnimatePresence>
 
       {/* 🔸 Contenido principal */}
-      <Container maxWidth="md" sx={{ mt: 0, mb: 8 }}>
+      <Container maxWidth="md" sx={{ mt: 4, mb: 8 }}>
         {tab === 0 && (
           <motion.div
             key="socio-content"
@@ -194,21 +202,9 @@ const CooWork = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            {subTab === 0 && (
-              <>
-                <Tareas />
-              </>
-            )}
-            {subTab === 1 && (
-              <>
-               <HerramientrasGrid />
-              </>
-            )}
-            {subTab === 2 && (
-              <>
-                <EventosGrid />
-              </>
-            )}
+            {subTab === 0 && <Tareas />}
+            {subTab === 1 && <HerramientrasGrid />}
+            {subTab === 2 && <EventosGrid />}
             {subTab === 3 && (
               <>
                 <Typography variant="h5" fontWeight={700} gutterBottom color="white">
@@ -232,7 +228,6 @@ const CooWork = () => {
             <Typography variant="h5" fontWeight={700} gutterBottom color="white">
               🧱 Tareas Generales
             </Typography>
-
             <Tareas />
           </motion.div>
         )}
@@ -253,7 +248,7 @@ const CooWork = () => {
           </motion.div>
         )}
       </Container>
-    </>
+    </Box>
   );
 };
 

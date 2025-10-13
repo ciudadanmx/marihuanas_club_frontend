@@ -8,20 +8,23 @@ import HomeIcon from '@mui/icons-material/Home';
 import PesosImg from '../../assets/monedas/mxn.png';
 import LaboryImg from '../../assets/monedas/labory.png';
 import CiudadanImg from '../../assets/monedas/ciudadan_logo_public.png';
-import PubliaImg from '../../assets/monedas/labory.png';
+import PubliaImg from '../../assets/monedas/publia.png';
 import ObjectImg from '../../assets/monedas/object.png';
 import TaskImg from '../../assets/monedas/task.png';
 import TodoImg from '../../assets/monedas/todo.png';
 import EvaluationImg from '../../assets/monedas/evaluation.png';
 import VoteImg from '../../assets/monedas/vote.png';
 import IdImg from '../../assets/monedas/idtoken.png';
-import SkillImg from '../../assets/monedas/labory.png';
+import SkillImg from '../../assets/monedas/skill.png';
 import SocialImg from '../../assets/monedas/social.png';
+
+// 💡 Importa componentes asociados
+import IngresosInfo from './../../components/Cartera/IngresosInfo.jsx';
 
 const Billetera = () => {
   const monedas = [
     { nombre: 'Resumen', icon: <HomeIcon sx={{ color: '#f0c040' }} /> },
-    { nombre: 'Pesos MXN', img: PesosImg },
+    { nombre: 'Pesos MXN', img: PesosImg, componente: <IngresosInfo /> },
     { nombre: 'Labory', img: LaboryImg },
     { nombre: 'Ciudadan I-Token', img: CiudadanImg },
     { nombre: 'Publia', img: PubliaImg },
@@ -47,11 +50,13 @@ const Billetera = () => {
     });
   };
 
+  const monedaSeleccionada = monedas.find((m) => m.nombre === selected);
+
   return (
     <Box
       sx={{
         minHeight: '100vh',
-        bgcolor: '#003300', // 🌑 Verde más oscuro general
+        bgcolor: '#001a00', // 🌿 Verde oscuro más profundo
         color: 'white',
       }}
     >
@@ -62,7 +67,7 @@ const Billetera = () => {
           bgcolor: 'black',
           display: 'flex',
           alignItems: 'center',
-          position: 'sticky',
+          
           top: 64,
           zIndex: 1000,
           borderBottom: '2px solid #222',
@@ -99,7 +104,9 @@ const Billetera = () => {
                   sx={{
                     cursor: 'pointer',
                     pb: 0.3,
-                    borderBottom: isActive ? '2px solid #f0c040' : '2px solid transparent',
+                    borderBottom: isActive
+                      ? '2px solid #f0c040'
+                      : '2px solid transparent',
                     color: isActive ? '#f0c040' : 'white',
                     transition: 'all 0.3s ease',
                     '&:hover': {
@@ -138,7 +145,7 @@ const Billetera = () => {
         </IconButton>
       </Box>
 
-      {/* 💰 Contenido dinámico de cada moneda */}
+      {/* 💰 Contenido dinámico */}
       <Fade in={!!selected} timeout={400}>
         <Box
           sx={{
@@ -149,21 +156,24 @@ const Billetera = () => {
             justifyContent: 'center',
           }}
         >
-          {selected !== 'Home' && (
-            <Paper
-              elevation={10}
-              sx={{
-                bgcolor: '#002200', // 🌑 Fondo más oscuro para card
-                p: 4,
-                borderRadius: 3,
-                maxWidth: 500,
-                textAlign: 'center',
-                color: 'white',
-              }}
-            >
+          <Paper
+            elevation={10}
+            sx={{
+              bgcolor: '#002200',
+              p: 4,
+              borderRadius: 3,
+              maxWidth: 600,
+              textAlign: 'center',
+              color: 'white',
+            }}
+          >
+            {/* Imagen o icono */}
+            {monedaSeleccionada?.icon ? (
+              monedaSeleccionada.icon
+            ) : (
               <Box
                 component="img"
-                src={monedas.find((m) => m.nombre === selected)?.img}
+                src={monedaSeleccionada?.img}
                 alt={selected}
                 sx={{
                   width: 50,
@@ -172,40 +182,33 @@ const Billetera = () => {
                   borderRadius: '50%',
                 }}
               />
-              <Typography variant="h5" sx={{ mb: 2, color: '#f0c040', fontWeight: 'bold' }}>
-                {selected}
-              </Typography>
-              <Typography sx={{ opacity: 0.9 }}>
-                🔒 <strong>Saldo actual:</strong> [placeholder balance]
-              </Typography>
-              <Typography sx={{ mt: 1, opacity: 0.9 }}>
-                📊 <strong>Historial de transacciones:</strong> [placeholder movimientos]
-              </Typography>
-              <Typography sx={{ mt: 1, opacity: 0.9 }}>
-                💡 <strong>Información adicional:</strong> [placeholder descripción del token]
-              </Typography>
-            </Paper>
-          )}
-          {selected === 'Home' && (
-            <Paper
-              elevation={10}
-              sx={{
-                bgcolor: '#002200',
-                p: 4,
-                borderRadius: 3,
-                maxWidth: 500,
-                textAlign: 'center',
-                color: 'white',
-              }}
+            )}
+
+            {/* Título */}
+            <Typography
+              variant="h5"
+              sx={{ mb: 2, color: '#f0c040', fontWeight: 'bold' }}
             >
-              <Typography variant="h5" sx={{ mb: 2, color: '#f0c040', fontWeight: 'bold' }}>
-                Home
-              </Typography>
-              <Typography sx={{ opacity: 0.9 }}>
-                🏠 Bienvenido a tu billetera. Selecciona una moneda para ver detalles.
-              </Typography>
-            </Paper>
-          )}
+              {selected}
+            </Typography>
+
+            {/* Contenido dinámico: componente o placeholders */}
+            {monedaSeleccionada?.componente ? (
+              monedaSeleccionada.componente
+            ) : (
+              <>
+                <Typography sx={{ opacity: 0.9 }}>
+                  🔒 <strong>Saldo actual:</strong> [placeholder balance]
+                </Typography>
+                <Typography sx={{ mt: 1, opacity: 0.9 }}>
+                  📊 <strong>Historial de transacciones:</strong> [placeholder movimientos]
+                </Typography>
+                <Typography sx={{ mt: 1, opacity: 0.9 }}>
+                  💡 <strong>Información adicional:</strong> [placeholder descripción del token]
+                </Typography>
+              </>
+            )}
+          </Paper>
         </Box>
       </Fade>
     </Box>

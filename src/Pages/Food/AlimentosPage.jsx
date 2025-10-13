@@ -4,7 +4,6 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { CircularProgress, Box, Typography } from '@mui/material';
 import Cursos from '../../components/Cursos/Cursos';
 import MarketPlace from './MarketPlace';
-import Producto from './Producto.jsx'
 
 // Wrappers to extract URL params and pass props to Contenidos
 const ProductosUsuario = () => {
@@ -55,11 +54,11 @@ const ProductosEliminar = () => {
   return <MarketPlace filtros="eliminar" parametros={slug} />;
 };
 
-const ProductosPage = () => {
+const AlimentosPage = () => {
   return (
     <Routes>
       {/* /Cursos */}
-      <Route index element={<Producto />} />
+      <Route index element={<Cursos />} />
       {/* /productos/mis-productos */}
       <Route path="mis-productos" element={<ProductosUsuario />} />
       {/* /productos/busqueda/:cadena */}
@@ -74,4 +73,4 @@ const ProductosPage = () => {
   );
 };
 
-export default ProductosPage;
+export default AlimentosPage;

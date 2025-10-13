@@ -185,7 +185,7 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
           alignItems: 'center',
           py: 1.2,
           borderBottom: '2px solid #222',
-          position: 'sticky',
+          
           top: 64,
           zIndex: 1000,
         }}

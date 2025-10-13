@@ -98,7 +98,7 @@ const Invitado = () => {
             <i className="material-icons" style={{ color:"yellow", fontSize: "40px", verticalAlign: "middle" }}>
             local_taxi
           </i>{" "}
-          Ciudadan Taxi:<small style={{ display: "block", marginTop: "5px", fontSize: "1rem" }}> Tradición Económica y Comodidad Móvil.</small>
+          Ciudadan Taxi:<small style={{ display: "block", marginTop: "5px", fontSize: "1rem" }}> Fusión Perfecta de Justicia Social y Comodidad.</small>
         </Typography>
 
         <Typography
@@ -110,6 +110,8 @@ const Invitado = () => {
             color: "rgba(247, 243, 243, 0.86)"
           }}
         >
+          Toda la ganancia es para el conductor, quien solo paga una tarifa plana de $200MXN mensuales, lo que le permite bajar sus precios y además aceptar hasta el 10% en Labory, la moneda de uso corriente de Ciudadan.org
+
           Experimenta la fusión perfecta entre la excelente tarifa tradicional de los taxis concesionados y la
           innovación de los servicios por aplicación en CDMX. Para disfrutar de todos estos
           beneficios, es necesario registrarse con tu teléfono.
