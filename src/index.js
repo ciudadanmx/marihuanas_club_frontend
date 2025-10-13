@@ -266,7 +266,7 @@ if (!rootElement) {
                         <Route path="/herramientas/juegos" element={<Juegos />} />
                         <Route path="/herramientas/juego-static" element={<JuegoStatic />} />
 
-                        <Route path="/mcowork" element={<Coowork />} />
+                        <Route path="/coowork" element={<Coowork />} />
                         <Route path="/herramientas/mi-agencia" element={<Agencia />} />
 
                         {/* Florateca (wrappers/landing específicos) - rutas ejemplo */}

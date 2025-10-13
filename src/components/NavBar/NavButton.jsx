@@ -11,7 +11,7 @@ const iconMap = {
   taxis: <FaCarSide />,
   comida: <FaHamburger />,
   market: <FaStore />,
-  mCowork: <BsBriefcaseFill />,
+  coowork: <BsBriefcaseFill />,
   academia: <FaUniversity />,
   comunidad: <AiOutlineApartment />,
 };
