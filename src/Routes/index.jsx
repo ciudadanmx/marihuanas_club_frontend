@@ -62,7 +62,9 @@ import Juegos from '../Pages/Herramientas/Juegos.jsx';
 
 import JuegoStatic from '../Pages/Herramientas/JuegoStatic';
 
+import MembershipButton from '../components/Membresias/MembershipButton.jsx';
 
+import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
@@ -120,6 +122,8 @@ const Rutas = () => (
     <Route path="/agregar-curso" element={<AgregarCurso />} />
 
     <Route path="/membresias" element={<Membresias />} />
+    
+    <Route path="/member" element={<MembershipButton />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/registro-vendedor" element={<RegistroTienda />} />
     <Route path="/agregar-producto" element={<AgregarProducto />} />
@@ -174,6 +178,8 @@ const Rutas = () => (
     
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/prueba" element={<Prueba />} />
+    
+    <Route path="/wiki" element={<WikiViewer />} />
 
     <Route path="/market/store/:slug" element={<Tienda />}>
       <Route path="agregar-producto" element={<AgregarProducto />} />

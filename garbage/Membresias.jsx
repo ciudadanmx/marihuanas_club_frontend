@@ -1,79 +1,74 @@
-// src/pages/Membresias.jsx
 import React from 'react';
 import { Grid, Card, CardContent, Typography, Button, Box, Chip, Zoom } from '@mui/material';
 import '../styles/membresias.css';
 import BotonMembresia from '../components/Membresias/BotonMembresia.jsx';
-import membresiasImg from '../assets/como.png';
+import membresiasImg from '../assets/como.png'; // <-- Importamos la imagen
 
-// Contexto de membresías
+// Importar contexto de roles/membresía
 import { useRoles } from '../Contexts/RolesContext';
+
 import MiMembresia from '../components/Membresias/MiMembresia.jsx';
 
 const planes = [
   {
-    nombre: 'Red de Clubs de Consumo',
-    precio: '$300 / única',
+    nombre: 'Mensual',
+    precio: '$200',
     beneficios: [
-      'Trámite COFEPRIS',
-      'Acceso al Directorio de Clubs de Consumo',
-      '10% de descuento en consumos en todos los clubs afiliados',
-      'Publicar productos en la marketplace',
-      'Publicar eventos en la agenda',
-      'Acceso a contenidos exclusivos y cursos gratuitos',
-      'Descuento en cursos de pago y más beneficios digitales',
+      'Acceso a clubes',
+      'Descuentos exclusivos',
+      'Contenido premium',
+      'Asesoría básica legal',
     ],
-    icon: 'group',
+    icon: 'paid',
     destacado: false,
     color: '#A3D977',
     stripeButton: true,
-    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_CONSUMO,
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_MENSUAL,
   },
   {
-    nombre: 'Red de Clubs de Cultivo Solidario',
-    precio: '$650 / única',
+    nombre: 'Semestral',
+    precio: '$420',
     beneficios: [
-      'Trámite COFEPRIS y afiliación a un Club de Autocultivo Solidario (A.C. registrada ante el SAT)',
-      'Armario para cultivo de 3 o 6 plantas, renta de equipo y servicio de cuidado de plantas',
-      'Incluye todas las herramientas digitales de la membresía de consumo',
-      'Bitácora de plantas con trazabilidad desde la semilla',
-      'Videos respaldados del crecimiento de tus flores en el club',
+      'Todo lo anterior',
+      'Acceso a red de cultivo solidario',
     ],
     icon: 'eco',
-    destacado: true,
+    destacado: false,
     color: '#B388EB',
     stripeButton: true,
-    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_CULTIVO,
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_SEMESTRAL,
   },
   {
-    nombre: 'Membresía de Jardinero (Kit Inicial del Club)',
-    precio: '$1,200 / única',
+    nombre: 'Anual',
+    precio: '$710',
     beneficios: [
-      'Kit inicial de Club: pago único',
-      'Generadores digitales automáticos de documentación para registro del Club',
-      'Set de 3 armarios, lámparas, mallas de secado, extractores y más',
+      'Todo lo anterior',
+      'Permiso COFEPRIS incluido',
     ],
-    icon: 'yard',
-    destacado: false,
+    icon: 'verified',
+    destacado: true,
     color: '#D462F1',
     stripeButton: true,
-    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_JARDINERO,
-  },
+    priceId: process.env.REACT_APP_STRIPE_PRICE_ID_ANUAL,
+  }
 ];
 
 const Membresias = () => {
   const { isActivaMembresia } = useRoles();
 
+  // Si el usuario tiene membresía activa, mostrar componente MiMembresia
   if (isActivaMembresia()) {
     return <MiMembresia />;
   }
 
+  // De lo contrario, mostrar el listado de planes
   return (
     <Box className="membresias-container">
       <Typography variant="h4" align="center" gutterBottom className="membresias-titulo">
-        Elige tu Membresía Cannábica 🌿
+        Elige tu Membresía Cannábica
       </Typography>
       <Typography variant="subtitle1" align="center" className="membresias-subtitulo">
-        Afíliate a la red de Clubs Cannábicos en México y ejerce tus derechos con respaldo legal.
+        Accede a beneficios únicos, asesoría legal y espacios de autoconsumo.
       </Typography>
 
       <Grid container spacing={4} justifyContent="center">
@@ -90,7 +85,7 @@ const Membresias = () => {
               >
                 {plan.destacado && (
                   <Chip
-                    label="Recomendada"
+                    label="Más popular"
                     className="membresia-chip"
                     style={{ backgroundColor: plan.color }}
                   />
@@ -108,10 +103,7 @@ const Membresias = () => {
                   <ul className="membresia-beneficios">
                     {plan.beneficios.map((beneficio, i) => (
                       <li key={i} className="membresia-beneficio">
-                        <span
-                          className="material-icons membresia-check-icon"
-                          style={{ color: plan.color }}
-                        >
+                        <span className="material-icons membresia-check-icon" style={{ color: plan.color }}>
                           check_circle
                         </span>
                         {beneficio}
@@ -132,7 +124,7 @@ const Membresias = () => {
                         '&:hover': {
                           backgroundColor: plan.color,
                           color: '#fff',
-                        },
+                        }
                       }}
                     >
                       Próximamente
@@ -145,6 +137,7 @@ const Membresias = () => {
         ))}
       </Grid>
 
+      {/* Imagen al final */}
       <Box mt={6} display="flex" justifyContent="center">
         <img
           src={membresiasImg}
