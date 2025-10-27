@@ -62,7 +62,11 @@ import Juegos from '../Pages/Herramientas/Juegos.jsx';
 
 import JuegoStatic from '../Pages/Herramientas/JuegoStatic';
 
-import MembershipButton from '../components/Membresias/MembershipButton.jsx';
+import MembershipCheckout from '../components/Membresias/MembershipCheckout.jsx';
+import ProbarMembresia from '../components/Membresias/ProbarMembresia.jsx';
+import Internacional from '../Pages/Internacional/Internacional.jsx';
+
+import GeneradorAmparo from '../Pages/Legal/GeneradorAmparo.jsx';
 
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
@@ -105,6 +109,8 @@ const Rutas = () => (
     <Route path="/info/quienes" element={<QuienesSomos />} />
     <Route path="/info/faq" element={<PreguntasFrecuentes />} />
     
+    
+    
     {/* <Route path="/juegos/weedclicker" element={<WeedClicker />} /> */}
     
     <Route path="/herramientas/florateca" element={<FloratecaLayout />}>
@@ -123,7 +129,9 @@ const Rutas = () => (
 
     <Route path="/membresias" element={<Membresias />} />
     
-    <Route path="/member" element={<MembershipButton />} />
+    <Route path="/membresias/pagar/*" element={<ProbarMembresia />} />
+
+    <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/registro-vendedor" element={<RegistroTienda />} />
     <Route path="/agregar-producto" element={<AgregarProducto />} />
@@ -135,11 +143,13 @@ const Rutas = () => (
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
     <Route path="/legal" element={<LegalPage />} />
+    <Route path="/legal/generadoramparo" element={<GeneradorAmparo />} />
     <Route path="/comunidad" element={<ComunidadPage />} />
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
 
    <Route path="/gana" element={<Gana />} />
+   <Route path="/gana/internacionaliza" element={<Internacional />} />
 <Route path="/gana/promueve" element={<PromueveMembresias />} />
 {/* dentro de <Routes> */}
 <Route path="/gana/vende" element={<VendePage />} />

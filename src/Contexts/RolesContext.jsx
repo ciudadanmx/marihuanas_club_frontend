@@ -58,7 +58,7 @@ export const RolesProvider = ({ children }) => {
 
       // Fetch active membership
       console.log('🔍 Fetching membresias for userId:', usrId);
-      const membUrl = `${STRAPI_URL}/api/membresias?filters[usuario][id][$eq]=${usrId}&filters[activa][$eq]=true`;
+      const membUrl = `${STRAPI_URL}/api/membresias?filters[usuarioemail][$eq]=${auth0User.email}&filters[activa][$eq]=true`;
       console.log('🔍 Membresias URL:', membUrl);
       const membRes = await fetch(membUrl, { credentials: 'include' });
       if (!membRes.ok) {

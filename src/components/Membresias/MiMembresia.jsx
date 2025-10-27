@@ -1,92 +1,155 @@
-import React from 'react';
-import { Box, Typography, Button, List, ListItem, Divider } from '@mui/material';
-import { useRoles } from '../../Contexts/RolesContext';
-import BotonMembresia from './BotonMembresia'; // tu componente de Stripe
+// Internacional.jsx
+import React from "react";
+import {
+  Box,
+  Typography,
+  Container,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Button,
+} from "@mui/material";
+import CheckIcon from "@mui/icons-material/CheckCircle";
+import PublicIcon from "@mui/icons-material/Public";
+import HandshakeIcon from "@mui/icons-material/Handshake";
+import RocketIcon from "@mui/icons-material/Rocket";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 
-const MiMembresia = () => {
-  const { membresia } = useRoles();
-
-  if (!membresia) return null;
-
-  const { plan, monto_pagado, fechaInicio, fechaFin } = membresia;
-
-  // Normalizar el nombre del plan para acceder al objeto beneficios
-  const planKey = plan?.charAt(0).toUpperCase() + plan?.slice(1).toLowerCase();
-
-  // Definir siguiente nivel escalable
-  const next = {
-    Mensual: {
-      label: 'Escalar a Semestral',
-      priceId: process.env.REACT_APP_STRIPE_PRICE_ID_SEMESTRAL,
-    },
-    Semestral: {
-      label: 'Escalar a Anual',
-      priceId: process.env.REACT_APP_STRIPE_PRICE_ID_ANUAL,
-    },
-  }[planKey];
-
-  const beneficiosPorPlan = {
-    Mensual: [
-      'Acceso a clubes',
-      'Descuentos exclusivos',
-      'Contenido premium / secciones exclusivas de la wiki',
-      'Asesoría básica legal',
-      'Vende en nuestra marketplace',
-      'Publica Anuncios/Contenidos/Eventos hasta 10 GB mensual',
-      'Gana 15% de comisión por tus referidos',
-    ],
-    Semestral: [
-      'Todo lo anterior',
-      'Acceso a red de cultivo solidario',
-      'Tramitamos tu permiso COFEPRIS, en caso de negativa',
-    ],
-    Anual: [
-      'Si mantienes tu plan semestral por 2 semestres o contratas la anual, pagas solo $1 500 por tu amparo',
-      'Te acompañamos hasta obtención de negativa de COFEPRIS (4–6 meses)',
-    ],
-  };
-
+const Internacional = () => {
   return (
-    <Box p={3} maxWidth={600} margin="0 auto">
-      <Typography variant="h4" gutterBottom>Tu membresía: {planKey}</Typography>
-      <Typography>
-        Pagaste <strong>${monto_pagado}</strong> el{' '}
-        {new Date(fechaInicio).toLocaleDateString()} —{' '}
-        {new Date(fechaFin).toLocaleDateString()}
-      </Typography>
-      <Divider sx={{ my: 2 }} />
+    <Box
+      id="internacional-section"
+      sx={{
+        position: "relative",
+        zIndex: 1,
+        backgroundColor: "#0f0f0f",
+        color: "#f0f0f0",
+        py: { xs: 8, md: 12 },
+        px: 2,
+        // sin margin-top negativo — queda justo después del hero
+        borderTopLeftRadius: { xs: 0, md: 12 },
+        borderTopRightRadius: { xs: 0, md: 12 },
+      }}
+    >
+      <Container maxWidth="md" sx={{ textAlign: "left" }}>
+        <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: "#a0ff7f" }}>
+          Creciendo juntos, país por país — cultivando comunidad y tecnología 🌱
+        </Typography>
 
-      <Typography variant="h6">Beneficios incluidos</Typography>
-      <List dense>
-        {beneficiosPorPlan[planKey]?.map((b, i) => (
-          <ListItem key={i}>
-            <span className="material-icons" style={{ marginRight: 8, color: '#4caf50' }}>
-              check_circle
-            </span>
-            {b}
+        <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.7, color: "#e9e9e9" }}>
+          Marihuanas.club no es solo una red: es un ecosistema digital cooperativo que conecta a
+          los clubs cannábicos solidarios del mundo con herramientas tecnológicas, trazabilidad
+          transparente y una visión compartida de autocultivo responsable y legalización consciente.
+        </Typography>
+
+        <Typography variant="h5" sx={{ mb: 2, color: "#ffd166", fontWeight: 700 }}>
+          🌐 Un modelo adaptable a cada país
+        </Typography>
+        <Typography variant="body1" sx={{ mb: 2, color: "#e9e9e9" }}>
+          Cada territorio tiene su propia forma de entender el cannabis — y nosotros nos adaptamos.
+          Nuestra plataforma se configura según las leyes, prácticas y cultura local:
+        </Typography>
+
+        <List sx={{ mb: 3 }}>
+          {[
+            "🇲🇽 México — Clubs de Cultivo Solidario con amparo y registro de miembros.",
+            "🇪🇸 España — Asociaciones privadas y autoconsumo controlado.",
+            "🇩🇪 Alemania — Clubs Sociales con licencia y límites de trazabilidad.",
+            "🇨🇴 Colombia — Cultivo solidario y autoconsumo medicinal.",
+            "🇺🇾 Uruguay — Clubs registrados ante IRCCA.",
+            "🇲🇹 Malta — Asociaciones cannábicas legales con control estatal.",
+          ].map((text, i) => (
+            <ListItem key={i} alignItems="flex-start" disableGutters>
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <PublicIcon sx={{ color: "#00ff99" }} />
+              </ListItemIcon>
+              <ListItemText primary={text} primaryTypographyProps={{ color: "#f0f0f0" }} />
+            </ListItem>
+          ))}
+        </List>
+
+        <Typography variant="h5" sx={{ mt: 1, mb: 2, color: "#ffd166", fontWeight: 700 }}>
+          💻 Tecnología para la autogestión
+        </Typography>
+
+        <List sx={{ mb: 3 }}>
+          {[
+            "Registrar a sus miembros.",
+            "Generar QRs únicos por planta.",
+            "Llevar bitácoras digitales de cultivo y distribución.",
+            "Controlar límites y trazabilidad según normativa local.",
+            "Comunicar a su comunidad con total privacidad y transparencia.",
+          ].map((text, i) => (
+            <ListItem key={i} alignItems="flex-start" disableGutters>
+              <ListItemIcon sx={{ minWidth: 40 }}>
+                <CheckIcon sx={{ color: "#00ff99" }} />
+              </ListItemIcon>
+              <ListItemText primary={text} primaryTypographyProps={{ color: "#f0f0f0" }} />
+            </ListItem>
+          ))}
+        </List>
+
+        <Typography variant="body2" sx={{ mt: 2, mb: 4, color: "#dcdcdc" }}>
+          Toda la información permanece encriptada y es auditable internamente, sin depender de plataformas externas.
+        </Typography>
+
+        <Typography variant="h5" sx={{ mt: 2, mb: 1, color: "#ffd166", fontWeight: 700 }}>
+          🤝 Conviértete en socio de tu país
+        </Typography>
+
+        <Typography variant="body1" sx={{ mb: 2, color: "#e9e9e9" }}>
+          Buscamos socios locales y colectivos pioneros que deseen implementar el modelo en su país o región.
+        </Typography>
+
+        <List sx={{ mb: 3 }}>
+          <ListItem disableGutters>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <LocalOfferIcon sx={{ color: "#00ff99" }} />
+            </ListItemIcon>
+            <ListItemText primary="Licencia nacional o regional." primaryTypographyProps={{ color: "#f0f0f0" }} />
           </ListItem>
-        ))}
-      </List>
 
-      <Box mt={4} display="flex" gap={2}>
-        {/* Renueva siempre */}
-        <BotonMembresia
-          priceId={process.env.REACT_APP_STRIPE_PRICE_ID_MENSUAL}
-          color="#A3D977"
-          label="Renovar"
-        />
+          <ListItem disableGutters>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <HandshakeIcon sx={{ color: "#00ff99" }} />
+            </ListItemIcon>
+            <ListItemText primary="Renta mensual por club activo." primaryTypographyProps={{ color: "#f0f0f0" }} />
+          </ListItem>
 
-        {/* Escalar sólo si hay siguiente nivel */}
-        {next && (
-          <BotonMembresia
-            priceId={next.priceId}
-            color="#1976d2"
-            label={next.label}
-          />
-        )}
-      </Box>
+          <ListItem disableGutters>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <RocketIcon sx={{ color: "#00ff99" }} />
+            </ListItemIcon>
+            <ListItemText primary="Ingresos compartidos por membresías o servicios." primaryTypographyProps={{ color: "#f0f0f0" }} />
+          </ListItem>
+
+          <ListItem disableGutters>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              <RocketIcon sx={{ color: "#00ff99" }} />
+            </ListItemIcon>
+            <ListItemText primary="Posibilidad de ser embajador oficial o operador país." primaryTypographyProps={{ color: "#f0f0f0" }} />
+          </ListItem>
+        </List>
+
+        <Box textAlign="center" mt={3}>
+          <Button
+            variant="contained"
+            color="success"
+            sx={{
+              fontWeight: 700,
+              fontSize: "1.05rem",
+              py: 1.1,
+              px: 4,
+              boxShadow: "0 6px 30px rgba(0,255,150,0.12)",
+            }}
+          >
+            💌 Únete a la expansión internacional →
+          </Button>
+        </Box>
+      </Container>
     </Box>
   );
 };
 
-export default MiMembresia;
+export default Internacional;

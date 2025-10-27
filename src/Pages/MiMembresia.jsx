@@ -5,7 +5,7 @@ const MiMembresia = () => {
   const { roles, membresia } = useRoles();
 
   useEffect(() => {
-    if (membresia?.activo) {
+    if (membresia?.activa) {
       console.log('⏳ Membresía activa hasta:', membresia.fechaFin);
     } else {
       console.log('🚫 Sin membresía activa');
@@ -15,7 +15,7 @@ const MiMembresia = () => {
   return (
     <div>
       <h1>Mi Membresía</h1>
-      {membresia?.activo ? (
+      {membresia?.activa ? (
         <div>
           <p><strong>Tipo:</strong> {membresia.tipo}</p>
           <p><strong>Inicio:</strong> {membresia.fechaInicio}</p>
