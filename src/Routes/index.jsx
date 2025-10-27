@@ -67,6 +67,7 @@ import ProbarMembresia from '../components/Membresias/ProbarMembresia.jsx';
 import Internacional from '../Pages/Internacional/Internacional.jsx';
 
 import GeneradorAmparo from '../Pages/Legal/GeneradorAmparo.jsx';
+import Amparo from '../Pages/Legal/Amparo.jsx';
 
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
@@ -144,6 +145,7 @@ const Rutas = () => (
 
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/legal/generadoramparo" element={<GeneradorAmparo />} />
+    <Route path="/legal/amparo" element={<Amparo />} />
     <Route path="/comunidad" element={<ComunidadPage />} />
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />

@@ -40,7 +40,7 @@ const animationList = [
 const cardConfigs = [
   { src: derechos, alt: 'Derechos Consumidores', type: 'external', path: 'https://wiki.marihuanas.club' },
   { src: cofepris, alt: 'Generador Cofepris', type: 'route', path: '/legal/generadorlibre' },
-  { src: amparo, alt: 'Amparo', type: 'route', path: '/legal/generadoramparo' },
+  { src: amparo, alt: 'Amparo', type: 'route', path: '/legal/amparo' },
   { src: activismo, alt: 'Activismo', type: 'route', path: '/legal/activismo' },
   { src: tuabogado, alt: 'Tu Abogado', type: 'route', path: '/legal/tuabogado' },
   { src: club, alt: 'Club', type: 'route', path: '/legal/club' },
