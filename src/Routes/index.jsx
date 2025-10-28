@@ -4,7 +4,8 @@ import LmAi from '../components/Asistente/LmAi';
 import HomeRoute from '../Pages/HomeRoute';
 import Perfil from '../components/Usuarios/Perfil.jsx';
 import CallbackPage from '../Pages/CallbackPage';
-import Clubs from '../Pages/Clubs.jsx';
+import Clubs from '../Pages/Clubs/Clubs.jsx';
+import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
 import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
@@ -67,6 +68,7 @@ import ProbarMembresia from '../components/Membresias/ProbarMembresia.jsx';
 import Internacional from '../Pages/Internacional/Internacional.jsx';
 
 import GeneradorAmparo from '../Pages/Legal/GeneradorAmparo.jsx';
+import GeneradorEscritoLibre from '../Pages/Legal/GeneradorEscritoLibre.jsx';
 import Amparo from '../Pages/Legal/Amparo.jsx';
 
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
@@ -124,6 +126,7 @@ const Rutas = () => (
 
     <Route path="/clubs" element={<Clubs />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
+    <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
     
     <Route path="/agregar-curso" element={<AgregarCurso />} />
@@ -145,6 +148,7 @@ const Rutas = () => (
 
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/legal/generadoramparo" element={<GeneradorAmparo />} />
+    <Route path="/legal/generadorlibre" element={<GeneradorEscritoLibre />} />
     <Route path="/legal/amparo" element={<Amparo />} />
     <Route path="/comunidad" element={<ComunidadPage />} />
     <Route path="/eventos" element={<EventosPage />} />
