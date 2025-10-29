@@ -161,7 +161,7 @@ Consejos prácticos y plan de acción (detallado):
 - Técnicas conductuales: usar la técnica STOP (detener, respirar, observar, proceder) cuando aparezca la urgencia.
 - Actividades sustitutivas: deporte breve, meditación guiada de 5-10 minutos, hobby creativo.
 
-Intervención preventiva (cuartilla):
+Intervención preventiva:
 - Escribe una página analizando beneficios de reducir el consumo y obstáculos esperados. Define 5 acciones concretas para la primera semana (ej.: reducir un día a la semana).
 - Considera apoyo profesional si notas aumento de tolerancia o dependencia emocional.
 - Si convives con otras personas, comunica límites y acuerdos para evitar presión social.
@@ -196,7 +196,7 @@ Consejos prácticos:
 - Mindfulness y anclajes: sesiones cortas diarias (5-10 min) para mejorar tolerancia a la incomodidad.
 - Fortalece redes sociales no ligadas al consumo.
 
-Profundización (cuartilla):
+Profundización:
 - Escribe sobre emociones incómodas que sueles evitar con sustancias. Desarrolla alternativas concretas (contactar a un amigo, respiración, salir a caminar).
 `,
     Moderado: `Resumen:
@@ -235,7 +235,7 @@ Acciones prácticas:
 - Alterna días sin consumo para evitar aumento de tolerancia.
 - Mantén registros de dosis/efectos para detectar cambios.
 
-Cuartilla:
+Redacta:
 - Documenta expectativas sobre efectos y cómo estas cambian con el tiempo. Si notas pérdida de efecto, consulta a profesional.
 `,
     Moderado: `Resumen:
@@ -271,7 +271,7 @@ Consejos prácticos:
 - Revisa decisiones que puedan generar problemas (manejo de dinero, relaciones, trabajo).
 - Mantén comunicación abierta con personas cercanas si surge conflicto.
 
-Cuartilla:
+Redacta:
 - Haz una lista de situaciones donde el consumo podría generar consecuencias y planea respuestas concretas.
 `,
     Moderado: `Resumen:
@@ -293,7 +293,7 @@ Intervención recomendada:
 - Apoyo social y familiar para reparar relaciones o recuperar empleo.
 - Programas de tratamiento intensivos y seguimiento prolongado.
 
-Plan amplio (cuartillas):
+Plan amplio:
 - Evaluación integral: legal, médica, psicosocial.
 - Diseño de plan de reinserción: formación, terapia familiar, redes de apoyo.
 - Monitoreo y ajustes continuos; incluir indicadores de éxito (empleo, relaciones, abstinencia).
