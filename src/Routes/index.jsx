@@ -72,6 +72,8 @@ import GeneradorEscritoLibre from '../Pages/Legal/GeneradorEscritoLibre.jsx';
 import Amparo from '../Pages/Legal/Amparo.jsx';
 import GeneradorActaYEstatutos from '../Pages/Legal/GeneradorActaYEstatutos.jsx';
 import InstruccionesActa from '../Pages/Legal/InstruccionesActa.jsx';
+import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
+import Activismo from '../Pages/Legal/Activismo.jsx';
 
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 // Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
@@ -149,6 +151,8 @@ const Rutas = () => (
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
     <Route path="/legal" element={<LegalPage />} />
+    <Route path="/legal/activismo" element={<Activismo />} />
+    <Route path="/legal/tuabogado" element={<TuAbogado />} />
     <Route path="/legal/instrucciones-acta" element={<InstruccionesActa />} />
     <Route path="/legal/generadoracta" element={<GeneradorActaYEstatutos />} />
     <Route path="/legal/generadoramparo" element={<GeneradorAmparo />} />
