@@ -1,5 +1,5 @@
 // src/components/InfoClubs.jsx
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -22,18 +22,24 @@ import LocalFloristIcon from "@mui/icons-material/LocalFlorist";
 import PeopleIcon from "@mui/icons-material/People";
 import HandshakeIcon from "@mui/icons-material/Handshake";
 import EmojiObjectsIcon from "@mui/icons-material/EmojiObjects";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import ReplayIcon from "@mui/icons-material/Replay";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import { motion } from "framer-motion";
 
 // IMPORT DEL VIDEO LOCAL (coloca clubs.mp4 en src/assets/)
 import clubsVideo from "../../assets/clubs.mp4";
 
 /**
- * InfoClubs (VERSIÓN MORADA + VIDEO)
+ * InfoClubs (VERSIÓN MORADA + VIDEO CON CONTROLES PERSONALIZADOS)
  * - Título verde
  * - Fondos morados / degradados
  * - Video importado y mostrado debajo del título (separado 6px)
  * - Íconos de sección en amarillo
  * - MUI + framer-motion
+ * - Incluye: play/pause, repeat toggle, mute toggle (audio por defecto ON; si autoplay es bloqueado se pide interacción)
  */
 
 // ---------- Paleta y estilos ----------
@@ -227,6 +233,54 @@ const SECCIONES = [
 export default function InfoClubs() {
   const theme = useTheme();
 
+  // video hooks / estados
+  const videoRef = useRef(null);
+  const [isLoop, setIsLoop] = useState(true); // repeat ON por defecto
+  const [isMuted, setIsMuted] = useState(false); // audio por defecto ON (si browser lo permite)
+  const [showBigPlay, setShowBigPlay] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [userInteracted, setUserInteracted] = useState(false);
+
+  // intentar autoplay al montar; si falla mostramos overlay de play
+  useEffect(() => {
+    const tryPlay = async () => {
+      if (!videoRef.current) return;
+      videoRef.current.muted = isMuted;
+      videoRef.current.loop = isLoop;
+      try {
+        // Intentamos reproducir; si el navegador bloquea autoplay con audio, falla y mostramos overlay
+        await videoRef.current.play();
+        setIsPlaying(!videoRef.current.paused);
+        setShowBigPlay(false);
+      } catch (err) {
+        // autoplay con audio bloqueado -> pedir interacción
+        setShowBigPlay(true);
+      }
+    };
+    tryPlay();
+
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.addEventListener("play", onPlay);
+      videoRef.current.addEventListener("pause", onPause);
+    }
+    return () => {
+      if (videoRef.current) {
+        videoRef.current.removeEventListener("play", onPlay);
+        videoRef.current.removeEventListener("pause", onPause);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // solo al montar
+
+  // sincronizar loop/mute en el elemento si cambian
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.loop = isLoop;
+    videoRef.current.muted = isMuted;
+  }, [isLoop, isMuted]);
+
   return (
     <motion.div initial="hidden" animate="show" variants={parent}>
       <Card
@@ -293,7 +347,7 @@ export default function InfoClubs() {
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1, transition: { delay: 0.12, duration: 0.6 } }}
-            style={{ marginTop: 6 }} // <-- aquí está el cambio a 6px
+            style={{ marginTop: 6 }} // <-- 6px separation
           >
             <Box
               sx={{
@@ -302,16 +356,19 @@ export default function InfoClubs() {
                 overflow: "hidden",
                 border: "1px solid rgba(255,255,255,0.04)",
                 background: styles.moradoGradient,
-                boxShadow: "0 18px 60px rgba(34,16,60,0.45)"
+                boxShadow: "0 18px 60px rgba(34,16,60,0.45)",
+                position: "relative"
               }}
             >
+              {/* Video - incluimos controles nativos pero también panel extra con repeat/mute/play */}
               <video
+                ref={videoRef}
                 src={clubsVideo}
                 autoPlay
-                muted
-                loop
+                loop={isLoop}
+                muted={isMuted}
                 playsInline
-                controls={false}
+                controls // mostramos controles nativos además del panel custom
                 style={{
                   width: "100%",
                   height: "auto",
@@ -320,6 +377,7 @@ export default function InfoClubs() {
                   maxHeight: 320,
                 }}
               />
+
               {/* Overlay decorativo */}
               <Box
                 sx={{
@@ -329,6 +387,7 @@ export default function InfoClubs() {
                   alignItems: "center",
                   justifyContent: "flex-start",
                   gap: 2,
+                  background: "linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.12))"
                 }}
               >
                 <Avatar sx={{ bgcolor: "transparent", width: 48, height: 48 }}>
@@ -343,6 +402,112 @@ export default function InfoClubs() {
                   </Typography>
                 </Box>
               </Box>
+
+              {/* PANEL DE CONTROLES CUSTOM (abajo a la derecha) */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  right: 12,
+                  bottom: 12,
+                  display: "flex",
+                  gap: 1,
+                  alignItems: "center",
+                  zIndex: 30
+                }}
+              >
+                <IconButton
+                  onClick={() => {
+                    if (!videoRef.current) return;
+                    if (videoRef.current.paused) {
+                      videoRef.current.play().catch(() => {});
+                      setUserInteracted(true);
+                    } else {
+                      videoRef.current.pause();
+                    }
+                  }}
+                  sx={{
+                    bgcolor: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                    "&:hover": { bgcolor: "rgba(0,0,0,0.55)" }
+                  }}
+                >
+                  {isPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+                </IconButton>
+
+                <IconButton
+                  onClick={() => {
+                    const next = !isLoop;
+                    setIsLoop(next);
+                    if (videoRef.current) videoRef.current.loop = next;
+                  }}
+                  sx={{
+                    bgcolor: isLoop ? "rgba(124,255,90,0.14)" : "rgba(0,0,0,0.45)",
+                    color: isLoop ? "#062e00" : "#fff",
+                    "&:hover": { bgcolor: isLoop ? "rgba(124,255,90,0.18)" : "rgba(0,0,0,0.55)" }
+                  }}
+                >
+                  <ReplayIcon />
+                </IconButton>
+
+                <IconButton
+                  onClick={() => {
+                    const nextMuted = !isMuted;
+                    setIsMuted(nextMuted);
+                    if (videoRef.current) {
+                      videoRef.current.muted = nextMuted;
+                      // si el usuario activa sonido y el video está en pausa, lanzamos play (gesture)
+                      if (!nextMuted && videoRef.current.paused) {
+                        videoRef.current.play().catch(() => {});
+                        setUserInteracted(true);
+                      }
+                    }
+                  }}
+                  sx={{
+                    bgcolor: "rgba(0,0,0,0.45)",
+                    color: "#fff",
+                    "&:hover": { bgcolor: "rgba(0,0,0,0.55)" }
+                  }}
+                >
+                  {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+                </IconButton>
+              </Box>
+
+              {/* si el autoplay con audio fue bloqueado, mostramos gran overlay de play */}
+              {showBigPlay && (
+                <Box
+                  onClick={async () => {
+                    try {
+                      if (!videoRef.current) return;
+                      await videoRef.current.play();
+                      // user gesture -> permitimos audio por defecto
+                      videoRef.current.muted = false;
+                      setIsMuted(false);
+                      setShowBigPlay(false);
+                      setUserInteracted(true);
+                    } catch (e) {
+                      // no hacemos nada, seguimos mostrando el botón
+                    }
+                  }}
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "grid",
+                    placeItems: "center",
+                    background: "linear-gradient(180deg, rgba(0,0,0,0.24), rgba(0,0,0,0.36))",
+                    zIndex: 25,
+                    cursor: "pointer"
+                  }}
+                >
+                  <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.95 }}>
+                    <Box sx={{ bgcolor: "rgba(255,255,255,0.06)", borderRadius: "50%", p: 2 }}>
+                      <PlayArrowIcon sx={{ fontSize: 44, color: "#fff" }} />
+                    </Box>
+                    <Typography sx={{ color: "#fff", mt: 1, textAlign: "center" }}>
+                      Tocar para reproducir con audio
+                    </Typography>
+                  </motion.div>
+                </Box>
+              )}
             </Box>
           </motion.div>
 
