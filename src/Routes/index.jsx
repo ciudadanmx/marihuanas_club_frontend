@@ -1,5 +1,7 @@
 import React from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
+
+// 🧠 Importaciones existentes
 import LmAi from '../components/Asistente/LmAi';
 import HomeRoute from '../Pages/HomeRoute';
 import Perfil from '../components/Usuarios/Perfil.jsx';
@@ -30,9 +32,7 @@ import UsuarioPage from '../Pages/Usuarios/UsuarioPage';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
 import MisProductos from '../Pages/MarketPlace/MisProductos';
 import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
-
 import CursoDetalle from '../Pages/Cursos/Curso.jsx';
-
 import ContenidosPage from '../Pages/Blog/Contenidos';
 import EditarContenido from '../Pages/Blog/EditarContenido';
 import EliminarContenido from '../Pages/Blog/EliminarContenido';
@@ -46,9 +46,7 @@ import AgregarCurso from '../Pages/Blog/AgregarCurso.jsx';
 import EliminarCurso from '../Pages/Cursos/EliminarCurso.jsx';
 import EditarCurso from '../Pages/Cursos/EditarCurso.jsx';
 import EliminarProducto from '../Pages/MarketPlace/EliminarProducto.jsx';
-
 import HomeViewModelWrapper from '../components/Florateca/home/HomeViewModelWrapper.jsx';
-
 import Curso from '../Pages/Cursos/Curso.jsx';
 import CursosPage from '../Pages/Cursos/Cursos';
 import ProductosPage from '../Pages/MarketPlace/ProductosPage.jsx';
@@ -59,14 +57,10 @@ import DetailViewModelWrapper from '../components/Florateca/detail/DetailViewMod
 import FloratecaLayout from '../components/Florateca/FloratecaLayout.jsx';
 import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
 import Juegos from '../Pages/Herramientas/Juegos.jsx';
-//import WeedClicker from '../components/Juegos/WeedClicker/WeedClicker.jsx';
-
 import JuegoStatic from '../Pages/Herramientas/JuegoStatic';
-
 import MembershipCheckout from '../components/Membresias/MembershipCheckout.jsx';
 import ProbarMembresia from '../components/Membresias/ProbarMembresia.jsx';
 import Internacional from '../Pages/Internacional/Internacional.jsx';
-
 import GeneradorAmparo from '../Pages/Legal/GeneradorAmparo.jsx';
 import GeneradorEscritoLibre from '../Pages/Legal/GeneradorEscritoLibre.jsx';
 import Amparo from '../Pages/Legal/Amparo.jsx';
@@ -75,8 +69,12 @@ import InstruccionesActa from '../Pages/Legal/InstruccionesActa.jsx';
 import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
 import Activismo from '../Pages/Legal/Activismo.jsx';
 
+// 🧩 Wiki
+import WikiBar from '../components/WikiBar.jsx';
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
-// Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
+import WikiHome from '../Pages/Wiki/WikiHome.jsx'; // si planeas tener una página principal para la wiki
+
+// 🧰 Wrappers
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
   return <EditarContenido filtros="editar" parametros={slug} />;
@@ -85,7 +83,6 @@ const EliminarContenidoWrapper = () => {
   const { slug } = useParams();
   return <EliminarContenido filtros="eliminar" parametros={slug} />;
 };
-// Wrapper para pasar filtros="editar" y parámetros a ContenidosPage
 const EditarCursoWrapper = () => {
   const { slug } = useParams();
   return <EditarCurso filtros="editar" parametros={slug} />;
@@ -99,46 +96,39 @@ const EliminarProductoWrapper = () => {
   return <EliminarProducto filtros="eliminar" parametros={slug} />;
 };
 
+// 💡 Layout exclusivo para la Wiki
+const WikiLayout = ({ children }) => (
+  <>
+    <WikiBar />
+    <div style={{ paddingTop: '64px' }}>{children}</div>
+  </>
+);
+
 const Rutas = () => (
   <Routes>
+    {/* RUTAS NORMALES */}
     <Route path="/" element={<HomeRoute />} />
-    
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />
     <Route path="/herramientas" element={<HerramientasPage />} />
-    
     <Route path="/juegos" element={<Juegos />} />
-     <Route path="/juega/:nombre" element={<JuegoStatic />} />
-    
+    <Route path="/juega/:nombre" element={<JuegoStatic />} />
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/perfil/:username" element={<Perfil />} />
     <Route path="/lmai" element={<LmAi />} />
-
     <Route path="/info/quienes" element={<QuienesSomos />} />
     <Route path="/info/faq" element={<PreguntasFrecuentes />} />
-    
-    
-    
-    {/* <Route path="/juegos/weedclicker" element={<WeedClicker />} /> */}
-    
     <Route path="/herramientas/florateca" element={<FloratecaLayout />}>
-      <Route index element={<HomeViewModelWrapper />} /> {/* /scanner */}
-      <Route path="strain/:id" element={<DetailViewModelWrapper />} /> {/* /scanner/strain/:id */}
+      <Route index element={<HomeViewModelWrapper />} />
+      <Route path="strain/:id" element={<DetailViewModelWrapper />} />
     </Route>
-
-
     <Route path="/evento/:slug" element={<Evento />} />
-
     <Route path="/clubs" element={<Clubs />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
-    
     <Route path="/agregar-curso" element={<AgregarCurso />} />
-
     <Route path="/membresias" element={<Membresias />} />
-    
     <Route path="/membresias/pagar/*" element={<ProbarMembresia />} />
-
     <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/registro-vendedor" element={<RegistroTienda />} />
@@ -147,9 +137,7 @@ const Rutas = () => (
     <Route path="/market" element={<MarketPlace />} />
     <Route path="/carrito" element={<Carrito />} />
     <Route path="/market/producto/:slug" element={<Producto />} />
-    
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
-
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/legal/activismo" element={<Activismo />} />
     <Route path="/legal/tuabogado" element={<TuAbogado />} />
@@ -161,49 +149,41 @@ const Rutas = () => (
     <Route path="/comunidad" element={<ComunidadPage />} />
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
-
-   <Route path="/gana" element={<Gana />} />
-   <Route path="/gana/internacionaliza" element={<Internacional />} />
-<Route path="/gana/promueve" element={<PromueveMembresias />} />
-{/* dentro de <Routes> */}
-<Route path="/gana/vende" element={<VendePage />} />
-
-<Route path="/usuario" element={<UsuarioPage />} />
-
-
-
-    
-
-    {/* Ruta para eliminar producto */}
+    <Route path="/gana" element={<Gana />} />
+    <Route path="/gana/internacionaliza" element={<Internacional />} />
+    <Route path="/gana/promueve" element={<PromueveMembresias />} />
+    <Route path="/gana/vende" element={<VendePage />} />
+    <Route path="/usuario" element={<UsuarioPage />} />
     <Route path="/productos/eliminar/:slug" element={<EliminarProductoWrapper />} />
-
     <Route path="/productos/*" element={<ProductosPage />} />
-    
-    
-    {/* Ruta para editar contenido */}
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
-    {/* Ruta para editar contenido */}
     <Route path="/cursos/eliminar/:slug" element={<EliminarCursoWrapper />} />
-
     <Route path="/cursos/*" element={<CursosPage />} />
     <Route path="/curso/:slug" element={<Curso />} />
-    
-    {/* Ruta para editar contenido */}
     <Route path="/contenidos/editar/:slug" element={<EditarContenidoWrapper />} />
-    {/* Ruta para editar contenido */}
     <Route path="/contenidos/eliminar/:slug" element={<EliminarContenidoWrapper />} />
-
     <Route path="/contenidos/*" element={<ContenidosPage />} />
-
-    {/* ruta suelta para ver un contenido individual */}
     <Route path="/contenido/:slug" element={<Contenido />} />
-
-    
-    
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/prueba" element={<Prueba />} />
-    
-    <Route path="/wiki" element={<WikiViewer />} />
+
+    {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
+    <Route
+      path="/wiki"
+      element={
+        <WikiLayout>
+          <WikiHome />
+        </WikiLayout>
+      }
+    />
+    <Route
+      path="/wiki/:slug"
+      element={
+        <WikiLayout>
+          <WikiViewer />
+        </WikiLayout>
+      }
+    />
 
     <Route path="/market/store/:slug" element={<Tienda />}>
       <Route path="agregar-producto" element={<AgregarProducto />} />
