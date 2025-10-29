@@ -55,7 +55,7 @@ export default function UsuarioPage() {
     );
 
   // URL personalizada para el QR (por ejemplo con el ID del usuario)
-  const url = `https://marihuanas.club/usuario/${user?.sub}`;
+  const url = `https://marihuanas.club/perfil/${user?.email}`;
 
   return (
     <Box

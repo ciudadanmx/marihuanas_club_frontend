@@ -15,6 +15,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { slugify } from "../../utils/slugify.jsx";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
+import RegisterStoreStepper from './RegisterStoreStepper.jsx';
+
 
 const LIBRARIES = ["places"];
 const steps = ["Nombre de la tienda", "Conectar Stripe", "Agregar dirección", "Verificar datos"];
@@ -222,9 +224,6 @@ export default function RegistroTienda() {
 
   // 🧭 Si está autenticado, continúa con el registro normal
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h5">Registro de tienda (en construcción)</Typography>
-      {/* Aquí continuará tu flujo normal de pasos, stripe, mapa, etc */}
-    </Box>
+   <RegisterStoreStepper />
   );
 }

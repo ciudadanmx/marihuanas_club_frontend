@@ -1,7 +1,9 @@
-import React from 'react';
+import { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Avatar, MenuItem, ListItemIcon, Typography, Box, Switch, FormControlLabel } from '@mui/material';
+import { useStores } from '../../hooks/useStores';
+
 
 // Context de roles y membresía
 import { useRoles } from '../../Contexts/RolesContext';
@@ -16,7 +18,30 @@ const Icon = ({ name }) => <span className="material-icons" style={{ fontSize: 2
 const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, defaultProfileImage }) => {
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const { isAdmin, isEditor, isRoot, isActivaMembresia, userData } = useRoles();
+  const [checking, setChecking] = useState(false);
+  const { getStoreByEmail } = useStores();
   const navigate = useNavigate();
+
+  const handleVender = async () => {
+    if (!isAuthenticated ) return;
+
+    setChecking(true);
+    try {
+      const stores = await getStoreByEmail(user.email);
+      console.log('*** Obteniendo  stores');
+      if (stores.length > 0 && stores[0].attributes.terminado) {
+        const slug = stores[0].attributes.slug;
+        navigate(`/market/store/${slug}`);
+      } else {
+        navigate('/registro-vendedor');
+      }
+    } catch (err) {
+      console.error('Error al verificar tienda:', err);
+      navigate('/registro-vendedor');
+    } finally {
+      setChecking(false);
+    }
+  };
 
   // Opciones con label dinámico para membresía
   const membershipLabel = isActivaMembresia() ? 'Mi Membresía' : 'Membresías';
@@ -25,7 +50,7 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
     { label: 'Tu Club', icon: 'home', onClick: () => navigate('/clubs/miclub'), show: isAuthenticated },
     { label: 'Tus Anuncios', icon: 'campaign', onClick: () => navigate('/comunidad/mis-anuncios'), show: isAuthenticated },
     { label: 'Tus Compras', icon: 'shopping_bag', onClick: () => navigate('/compras'), show: isAuthenticated },
-    { label: 'Tu Tienda', icon: 'shopping_cart', onClick: () => navigate('/registro-vendedor'), show: isAuthenticated },
+    { label: 'Tu Tienda', icon: 'shopping_cart', onClick: () => handleVender(), show: isAuthenticated },
     { label: 'Tus Cursos', icon: 'menu_book', onClick: () => navigate('/cursos/mis-cursos'), show: isAuthenticated },
     { label: 'Dashboard Admin', icon: 'dashboard', component: Link, to: '/admin/dashboard', show: isAdmin() },
     { label: 'Editor', icon: 'edit', component: Link, to: '/editor', show: isEditor() },
