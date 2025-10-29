@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Grid, Card, CardContent, Typography, Box, Chip, Zoom, CircularProgress, Alert, Button } from "@mui/material";
 import '../styles/membresias.css';
 import BotonMembresia from '../components/Membresias/BotonMembresia.jsx';
+import InfoClubs from '../components/Clubs/InfoClubs.jsx';
 import membresiasImg from '../assets/como.png';
 import { useRoles } from '../Contexts/RolesContext';
 import MiMembresia from '../components/Membresias/MiMembresia.jsx';
@@ -283,6 +284,8 @@ const Membresias = () => {
           style={{ maxWidth: '100%', height: 'auto' }}
         />
       </Box>
+
+      <InfoClubs />
     </Box>
   );
 };

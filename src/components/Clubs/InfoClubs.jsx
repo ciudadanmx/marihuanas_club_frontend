@@ -257,7 +257,7 @@ export default function InfoClubs() {
         setShowBigPlay(true);
       }
     };
-    tryPlay();
+    //tryPlay();
 
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
@@ -655,14 +655,6 @@ export default function InfoClubs() {
             justifyContent="space-between"
             sx={{ mt: 1 }}
           >
-            <Box>
-              <Typography sx={{ fontWeight: 700, color: "rgba(255,255,255,0.92)" }}>
-                ¿Quieres que personalice los estatutos del club o los formatee con tu logo?
-              </Typography>
-              <Typography variant="caption" color="rgba(255,255,255,0.65)">
-                Dime el estilo (formal, minimal, vintage) y te lo adapto.
-              </Typography>
-            </Box>
 
             <Box sx={{ display: "flex", gap: 1 }}>
               <IconButton

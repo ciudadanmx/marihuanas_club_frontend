@@ -232,7 +232,7 @@ const TiposClub = () => {
                     color="success"
                     size="large"
                     sx={{ mt: 3, borderRadius: "999px" }}
-                    onClick={() => navigate("/clubs/afiliar-jardinero")}
+                    onClick={() => navigate("/clubs/agregar-club")}
                 >
                   Afiliar mi Club de Consumo
                 </Button>
