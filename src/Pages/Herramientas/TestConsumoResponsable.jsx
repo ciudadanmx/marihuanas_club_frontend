@@ -369,37 +369,37 @@ const TestConsumoResponsable = () => {
           </Box>
           <Box textAlign="right" mb={1}>
             </Box>
-  {/* Chip verdoso */}
-  <Chip
-    label={`${progreso}% completado`}
-    sx={{
-      backgroundColor: '#6fbf73',
-      color: 'white',
-      fontWeight: 600,
-      boxShadow: '0 0 6px rgba(111,191,115,0.5)',
-    }}
-  />
+              {/* Chip verdoso */}
+              <Chip
+                label={`${progreso}% completado`}
+                sx={{
+                  backgroundColor: '#6fbf73',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 0 6px rgba(111,191,115,0.5)',
+                }}
+              />
   
-  <IconButton onClick={reset} aria-label="reset" title="Reiniciar prueba">
-    <RestartAltIcon sx={{ color: '#4caf50' }} />
-  </IconButton>
-</Box>
+              <IconButton onClick={reset} aria-label="reset" title="Reiniciar prueba">
+                <RestartAltIcon sx={{ color: '#4caf50' }} />
+              </IconButton>
+            </Box>
 
-{/* Barra de progreso verde pachecón */}
-<LinearProgress
-  variant="determinate"
-  value={progreso}
-  sx={{
-    height: 8,
-    borderRadius: 8,
-    mb: 2,
-    backgroundColor: '#c8e6c9', // fondo más claro
-    '& .MuiLinearProgress-bar': {
-      backgroundColor: '#4caf50', // barra principal
-      borderRadius: 8,
-    },
-  }}
-/>
+          {/* Barra de progreso verde pachecón */}
+          <LinearProgress
+            variant="determinate"
+            value={progreso}
+            sx={{
+              height: 8,
+              borderRadius: 8,
+              mb: 2,
+              backgroundColor: '#c8e6c9', // fondo más claro
+              '& .MuiLinearProgress-bar': {
+                backgroundColor: '#4caf50', // barra principal
+                borderRadius: 8,
+              },
+            }}
+          />
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={2}>

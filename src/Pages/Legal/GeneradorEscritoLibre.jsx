@@ -7,75 +7,144 @@ import {
   Container, Grid, Paper, Typography, Box, TextField, Button, Stack, Alert, Divider
 } from '@mui/material';
 import { motion } from 'framer-motion';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
 // Registrar fuente para PDF (opcional)
 Font.register({ family: 'Times-Roman' });
 
 // ---------- Estilos PDF ----------
 const pdfStyles = StyleSheet.create({
-  page: { fontFamily: 'Times-Roman', padding: 28, fontSize: 11, lineHeight: 1.45 },
-  title: { fontSize: 12, textAlign: 'center', marginBottom: 8, fontWeight: 'bold' },
-  heading: { fontSize: 11, marginTop: 8, marginBottom: 4, fontWeight: 'bold' },
-  paragraph: { marginBottom: 6, textAlign: 'justify' },
-  footer: { position: 'absolute', fontSize: 9, left: 28, right: 28, bottom: 20, textAlign: 'center' },
-  destinatario: { marginBottom: 8, fontSize: 10 }
+  page: {
+    fontFamily: 'Times-Roman',
+    paddingTop: 36,
+    paddingBottom: 36,
+    paddingHorizontal: 40,
+    fontSize: 11,
+    lineHeight: 1.45,
+  },
+  title: { fontSize: 13, textAlign: 'center', marginBottom: 8, fontWeight: 'bold' },
+  heading: { fontSize: 12, marginTop: 8, marginBottom: 4, fontWeight: 'bold' },
+  paragraph: { marginBottom: 6, textAlign: 'justify', fontSize: 11 },
+  bold: { fontWeight: 'bold' },
+  footer: { position: 'absolute', fontSize: 9, left: 40, right: 40, bottom: 20, textAlign: 'center', color: '#666' },
+  destinatario: { marginBottom: 8, fontSize: 10, whiteSpace: 'pre-wrap' },
+  signatureBlock: { marginTop: 28, alignItems: 'center' },
+  signatureLine: { width: '62%', borderTopWidth: 1, borderTopColor: '#000', marginTop: 20, marginBottom: 6 },
+  signatureName: { fontWeight: 'bold', fontSize: 11 },
+  signatureSmall: { fontSize: 10, color: '#333' }
 });
 
 // ---------- Helpers ----------
+function formatFechaFormal(inputDate) {
+  // inputDate puede ser: '' | undefined | '2025-09-25' | '2025-09-25T00:00:00' | Date
+  const d = inputDate ? new Date(inputDate) : new Date();
+  if (isNaN(d)) return String(inputDate || '').trim();
+
+  const day = d.getDate(); // sin 0 delante
+  const monthName = d.toLocaleString('es-MX', { month: 'long' }); // 'septiembre'
+  const monthCap = monthName.charAt(0).toUpperCase() + monthName.slice(1); // 'Septiembre'
+  const year = d.getFullYear();
+
+  return `${day} de ${monthCap} del ${year}`;
+}
+// Helpers de normalización / capitalización
+function capitalizePart(part) {
+  // maneja null/empty, respeta acentos usando toLocaleUpperCase
+  if (!part) return '';
+  return part.charAt(0).toLocaleUpperCase('es-MX') + part.slice(1);
+}
+
+function titleCase(value) {
+  if (typeof value !== 'string') return '';
+  // normaliza espacios, pone en minúsculas primero
+  return value
+    .trim()
+    .toLowerCase()
+    .split(/\s+/) // separa por espacios
+    .map(word =>
+      // mantener y respetar separadores '-' y ' (guion y apóstrofe)
+      word
+        .split(/([-'])/) // conserva el separador en el array
+        .map(part => (part === '-' || part === "'" ? part : capitalizePart(part)))
+        .join('')
+    )
+    .join(' ');
+}
+
+// Normalizadores para RFC / CURP (mayúsculas)
+const normalizeRFC = (rfc) => {
+  if (!rfc && rfc !== '') return rfc;
+  return String(rfc || '').trim().toUpperCase();
+};
+const normalizeCURP = (curp) => {
+  if (!curp && curp !== '') return curp;
+  return String(curp || '').trim().toUpperCase();
+};
+
+// Reemplazo de joinFullName usando titleCase
 const joinFullName = ({ nombres = '', apellidoP = '', apellidoM = '' }) => {
   const parts = [];
-  if (nombres) parts.push(nombres.trim());
-  if (apellidoP) parts.push(apellidoP.trim());
-  if (apellidoM) parts.push(apellidoM.trim());
+  if (nombres) parts.push(titleCase(nombres));
+  if (apellidoP) parts.push(titleCase(apellidoP));
+  if (apellidoM) parts.push(titleCase(apellidoM));
   return parts.join(' ') || '____________________';
 };
 
+// Reemplazo de joinAddress aplicando titleCase a las piezas textuales
 const joinAddress = ({ calle = '', numext = '', numint = '', colonia = '', municipio = '', estado = '', cp = '' }) => {
   const parts = [];
-  if (calle) parts.push(calle.trim());
-  if (numext) parts.push(`No. ${numext.trim()}`);
-  if (numint) parts.push(`Int. ${numint.trim()}`);
-  if (colonia) parts.push(`Col. ${colonia.trim()}`);
-  if (municipio) parts.push(municipio.trim());
-  if (estado) parts.push(estado.trim());
-  if (cp) parts.push(`C.P. ${cp.trim()}`);
+  if (calle) parts.push(titleCase(calle));
+  if (numext) parts.push(`No. ${String(numext).trim()}`);
+  if (numint) parts.push(`Int. ${String(numint).trim()}`);
+  if (colonia) parts.push(`Col. ${titleCase(colonia)}`);
+  if (municipio) parts.push(titleCase(municipio));
+  if (estado) parts.push(titleCase(estado));
+  if (cp) parts.push(`C.P. ${String(cp).trim()}`);
   return parts.join(', ') || '____________________';
 };
 
+// Validaciones actualizadas (RFC y CURP en mayúsculas)
 function isValidRFC(rfc) {
-  if (!rfc) return true; // opcional
-  const re = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/i;
-  return re.test(rfc.trim());
+  if (!rfc) return true; // opcional: cambiar a false si quieres requerir RFC
+  const s = normalizeRFC(rfc);
+  const re = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/; // ahora en mayúsculas
+  return re.test(s);
 }
+
 function isValidCURP(curp) {
   if (!curp) return true;
-  const re = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/i;
-  return re.test(curp.trim());
+  const s = normalizeCURP(curp);
+  const re = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/; // mayúsculas
+  return re.test(s);
 }
+
 
 function formatDateTimeNow() {
   const d = new Date();
-  return d.toLocaleString('es-MX', { timeZone: 'America/Mexico_City' });
+  return d.toLocaleDateString('es-MX', { timeZone: 'America/Mexico_City', day: '2-digit', month: 'long', year: 'numeric' });
 }
+
+// Helper para crear segmentos fáciles
+const seg = (text, bold = false) => ({ text: String(text || ''), bold });
 
 // ---------- Plantilla / Secciones (para preview + PDF) ----------
 function buildSections(form) {
   const NOMBRE = joinFullName(form);
   const DIRECCION = joinAddress(form);
-  const destinatarioNombre = form.destinatarioNombre?.trim() || 'Titular';
+  const destinatarioNombre = form.destinatarioNombre?.trim() || 'Armida Zúñiga Estrada';
   const destinatarioCargo = form.destinatarioCargo?.trim() || 'Titular';
   const destinatarioDependencia = form.destinatarioDependencia?.trim() || 'Comisión Federal para la Protección contra Riesgos Sanitarios (COFEPRIS)';
-  const asunto = form.asunto?.trim() || 'Asunto: Presentación de escrito libre para revisión administrativa';
+  const asunto = form.asunto?.trim() || 'Presentación de escrito libre para su atención y revisión administrativa';
 
   const t = {
     NOMBRE,
     DIRECCION,
     EMAIL: form.email || '____________________',
     TELEFONO: form.telefono || '____________________',
-    RFC: form.rfc || '____________________',
-    CURP: form.curp || '____________________',
-    CIUDAD: form.ciudad || '____________________',
-    FECHA_DOC: form.fechaDocumento || '____________________',
+    RFC: normalizeRFC(form.rfc) || '____________________',
+    CURP: normalizeCURP(form.curp) || '____________________',
+    CIUDAD: titleCase(form.ciudad) || '____________________',
+    FECHA_DOC: formatFechaFormal(form.fechaDocumento) || formatFechaFormal(formatDateTimeNow()),
     DEST_NOMBRE: destinatarioNombre,
     DEST_CARGO: destinatarioCargo,
     DEST_DEP: destinatarioDependencia,
@@ -83,49 +152,109 @@ function buildSections(form) {
   };
 
   return [
-    { type: 'title', text: `ESCRITO LIBRE` },
-    { type: 'destinatario', text: `${t.DEST_DEP}\n${t.DEST_CARGO} ${t.DEST_NOMBRE}\nPRESENTE` },
-    { paragraphs: [
-      `${t.CIUDAD}, a ${t.FECHA_DOC}`,
-      ``,
-      `${t.ASUNTO}`
-    ] },
+    // Fecha alineada a la derecha
+    {
+      paragraphs: [
+        [ seg(`${t.CIUDAD}, a ${t.FECHA_DOC}`) ]
+      ],
+      align: 'right'
+    },
 
-    { paragraphs: [
-      `${t.NOMBRE}, por mi propio derecho, con domicilio para oír y recibir notificaciones en ${t.DIRECCION}, correo electrónico ${t.EMAIL} y teléfono ${t.TELEFONO}, por medio del presente escrito libre comparezco y expongo:`
-    ] },
+    // Destinatario encabezado (limpio y profesional)
+    {
+      type: 'destinatario',
+      textLines: [
+        seg(t.DEST_NOMBRE, true),
+        seg(t.DEST_CARGO + (t.DEST_DEP ? ` — ${t.DEST_DEP}` : '')),
+        seg('PRESENTE', true)
+      ]
+    },
 
-    { heading: 'I. ANTECEDENTES', paragraphs: [
-      '1. En su momento presenté ante esa autoridad la solicitud o trámite correspondiente y obran en el expediente las constancias respectivas.',
-      '2. Considero que existen elementos y/o circunstancias que ameritan la revisión o aclaración del expediente administrativo, a efecto de garantizar la legalidad y la debida protección de mis derechos.'
-    ]},
+    // Asunto (destacado)
+    {
+      paragraphs: [
+        [ seg(t.ASUNTO, true) ]
+      ]
+    },
 
-    { heading: 'II. HECHOS', paragraphs: [
-      '1. (Describir aquí los hechos relevantes, de forma concisa y ordenada).',
-      '2. (Indicar fechas, documentos y actos administrativos que se estimen relevantes para la revisión).'
-    ]},
+    // Primer párrafo (datos del solicitante) con negritas en puntos clave
+    {
+      paragraphs: [
+        [
+          seg(t.NOMBRE, true),
+          seg(', mexicano/a y mayor de edad, con CURP '),
+          seg(t.CURP, true),
+          seg(' y RFC '),
+          seg(t.RFC, true),
+          seg(', señalando como domicilio para oír y recibir notificaciones el ubicado en '),
+          seg(t.DIRECCION, true),
+          seg(', correo electrónico '),
+          seg(t.EMAIL, true),
+          seg(' y teléfono '),
+          seg(t.TELEFONO, true),
+          seg('. Con fundamento en el artículo 8 de la Constitución Política de los Estados Unidos Mexicanos, comparezco y expongo lo siguiente:')
+        ],
+        [ seg('') ],
+        [
+          seg('En el entendido de que la '),
+          seg('Constitución Política de los Estados Unidos Mexicanos', true),
+          seg(' me confiere los derechos de '),
+          seg('libertad individual, autonomía, dignidad, salud y libre desarrollo de la personalidad', true),
+          seg(', y de que, de acuerdo con el artículo 1 de la misma, todas las autoridades tienen la obligación de promover, respetar, proteger y garantizar los derechos humanos, solicito que esta '),
+          seg('Comisión Federal para la Protección Contra Riesgos Sanitarios (COFEPRIS)', true),
+          seg(' otorgue a mi favor una autorización para el consumo personal de '),
+          seg('cannabis', true),
+          seg(', identificado en la '),
+          seg('Ley General de Salud', true),
+          seg(' como '),
+          seg('TETRAHIDROCANNABINOL', true),
+          seg(', con los isómeros: '),
+          seg('∆6a (10a), ∆6a (7), ∆7, ∆8, ∆9, ∆10, ∆9 (11) y sus variantes estereoquímicas.', true)
+        ]
+      ]
+    },
 
-    { heading: 'III. FUNDAMENTOS', paragraphs: [
-      'Fundamento la presente en las disposiciones constitucionales y administrativas aplicables, en especial en el respeto a los derechos humanos, el principio de legalidad, el debido proceso y, en su caso, en la normativa sectorial aplicable al presente trámite ante COFEPRIS.'
-    ] },
+    // Referencia jurisprudencial y Declaratoria General (introducción)
+    {
+      paragraphs: [
+        [
+          seg('La presente solicitud se realiza toda vez que la '),
+          seg('Suprema Corte de Justicia de la Nación', true),
+          seg(' determinó, mediante la '),
+          seg('Declaratoria General de Inconstitucionalidad No. 1/2018', true),
+          seg(', la eliminación de ciertos párrafos de la '),
+          seg('Ley General de Salud', true),
+          seg('. En virtud de lo anterior, y conforme a las jurisprudencias que dieron origen a la Declaratoria, se presentan las siguientes referencias:'),
+        ]
+      ]
+    },
 
-    { heading: 'IV. PETICIÓN', paragraphs: [
-      'Por lo expuesto, y con fundamento en las disposiciones aplicables, respetuosamente solicito:',
-      'PRIMERO. Se tenga por presentado el presente escrito libre y se agregue al expediente administrativo correspondiente.',
-      'SEGUNDO. Se practique la revisión exhaustiva del expediente, con atención a los documentos y hechos aquí referidos.',
-      'TERCERO. Se emita, en su caso, la resolución o providencia que proceda, garantizando el respeto a los preceptos legales y a mis derechos.',
-      'CUARTO. Se me notifique la determinación adoptada al correo y domicilio señalados en este escrito.'
-    ] },
+    // Listado de registros relevantes — números en negrita
+    {
+      paragraphs: [
+        [ seg('1. '), seg('Registro No. 2 019 365', true), seg(' — INCONSTITUCIONALIDAD DE LA PROHIBICIÓN ABSOLUTA AL CONSUMO LÚDICO O RECREATIVO DE MARIHUANA PREVISTA POR LA LEY GENERAL DE SALUD.') ],
+        [ seg('2. '), seg('Registro No. 2 019 511', true), seg(' — PROHIBICIÓN ABSOLUTA DEL CONSUMO LÚDICO DE MARIHUANA. NO ES UNA MEDIDA NECESARIA PARA PROTEGER LA SALUD Y EL ORDEN PÚBLICO.') ],
+        [ seg('3. '), seg('Registro No. 2 019 356', true), seg(' — DERECHO AL LIBRE DESARROLLO DE LA PERSONALIDAD. LA PROHIBICIÓN PARA EL AUTOCONSUMO DE MARIHUANA INCIDE PRIMA FACIE EN DICHO DERECHO FUNDAMENTAL.') ],
+        [ seg('4. '), seg('Registro No. 2 019 382', true), seg(' — PROHIBICIÓN ABSOLUTA DEL CONSUMO LÚDICO DE MARIHUANA. NO ES UNA MEDIDA PROPORCIONAL PARA PROTEGER LA SALUD Y EL ORDEN PÚBLICO.') ],
+      ]
+    },
 
-    { heading: 'V. DOCUMENTACIÓN ANEXA', paragraphs: [
-      '1. Copia simple de la solicitud/trámite original (si aplica).',
-      '2. Identificación oficial.',
-      '3. Documentos que acrediten los hechos referidos en el presente escrito.'
-    ] },
+    // Petición (énfasis en ÚNICO)
+    {
+      paragraphs: [
+        [ seg('Por lo tanto, con base en lo anterior, se solicita respetuosamente:') ],
+        [ seg('') ],
+        [ seg('ÚNICO. ', true), seg('Que se tenga por presentado el presente escrito y se otorgue la citada autorización.') ]
+      ]
+    },
 
-    { paragraphs: [
-      `Por lo anterior, solicito a esa autoridad se surta el trámite correspondiente y se me notifique conforme a derecho.\n\n____________________________________\n${t.NOMBRE}\nRFC: ${t.RFC} · CURP: ${t.CURP}\nDomicilio para oír y recibir notificaciones: ${t.DIRECCION}\nCorreo: ${t.EMAIL} · Teléfono: ${t.TELEFONO}`
-    ] }
+    // Firma: espacio para firma profesional (sin repetir datos redundantes)
+    {
+      signature: true,
+      name: t.NOMBRE,
+      rfc: t.RFC,
+      curp: t.CURP
+    }
   ];
 }
 
@@ -136,15 +265,63 @@ const PdfDocument = ({ data }) => {
   return (
     <Document>
       <Page size="LETTER" style={pdfStyles.page} wrap>
-        {sections.map((s, idx) => (
-          <View key={idx} style={{ marginBottom: 6 }}>
-            {s.type === 'title' && <Text style={{ ...pdfStyles.title, marginBottom: 8 }}>{s.text}</Text>}
-            {s.type === 'destinatario' && <Text style={pdfStyles.destinatario}>{s.text}</Text>}
-            {s.heading && <Text style={pdfStyles.heading}>{s.heading}</Text>}
-            {s.paragraphs && s.paragraphs.map((p, i) => <Text key={i} style={pdfStyles.paragraph}>{p}</Text>)}
-          </View>
-        ))}
-        <Text style={pdfStyles.footer}>Documento generado automáticamente — {genDate}</Text>
+        {sections.map((s, idx) => {
+          // destinatario special render (array of lines)
+          if (s.type === 'destinatario') {
+            return (
+              <View key={idx} style={{ marginBottom: 8 }}>
+                <Text style={pdfStyles.destinatario}>
+                  {s.textLines.map((ln, i) => (
+                    <Text key={i} style={ln.bold ? pdfStyles.bold : {}}>
+                      {ln.text}
+                      {i < s.textLines.length - 1 ? '\n' : ''}
+                    </Text>
+                  ))}
+                </Text>
+              </View>
+            );
+          }
+
+          // signature block
+          if (s.signature) {
+            return (
+              <View key={idx} style={pdfStyles.signatureBlock}>
+                <View style={pdfStyles.signatureLine} />
+                <Text style={pdfStyles.signatureName}>{s.name || '____________________'}</Text><br /><br />
+                {(s.rfc || s.curp) && (
+                  <Text style={pdfStyles.signatureSmall}>
+                    {s.rfc ? `RFC: ${s.rfc}` : ''}{s.rfc && s.curp ? ' · ' : ''}{s.curp ? `CURP: ${s.curp}` : ''}
+                  </Text>
+                )}
+              </View>
+            );
+          }
+
+          return (
+            <View key={idx} style={{ marginBottom: 6 }}>
+              {s.heading && <Text style={pdfStyles.heading}>{s.heading}</Text>}
+              {s.paragraphs && s.paragraphs.map((p, i) => {
+                // p is array of segments: [{text, bold}]
+                if (Array.isArray(p)) {
+                  const paragraphStyle = s.align === 'right'
+                    ? { ...pdfStyles.paragraph, textAlign: 'right' }
+                    : pdfStyles.paragraph;
+                  return (
+                    <Text key={i} style={paragraphStyle}>
+                      {p.map((segm, k) => (
+                        <Text key={k} style={segm.bold ? pdfStyles.bold : {}}>
+                          {segm.text}
+                        </Text>
+                      ))}
+                    </Text>
+                  );
+                }
+                // fallback: string
+                return <Text key={i} style={pdfStyles.paragraph}>{String(p)}</Text>;
+              })}
+            </View>
+          );
+        })}
       </Page>
     </Document>
   );
@@ -159,45 +336,27 @@ async function generatePdfBlob(data, filename = 'Escrito_Cofepris.pdf') {
   return { blob, filename };
 }
 
-// ---------- Funciones Strapi: buscar usuario por email, subir archivo, actualizar user ----------
+// ---------- Funciones Strapi: (sin cambios) ----------
 async function findStrapiUserByEmail(strapiUrl, email, token = null) {
   console.log('[Strapi] Buscar usuario por email:', email);
   const base = strapiUrl.replace(/\/$/, '');
   const url = `${base}/api/users?filters[email][$eq]=${encodeURIComponent(email)}`;
-  console.log('[Strapi] GET ->', url);
   const res = await fetch(url, {
     headers: token ? { Authorization: `Bearer ${token}` } : {}
   });
-  console.log('[Strapi] findUser response status:', res.status);
-  const json = await res.json().catch(e => {
-    console.error('[Strapi] findUser response no JSON', e);
-    return null;
-  });
-  console.log('[Strapi] findUser raw response:', json);
-
+  const json = await res.json().catch(e => { console.error('[Strapi] findUser response no JSON', e); return null; });
   if (!json) return { found: false, raw: json };
 
   let arr = null;
-  if (Array.isArray(json)) {
-    arr = json;
-  } else if (Array.isArray(json.data)) {
-    arr = json.data;
-  } else if (json.data && typeof json.data === 'object') {
-    arr = [json.data];
-  } else if (Array.isArray(json.result)) {
-    arr = json.result;
-  } else {
+  if (Array.isArray(json)) arr = json;
+  else if (Array.isArray(json.data)) arr = json.data;
+  else if (json.data && typeof json.data === 'object') arr = [json.data];
+  else {
     const possibleArrays = Object.values(json).filter(v => Array.isArray(v) && v.length > 0);
-    if (possibleArrays.length) {
-      arr = possibleArrays[0];
-    }
+    if (possibleArrays.length) arr = possibleArrays[0];
   }
 
-  if (!arr || arr.length === 0) {
-    console.warn('[Strapi] No users array found or empty. raw response:', json);
-    return { found: false, raw: json };
-  }
-
+  if (!arr || arr.length === 0) return { found: false, raw: json };
   const first = arr[0];
   let id = null;
   if (first != null) {
@@ -209,12 +368,7 @@ async function findStrapiUserByEmail(strapiUrl, email, token = null) {
       }
     }
   }
-
-  console.log('[Strapi] parsed first user object:', first, ' -> extracted id:', id);
-  if (!id) {
-    return { found: true, id: null, raw: json, first };
-  }
-
+  if (!id) return { found: true, id: null, raw: json, first };
   return { found: true, id, raw: json, first };
 }
 
@@ -223,56 +377,32 @@ async function uploadFileToStrapi(strapiUrl, blob, filename, token = null) {
   const uploadUrl = `${strapiUrl.replace(/\/$/, '')}/api/upload`;
   const fd = new FormData();
   fd.append('files', blob, filename);
-  console.log('[Strapi] POST ->', uploadUrl, 'FormData keys:', Array.from(fd.keys()));
   const res = await fetch(uploadUrl, {
     method: 'POST',
     headers: token ? { Authorization: `Bearer ${token}` } : {},
     body: fd
   });
-  console.log('[Strapi] upload response status:', res.status);
-  const json = await res.json().catch(e => {
-    console.error('[Strapi] upload response no JSON', e);
-    return null;
-  });
-  console.log('[Strapi] upload response json:', json);
+  const json = await res.json().catch(e => { console.error('[Strapi] upload response no JSON', e); return null; });
   let fileId = null;
-  if (Array.isArray(json) && json.length) {
-    fileId = json[0].id || json[0].id_strapi || json[0].attributes?.id;
-  } else if (Array.isArray(json?.data) && json.data.length) {
-    const f = json.data[0];
-    fileId = f.id || f.attributes?.id;
-  } else if (json && json[0] && json[0].id) {
-    fileId = json[0].id;
-  } else if (json && json.id) {
-    fileId = json.id;
-  }
-  console.log('[Strapi] extracted fileId:', fileId);
+  if (Array.isArray(json) && json.length) fileId = json[0].id;
+  else if (Array.isArray(json?.data) && json.data.length) fileId = json.data[0].id;
+  else if (json && json.id) fileId = json.id;
   return { raw: json, fileId };
 }
 
 async function updateStrapiUserForCofepris(strapiUrl, userId, fileId, token = null) {
-  console.log('[Strapi] Actualizando usuario', userId, 'con fileId (escrito COFEPRIS)', fileId);
   const url = `${strapiUrl.replace(/\/$/, '')}/api/users/${userId}`;
   const body = {
     escritolibrecofepris: fileId,
     esperandocofepris: true,
     statusamparo: 'escritogenerado'
   };
-  console.log('[Strapi] PUT ->', url, 'body:', JSON.stringify(body));
   const res = await fetch(url, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    },
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     body: JSON.stringify(body)
   });
-  console.log('[Strapi] update response status:', res.status);
-  const json = await res.json().catch(e => {
-    console.error('[Strapi] update response no JSON', e);
-    return null;
-  });
-  console.log('[Strapi] update response json:', json);
+  const json = await res.json().catch(e => { console.error('[Strapi] update response no JSON', e); return null; });
   return json;
 }
 
@@ -286,14 +416,13 @@ export default function GeneradorEscritoLibre() {
     calle: '', numext: '', numint: '', colonia: '', municipio: '', estado: '', cp: '',
     ciudad: '', fechaDocumento: '',
     email: '', telefono: '', rfc: '', curp: '', strapiUserId: '',
-    // campos nuevos para destinatario/profesionalizar encabezado
-    destinatarioNombre: 'A quien corresponda',
-    destinatarioCargo: '',
+    destinatarioNombre: 'Armida Zúñiga Estrada',
+    destinatarioCargo: 'Titular',
     destinatarioDependencia: 'Comisión Federal para la Protección contra Riesgos Sanitarios (COFEPRIS)',
     asunto: 'Presentación de escrito libre para su atención y revisión administrativa'
   };
 
-  const { control, handleSubmit, reset, watch, setValue } = useForm({ defaultValues });
+  const { control, handleSubmit, reset, setValue } = useForm({ defaultValues });
   const [formData, setFormData] = useState(defaultValues);
   const [previewReady, setPreviewReady] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -301,7 +430,6 @@ export default function GeneradorEscritoLibre() {
 
   React.useEffect(() => {
     if (isAuthenticated && user && user.email) {
-      console.log('[Auth0] usuario autenticado:', user);
       setValue('email', user.email);
     }
   }, [isAuthenticated, user, setValue]);
@@ -309,7 +437,6 @@ export default function GeneradorEscritoLibre() {
   const sections = useMemo(() => buildSections(formData), [formData]);
 
   const onSubmitPreview = (values) => {
-    console.log('[UI] onSubmitPreview values:', values);
     if (!isValidRFC(values.rfc)) {
       setAlert({ type: 'error', msg: 'Formato RFC inválido (verifica).' });
       return;
@@ -318,12 +445,9 @@ export default function GeneradorEscritoLibre() {
       setAlert({ type: 'error', msg: 'Formato CURP inválido (verifica).' });
       return;
     }
-
     setAlert(null);
     setFormData(values);
     setPreviewReady(true);
-
-    console.log("Iniciando previsualización de escrito COFEPRIS (más profesional)");
     const el = document.getElementById('escrito-preview');
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
@@ -343,7 +467,6 @@ export default function GeneradorEscritoLibre() {
   };
 
   const handleSaveToStrapi = async () => {
-    console.log("Iniciando envío escrito libre a Strapi (COFEPRIS)");
     try {
       setAlert({ type: 'info', msg: 'Generando PDF...' });
       setLoadingSave('saving');
@@ -354,36 +477,22 @@ export default function GeneradorEscritoLibre() {
 
       const filename = `Escrito_Cofepris_${joinFullName(formData).replace(/\s+/g, '_')}.pdf`;
       const { blob } = await generatePdfBlob(formData, filename);
-      console.log('[Save] PDF generado, size:', blob.size);
 
       const emailToUse = (isAuthenticated && user && user.email) ? user.email : (formData.email || '');
-      console.log('[Save] Email usado para buscar usuario en Strapi:', emailToUse);
-
       let userId = formData.strapiUserId && formData.strapiUserId.trim() ? formData.strapiUserId.trim() : null;
 
       if (!userId) {
         if (!emailToUse) throw new Error('No se encontró email para buscar usuario en Strapi. Ingresa Strapi user ID o autentícate con Auth0.');
         const found = await findStrapiUserByEmail(STRAPI_URL, emailToUse, STRAPI_TOKEN);
-        console.log('[Save] Resultado busqueda usuario:', found);
         if (!found.found) throw new Error('No se encontró usuario en Strapi con ese email.');
-        if (!found.id) {
-          console.warn('[Save] Usuario encontrado pero no se pudo extraer id automáticamente. Revisa `found.first` en consola para estructura. found:', found);
-          throw new Error('Usuario encontrado pero no se pudo extraer su id. Revisa logs en consola (found.first).');
-        }
+        if (!found.id) throw new Error('Usuario encontrado pero no se pudo extraer su id (ver consola).');
         userId = found.id;
       }
 
-      if (!userId) throw new Error('No se pudo obtener userId de Strapi.');
-
-      setAlert({ type: 'info', msg: 'Subiendo PDF a Strapi...' });
       const uploadRes = await uploadFileToStrapi(STRAPI_URL, blob, filename, STRAPI_TOKEN);
-      console.log('[Save] uploadRes:', uploadRes);
-      if (!uploadRes.fileId) throw new Error('No se obtuvo fileId después de subir el archivo a Strapi. Verifica la respuesta en consola.');
+      if (!uploadRes.fileId) throw new Error('No se obtuvo fileId después de subir el archivo a Strapi.');
 
-      setAlert({ type: 'info', msg: 'Actualizando usuario en Strapi (marcando espera COFEPRIS)...' });
-      const updated = await updateStrapiUserForCofepris(STRAPI_URL, userId, uploadRes.fileId, STRAPI_TOKEN);
-      console.log('[Save] Usuario actualizado:', updated);
-
+      await updateStrapiUserForCofepris(STRAPI_URL, userId, uploadRes.fileId, STRAPI_TOKEN);
       setAlert({ type: 'success', msg: 'Escrito subido y usuario actualizado correctamente (esperando COFEPRIS).' });
     } catch (err) {
       console.error('[Save] Error completo:', err);
@@ -396,7 +505,7 @@ export default function GeneradorEscritoLibre() {
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-        <Typography variant="h4" gutterBottom>Generador de Escrito Libre — COFEPRIS.</Typography>
+        <Typography variant="h4" gutterBottom>Generador de Escrito Libre — COFEPRIS 📝✨</Typography>
       </motion.div>
 
       {alert && <Box my={2}><Alert severity={alert.type === 'error' ? 'error' : (alert.type === 'info' ? 'info' : 'success')}>{alert.msg}</Alert></Box>}
@@ -404,15 +513,9 @@ export default function GeneradorEscritoLibre() {
       <Grid container spacing={3}>
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }} elevation={3}>
-            <Typography variant="h6" mb={2}>Formulario</Typography>
-
+            {/* He eliminado el título "Formulario" como pediste */}
             <Box component="form" onSubmit={handleSubmit(onSubmitPreview)} noValidate>
               <Grid container spacing={2}>
-
-                {/* DESTINATARIO */}
-                
-
-                {/* DATOS PERSONALES */}
                 <Grid item xs={12}>
                   <Typography variant="subtitle2" sx={{ mb: 1 }}>Datos del solicitante</Typography>
                 </Grid>
@@ -433,7 +536,6 @@ export default function GeneradorEscritoLibre() {
                   <Controller name="apellidoM" control={control} render={({ field }) => <TextField {...field} label="Apellido materno" fullWidth />} />
                 </Grid>
 
-                {/* Dirección separada */}
                 <Grid item xs={8}>
                   <Controller name="calle" control={control} render={({ field }) => <TextField {...field} label="Calle" fullWidth />} />
                 </Grid>
@@ -458,7 +560,6 @@ export default function GeneradorEscritoLibre() {
                   <Controller name="cp" control={control} render={({ field }) => <TextField {...field} label="C.P." fullWidth />} />
                 </Grid>
 
-                {/* Fecha del escrito */}
                 <Grid item xs={6}>
                   <Controller name="ciudad" control={control} render={({ field }) => <TextField {...field} label="Ciudad (firma)" fullWidth />} />
                 </Grid>
@@ -466,7 +567,6 @@ export default function GeneradorEscritoLibre() {
                   <Controller name="fechaDocumento" control={control} render={({ field }) => <TextField {...field} label="Fecha del escrito" type="date" InputLabelProps={{ shrink: true }} fullWidth {...field} />} />
                 </Grid>
 
-                {/* Contacto y RFC/CURP */}
                 <Grid item xs={12}>
                   <Controller name="email" control={control}
                     rules={{ required: 'Email requerido', pattern: { value: /\S+@\S+\.\S+/, message: 'Email inválido' } }}
@@ -485,18 +585,12 @@ export default function GeneradorEscritoLibre() {
                   <Controller name="curp" control={control} render={({ field }) => <TextField {...field} label="CURP" fullWidth helperText="Formato CURP (18 caracteres)" />} />
                 </Grid>
 
-                {/* Strapi ID opcional */}
-                <Grid item xs={12}>
-                  <Controller name="strapiUserId" control={control} render={({ field }) => <TextField {...field} label="Strapi user ID (opcional)" fullWidth helperText="Si ya tienes el ID puedes insertarlo; si no, se buscará por email." />} />
-                </Grid>
-
                 <Grid item xs={12}>
                   <Stack direction="row" spacing={2}>
                     <motion.div whileHover={{ y: -3 }}>
-                      <Button type="submit" variant="contained" color="success">Generar Previsualización</Button>
+                      <Button type="submit" variant="contained" color="success">👁️‍🗨️ Generar Previsualización</Button>
                     </motion.div>
-                    <Button onClick={() => { reset(defaultValues); setFormData(defaultValues); setPreviewReady(false); setAlert(null); }} variant="outlined">Limpiar</Button>
-                    <Button onClick={() => { /* placeholder save draft */ }} variant="text">Guardar borrador</Button>
+                    <Button onClick={() => { reset(defaultValues); setFormData(defaultValues); setPreviewReady(false); setAlert(null); }} variant="outlined">❌ Limpiar</Button>
                   </Stack>
                 </Grid>
               </Grid>
@@ -510,20 +604,95 @@ export default function GeneradorEscritoLibre() {
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Typography variant="h6">Previsualización</Typography>
               <Stack direction="row" spacing={1}>
-                <Button variant="outlined" onClick={() => { setPreviewReady(false); setFormData(defaultValues); }}>Reset preview</Button>
-                <Button variant="contained" onClick={handleOpenPdf} disabled={!previewReady}>Abrir PDF</Button>
+                <Button variant="outlined" onClick={() => { setPreviewReady(false); setFormData(defaultValues); }}>❌ Limpiar Previsualización</Button>
+                
+                <Button
+                    variant="contained"
+                    sx={{
+                        backgroundColor: '#4CAF50', // verde base
+                        color: 'white',
+                        fontWeight: 'bold',
+                        '&:hover': {
+                        backgroundColor: '#388E3C', // más oscuro al pasar el mouse
+                        boxShadow: '0 0 10px #66bb6a',
+                        },
+                        boxShadow: '0 0 5px #81c784',
+                    }}
+                    onClick={handleOpenPdf}
+                    disabled={!previewReady}
+                    >
+                    🔎 Abrir PDF
+                </Button>
               </Stack>
             </Box>
 
             <Divider sx={{ mb: 2 }} />
 
-            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa', maxHeight: 420, overflow: 'auto' }} id="escrito-preview">
+            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fafafa', maxHeight: 460, overflow: 'auto' }} id="escrito-preview">
               {sections.map((s, i) => (
                 <Box key={i} sx={{ mb: 1 }}>
-                  {s.type === 'title' && <Typography align="center" sx={{ fontWeight: 700, mb: 1 }}>{s.text}</Typography>}
-                  {s.type === 'destinatario' && <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', fontStyle: 'italic', mb: 1 }}>{s.text}</Typography>}
+                  {/* destinatario special */}
+                  {s.type === 'destinatario' && (
+                    <Box sx={{ whiteSpace: 'pre-wrap', fontStyle: 'normal', mb: 1 }}>
+                      {s.textLines.map((ln, idxLn) => (
+                        <Typography key={idxLn} variant="body2" sx={{ fontWeight: ln.bold ? 700 : 400 }}>
+                          {ln.text}
+                        </Typography>
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* asunto/heading (if any) */}
                   {s.heading && <Typography sx={{ fontWeight: 700, mt: 1 }}>{s.heading}</Typography>}
-                  {s.paragraphs && s.paragraphs.map((p, j) => <Typography key={j} variant="body2" sx={{ mt: 0.6, whiteSpace: 'pre-wrap', textAlign: 'justify' }}>{p}</Typography>)}
+
+                  {s.paragraphs && s.paragraphs.map((p, j) => {
+                    // p is array of segments
+                    if (Array.isArray(p)) {
+                      return (
+                        <Typography
+                          key={j}
+                          variant="body2"
+                          sx={{
+                            mt: 0.6,
+                            whiteSpace: 'pre-wrap',
+                            textAlign: s.align === 'right' ? 'right' : 'justify'
+                          }}
+                        >
+                          {p.map((sg, k) => (
+                            <Box component="span" key={k} sx={{ fontWeight: sg.bold ? 700 : 400 }}>
+                              {sg.text}
+                            </Box>
+                          ))}
+                        </Typography>
+                      );
+                    }
+                    return (
+                      <Typography
+                        key={j}
+                        variant="body2"
+                        sx={{
+                          mt: 0.6,
+                          whiteSpace: 'pre-wrap',
+                          textAlign: s.align === 'right' ? 'right' : 'justify'
+                        }}
+                      >
+                        {p}
+                      </Typography>
+                    );
+                  })}
+
+                  {/* signature preview */}
+                  {s.signature && (
+                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 3 }}>
+                      <Box sx={{ width: '62%', borderTop: '1px solid #111', height: 1 }} />
+                      <Typography sx={{ fontWeight: 700, mt: 1 }}>{s.name || '____________________'}</Typography>
+                      {(s.rfc || s.curp) && (
+                        <Typography sx={{ fontSize: 12, color: '#444' }}>
+                          {s.rfc ? `RFC: ${s.rfc}` : ''}{s.rfc && s.curp ? ' · ' : ''}{s.curp ? `CURP: ${s.curp}` : ''}
+                        </Typography>
+                      )}
+                    </Box>
+                  )}
                 </Box>
               ))}
             </Paper>
@@ -544,9 +713,9 @@ export default function GeneradorEscritoLibre() {
                   console.error('Error descarga directa:', err);
                   setAlert({ type: 'error', msg: 'Error descargando PDF: ' + (err.message || err) });
                 }
-              }}>Descargar PDF</Button>
+              }}>🔽 Descargar PDF</Button>
 
-              <Button variant="outlined" onClick={() => window.print()}>Imprimir vista</Button>
+              <Button variant="outlined" onClick={() => window.print()}>🖨️ Imprimir vista</Button>
 
               <Button
                 variant="contained"
@@ -555,10 +724,10 @@ export default function GeneradorEscritoLibre() {
                 disabled={!previewReady || loadingSave === "saving"}
               >
                 {loadingSave === "saving"
-                  ? "Guardando en tu cuenta..."
+                  ? "💾 Guardando en tu cuenta..."
                   : loadingSave === "ready"
                   ? "Guardado ✅"
-                  : "Guardar en tu cuenta"}
+                  : "💾 Guardar en tu cuenta"}
               </Button>
             </Box>
           </Paper>
