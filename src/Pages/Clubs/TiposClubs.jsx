@@ -196,7 +196,7 @@ const TiposClub = () => {
                     color="success"
                     size="large"
                     sx={{ mt: 3, borderRadius: "999px" }}
-                    onClick={() => navigate("/clubs/agregar-club")}
+                    onClick={() => navigate("/clubs/afiliar-jardinero")}
                     >
                     Afiliar mi Club de Cultivo
                 </Button>
@@ -228,10 +228,11 @@ const TiposClub = () => {
                   miembros activos de Marihuanas.Club.
                 </Typography>
                 <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  sx={{ mt: 3, borderRadius: "999px" }}
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    sx={{ mt: 3, borderRadius: "999px" }}
+                    onClick={() => navigate("/clubs/afiliar-jardinero")}
                 >
                   Afiliar mi Club de Consumo
                 </Button>
