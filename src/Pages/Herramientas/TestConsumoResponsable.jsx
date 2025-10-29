@@ -367,15 +367,39 @@ const TestConsumoResponsable = () => {
             <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em' }}>Test de Consumo Responsable</Typography>
             <Typography variant="body2" sx={{ mt: 0.5, color: 'text.secondary' }}>Autoevaluación — muestra **solo** resultados de las dimensiones que respondiste.</Typography>
           </Box>
-          <Box textAlign="right">
-            <Chip label={`${progreso}% completado`} color="primary" />
-            <IconButton onClick={reset} aria-label="reset" title="Reiniciar prueba">
-              <RestartAltIcon />
-            </IconButton>
-          </Box>
-        </Box>
+          <Box textAlign="right" mb={1}>
+            </Box>
+  {/* Chip verdoso */}
+  <Chip
+    label={`${progreso}% completado`}
+    sx={{
+      backgroundColor: '#6fbf73',
+      color: 'white',
+      fontWeight: 600,
+      boxShadow: '0 0 6px rgba(111,191,115,0.5)',
+    }}
+  />
+  
+  <IconButton onClick={reset} aria-label="reset" title="Reiniciar prueba">
+    <RestartAltIcon sx={{ color: '#4caf50' }} />
+  </IconButton>
+</Box>
 
-        <LinearProgress variant="determinate" value={progreso} sx={{ height: 8, borderRadius: 8, mb: 2 }} />
+{/* Barra de progreso verde pachecón */}
+<LinearProgress
+  variant="determinate"
+  value={progreso}
+  sx={{
+    height: 8,
+    borderRadius: 8,
+    mb: 2,
+    backgroundColor: '#c8e6c9', // fondo más claro
+    '& .MuiLinearProgress-bar': {
+      backgroundColor: '#4caf50', // barra principal
+      borderRadius: 8,
+    },
+  }}
+/>
 
         <form onSubmit={handleSubmit}>
           <Stack spacing={2}>
@@ -413,8 +437,31 @@ const TestConsumoResponsable = () => {
             {error && <Alert severity="warning">{error}</Alert>}
 
             <Box display="flex" gap={2} justifyContent="center" mt={1}>
-              <Button type="submit" variant="contained" size="large">Evaluar</Button>
-              <Button variant="outlined" size="large" onClick={() => { setResultado(null); setError(''); }}>Limpiar resultados</Button>
+              <Button
+                type="submit"
+                variant="contained"
+                size="large"
+                sx={{
+                  backgroundColor: '#4CAF50', // verde base
+                  color: 'white',
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    backgroundColor: '#388E3C', // más oscuro al pasar el mouse
+                    boxShadow: '0 0 10px #66bb6a',
+                  },
+                  boxShadow: '0 0 5px #81c784',
+                }}
+              >
+                Evaluar 🌿
+              </Button>
+
+              <Button
+                variant="outlined"
+                size="large"
+                onClick={() => { setResultado(null); setError(''); }}
+              >
+                Limpiar resultados
+              </Button>
             </Box>
           </Stack>
         </form>

@@ -396,8 +396,7 @@ export default function GeneradorEscritoLibre() {
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
-        <Typography variant="h4" gutterBottom>Generador de Escrito Libre — COFEPRIS (Profesional)</Typography>
-        <Typography variant="body2" color="textSecondary">Encabezado personalizable: destinatario, cargo y dependencia para un aspecto profesional.</Typography>
+        <Typography variant="h4" gutterBottom>Generador de Escrito Libre — COFEPRIS.</Typography>
       </motion.div>
 
       {alert && <Box my={2}><Alert severity={alert.type === 'error' ? 'error' : (alert.type === 'info' ? 'info' : 'success')}>{alert.msg}</Alert></Box>}
@@ -411,28 +410,7 @@ export default function GeneradorEscritoLibre() {
               <Grid container spacing={2}>
 
                 {/* DESTINATARIO */}
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Destinatario (encabezado profesional)</Typography>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Controller name="destinatarioDependencia" control={control}
-                    render={({ field }) => <TextField {...field} label="Dependencia / Unidad" fullWidth helperText="Ej: Comisión Federal para la Protección contra Riesgos Sanitarios (COFEPRIS)" />} />
-                </Grid>
-
-                <Grid item xs={8}>
-                  <Controller name="destinatarioCargo" control={control}
-                    render={({ field }) => <TextField {...field} label="Cargo del destinatario" fullWidth helperText="Ej: Titular de la Unidad de Autorizaciones" />} />
-                </Grid>
-                <Grid item xs={4}>
-                  <Controller name="destinatarioNombre" control={control}
-                    render={({ field }) => <TextField {...field} label="Nombre del titular" fullWidth helperText="Si lo conoces, escribe el nombre; si no, usa 'A quien corresponda'." />} />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Controller name="asunto" control={control}
-                    render={({ field }) => <TextField {...field} label="Asunto" fullWidth helperText="Ej: Presentación de escrito libre para revisión administrativa" />} />
-                </Grid>
+                
 
                 {/* DATOS PERSONALES */}
                 <Grid item xs={12}>
