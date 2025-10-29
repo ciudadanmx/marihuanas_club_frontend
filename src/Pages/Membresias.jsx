@@ -277,6 +277,8 @@ const Membresias = () => {
         </Grid>
       )}
 
+      <InfoClubs />
+
       <Box mt={6} display="flex" justifyContent="center">
         <img
           src={membresiasImg}
@@ -285,7 +287,7 @@ const Membresias = () => {
         />
       </Box>
 
-      <InfoClubs />
+      
     </Box>
   );
 };

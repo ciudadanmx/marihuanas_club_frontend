@@ -41,7 +41,7 @@ const cardConfigs = [
   { src: amparo1, alt: 'Wiki Lugares', type: 'external', path: 'https://wiki.marihuanas.club' },
   { src: amparo2, alt: 'Legal', type: 'route', path: '/legal' },
   { src: amparo3, alt: 'Contenidos Wiki', type: 'external', path: 'https://wiki.marihuanas.club' },
-  { src: amparo4, alt: 'Consultorías', type: 'route', path: '/herramientas/consultorias' },
+  { src: amparo4, alt: 'Consultorías', type: 'route', path: '/legal/tuabogado' },
   { src: amparo5, alt: 'Test Consumo Responsable', type: 'route', path: '/herramientas/test-consumo-responsable' },
   { src: amparo6, alt: 'Juegos', type: 'route', path: '/juegos' },
   { src: amparo7, alt: 'Florateca', type: 'route', path: '/herramientas/florateca' },
