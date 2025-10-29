@@ -7,6 +7,7 @@ import afilia from '../../assets/afilia_tu_club.png';
 import '../../styles/clubs.css';
 import MapaClubs from '../../components/Clubs/MapaClubs.jsx';
 import InfoClubs from '../../components/Clubs/InfoClubs.jsx';
+import Suscribete from '../../components/Clubs/Suscribete.jsx';
 
 const useOnScreen = (ref, rootMargin = '0px') => {
   const [isIntersecting, setIntersecting] = useState(false);
@@ -177,6 +178,7 @@ const Clubs = () => {
       </Typography>
 
       <InfoClubs />
+      <Suscribete />
     </Box>
   );
 };

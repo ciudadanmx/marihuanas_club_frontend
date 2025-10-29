@@ -10,6 +10,7 @@ import {
   Divider,
 } from "@mui/material";
 import headerImage from "../../assets/tiposclubs.png"; // ✅ Usa tu imagen real aquí
+import { useNavigate } from "react-router-dom";
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -17,7 +18,9 @@ const fadeIn = {
 };
 
 const TiposClub = () => {
-  return (
+    const navigate = useNavigate();
+
+    return (
     <Box sx={{ backgroundColor: "#f9fdf9", color: "#1a1a1a" }}>
       {/* 🔹 Imagen Full Width */}
       <Box
@@ -189,12 +192,13 @@ const TiposClub = () => {
                   herramientas digitales.
                 </Typography>
                 <Button
-                  variant="contained"
-                  color="success"
-                  size="large"
-                  sx={{ mt: 3, borderRadius: "999px" }}
-                >
-                  Afiliar mi Club de Cultivo
+                    variant="contained"
+                    color="success"
+                    size="large"
+                    sx={{ mt: 3, borderRadius: "999px" }}
+                    onClick={() => navigate("/clubs/agregar-club")}
+                    >
+                    Afiliar mi Club de Cultivo
                 </Button>
               </CardContent>
             </Card>
