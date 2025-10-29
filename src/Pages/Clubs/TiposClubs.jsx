@@ -1,212 +1,278 @@
-// TiposClub.jsx
 import React from "react";
-import { Box, Typography, Button, Card, CardContent, Grid } from "@mui/material";
 import { motion } from "framer-motion";
-import { Leaf, Users, Sparkles } from "lucide-react";
-import portada from "../../assets/tiposclubs.png"; // tu imagen superior
+import {
+  Button,
+  Card,
+  CardContent,
+  Typography,
+  Grid,
+  Box,
+  Divider,
+} from "@mui/material";
+import headerImage from "../../assets/tiposclubs.png"; // ✅ Usa tu imagen real aquí
 
-const MotionCard = motion(Card);
+const fadeIn = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
 
-export default function TiposClub() {
+const TiposClub = () => {
   return (
-    <Box
-      sx={{
-        bgcolor: "#f5fff8",
-        color: "#1b1b1b",
-        minHeight: "100vh",
-        pb: 6,
-      }}
-    >
-      {/* Portada */}
+    <Box sx={{ backgroundColor: "#f9fdf9", color: "#1a1a1a" }}>
+      {/* 🔹 Imagen Full Width */}
       <Box
-        component="img"
-        src={portada}
-        alt="Tipos de Club"
+        component={motion.div}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2 }}
         sx={{
+          position: "relative",
           width: "100%",
-          height: { xs: "240px", md: "380px" },
-          objectFit: "cover",
-          borderBottom: "5px solid #43a047",
+          height: { xs: 300, md: 500 },
+          overflow: "hidden",
         }}
-      />
-
-      {/* Encabezado */}
-      <Box textAlign="center" py={4}>
+      >
+        <Box
+          component="img"
+          src={headerImage}
+          alt="Kit Jardinero"
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+        </Box>
+       
+        <Box
+        component={motion.div}
+        initial={{ opacity: 0, y: -30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2 }}
+        sx={{
+          position: "relative",
+          width: "100%",
+        }}
+      >
+        
         <Typography
           variant="h3"
           sx={{
-            fontWeight: "bold",
-            color: "#1B5E20",
+            mt: 4,
             mb: 2,
-            textShadow: "0px 2px 6px rgba(0,0,0,0.2)",
+            fontWeight: "bold",
+            color: "#14532d",
+            textShadow: "1px 1px 2px #fff",
           }}
         >
-          🌿 Elige el Tipo de Club que deseas Afiliar
+          Red de Clubs Solidarios 🌱
         </Typography>
         <Typography
-          variant="subtitle1"
-          sx={{ maxWidth: 750, mx: "auto", color: "#2e7d32" }}
+          variant="h6"
+          sx={{ color: "#1f2937", maxWidth: "900px", mx: "auto" }}
         >
-          Únete a la red nacional de clubs solidarios. Puedes registrar tu club
-          como espacio de cultivo, de consumo o participar en ambas modalidades.
+          Conoce las tres modalidades para participar en la red de clubs sin
+          fines de lucro. Puedes iniciar con un kit de jardinero, abrir un club
+          de consumo o combinar ambas opciones.
         </Typography>
-      </Box>
+     
 
-      {/* Opciones */}
-      <Grid container spacing={3} justifyContent="center" px={{ xs: 2, md: 8 }}>
-        {/* 1. Club de Cultivo */}
-        <Grid item xs={12} md={4}>
-          <MotionCard
-            whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.3 }}
-            sx={{
-              borderRadius: "16px",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-              overflow: "hidden",
-              background: "#ffffff",
-              border: "2px solid #a5d6a7",
-            }}
-          >
-            <CardContent>
-              <Box textAlign="center" mb={2}>
-                <Leaf size={48} color="#2e7d32" />
-              </Box>
-              <Typography
-                variant="h5"
-                textAlign="center"
-                sx={{ color: "#2e7d32", fontWeight: "bold", mb: 1 }}
-              >
-                Club de Cultivo
-              </Typography>
-              <Typography variant="body1" sx={{ color: "#333", mb: 2 }}>
-                Si cuentas con espacio, tiempo e inversión, puedes gestionar un
-                Club de hasta <b>20 miembros</b> y ofrecer tus servicios de
-                jardinero bajo una lógica solidaria y cooperativa.  
-                Incluye acompañamiento legal, herramientas digitales y el{" "}
-                <b>Kit de Jardinero</b> para operar tu club.
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  bgcolor: "#2e7d32",
-                  "&:hover": { bgcolor: "#1b5e20" },
-                  borderRadius: "12px",
-                  px: 3,
+      {/* Sección Kit Inicial del Jardinero */}
+      <motion.div variants={fadeIn} initial="hidden" whileInView="show">
+        <Card
+          sx={{
+            mb: 8,
+            background: "rgba(255,255,255,0.95)",
+            borderRadius: "24px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+          }}
+        >
+          <CardContent>
+            <Typography variant="h4" color="success.main" fontWeight="bold" gutterBottom>
+              🌱 Kit Inicial del Jardinero del Club
+            </Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>
+              💸 Precio preferencial:{" "}
+              <span
+                style={{
+                  backgroundColor: "#e3f7e9",
+                  padding: "6px 10px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
                 }}
               >
-                Afiliar mi Club de Cultivo
-              </Button>
-            </CardContent>
-          </MotionCard>
-        </Grid>
+                Solo $10,000 MXN
+              </span>
+            </Typography>
 
-        {/* 2. Club de Consumo */}
-        <Grid item xs={12} md={4}>
-          <MotionCard
-            whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.3 }}
-            sx={{
-              borderRadius: "16px",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-              overflow: "hidden",
-              background: "#fffdf5",
-              border: "2px solid #ffeb3b",
-            }}
-          >
-            <CardContent>
-              <Box textAlign="center" mb={2}>
-                <Users size={48} color="#fbc02d" />
-              </Box>
-              <Typography
-                variant="h5"
-                textAlign="center"
-                sx={{ color: "#f57f17", fontWeight: "bold", mb: 1 }}
-              >
-                Club de Consumo
-              </Typography>
-              <Typography variant="body1" sx={{ color: "#444", mb: 2 }}>
-                Si no tienes espacio o inversión suficiente, pero sí un lugar
-                adecuado para recibir a usuarios adultos que ya cuentan con su
-                trámite o permiso ante COFEPRIS, puedes operar un{" "}
-                <b>Club de Consumo</b>.  
-                Realiza actividades económicas periféricas (cafetería, cursos,
-                arte, música, alimentos, etc.) y obtén ganancias solidarias.  
-                No pagas nada por registrar tu espacio, solo respetas el{" "}
-                <b>10% de descuento</b> a miembros activos de Marihuanas.club.
-              </Typography>
-              <Button
-                variant="contained"
-                sx={{
-                  bgcolor: "#fbc02d",
-                  "&:hover": { bgcolor: "#f57f17" },
-                  borderRadius: "12px",
-                  px: 3,
-                }}
-              >
-                Afiliar mi Club de Consumo
-              </Button>
-            </CardContent>
-          </MotionCard>
-        </Grid>
+            <Typography sx={{ mb: 2 }}>
+              👨‍🌾 Tu punto de partida para crear un club de cultivo responsable
+              y autosustentable. Este kit te convierte en <b>jardinero acreditado</b> de
+              la red, con todo lo necesario —físico, legal y digital— para operar
+              un espacio seguro, donde cada miembro cultiva sus propias semillas
+              bajo tus servicios de renta, asesoría y seguimiento técnico.
+            </Typography>
 
-        {/* 3. Ambas Modalidades */}
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="h6" color="success.dark" fontWeight="bold">
+              ⚖️ Marco legal y acompañamiento
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - Gestión completa ante COFEPRIS (uso personal, amparo incluido).<br />
+              - Membresía oficial de jardinero y acceso a soporte jurídico.<br />
+              - Generador automático de estatutos internos, acta constitutiva y documentación SAT.<br />
+              - Asistencia personalizada por WhatsApp durante todo el proceso.
+            </Typography>
+
+            <Typography variant="h6" color="success.dark" fontWeight="bold">
+              🛠️ Infraestructura de cultivo incluida
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - 3 armarios modulares de 80 cm² (para 6 plantas c/u).<br />
+              - 5 lámparas LED de 300 W, 3 extractores y ventiladores.<br />
+              - Hub Raspberry Pi + 4 cámaras HD para monitoreo remoto.<br />
+              - Kit de germinación profesional con sustratos y medidores.
+            </Typography>
+
+            <Typography variant="h6" color="success.dark" fontWeight="bold">
+              💻 Herramientas digitales del jardinero
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              Incluye acceso al sistema de gestión y bitácoras automatizadas: registro de fotos,
+              videos, trazabilidad por semilla, firma digital y almacenamiento en la nube.
+              Cada usuario lleva sus propias semillas, el jardinero solo renta el espacio
+              y servicios de cultivo.
+            </Typography>
+
+            <Typography variant="h6" color="success.dark" fontWeight="bold">
+              ⚡ Sistema de energía individualizada
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              Cada nuevo miembro instala su propio medidor ante CFE, garantizando consumo
+              transparente y sustentable. Reduce costos y fomenta autonomía.
+            </Typography>
+
+            <Typography variant="h6" color="success.dark" fontWeight="bold">
+              📦 Entrega y soporte
+            </Typography>
+            <Typography sx={{ mb: 2 }}>
+              - Financiado con las dos primeras mensualidades.<br />
+              - Envío nacional en dos entregas con manual, soporte y acceso inmediato al sistema.<br />
+              - Certificación digital como Jardinero Responsable tras tu primer trimestre.
+            </Typography>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Modalidades */}
+      <Grid container spacing={4} justifyContent="center" maxWidth="1200px" mx="auto">
+        {/* Club de Cultivo */}
         <Grid item xs={12} md={4}>
-          <MotionCard
-            whileHover={{ scale: 1.03 }}
-            transition={{ duration: 0.3 }}
-            sx={{
-              borderRadius: "16px",
-              boxShadow: "0 6px 20px rgba(0,0,0,0.15)",
-              overflow: "hidden",
-              background: "#f3e5f5",
-              border: "2px solid #ce93d8",
-            }}
-          >
-            <CardContent>
-              <Box textAlign="center" mb={2}>
-                <Sparkles size={48} color="#8e24aa" />
-              </Box>
-              <Typography
-                variant="h5"
-                textAlign="center"
-                sx={{ color: "#6a1b9a", fontWeight: "bold", mb: 1 }}
-              >
-                Ambas Modalidades
-              </Typography>
-              <Typography variant="body1" sx={{ color: "#333", mb: 2 }}>
-                Puedes participar en ambas modalidades:  
-                <b>Club de Cultivo</b> y <b>Club de Consumo</b>.  
-                Tu espacio aparecerá en ambas categorías dentro del directorio
-                nacional.  
-                Si aún no adquieres tu kit, puedes iniciar como club de consumo
-                y posteriormente afiliarte como jardinero con membresía activa.
-              </Typography>
-              <Box display="flex" justifyContent="center" gap={2}>
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <Card
+              sx={{
+                background: "white",
+                borderRadius: "24px",
+                p: 2,
+                height: "100%",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5" color="success.main" fontWeight="bold">
+                  🌿 Club de Cultivo Solidario
+                </Typography>
+                <Typography sx={{ mt: 2 }}>
+                  Gestiona un club de hasta 20 miembros y ofrece tus servicios de jardinero
+                  bajo lógica cooperativa. Los usuarios llevan sus propias semillas, y tú
+                  solo rentas espacio, equipo y servicios. Incluye respaldo jurídico y
+                  herramientas digitales.
+                </Typography>
                 <Button
                   variant="contained"
-                  sx={{
-                    bgcolor: "#2e7d32",
-                    "&:hover": { bgcolor: "#1b5e20" },
-                    borderRadius: "10px",
-                  }}
+                  color="success"
+                  size="large"
+                  sx={{ mt: 3, borderRadius: "999px" }}
                 >
                   Afiliar mi Club de Cultivo
                 </Button>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
+
+        {/* Club de Consumo */}
+        <Grid item xs={12} md={4}>
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <Card
+              sx={{
+                background: "white",
+                borderRadius: "24px",
+                p: 2,
+                height: "100%",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5" color="success.main" fontWeight="bold">
+                  🍃 Club de Consumo
+                </Typography>
+                <Typography sx={{ mt: 2 }}>
+                  Si tienes un espacio adecuado para recibir usuarios con permiso COFEPRIS,
+                  puedes afiliarte gratis. Realiza actividades en industrias periféricas
+                  (arte, cocina, bienestar), gana por ellas y respeta descuentos del 10 % a
+                  miembros activos de Marihuanas.Club.
+                </Typography>
                 <Button
                   variant="contained"
-                  sx={{
-                    bgcolor: "#fbc02d",
-                    "&:hover": { bgcolor: "#f57f17" },
-                    borderRadius: "10px",
-                  }}
+                  color="success"
+                  size="large"
+                  sx={{ mt: 3, borderRadius: "999px" }}
                 >
                   Afiliar mi Club de Consumo
                 </Button>
-              </Box>
-            </CardContent>
-          </MotionCard>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
+
+        {/* Club Mixto */}
+        <Grid item xs={12} md={4}>
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ duration: 0.3 }}>
+            <Card
+              sx={{
+                background: "white",
+                borderRadius: "24px",
+                p: 2,
+                height: "100%",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5" color="success.main" fontWeight="bold">
+                  🌱 Club Mixto (Cultivo + Consumo)
+                </Typography>
+                <Typography sx={{ mt: 2 }}>
+                  Combina ambas modalidades y ofrece experiencias completas.
+                  Tu club aparecerá en ambas categorías, con difusión ampliada,
+                  acceso a capacitaciones y beneficios digitales.
+                </Typography>
+                <Box display="flex" flexDirection="column" gap={2} mt={3}>
+                  <Button variant="contained" color="success" size="large" sx={{ borderRadius: "999px" }}>
+                    Afiliar mi Club de Cultivo
+                  </Button>
+                  <Button variant="outlined" color="success" size="large" sx={{ borderRadius: "999px" }}>
+                    Afiliar mi Club de Consumo
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </motion.div>
         </Grid>
       </Grid>
     </Box>
+    </Box>
   );
-}
+};
+
+export default TiposClub;
