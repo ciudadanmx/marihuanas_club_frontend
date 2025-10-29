@@ -88,10 +88,10 @@ export default function Gana() {
   const buttonConfig = {
     12: { label: 'Promueve las membresías', path: '/gana/promueve' },
     13: { label: 'Vende', path: '/gana/vende' },
-    16: { label: 'Afilia tu Club', path: '/gana/afilia-club' },
+    16: { label: 'Afilia tu Club', path: '/clubs/tipos-clubs' },
     17: { label: 'Genera Contenido', path: '/gana/genera-contenidos' },
-    18: { label: '...próximamente', path: '/gana/invierte' },
-    30: { label: '...próximamente', path: '/gana/delivery' },
+    18: { label: '...próximamente', path: '' },
+    30: { label: '...próximamente', path: '' },
     31: { label: 'Abrir Franquicia en mi país', path: '/gana/internacionaliza' },
   };
 

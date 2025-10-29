@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';  // <-- Importa useNavigate
 import clubs from '../../assets/red_de_clubs_marihuanas_club.png';
 import afilia from '../../assets/afilia_tu_club.png';
 import '../../styles/clubs.css';
-import MapaClubs from '../../components/Clubs/MapaClubs.jsx'
+import MapaClubs from '../../components/Clubs/MapaClubs.jsx';
+import InfoClubs from '../../components/Clubs/InfoClubs.jsx';
 
 const useOnScreen = (ref, rootMargin = '0px') => {
   const [isIntersecting, setIntersecting] = useState(false);
@@ -174,6 +175,8 @@ const Clubs = () => {
             <MapaClubs />
 
       </Typography>
+
+      <InfoClubs />
     </Box>
   );
 };
