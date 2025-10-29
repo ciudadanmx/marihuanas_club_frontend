@@ -441,11 +441,13 @@ const TestConsumoResponsable = () => {
 
                       <Typography variant="body1" sx={{ whiteSpace: 'pre-line', mb: 2 }}>{r.recomendacion}</Typography>
 
-                      <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+                     {/*  <Box mt={1} display="flex" gap={1} flexWrap="wrap">
                         <Button size="small" variant="outlined" href="#" onClick={(e) => { e.preventDefault(); alert('Ejercicio descargado (simulado)'); }}>Ejercicios prácticos</Button>
                         <Button size="small" variant="outlined" href="#" onClick={(e) => { e.preventDefault(); alert('Recursos y lecturas (simulado)'); }}>Recursos</Button>
                         <Button size="small" variant="contained" onClick={() => navigator.clipboard?.writeText(`Mi resultado: ${r.dim} - ${r.nivel} (${r.score}/${r.maxScore})`)}>Copiar resumen</Button>
-                      </Box>
+                      </Box> */}
+
+
                     </CardContent>
                   </Card>
                 </motion.div>
