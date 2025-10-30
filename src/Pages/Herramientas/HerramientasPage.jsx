@@ -36,9 +36,16 @@ const animationList = [
   { animation: swing, duration: '2s', timing: 'ease-in-out', count: 1 }
 ];
 
+const wikip = process.env.REACT_APP_WIKI_URL || '/wiki/legal';
+const wiki = (typeof process !== 'undefined' &&
+  process.env &&
+  String(process.env.REACT_APP_WIKI_URL || '').trim() !== '')
+  ? 'external'
+  : 'route';
+
 // Configuración de cada card con destino
 const cardConfigs = [
-  { src: amparo1, alt: 'Wiki Lugares', type: 'external', path: 'https://wiki.marihuanas.club' },
+  { src: amparo1, alt: 'Wiki Lugares', type: wiki, path: wikip },
   { src: amparo2, alt: 'Legal', type: 'route', path: '/legal' },
   { src: amparo3, alt: 'Contenidos Wiki', type: 'external', path: 'https://wiki.marihuanas.club' },
   { src: amparo4, alt: 'Consultorías', type: 'route', path: '/legal/tuabogado' },
