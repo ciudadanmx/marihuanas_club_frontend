@@ -1,15 +1,18 @@
 // src/components/WikiBar.jsx
-import React from "react";
+import React, { useState, useRef } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Avatar, Box } from "@mui/material";
 import { styled, keyframes } from "@mui/material/styles";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import MenuIcon from "./NavBar/UserIcon"; 
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import UserIcon from "./NavBar/UserIcon"; 
 import { useAuth0 } from "@auth0/auth0-react";
 
 // assets
 import logo from "../assets/wiki_marihuanas_club.png";
 import guestImg from "../assets/guest.png";
+import guestImage from '../assets/guest.png'; // Ajusta la ruta si es necesario
+
+
 
 // ----- Animaciones CSS para el neón -----
 const neonMove = keyframes`
@@ -44,8 +47,8 @@ const NeonStrip = styled("div")(({ theme }) => ({
 }));
 
 const LogoImg = styled("img")(({ theme }) => ({
-  height: 44,
-  width: 44,
+  height: 64,
+  width: 64,
   objectFit: "cover",
   borderRadius: 8,
   marginRight: theme.spacing(1.5),
@@ -72,9 +75,49 @@ const Subtitle = styled(Typography)(({ theme }) => ({
 }));
 
 // ----- Componente -----
-const WikiBar = () => {
+const WikiBar = ({ SetIsMenuOpen }) => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth0();
+  const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
+  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
+  
+  const profileRef = useRef(null); 
+  const InfoRef = useRef(null);
+
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  
+  const closeAllMenus = () => {
+    setIsProfileMenuOpen(false);
+    //setIsNotificationMenuOpen(false);
+    //setIsInfoMenuOpen(false);
+  };
+
+    const handleLinkClick = (path) => {
+    // Realiza la navegación
+    navigate(path);
+    // Cierra el menú
+    setIsMenuOpen(false);
+  };
+
+    const handleLogin = () => {
+    // Guarda la URL actual antes de hacer login
+    const currentUrl = window.location.pathname + window.location.search;
+    document.cookie = `returnTo=${encodeURIComponent(currentUrl)}; path=/; max-age=3600`;
+    console.log("URL guardada en cookie antes de login:", currentUrl);
+    // Redirige a Auth0
+    loginWithRedirect();
+    setIsMenuOpen(false);
+  };
+  
+    const handleLogout = () => {
+    console.log('cerrando sesión');
+    // Elimina la cookie de retorno antes de cerrar sesión
+    document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    console.log("Cookie de returnTo eliminada antes de logout");
+    // Redirige a la página principal después del logout
+    logout({ returnTo: window.location.origin });
+    setIsMenuOpen(false);
+  };
 
   const avatarSrc = isAuthenticated ? user?.picture : guestImg;
 
@@ -90,34 +133,7 @@ const WikiBar = () => {
             gap: 1,
           }}
         >
-          {/* Botón volver al sitio (home) */}
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          >
-            <Button
-              variant="contained"
-              onClick={() => navigate("/")}
-              sx={{
-                textTransform: "none",
-                fontWeight: 700,
-                boxShadow: "0 8px 20px rgba(0,0,0,0.18)",
-                borderRadius: 2,
-                px: 2,
-                py: 1,
-                bgcolor: "rgba(255,255,255,0.12)",
-                backdropFilter: "blur(4px)",
-                color: "#fff",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
-                },
-              }}
-            >
-              ← Volver al sitio
-            </Button>
-          </motion.div>
+          
 
           {/* Logo + Títulos */}
           <motion.div
@@ -149,35 +165,56 @@ const WikiBar = () => {
           {/* Spacer */}
           <Box sx={{ flex: 1 }} />
 
+          {/* Botón volver al sitio (home) */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            <Button
+              variant="contained"
+              onClick={() => navigate("/")}
+              sx={{
+                textTransform: "none",
+                fontWeight: 700,
+                boxShadow: "0 8px 20px rgba(0,0,0,0.18)",
+                borderRadius: 2,
+                px: 2,
+                py: 1,
+                bgcolor: "rgba(255,255,255,0.12)",
+                backdropFilter: "blur(4px)",
+                color: "#fff",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 12px 30px rgba(0,0,0,0.25)",
+                },
+              }}
+            >
+              ← Volver al sitio
+            </Button>
+          </motion.div>
+
           {/* Right side: MenuIcon + perfil */}
           <RightArea>
             {/* MenuIcon personalizado importado */}
-            
-            {/* Avatar / perfil */}
             <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
-              <IconButton
-                onClick={() => {
-                  // si está autenticado, ir al perfil; si no, abrir login (puedes personalizar)
-                  if (isAuthenticated) {
-                    navigate("/perfil/" + (user?.nickname || user?.name || "usuario"));
-                  } else {
-                    navigate("/perfil/"); // o acción de login
-                  }
-                }}
-                sx={{ p: 0 }}
-              >
-                <Avatar
-                  src={avatarSrc}
-                  alt={user?.name || "Invitado"}
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    border: "2px solid rgba(255,255,255,0.12)",
-                    boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
-                  }}
-                />
-              </IconButton>
+              <UserIcon 
+                              handleLogin={handleLogin}
+                              isMenuOpen={isProfileMenuOpen}
+                              setIsMenuOpen={(open) => {
+                                closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                                setIsProfileMenuOpen(open);
+                              }}
+                              handleLogout={handleLogout}
+                              handleLinkClick={handleLinkClick}
+                              defaultProfileImage={guestImage}
+                              guestImage={guestImage}
+                              Link={Link}
+                              containerRef={profileRef}
+                            />
             </motion.div>
+
+            
           </RightArea>
         </Toolbar>
 
