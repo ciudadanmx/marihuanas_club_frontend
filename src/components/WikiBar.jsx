@@ -152,10 +152,7 @@ const WikiBar = () => {
           {/* Right side: MenuIcon + perfil */}
           <RightArea>
             {/* MenuIcon personalizado importado */}
-            <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
-              <MenuIcon />
-            </motion.div>
-
+            
             {/* Avatar / perfil */}
             <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
               <IconButton
