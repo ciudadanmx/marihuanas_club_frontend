@@ -36,9 +36,16 @@ const animationList = [
   { animation: swing, duration: '2s', timing: 'ease-in-out', count: 1 },
 ];
 
+const wikip = process.env.REACT_APP_WIKI_URL || '/wiki/legal';
+const wiki = (typeof process !== 'undefined' &&
+  process.env &&
+  String(process.env.REACT_APP_WIKI_URL || '').trim() !== '')
+  ? 'external'
+  : 'route';
+
 // Configuración de las cards (imagen + destino)
 const cardConfigs = [
-  { src: derechos, alt: 'Derechos Consumidores', type: 'route', path: '/wiki/legal' },
+  { src: derechos, alt: 'Derechos Consumidores', type: wiki, path: wikip },
   { src: cofepris, alt: 'Generador Cofepris', type: 'route', path: '/legal/generadorlibre' },
   { src: amparo, alt: 'Amparo', type: 'route', path: '/legal/amparo' },
   { src: activismo, alt: 'Activismo', type: 'route', path: '/legal/activismo' },
