@@ -38,7 +38,7 @@ const animationList = [
 
 // Configuración de las cards (imagen + destino)
 const cardConfigs = [
-  { src: derechos, alt: 'Derechos Consumidores', type: 'external', path: 'https://wiki.marihuanas.club' },
+  { src: derechos, alt: 'Derechos Consumidores', type: 'route', path: '/wiki/legal' },
   { src: cofepris, alt: 'Generador Cofepris', type: 'route', path: '/legal/generadorlibre' },
   { src: amparo, alt: 'Amparo', type: 'route', path: '/legal/amparo' },
   { src: activismo, alt: 'Activismo', type: 'route', path: '/legal/activismo' },
