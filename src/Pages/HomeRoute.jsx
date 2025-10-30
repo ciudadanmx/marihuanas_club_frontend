@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import leafPattern from "../assets/leaf-pattern.png";
 import leafSmall from "../assets/leaf-small.png";
+import cogollo from "../assets/cogollo.gif";
 import "../styles/home.css";
 
 export default function Home() {
@@ -44,9 +45,8 @@ export default function Home() {
 
   return (
     <div className="home-container">
-      {/* ZONA DESPUÉS DE LA NAVBAR */}
       <div className="fall-zone">
-        {/* Fondo con patrón giratorio */}
+        {/* Fondo giratorio */}
         <motion.div
           className="leaves-overlay"
           style={{ backgroundImage: `url(${leafPattern})` }}
@@ -72,13 +72,7 @@ export default function Home() {
               y: "110%",
               opacity: [1, 1, 0],
               rotate: [leaf.rotateStart, leaf.rotateEnd],
-              x: [
-                0,
-                leaf.swayDistance,
-                0,
-                -leaf.swayDistance,
-                0,
-              ],
+              x: [0, leaf.swayDistance, 0, -leaf.swayDistance, 0],
             }}
             transition={{
               delay: leaf.delay,
@@ -90,39 +84,65 @@ export default function Home() {
           />
         ))}
 
-        {/* Contenido */}
-        <div className="content-wrapper">
-          <motion.h1
+        {/* Contenido principal */}
+        <div className="content-section">
+          <div className="text-side">
+            <motion.h1
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+              style={{
+                color: "#4a8c3f",
+                textAlign: "center",
+                marginBottom: "2rem",
+                textShadow: "0 2px 6px rgba(0,0,0,0.2)",
+              }}
+            >
+              🌿💚 Bienvenid@ a Marihuanas.Club
+            </motion.h1>
+
+            {paragraphs.map((text, i) => (
+              <motion.p
+                key={i}
+                className="paragraph"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15, duration: 0.3 }}
+              >
+                {text}
+              </motion.p>
+            ))}
+          </div>
+
+          <motion.div
+            className="gif-side"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            style={{
-              color: "#4a8c3f",
-              textAlign: "center",
-              marginBottom: "2rem",
-            }}
+            transition={{ duration: 1 }}
           >
-            🌿💚 Bienvenid@ a Marihuanas.Club
-          </motion.h1>
-
-          {paragraphs.map((text, i) => (
-            <motion.p
-              key={i}
-              style={{
-                whiteSpace: "pre-line",
-                maxWidth: 700,
-                margin: "0 auto 1.5rem",
-                color: "#2d3a24",
+            <motion.img
+              src={cogollo}
+              alt="Cogollo animado"
+              className="cogollo-gif"
+              animate={{
+                rotate: [0, 1, -1, 0],
+                scale: [1, 1.03, 1],
+                filter: [
+                  "brightness(1) blur(0px)",
+                  "brightness(1.2) blur(1px)",
+                  "brightness(1) blur(0px)",
+                ],
               }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15, duration: 0.3 }}
-            >
-              {text}
-            </motion.p>
-          ))}
+              transition={{
+                duration: 5,
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
+            />
+          </motion.div>
         </div>
       </div>
     </div>

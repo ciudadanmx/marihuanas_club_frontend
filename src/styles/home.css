@@ -38,3 +38,113 @@ p {
   line-height: 1.7;
   text-align: justify;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.content-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2rem;
+  padding: 0 2rem; /* 🔥 sin padding vertical */
+  max-width: 1100px;
+  margin: 0 auto;
+  margin-top: 0 !important; /* 🔥 sin margen superior */
+  flex-wrap: nowrap;
+  position: relative;
+  top: -40px; /* 🔼 fuerza visual para subir todo el bloque */
+}
+
+.text-side {
+  flex: 1.3;
+  backdrop-filter: blur(4px);
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 1rem;
+  padding: 1.2rem 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.paragraph {
+  white-space: pre-line;
+  margin-bottom: 1.1rem;
+  color: #2d3a24;
+  line-height: 1.5;
+  font-size: 1.05rem;
+}
+
+.gif-side {
+  flex: 0.7;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: sticky;
+  top: 0; /* 🔥 totalmente arriba */
+  margin-top: -20px; /* 🔼 empuja el gif aún más hacia arriba */
+}
+
+.cogollo-gif {
+  max-width: 100%;
+  height: auto;
+  border-radius: 1.4rem;
+  box-shadow: 0 0 25px rgba(76, 175, 80, 0.4);
+  transition: all 0.4s ease;
+}
+
+.cogollo-gif:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 40px rgba(76, 175, 80, 0.6);
+}
+
+/* 📱 En móvil: también lo pegamos arriba */
+@media (max-width: 768px) {
+  .content-section {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0 1rem;
+    margin-top: 0 !important;
+    top: -50px; /* 🔼 sube aún más en móviles */
+  }
+
+  .text-side {
+    flex: 1.5;
+    padding: 0.8rem;
+    font-size: 0.94rem;
+  }
+
+  .gif-side {
+    flex: 0.5;
+    position: relative;
+    top: 0;
+    margin-top: -30px; /* 🔼 sube el gif más */
+  }
+
+  .cogollo-gif {
+    max-width: 140px;
+    border-radius: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-section {
+    gap: 0.4rem;
+    padding: 0 0.8rem;
+    top: -55px; /* 🔼 aún más arriba */
+  }
+
+  .cogollo-gif {
+    max-width: 120px;
+  }
+}

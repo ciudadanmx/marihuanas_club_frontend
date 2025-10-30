@@ -36,7 +36,7 @@ const animationList = [
   { animation: swing, duration: '2s', timing: 'ease-in-out', count: 1 }
 ];
 
-const wikip = process.env.REACT_APP_WIKI_URL || '/wiki/legal';
+const wikip = process.env.REACT_APP_WIKI_URL || '/wiki/';
 const wiki = (typeof process !== 'undefined' &&
   process.env &&
   String(process.env.REACT_APP_WIKI_URL || '').trim() !== '')
@@ -45,9 +45,9 @@ const wiki = (typeof process !== 'undefined' &&
 
 // Configuración de cada card con destino
 const cardConfigs = [
-  { src: amparo1, alt: 'Wiki Lugares', type: wiki, path: wikip },
+  { src: amparo1, alt: 'Wiki Lugares', type: wiki, path: wikip+'mapa420' },
   { src: amparo2, alt: 'Legal', type: 'route', path: '/legal' },
-  { src: amparo3, alt: 'Contenidos Wiki', type: 'external', path: 'https://wiki.marihuanas.club' },
+  { src: amparo3, alt: 'Contenidos Wiki', type: wiki, path: wikip+'contenidos' },
   { src: amparo4, alt: 'Consultorías', type: 'route', path: '/legal/tuabogado' },
   { src: amparo5, alt: 'Test Consumo Responsable', type: 'route', path: '/herramientas/test-consumo-responsable' },
   { src: amparo6, alt: 'Juegos', type: 'route', path: '/juegos' },
