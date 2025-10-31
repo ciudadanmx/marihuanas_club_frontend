@@ -196,7 +196,7 @@ const TiposClub = () => {
                     color="success"
                     size="large"
                     sx={{ mt: 3, borderRadius: "999px" }}
-                    onClick={() => navigate("/clubs/afiliar-jardinero")}
+                    onClick={() => navigate("/clubs/requisitos-jardinero")}
                     >
                     Afiliar mi Club de Cultivo
                 </Button>

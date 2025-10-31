@@ -7,6 +7,7 @@ import HomeRoute from '../Pages/HomeRoute';
 import Perfil from '../components/Usuarios/Perfil.jsx';
 import CallbackPage from '../Pages/CallbackPage';
 import Clubs from '../Pages/Clubs/Clubs.jsx';
+import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
@@ -123,6 +124,7 @@ const Rutas = () => (
     </Route>
     <Route path="/evento/:slug" element={<Evento />} />
     <Route path="/clubs" element={<Clubs />} />
+    <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
