@@ -198,6 +198,11 @@ const Rutas = () => (
       <Route path="pagos" element={<PagosTienda />} />
       <Route path="configuracion" element={<ConfiguracionTienda />} />
     </Route>
+    <Route path="/comunidad/mis-anuncios/:slug" element={<Anuncios />}>
+      <Route path="programados" element={<Anuncios />} />
+      <Route path="historial" element={<Anuncios />} />
+      <Route path="configuracion" element={<Anuncios />} />
+    </Route>
   </Routes>
 );
 

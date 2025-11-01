@@ -1,98 +1,65 @@
+// src/pages/Anuncios.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, useLocation, useNavigate } from 'react-router-dom';
-import StoreImagePlaceholder from '../../assets/agencia.png';
-import AgregarProducto from '../MarketPlace/AgregarProducto';
-import PreguntasProducto from '../../components/MarketPlace/PreguntasProducto';
+import { useParams, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
+
+// Panels
 import MisProductos from '../MarketPlace/MisProductos';
 import PedidosPendientes from '../MarketPlace/PedidosPendientes';
 import PedidosEntregados from '../MarketPlace/PedidosEntregados';
-import PagosTienda from '../MarketPlace/PagosTienda';
 import ConfiguracionTienda from '../MarketPlace/ConfiguracionTienda';
+
+// Pestanas genérico (import según tu estructura)
+import Pestanas from '../../components/Pestanas';
 
 const Anuncios = () => {
   const { slug } = useParams();
   const location = useLocation();
-  const navigate = useNavigate();
   const { user, isLoading } = useAuth0();
 
   const [tabIndex, setTabIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [storeImageURL, setStoreImageURL] = useState(null);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [productos, setProductos] = useState([]);
+  const [storeImageURL, setStoreImageURL] = useState(null); // lo dejamos por si luego quieres mostrarla
 
+  // Rutas de prueba (ahorita TODO apunta a /comunidad/mis-anuncios + path)
+  const basePrueba = '/comunidad/mis-anuncios';
   const tabs = [
-    { label: 'Pedidos a entregar', path: '' },
-    { label: 'Entregados', path: 'entregados' },
-    { label: 'Productos', path: 'productos' },
-    { label: 'Agregar producto', path: 'agregar-producto' },
-    { label: 'Preguntas', path: 'preguntas-producto' },
-    { label: 'Pagos', path: 'pagos' },
-    { label: 'Configuración', path: 'configuracion' }
+    { label: 'Por defecto', path: '' },                     // /comunidad/mis-anuncios
+    { label: 'Programados', path: 'programados' },         // /comunidad/mis-anuncios/programados
+    { label: 'Historial de Publicaciones', path: 'historial' }, // /comunidad/mis-anuncios/historial
+    { label: 'Configuración', path: 'configuracion' }      // /comunidad/mis-anuncios/configuracion
   ];
 
+  // responsive listener (solo para la UI local)
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // sincroniza tabIndex con la URL de prueba (usa includes para detectar subrutas)
   useEffect(() => {
-    const path = location.pathname;
-    if (path.includes('/agregar')) setTabIndex(3);
-    else if (path.includes('/productos')) setTabIndex(2);
-    else if (path.includes('/entregados')) setTabIndex(1);
-    else if (path.includes('/preguntas')) setTabIndex(4);
-    else if (path.includes('/pagos')) setTabIndex(5);
-    else if (path.includes('/configuracion')) setTabIndex(6);
-    else setTabIndex(0);
+    const path = (location.pathname || '').toLowerCase();
+
+    if (path.includes(`${basePrueba}/programados`)) setTabIndex(1);
+    else if (path.includes(`${basePrueba}/historial`)) setTabIndex(2);
+    else if (path.includes(`${basePrueba}/configuracion`)) setTabIndex(3);
+    else setTabIndex(0); // por defecto
   }, [location.pathname]);
 
-  const handleTabClick = (index, path) => {
-    setTabIndex(index);
-    const basePath = `/market/store/${slug}`;
-    const newPath = path ? `${basePath}/${path}` : basePath;
-    navigate(newPath);
-  };
-
-  useEffect(() => {
-    if (!slug) return;
-
-    const fetchStoreData = async () => {
-      try {
-        const baseUrl = process.env.REACT_APP_STRAPI_URL.replace(/\/$/, '');
-        const res = await axios.get(`${baseUrl}/api/stores?filters[slug][$eq]=${slug}&populate=imagen`);
-        console.log('📦 Respuesta de tienda:', res.data);
-
-        const tienda = res.data.data[0];
-        const imagen = tienda?.attributes?.imagen?.data?.attributes?.url;
-
-        if (imagen) {
-          const fullURL = `${baseUrl}${imagen}`;
-          console.log('📷 Imagen encontrada:', fullURL);
-          setStoreImageURL(fullURL);
-        }
-      } catch (error) {
-        console.error('❌ Error al traer datos de la tienda:', error);
-      }
-    };
-
-    fetchStoreData();
-  }, [slug]);
-
+  // fetch productos (por email) — se mantiene para cuando uses MisProductos
   useEffect(() => {
     if (!user?.email) return;
 
     const fetchProductos = async () => {
       try {
-        const baseUrl = process.env.REACT_APP_STRAPI_URL.replace(/\/$/, '');
-        const url = `${baseUrl}/api/productos?populate=*&filters[store_email][$eq]=${user.email}`;
-        console.log('🔎 URL de productos por email:', url);
-
+        const baseUrl = (process.env.REACT_APP_STRAPI_URL || '').replace(/\/$/, '');
+        if (!baseUrl) return;
+        const url = `${baseUrl}/api/productos?populate=*&filters[store_email][$eq]=${encodeURIComponent(user.email)}`;
         const res = await axios.get(url);
-        console.log('🛒 Productos encontrados:', res.data);
-        setProductos(res.data.data || []);
+        setProductos(res.data?.data || []);
       } catch (error) {
         console.error('❌ Error al cargar productos:', error);
       }
@@ -101,9 +68,27 @@ const Anuncios = () => {
     fetchProductos();
   }, [user]);
 
+  // opcional: fetch datos de tienda si en algún momento quieres mostrar imagen o nombre real
+  useEffect(() => {
+    if (!slug) return;
+    const fetchStoreData = async () => {
+      try {
+        const baseUrl = (process.env.REACT_APP_STRAPI_URL || '').replace(/\/$/, '');
+        if (!baseUrl) return;
+        const res = await axios.get(`${baseUrl}/api/stores?filters[slug][$eq]=${slug}&populate=imagen`);
+        const tienda = res.data?.data?.[0];
+        const imagen = tienda?.attributes?.imagen?.data?.attributes?.url;
+        if (imagen) setStoreImageURL(`${baseUrl}${imagen}`);
+      } catch (error) {
+        console.error('❌ Error al traer datos de la tienda:', error);
+      }
+    };
+    fetchStoreData();
+  }, [slug]);
+
   if (isLoading) return <p>Cargando...</p>;
 
-  const filtros = 'mios';
+  const filtros = 'mios'; // lo pasamos a MisProductos
 
   return (
     <div
@@ -115,65 +100,20 @@ const Anuncios = () => {
         flexWrap: 'wrap'
       }}
     >
-      {/* Columna izquierda */}
-      <div style={{ flex: '0 0 30%', textAlign: 'center' }}>
-        <img
-          src={storeImageURL || StoreImagePlaceholder}
-          alt="Tienda"
-          style={{
-            width: '100%',
-            aspectRatio: '1 / 1',
-            borderRadius: '16px',
-            boxShadow: '0px 4px 10px rgba(0,0,0,0.1)',
-            objectFit: 'cover'
-          }}
+      {/* Columna principal (pestañas + panel) */}
+      <div style={{ flex: '1 1 100%' }}>
+        <Pestanas
+          tabs={tabs}
+          basePath={basePrueba} // <-- todas las rutas de prueba parten de aquí
+          onTabChange={(index) => setTabIndex(index)}
+          collapseAt={640}
         />
-        <h1 style={{ marginTop: '16px', marginBottom: '8px', fontSize: '2rem', fontWeight: 'bold' }}>
-          {slug}
-        </h1>
-        <p>Productos: <strong>{productos.length}</strong> &nbsp;&nbsp; Ventas: <strong>700</strong></p>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '8px' }}>
-          <i className="material-icons" style={{ color: '#FFC107' }}>star</i>
-          <i className="material-icons" style={{ color: '#FFC107' }}>star</i>
-          <i className="material-icons" style={{ color: '#FFC107' }}>star</i>
-          <i className="material-icons" style={{ color: '#FFC107' }}>star_half</i>
-          <i className="material-icons" style={{ color: '#ccc' }}>star_border</i>
-          <span style={{ marginLeft: '8px' }}>325 calificaciones</span>
-        </div>
-        <p style={{ marginTop: '8px' }}>201 reseñas</p>
-        <p>Usuario Auth0: {user.email}</p>
-      </div>
-
-      {/* Columna derecha */}
-      <div style={{ flex: '1 1 65%' }}>
-        <div
-          style={{
-            borderBottom: '1px solid #ccc',
-            marginBottom: '16px',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '4px'
-          }}
-        >
-          {tabs.map(({ label, path }, index) => (
-            <button
-              key={label}
-              onClick={() => handleTabClick(index, path)}
-              className={`tab-button ${tabIndex === index ? 'active' : ''}`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
 
         <div>
           {tabIndex === 0 && <PedidosPendientes />}
           {tabIndex === 1 && <PedidosEntregados />}
-          {tabIndex === 2 && <MisProductos filtros={filtros}/>}
-          {tabIndex === 3 && <AgregarProducto />}
-          {tabIndex === 4 && <PreguntasProducto />}
-          {tabIndex === 5 && <PagosTienda />}
-          {tabIndex === 6 && <ConfiguracionTienda />}
+          {tabIndex === 2 && <MisProductos filtros={filtros} productos={productos} />}
+          {tabIndex === 3 && <ConfiguracionTienda />}
         </div>
       </div>
     </div>
