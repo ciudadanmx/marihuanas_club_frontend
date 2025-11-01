@@ -32,12 +32,32 @@ export default function PromueveMembresias() {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
       }}
     >
-      <Box sx={{ backgroundColor: 'rgba(255,255,255,0.85)', borderRadius: 3, p: 4 }}>
-        <Typography variant="h3" fontWeight="bold" gutterBottom textAlign="center" sx={{ color: '#1b5e20' }}>
-          Promueve tus Membresías
+      <Box
+        sx={{
+          backgroundColor: 'rgba(255,255,255,0.9)',
+          borderRadius: 3,
+          p: 4,
+          mt: '-20px', // 🔹 ajusta este valor para subirlo más o menos
+          boxShadow: 4,
+          width: '100%',
+          maxWidth: 1200,
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
+        <Typography
+          variant="h4"
+          textAlign="center"
+          sx={{ fontWeight: 'bold', mb: 2, color: '#1b5e20' }}
+        >
+          Promueve las Membresías Marihuanas.Club y cobra jugosas comisiones !!
         </Typography>
+
         <Typography variant="h6" textAlign="center" sx={{ mb: 6, color: '#2e7d32' }}>
           Invita a tus amigos, gana recompensas y haz crecer la comunidad.
         </Typography>
