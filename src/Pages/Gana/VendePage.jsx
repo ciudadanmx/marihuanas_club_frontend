@@ -12,19 +12,21 @@ export default function VendePage() {
     {
       icon: <VerifiedUserIcon fontSize="large" sx={{ color: '#2e7d32' }} />,
       title: 'Vende Legalmente',
-      description: 'Cumple con todos los requisitos legales y permisos para vender productos cannábicos de forma segura.',
+      description:
+        'Cumple con todos los requisitos legales y permisos para vender productos cannábicos de forma segura.',
     },
     {
       icon: <LocalShippingIcon fontSize="large" sx={{ color: '#1b5e20' }} />,
       title: 'Gestión de Pedidos',
-      description: 'Controla tus ventas, envíos y estado de pedidos desde tu dashboard personal.',
+      description:
+        'Controla tus ventas, envíos y estado de pedidos desde tu dashboard personal.',
     },
     {
-  icon: <EmojiNatureIcon fontSize="large" sx={{ color: '#4caf50' }} />,
-  title: 'Conecta con la Comunidad',
-  description: 'Tus productos llegarán a clientes conscientes y responsables, fomentando la cultura cannábica.',
-},
-
+      icon: <EmojiNatureIcon fontSize="large" sx={{ color: '#4caf50' }} />,
+      title: 'Conecta con la Comunidad',
+      description:
+        'Tus productos llegarán a clientes conscientes y responsables, fomentando la cultura cannábica.',
+    },
   ];
 
   return (
@@ -36,15 +38,40 @@ export default function VendePage() {
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'flex-start',
       }}
     >
-      <Box sx={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: 3, p: 4 }}>
-        <Typography variant="h3" fontWeight="bold" textAlign="center" gutterBottom sx={{ color: '#1b5e20' }}>
-          Vende tus Productos Cannábicos
-        </Typography>
+      <Box
+        sx={{
+          backgroundColor: 'rgba(255,255,255,0.95)',
+          borderRadius: 3,
+          p: 4,
+          mt: '-20px', // 🔹 ajusta este valor si la navbar es más alta o más baja
+          boxShadow: 4,
+          width: '100%',
+          maxWidth: 1200,
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
+        <center>
+          
+          <h1>
+            <font color="green">
+              Vende tus Productos o Servicios de Industrias Periférico-Cannábicas
+            </font>
+        </h1>
+        </center>
 
-        <Typography variant="h6" textAlign="center" sx={{ mb: 4, color: '#2e7d32' }}>
-          Únete a nuestra plataforma legal y segura. Comparte tus productos con clientes responsables y gestiona tus ventas fácilmente.
+        <Typography
+          variant="h6"
+          textAlign="center"
+          sx={{ mb: 4, color: '#2e7d32' }}
+        >
+          Únete a nuestra plataforma legal y segura. Comparte tus productos con
+          clientes responsables y gestiona tus ventas fácilmente.
         </Typography>
 
         <Box
@@ -56,7 +83,8 @@ export default function VendePage() {
           }}
         >
           <Typography variant="body1" fontWeight="bold">
-            ⚠️ Solo pueden registrarse vendedores con permisos legales vigentes. Debes ser mayor de edad según la legislación local.
+            ⚠️ Solo pueden registrarse vendedores con permisos legales vigentes.
+            Debes ser mayor de edad según la legislación local.
           </Typography>
         </Box>
 
@@ -89,7 +117,10 @@ export default function VendePage() {
           <Button
             variant="contained"
             size="large"
-            sx={{ backgroundColor: '#4caf50', '&:hover': { backgroundColor: '#388e3c' } }}
+            sx={{
+              backgroundColor: '#4caf50',
+              '&:hover': { backgroundColor: '#388e3c' },
+            }}
             onClick={() => navigate('/registro-vendedor')}
           >
             Regístrate como Vendedor
