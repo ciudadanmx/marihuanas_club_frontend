@@ -69,6 +69,7 @@ import GeneradorActaYEstatutos from '../Pages/Legal/GeneradorActaYEstatutos.jsx'
 import InstruccionesActa from '../Pages/Legal/InstruccionesActa.jsx';
 import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
 import Activismo from '../Pages/Legal/Activismo.jsx';
+import Anuncios from '../Pages/Anuncios/Anuncios.jsx';
 
 // 🧩 Wiki
 import WikiBar from '../components/WikiBar.jsx';
@@ -168,6 +169,7 @@ const Rutas = () => (
     <Route path="/contenido/:slug" element={<Contenido />} />
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/prueba" element={<Prueba />} />
+    <Route path="/comunidad/mis-anuncios" element={<Anuncios />} />
 
     {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
     <Route

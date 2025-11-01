@@ -15,12 +15,19 @@ import {
   AccordionDetails,
   Chip,
   CircularProgress,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import headerImage from "../../assets/tiposclubs.png";
 import kitImage from "../../assets/kitjardinero.png";
 import { useNavigate } from "react-router-dom";
+import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
+import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
+import TarjetasInfoModal from '../../components/Clubs/TarjetasInfoModal.jsx';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -33,6 +40,16 @@ const TiposClub = () => {
   const [kitItems, setKitItems] = useState([]);
   const [loadingItems, setLoadingItems] = useState(true);
   const [errorItems, setErrorItems] = useState(null);
+
+  // Estado para el modal de la imagen del kit
+  const [openKitModal, setOpenKitModal] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+
+  const handleOpenModal = () => setOpenModal(true);
+  const handleCloseModal = () => setOpenModal(false);
+
+  const handleOpenKitModal = () => setOpenKitModal(true);
+  const handleCloseKitModal = () => setOpenKitModal(false);
 
     // ---------------------------------------------------
   // Reemplaza tu función extractImageUrl (si la tienes) y el useEffect por esto
@@ -269,15 +286,7 @@ const TiposClub = () => {
             <Grid container spacing={3} alignItems="flex-start">
               {/* Texto + precio + items (izquierda) */}
               <Grid item xs={12} md={8}>
-                <Typography
-                  variant="h4"
-                  color="success.main"
-                  fontWeight="bold"
-                  gutterBottom
-                >
-                  🌱 Kit Inicial del Jardinero del Club
-                </Typography>
-
+                  <h1><font color="green"> 🌱 Kit Inicial del Jardinero del Club</font></h1>
                 {/* Barra de precio llamativa con estrella SVG decorativa */}
                 <Box
                   sx={{
@@ -298,7 +307,7 @@ const TiposClub = () => {
                       alignItems: "center",
                       justifyContent: "space-between",
                       background:
-                        "radial-gradient(circle at 10% 20%, rgba(255,242,0,0.95), rgba(255,223,0,0.95) 25%, rgba(255,196,0,0.9))",
+                        "radial-gradient(circle at 10% 20%, rgba(97, 224, 59, 0.95), rgba(255,223,0,0.95) 25%, rgba(255,196,0,0.9))",
                       boxShadow:
                         "0 8px 24px rgba(255,197,0,0.15), 0 3px 8px rgba(0,0,0,0.08), 0 0 18px rgba(255,223,0,0.25) inset",
                       border: "1px solid rgba(0,0,0,0.05)",
@@ -383,9 +392,10 @@ const TiposClub = () => {
                                 position: "relative",
                                 zIndex: 2,
                                 display: "inline-block",
+                                color: "#006400",
                               }}
                             >
-                              $15,000 MXN
+                              $ 15,000 MXN
                             </Box>
 
                             {/* Brillos / destellos pequeños (SVG) */}
@@ -419,8 +429,23 @@ const TiposClub = () => {
                             </Box>
                           </Box>
 
-                          <Typography component="span" sx={{ ml: 1, fontSize: 14, fontWeight: 700 }}>
-                            <Box component="span" sx={{ display: "inline-block", opacity: 0.95 }}>
+                          <Typography
+                            component="span"
+                            sx={{
+                              ml: 1,
+                              fontSize: 14,
+                              fontWeight: 700,
+                            }}
+                          >
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-block",
+                                opacity: 0.95,
+                                color: "#530e45ff",
+                                textShadow: "0 0 8px #13031aff, 0 0 12px rgba(10, 1, 14, 0.6)",
+                              }}
+                            >
                               a 12 msi de $1,500
                             </Box>
                           </Typography>
@@ -428,48 +453,50 @@ const TiposClub = () => {
                       </Box>
                     </Box>
 
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, position: "relative", zIndex: 1 }}>
-                      <Tooltip
-                        title={
-                          <span>
-                            Financia con tarjetas participantes — opciones en mensualidades.
-                            <br />
-                            🚀 ¡Aplica promoción lanzamiento!
-                          </span>
-                        }
-                        arrow
-                        placement="top"
-                      >
-                        <Button
-                          variant="contained"
-                          size="small"
-                          onClick={() => navigate("/pagos/tarjetas")}
-                          sx={{
-                            textTransform: "none",
-                            borderRadius: "999px",
-                            px: 2,
-                            py: 1,
-                            fontWeight: 700,
-                            boxShadow: "0 6px 18px rgba(13, 110, 253, 0.12)",
-                          }}
-                        >
-                          💳 tarjetas participantes
-                        </Button>
-                      </Tooltip>
+                     <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <Tooltip
+          title={
+            <span>
+              Financia con tarjetas participantes — opciones en mensualidades.
+              <br />
+              🚀 ¡Aplica promoción lanzamiento!
+            </span>
+          }
+          arrow
+          placement="top"
+        >
+          <Chip
+            icon={<InfoOutlinedIcon />}
+            label="💳 tarjetas participantes"
+            size="small"
+            onClick={handleOpenModal}
+            sx={{
+              bgcolor: "rgba(33, 150, 243, 0.2)",
+              color: "#1976d2",
+              borderRadius: "8px",
+              fontWeight: 700,
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                bgcolor: "rgba(33, 150, 243, 0.3)",
+                transform: "scale(1.05)",
+                boxShadow: "0 0 8px rgba(33,150,243,0.6)",
+              },
+            }}
+          />
+        </Tooltip>
+      </Box>
 
-                      <Tooltip title="Más información" arrow>
-                        <Chip
-                          icon={<InfoOutlinedIcon />}
-                          label="Info"
-                          size="small"
-                          sx={{
-                            bgcolor: "rgba(255,255,255,0.5)",
-                            borderRadius: "8px",
-                            fontWeight: 700,
-                          }}
-                        />
-                      </Tooltip>
-                    </Box>
+      {/* Modal con info estática */}
+      <TarjetasInfoModal open={openModal} onClose={handleCloseModal} />
                   </Box>
                 </Box>
 
@@ -534,9 +561,7 @@ const TiposClub = () => {
                             </Box>
                           </Box>
 
-                          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 700 }}>
-                            {it.cantidad ? `${it.cantidad}` : ""}
-                          </Typography>
+                          
                         </Box>
                       </AccordionSummary>
 
@@ -619,19 +644,47 @@ const TiposClub = () => {
                     p: 1,
                   }}
                 >
+                  {/* WRAPPER clickable: hover mueve el crop hacia la derecha (object-position) y click abre modal */}
                   <Box
-                    component="img"
-                    src={kitImage}
-                    alt="Kit Jardinero - contenido"
+                    onClick={handleOpenKitModal}
                     sx={{
                       width: "100%",
                       height: { xs: 220, md: 320 },
-                      objectFit: "cover",
-                      objectPosition: "center left", // <- evita que se recorte por la derecha: manéjalo hacia la izquierda
-                      display: "block",
-                      transformOrigin: "center",
+                      overflow: "hidden",
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      // Controlamos la transición del crop usando la regla para la imagen hija
+                      "& img": {
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center left", // vista por defecto (izquierda)
+                        transition: "object-position 700ms ease, transform 300ms ease",
+                        display: "block",
+                      },
+                      "&:hover img": {
+                        objectPosition: "center right", // al hover muestra la parte derecha
+                        transform: "scale(1.02)",
+                      },
                     }}
-                  />
+                    aria-label="Abrir imagen ampliada del kit"
+                    role="button"
+                  >
+                    <Box
+                      component="img"
+                      src={kitImage}
+                      alt="Kit Jardinero - contenido"
+                      sx={{
+                        // Estos estilos serán sobrescritos por el selector anterior pero mantenemos aquí por seguridad
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center left",
+                        display: "block",
+                      }}
+                    />
+                  </Box>
+
                   <Box sx={{ p: 1 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>
                       Contenido visual del kit
@@ -655,6 +708,13 @@ const TiposClub = () => {
           </CardContent>
         </Card>
 
+
+
+
+        <ClubConsumoTitulo />
+
+        <ClubConsumo />
+
         {/* Modals / cards de modalidades (mantengo tu estructura original) */}
         <Grid container spacing={4} justifyContent="center" maxWidth="1200px" mx="auto">
           <Grid item xs={12} md={4}>
@@ -668,6 +728,9 @@ const TiposClub = () => {
                   boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
                 }}
               >
+                
+                
+                
                 <CardContent>
                   <Typography variant="h5" color="success.main" fontWeight="bold">
                     🌿 Club de Cultivo Solidario
@@ -755,6 +818,43 @@ const TiposClub = () => {
           </Grid>
         </Grid>
       </Box>
+
+      {/* DIALOG / MODAL para mostrar imagen ampliada del kit */}
+      <Dialog
+        open={openKitModal}
+        onClose={handleCloseKitModal}
+        maxWidth="lg"
+        fullWidth
+        aria-labelledby="kit-image-dialog"
+      >
+        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+          <IconButton onClick={handleCloseKitModal} aria-label="Cerrar">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <DialogContent
+          id="kit-image-dialog"
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            p: { xs: 1, md: 3 },
+          }}
+        >
+          <Box
+            component="img"
+            src={kitImage}
+            alt="Kit Jardinero - ampliada"
+            sx={{
+              maxWidth: "100%",
+              maxHeight: { xs: "70vh", md: "80vh" },
+              objectFit: "contain",
+              borderRadius: 2,
+              boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };
