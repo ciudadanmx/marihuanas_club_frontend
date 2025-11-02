@@ -67,7 +67,6 @@ export default function Club() {
   const safeName = nombreParam ? decodeURIComponent(nombreParam) : null;
 
   useEffect(() => {
-    console.log('🔽🔥🔥🔥iniciando club');
     if (!safeName) {
       setError('Nombre del club no especificado');
       setLoading(false);
@@ -189,7 +188,6 @@ export default function Club() {
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: 2 }}>
-        <h1>Holaaaaaaaaa</h1>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Back</Button>
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
