@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import "../../styles/faq.css";
 
+import AccionHome from "../../components/Home/AccionHome.jsx";
+
 const categorias = [
   {
     titulo: "🌿 Clubs Cannábicos",
@@ -105,6 +107,8 @@ export default function PreguntasFrecuentes() {
           </details>
         ))}
       </motion.div>
+
+      <AccionHome />
     </div>
   );
 }
