@@ -48,7 +48,7 @@ export default function VendePage() {
           backgroundColor: 'rgba(255,255,255,0.95)',
           borderRadius: 3,
           p: 4,
-          mt: '-20px', // 🔹 ajusta este valor si la navbar es más alta o más baja
+          mt: '-23px', // 🔹 ajusta este valor si la navbar es más alta o más baja
           boxShadow: 4,
           width: '100%',
           maxWidth: 1200,
@@ -57,12 +57,9 @@ export default function VendePage() {
         }}
       >
         <center>
-          
           <h1>
-            <font color="green">
               Vende tus Productos o Servicios de Industrias Periférico-Cannábicas
-            </font>
-        </h1>
+          </h1>
         </center>
 
         <Typography

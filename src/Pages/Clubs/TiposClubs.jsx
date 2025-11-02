@@ -474,7 +474,7 @@ const TiposClub = () => {
           placement="top"
         >
           <Chip
-            icon={<InfoOutlinedIcon />}
+            
             label="💳 tarjetas participantes"
             size="small"
             onClick={handleOpenModal}
