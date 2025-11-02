@@ -474,7 +474,6 @@ const TiposClub = () => {
           placement="top"
         >
           <Chip
-            
             label="💳 tarjetas participantes"
             size="small"
             onClick={handleOpenModal}
