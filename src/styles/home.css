@@ -163,7 +163,7 @@ p {
   display: grid;
   grid-template-columns: 1fr 220px; /* texto (flexible) + sidebar (ancho fijo) */
   gap: 1.5rem;
-  align-items: start; /* que el sidebar quede alineado al tope */
+  align-items: start;
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
@@ -171,9 +171,44 @@ p {
   box-sizing: border-box;
 }
 
-/* Asegura que la parte de texto ocupe el flujo normal */
-.text-side {
-  min-width: 0; /* para evitar overflow con long words */
+/* Cuando se activa (scroll pasó la altura de la columna de gifs), el text-side ocupa todo el ancho
+   y el gif-side queda en su columna original (arriba) pero ya no limita el ancho del texto restante. */
+.content-section.text-fullwidth {
+  grid-template-columns: 1fr 220px; /* mantenemos columnas visualmente */
+}
+
+/* Esta regla hace que el bloque de texto posterior ocupe todo el ancho cuando la clase está activa.
+   Importante: usamos grid-column para forzar que el text-side se extienda sobre las dos columnas. */
+.content-section.text-fullwidth .text-side {
+  grid-column: 1 / 2; /* default: ocupa la columna principal */
+}
+
+/* Para forzar que el texto posterior use todo el ancho *visualmente* después de pasar la altura de gifs,
+   usamos un "truco": añadimos un pseudo-elemento (vacío) que fuerza que los siguientes elementos de texto
+   ocupen la fila completa. Además manejamos con un selector que solo aplica en pantallas angostas. */
+@media (max-width: 900px) {
+  /* En móviles, cuando está text-fullwidth, hacemos que el text-side abarque ambas columnas para que
+     el contenido que sigue ocupe todo el ancho. */
+  .content-section.text-fullwidth {
+    grid-template-columns: 1fr; /* col apilada visualmente: texto full width */
+  }
+
+  .content-section.text-fullwidth .gif-side {
+    /* para mantener las imágenes visibles arriba a la derecha y que no desaparezcan,
+       convertimos la gif-side en un elemento posicionado que no ocupe fila del grid por debajo */
+    order: -1;
+    justify-self: end;
+    width: 140px; /* igual que en mobile antes */
+  }
+
+  .content-section .gif-side {
+    align-self: start;
+  }
+
+  /* Aseguramos que el texto ocupe todo el ancho cuando se active */
+  .content-section.text-fullwidth .text-side {
+    grid-column: 1 / -1;
+  }
 }
 
 /* Sidebar (gif-side) */
@@ -203,23 +238,21 @@ p {
   opacity: 0.98;
 }
 
-/* ---- Media queries: en pantallas muy angostas reducimos el ancho de la columna derecha
-   pero mantenemos la columna a la derecha (no stacking). ---- */
+/* ---- Media queries: en pantallas muy angostas reducimos el ancho de la columna derecha ---- */
 @media (max-width: 900px) {
   .content-section {
-    grid-template-columns: 1fr 180px; /* sidebar más estrecha en tablet/móvil grande */
+    grid-template-columns: 1fr 180px;
     padding: 1.25rem;
   }
 }
 
 @media (max-width: 480px) {
   .content-section {
-    grid-template-columns: 1fr 140px; /* en móviles muy angostos aún mantenemos la columna a la derecha */
+    grid-template-columns: 1fr 140px;
     padding: 1rem;
     gap: 1rem;
   }
 
-  /* Reduce un poco el tamaño del h1 y el texto si hace falta */
   .text-side h1 {
     font-size: 1.4rem;
   }

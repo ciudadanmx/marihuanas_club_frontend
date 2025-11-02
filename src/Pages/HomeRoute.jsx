@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import leafPattern from "../assets/leaf-pattern.png";
 import leafSmall from "../assets/leaf-small.png";
@@ -10,6 +10,9 @@ import "../styles/home.css";
 
 export default function Home() {
   const [leaves, setLeaves] = useState([]);
+  const contentRef = useRef(null);
+  const gifSideRef = useRef(null);
+  const [isTextFullWidth, setIsTextFullWidth] = useState(false);
 
   useEffect(() => {
     const count = 15;
@@ -45,6 +48,70 @@ export default function Home() {
     `⚖️ Amparo a precio preferencial tras tu primer semestre o con anualidad.`,
     `💚 ¡Sé parte de una red que protege tus derechos y apoya el uso libre e informado del cannabis!`,
   ];
+
+  // Calcula la posición final (bottom) de la columna de gifs y activa la clase cuando el scroll pasa esa altura
+  useEffect(() => {
+    if (!gifSideRef.current || !contentRef.current) return;
+
+    let gifBottom = 0;
+
+    const calcGifBottom = () => {
+      const rect = gifSideRef.current.getBoundingClientRect();
+      // gifBottom en coordenadas de documento
+      gifBottom = rect.bottom + window.scrollY;
+    };
+
+    const onScroll = () => {
+      // si ya pasamos la parte donde terminan las imágenes, activamos full width para texto
+      const scrolledPast = window.scrollY > gifBottom - 10; // pequeño buffer
+      if (scrolledPast && !isTextFullWidth) setIsTextFullWidth(true);
+      if (!scrolledPast && isTextFullWidth) setIsTextFullWidth(false);
+    };
+
+    // recalcula en resize y al cargar imagenes (por si tardan en cargar)
+    const onResize = () => {
+      calcGifBottom();
+      onScroll();
+    };
+
+    // también recalcula cuando las imágenes terminen de cargar por si cambian alturas
+    const imgs = gifSideRef.current.querySelectorAll("img");
+    let imagesToLoad = imgs.length;
+    if (imagesToLoad === 0) {
+      calcGifBottom();
+    } else {
+      imgs.forEach((img) => {
+        if (img.complete) {
+          imagesToLoad--;
+        } else {
+          img.addEventListener("load", () => {
+            imagesToLoad--;
+            if (imagesToLoad <= 0) calcGifBottom();
+          });
+        }
+      });
+      // si ya estaban cargadas
+      if (imagesToLoad <= 0) calcGifBottom();
+    }
+
+    // init
+    calcGifBottom();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onResize);
+    // reacción a cambios dinámicos en DOM (por ejemplo fuentes, cambios de caja)
+    const ro = new ResizeObserver(() => {
+      calcGifBottom();
+      onScroll();
+    });
+    ro.observe(gifSideRef.current);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      ro.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gifSideRef, contentRef, isTextFullWidth]);
 
   return (
     <div className="home-container">
@@ -88,7 +155,14 @@ export default function Home() {
         ))}
 
         {/* Contenido principal */}
-        <div className="content-section">
+        <div
+          ref={contentRef}
+          className={`content-section ${isTextFullWidth ? "text-fullwidth" : ""}`}
+           style={{
+            marginTop: "-40px", // sube todo el contenido
+            paddingTop: "0",
+          }}
+        >
           <div className="text-side">
             <motion.h1
               initial={{ opacity: 0, scale: 0.8 }}
@@ -120,6 +194,7 @@ export default function Home() {
           </div>
 
           <motion.aside
+            ref={gifSideRef}
             className="gif-side"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
