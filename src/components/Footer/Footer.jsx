@@ -209,7 +209,7 @@ export default function Footer() {
                 position: "absolute",
                 right: { xs: 8, md: -38 },
                 bottom: -190,
-                width: { xs: 60, sm: 90, md: 120 },
+                width: { xs: 60, sm: 90, md: 92 },
                 height: "auto",
                 display: "block",
                 boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
