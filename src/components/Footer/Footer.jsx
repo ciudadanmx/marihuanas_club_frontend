@@ -32,17 +32,19 @@ export default function Footer() {
         {/* Columna izquierda: gif + redes (gif importado) */}
         <Grid item xs={12} sm={5} md={4}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <center>
             <Box
               component="img"
               src={footerGif}
               alt="Cogollo bailando"
               sx={{
-                width: { xs: 80, sm: 90, md: 100 },
+                width: { xs: 80, sm: 90, md: 111 },
                 height: "auto",
                 alignSelf: "flex-start",
                 filter: "drop-shadow(0 8px 22px rgba(0,0,0,0.35))",
               }}
             />
+            </center>
 
             {/* iconos sociales en una sola línea */}
             <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1 }}>
