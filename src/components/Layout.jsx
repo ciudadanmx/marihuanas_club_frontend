@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, Outlet } from 'react-router-dom';
 import NavBar from './NavBar/NavBar';
+import Footer from './Footer/Footer';
 
 const Layout = () => {
   const location = useLocation();
@@ -22,6 +23,7 @@ const Layout = () => {
     <>
       <NavBar />
       <Outlet />
+      <Footer />
     </>
   );
 };

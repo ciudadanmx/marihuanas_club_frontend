@@ -14,6 +14,7 @@ import Asistente from './components/Asistente/Asistente';
 import { SnackbarProvider } from 'notistack';
 import { NotificationsProvider } from './Contexts/NotificationsContext';
 import './styles/index.css';
+import Footer from './components/Footer/Footer.jsx';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -41,6 +42,7 @@ const AppWrapper = () => {
       {!isWikiRoute && <NavBar />}
       <Rutas />
       <Asistente />
+      <Footer />
     </>
   );
 };
