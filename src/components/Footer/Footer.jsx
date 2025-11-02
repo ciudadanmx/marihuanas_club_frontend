@@ -21,7 +21,7 @@ export default function Footer() {
       sx={{
         mt: 6,
         bgcolor: "#002b00", // verde bastante oscuro
-        color: "rgba(255,255,255,0.92)",
+        color: "#fff200",
         px: { xs: 3, sm: 6, md: 10 },
         py: { xs: 4, sm: 6 },
         borderTop: "1px solid rgba(0,0,0,0.18)",
@@ -33,17 +33,17 @@ export default function Footer() {
         <Grid item xs={12} sm={5} md={4}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <center>
-            <Box
-              component="img"
-              src={footerGif}
-              alt="Cogollo bailando"
-              sx={{
-                width: { xs: 80, sm: 90, md: 111 },
-                height: "auto",
-                alignSelf: "flex-start",
-                filter: "drop-shadow(0 8px 22px rgba(0,0,0,0.35))",
-              }}
-            />
+              <Box
+                component="img"
+                src={footerGif}
+                alt="Cogollo bailando"
+                sx={{
+                  width: { xs: 80, sm: 90, md: 111 },
+                  height: "auto",
+                  alignSelf: "flex-start",
+                  filter: "drop-shadow(0 8px 22px rgba(0,0,0,0.35))",
+                }}
+              />
             </center>
 
             {/* iconos sociales en una sola línea */}
@@ -55,7 +55,7 @@ export default function Footer() {
                 rel="noreferrer"
                 aria-label="Facebook"
                 sx={{
-                  color: "#ffffff",
+                  color: "#fff200",
                   bgcolor: "rgba(255,255,255,0.04)",
                   "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
                 }}
@@ -71,7 +71,7 @@ export default function Footer() {
                 rel="noreferrer"
                 aria-label="Instagram"
                 sx={{
-                  color: "#ffffff",
+                  color: "#fff200",
                   bgcolor: "rgba(255,255,255,0.04)",
                   "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
                 }}
@@ -87,7 +87,7 @@ export default function Footer() {
                 rel="noreferrer"
                 aria-label="WhatsApp"
                 sx={{
-                  color: "#ffffff",
+                  color: "#fff200",
                   bgcolor: "rgba(255,255,255,0.04)",
                   "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
                 }}
@@ -103,7 +103,7 @@ export default function Footer() {
                 rel="noreferrer"
                 aria-label="YouTube"
                 sx={{
-                  color: "#ffffff",
+                  color: "#fff200",
                   bgcolor: "rgba(255,255,255,0.04)",
                   "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
                 }}
@@ -119,22 +119,22 @@ export default function Footer() {
         <Grid item xs={12} sm={4} md={4}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             <Box sx={{ display: "flex", flexDirection: "column", mt: 0.5, gap: 0.5 }}>
-              <MLink component={RouterLink} to="/clubs" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/clubs" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 Clubs
               </MLink>
-              <MLink component={RouterLink} to="/membresias" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/membresias" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 Membresías
               </MLink>
-              <MLink component={RouterLink} to="/legal/tuabogado" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/legal/tuabogado" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 TuAbogado
               </MLink>
-              <MLink component={RouterLink} to="/wiki" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/wiki" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 Wiki
               </MLink>
-              <MLink component={RouterLink} to="/info/faq" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/info/faq" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 Preguntas Frecuentes
               </MLink>
-              <MLink component={RouterLink} to="/info/ayuda" underline="hover" sx={{ color: "rgba(255,255,255,0.92)", fontWeight: 600 }}>
+              <MLink component={RouterLink} to="/info/ayuda" underline="hover" sx={{ color: "#fff200", fontWeight: 600 }}>
                 Ayuda
               </MLink>
             </Box>
@@ -175,13 +175,13 @@ export default function Footer() {
           flexWrap: "wrap",
         }}
       >
-        <MLink component={RouterLink} to="/terminos" underline="hover" sx={{ color: "rgba(255,255,255,0.76)", fontSize: 14 }}>
+        <MLink component={RouterLink} to="/terminos" underline="hover" sx={{ color: "#fff200", fontSize: 14 }}>
           Términos y Condiciones
         </MLink>
 
-        <Box sx={{ width: 6, height: 6, bgcolor: "#b300ff", borderRadius: "50%" }} aria-hidden />
+        <Box sx={{ width: 6, height: 6, bgcolor: "#fff200", borderRadius: "50%" }} aria-hidden />
 
-        <MLink component={RouterLink} to="/privacidad" underline="hover" sx={{ color: "rgba(255,255,255,0.76)", fontSize: 14 }}>
+        <MLink component={RouterLink} to="/privacidad" underline="hover" sx={{ color: "#fff200", fontSize: 14 }}>
           Política de privacidad
         </MLink>
       </Box>
