@@ -148,3 +148,89 @@ p {
     max-width: 120px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+/* ---- Layout principal: texto + columna derecha de gifs ---- */
+.content-section {
+  display: grid;
+  grid-template-columns: 1fr 220px; /* texto (flexible) + sidebar (ancho fijo) */
+  gap: 1.5rem;
+  align-items: start; /* que el sidebar quede alineado al tope */
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
+}
+
+/* Asegura que la parte de texto ocupe el flujo normal */
+.text-side {
+  min-width: 0; /* para evitar overflow con long words */
+}
+
+/* Sidebar (gif-side) */
+.gif-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Gif styles compartidos */
+.cogollo-gif {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  object-fit: contain;
+}
+
+/* Si quieres que la segunda tenga un poco menos de altura */
+.cogollo-gif-2 {
+  opacity: 0.98;
+}
+
+/* ---- Media queries: en pantallas muy angostas reducimos el ancho de la columna derecha
+   pero mantenemos la columna a la derecha (no stacking). ---- */
+@media (max-width: 900px) {
+  .content-section {
+    grid-template-columns: 1fr 180px; /* sidebar más estrecha en tablet/móvil grande */
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .content-section {
+    grid-template-columns: 1fr 140px; /* en móviles muy angostos aún mantenemos la columna a la derecha */
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* Reduce un poco el tamaño del h1 y el texto si hace falta */
+  .text-side h1 {
+    font-size: 1.4rem;
+  }
+
+  .paragraph {
+    font-size: 0.95rem;
+    line-height: 1.25;
+  }
+}
+
+/* Evita que el sidebar empuje el contenido ni provoque overflow horizontal */
+.home-container, .fall-zone {
+  overflow-x: hidden;
+}

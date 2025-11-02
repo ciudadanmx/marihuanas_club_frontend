@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import leafPattern from "../assets/leaf-pattern.png";
 import leafSmall from "../assets/leaf-small.png";
 import cogollo from "../assets/cogollo.gif";
+import threeGif from "../assets/3lcannabis.gif";
 import AccionHome from "../components/Home/AccionHome.jsx";
 
 import "../styles/home.css";
@@ -118,7 +119,7 @@ export default function Home() {
             ))}
           </div>
 
-          <motion.div
+          <motion.aside
             className="gif-side"
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
@@ -144,7 +145,23 @@ export default function Home() {
                 repeat: Infinity,
               }}
             />
-          </motion.div>
+
+            <motion.img
+              src={threeGif}
+              alt="3l cannabis animado"
+              className="cogollo-gif cogollo-gif-2"
+              animate={{
+                y: [0, -6, 0],
+                scale: [1, 1.01, 1],
+                filter: ["brightness(1) blur(0px)", "brightness(1.05) blur(0px)", "brightness(1) blur(0px)"],
+              }}
+              transition={{
+                duration: 6,
+                ease: "easeInOut",
+                repeat: Infinity,
+              }}
+            />
+          </motion.aside>
         </div>
       </div>
 
