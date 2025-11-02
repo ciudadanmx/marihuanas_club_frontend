@@ -148,8 +148,8 @@ export default function Footer() {
               alt="Asistente"
               sx={{
                 position: "absolute",
-                right: { xs: 8, md: 0 },
-                bottom: 0, // pegado hasta abajo
+                right: { xs: 8, md: -38 },
+                bottom: -190, // pegado hasta abajo
                 width: { xs: 60, sm: 90, md: 120 },
                 height: "auto",
                 display: "block",
