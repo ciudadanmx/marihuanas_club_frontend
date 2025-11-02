@@ -25,8 +25,27 @@ export default function TarjetasModal({ open, onClose }) {
   const cuotas = 12;
   const cuota = total / cuotas;
 
+  // Botones que se pasarán al ModalWrapper como 'actions'
+  const actions = (
+    <Button
+      variant="contained"
+      onClick={onClose}
+      sx={{
+        bgcolor: "#004d00",
+        color: "#fff",
+        fontWeight: 700,
+        px: 4,
+        py: 1.2,
+        "&:hover": { bgcolor: "#003b00" },
+        boxShadow: "0 8px 20px rgba(0,77,0,0.18)",
+      }}
+    >
+      Cerrar
+    </Button>
+  );
+
   return (
-    <ModalWrapper open={open} onClose={onClose} title="Formas de pago · Condiciones">
+    <ModalWrapper open={open} onClose={onClose} title="Formas de pago · Condiciones" actions={actions}>
       {/* --- contenido (children) --- */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
         <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
@@ -139,25 +158,6 @@ export default function TarjetasModal({ open, onClose }) {
             />
           </ListItem>
         </List>
-      </Box>
-
-      {/* Botón cerrar al final del contenido (no fijo) */}
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
-        <Button
-          variant="contained"
-          onClick={onClose}
-          sx={{
-            bgcolor: "#004d00",
-            color: "#fff",
-            fontWeight: 700,
-            px: 4,
-            py: 1.2,
-            "&:hover": { bgcolor: "#003b00" },
-            boxShadow: "0 8px 20px rgba(0,77,0,0.18)",
-          }}
-        >
-          Cerrar
-        </Button>
       </Box>
       {/* --- fin children --- */}
     </ModalWrapper>

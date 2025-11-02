@@ -1,12 +1,6 @@
 // ModalWrapper.jsx
-import React, { useRef, useState, useCallback } from "react";
-import {
-  Modal,
-  Box,
-  Typography,
-  IconButton,
-  Divider,
-} from "@mui/material";
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import { Modal, Box, Typography, IconButton, Divider } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 export default function ModalWrapper({
@@ -15,6 +9,7 @@ export default function ModalWrapper({
   title,
   width = { xs: "94%", sm: 760, md: 1000 },
   children,
+  actions = null,
 }) {
   const contentRef = useRef(null);
   const [isAtBottom, setIsAtBottom] = useState(false);
@@ -60,8 +55,6 @@ export default function ModalWrapper({
     p: 3,
     overflowY: "auto",
     flex: "1 1 auto",
-    // espacio para que el sticky divider no tape contenido
-    paddingBottom: 48,
     position: "relative",
   };
 
@@ -72,17 +65,27 @@ export default function ModalWrapper({
     right: 0,
     display: "flex",
     justifyContent: "center",
-    pointerEvents: "none", // no interfiera con clicks (aparece solo visual)
+    pointerEvents: "none",
   };
 
-  // Handler optimizado
   const handleScroll = useCallback(() => {
     const el = contentRef.current;
     if (!el) return;
-    const threshold = 16; // tolerancia en px
-    const isBottom = el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
-    setIsAtBottom(isBottom);
+    const threshold = 12;
+    const isBottomNow = el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+    setIsAtBottom(isBottomNow);
   }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const el = contentRef.current;
+    const t = setTimeout(() => handleScroll(), 100);
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [open, handleScroll]);
 
   return (
     <Modal
@@ -93,7 +96,7 @@ export default function ModalWrapper({
     >
       <Box sx={containerStyle}>
         <Box sx={modalCard}>
-          {/* Barra de título purpurona (siempre visible) */}
+          {/* Barra superior */}
           <Box sx={headerBar}>
             <Typography id="modal-title" variant="h6" component="h2" sx={{ fontWeight: 700 }}>
               {title}
@@ -119,20 +122,31 @@ export default function ModalWrapper({
             onScroll={handleScroll}
             ref={contentRef}
             tabIndex={-1}
+            role="region"
+            aria-label={title}
           >
-            {/* children: aquí va todo el contenido específico que pase el caller */}
             {children}
 
-            {/* sticky divider: se muestra visualmente sólo cuando isAtBottom === true */}
+            {/* Divider + acciones (sin espacio extra abajo) */}
+            {actions && (
+              <>
+                <Divider sx={{ my: 2, borderColor: "rgba(0,0,0,0.1)" }} />
+                <Box sx={{ display: "flex", justifyContent: "center", pb: 1 }}>
+                  {actions}
+                </Box>
+              </>
+            )}
+
+            {/* Barra de brillo inferior al llegar al fondo */}
             <Box sx={stickyDividerBox} aria-hidden>
               <Divider
                 sx={{
-                  width: "60%",
-                  height: 3,
+                  width: "64%",
+                  height: 4,
                   borderRadius: 2,
                   bgcolor: "#7b2cff",
                   opacity: isAtBottom ? 1 : 0,
-                  transform: isAtBottom ? "scaleX(1)" : "scaleX(0.95)",
+                  transform: isAtBottom ? "scaleX(1)" : "scaleX(0.98)",
                   transition: "opacity 220ms ease, transform 220ms ease",
                 }}
               />
