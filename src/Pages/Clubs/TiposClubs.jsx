@@ -27,7 +27,7 @@ import kitImage from "../../assets/kitjardinero.png";
 import { useNavigate } from "react-router-dom";
 import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
 import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
-import TarjetasInfoModal from '../../components/Clubs/TarjetasInfoModal.jsx';
+import TarjetasModal from '../../components/Clubs/TarjetasModal.jsx';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -172,7 +172,7 @@ const TiposClub = () => {
             if (Array.isArray(possible)) parsed = possible;
           }
 
-          
+
           foundUrl = url;
           break; // usamos este endpoint
         } catch (err) {
@@ -495,7 +495,7 @@ const TiposClub = () => {
       </Box>
 
       {/* Modal con info estática */}
-      <TarjetasInfoModal open={openModal} onClose={handleCloseModal} />
+      <TarjetasModal open={openModal} onClose={handleCloseModal} />
                   </Box>
                 </Box>
 
@@ -549,18 +549,18 @@ const TiposClub = () => {
                       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%", justifyContent: "space-between" }}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                            
-                           
+
+
 
                             <Box>
                               <Typography sx={{ fontWeight: 800 }}>
                                 {it.cantidad} × {it.nombre}
                               </Typography>
-                              
+
                             </Box>
                           </Box>
 
-                          
+
                         </Box>
                       </AccordionSummary>
 
@@ -727,9 +727,9 @@ const TiposClub = () => {
                   boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
                 }}
               >
-                
-                
-                
+
+
+
                 <CardContent>
                   <Typography variant="h5" color="success.main" fontWeight="bold">
                     🌿 Club de Cultivo Solidario
