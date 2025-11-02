@@ -70,6 +70,7 @@ import InstruccionesActa from '../Pages/Legal/InstruccionesActa.jsx';
 import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
 import Activismo from '../Pages/Legal/Activismo.jsx';
 import Anuncios from '../Pages/Anuncios/Anuncios.jsx';
+import Club from '../Pages/Clubs/Club.jsx';
 
 // 🧩 Wiki
 import WikiBar from '../components/WikiBar.jsx';
@@ -125,6 +126,7 @@ const Rutas = () => (
     </Route>
     <Route path="/evento/:slug" element={<Evento />} />
     <Route path="/clubs" element={<Clubs />} />
+    <Route path="/clubs/:nombre_club" element={<Club />} />
     <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />

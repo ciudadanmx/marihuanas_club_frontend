@@ -51,7 +51,7 @@ function Sparkles({ positions = [], active = false }) {
               "radial-gradient(circle, rgba(199,0,255,1) 0%, rgba(199,0,255,0.4) 60%, rgba(199,0,255,0) 100%)",
             display: "block",
             animation: `${twinkle} 1300ms ease-in-out ${p.delay}ms forwards`,
-            zIndex: 999999,
+            zIndex: 999,
           }}
         />
       ))}
@@ -144,7 +144,7 @@ function ActionCard({ to, imgSrc, title, subtitle, ariaLabel }) {
           outlineOffset: 4,
         },
         transition: "transform 240ms ease, box-shadow 240ms ease",
-        zIndex: 10000,
+        zIndex: 100,
       }}
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}

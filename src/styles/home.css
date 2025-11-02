@@ -169,6 +169,7 @@ p {
   margin: 0 auto;
   padding: 2rem 1rem;
   box-sizing: border-box;
+  font-family: 'Space Grotesk', sans-serif;
 }
 
 /* Cuando se activa (scroll pasó la altura de la columna de gifs), el text-side ocupa todo el ancho
