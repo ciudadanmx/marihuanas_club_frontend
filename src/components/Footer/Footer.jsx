@@ -78,7 +78,7 @@ export default function Footer() {
 
               <IconButton
                 component="a"
-                href="https://instagram.com/marihuanas.club"
+                href="https://instagram.com/marihuanasclub"
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Instagram"

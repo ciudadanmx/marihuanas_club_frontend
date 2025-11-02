@@ -241,38 +241,7 @@ export default function InfoClubs() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [userInteracted, setUserInteracted] = useState(false);
 
-  // intentar autoplay al montar; si falla mostramos overlay de play
-  useEffect(() => {
-    const tryPlay = async () => {
-      if (!videoRef.current) return;
-      videoRef.current.muted = isMuted;
-      videoRef.current.loop = isLoop;
-      try {
-        // Intentamos reproducir; si el navegador bloquea autoplay con audio, falla y mostramos overlay
-        await videoRef.current.play();
-        setIsPlaying(!videoRef.current.paused);
-        setShowBigPlay(false);
-      } catch (err) {
-        // autoplay con audio bloqueado -> pedir interacción
-        setShowBigPlay(true);
-      }
-    };
-    tryPlay();
 
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
-    if (videoRef.current) {
-      videoRef.current.addEventListener("play", onPlay);
-      videoRef.current.addEventListener("pause", onPause);
-    }
-    return () => {
-      if (videoRef.current) {
-        videoRef.current.removeEventListener("play", onPlay);
-        videoRef.current.removeEventListener("pause", onPause);
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // solo al montar
 
   // sincronizar loop/mute en el elemento si cambian
   useEffect(() => {
@@ -364,7 +333,6 @@ export default function InfoClubs() {
               <video
                 ref={videoRef}
                 src={clubsVideo}
-                autoPlay
                 loop={isLoop}
                 muted={isMuted}
                 playsInline
