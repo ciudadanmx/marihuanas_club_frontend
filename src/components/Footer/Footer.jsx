@@ -1,15 +1,13 @@
 // Footer.jsx
 import React from "react";
-import { Box, Grid, Typography, IconButton, Link as MLink } from "@mui/material";
+import { Box, Grid, IconButton, Link as MLink } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { FaFacebookSquare, FaInstagram, FaWhatsapp, FaYoutube, FaEnvelope } from "react-icons/fa";
 
-// IMPORTADO: gif animado transparente y asistente
 import footerGif from "../../assets/footer_marihuanasclub.gif";
 import asistenteImg from "../../assets/asistente_min.png";
 
 export default function Footer() {
-  // Normaliza número para wa.me (agregar 52 si sólo hay 10 dígitos MX)
   const raw = process.env.REACT_APP_WHATSAPP_NUMBER || "5559099956";
   const digits = ("" + raw).replace(/\D/g, "");
   const waNumber =
@@ -23,7 +21,7 @@ export default function Footer() {
       component="footer"
       sx={{
         mt: 6,
-        bgcolor: "#002b00", // verde bastante oscuro
+        bgcolor: "#002b00",
         color: "rgba(255,255,255,0.92)",
         px: { xs: 3, sm: 6, md: 10 },
         py: { xs: 4, sm: 6 },
@@ -33,7 +31,7 @@ export default function Footer() {
       }}
     >
       <Grid container spacing={3} alignItems="flex-start">
-        {/* Columna izquierda: gif + redes (gif importado) */}
+        {/* Columna izquierda: gif + redes */}
         <Grid item xs={12} sm={5} md={4}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <center>
@@ -50,8 +48,18 @@ export default function Footer() {
               />
             </center>
 
-            {/* iconos sociales en una sola línea */}
-            <Box sx={{ display: "flex", gap: 1, alignItems: "center", mt: 1 }}>
+            {/* iconos sociales (ajuste responsive aquí) */}
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 0.5,
+                alignItems: "center",
+                mt: 1,
+                justifyContent: { xs: "flex-start", sm: "flex-start", md: "flex-start" },
+                ml: { xs: 0, sm: 1, md: 0 }, // más pegado a la izquierda en tablet
+              }}
+            >
               <IconButton
                 component="a"
                 href="https://facebook.com/marihuanasclub"
@@ -84,7 +92,6 @@ export default function Footer() {
                 <FaInstagram />
               </IconButton>
 
-               {/* NUEVO: Botón Gmail */}
               <IconButton
                 component="a"
                 href="mailto:marihuanasclub@gmail.com"
@@ -130,75 +137,43 @@ export default function Footer() {
               >
                 <FaYoutube />
               </IconButton>
-
-             
             </Box>
           </Box>
         </Grid>
 
-        {/* Columna centro: enlaces internos (sin título) */}
+        {/* Columna centro: enlaces internos */}
         <Grid item xs={12} sm={4} md={4}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             <Box sx={{ display: "flex", flexDirection: "column", mt: 0.5, gap: 0.5 }}>
-              <MLink
-                component={RouterLink}
-                to="/clubs"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                Clubs
-              </MLink>
-              <MLink
-                component={RouterLink}
-                to="/membresias"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                Membresías
-              </MLink>
-              <MLink
-                component={RouterLink}
-                to="/legal/tuabogado"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                TuAbogado
-              </MLink>
-              <MLink
-                component={RouterLink}
-                to="/wiki"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                Wiki
-              </MLink>
-              <MLink
-                component={RouterLink}
-                to="/info/faq"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                Preguntas Frecuentes
-              </MLink>
-              <MLink
-                component={RouterLink}
-                to="/info/ayuda"
-                underline="hover"
-                sx={{ color: "#fff200", fontWeight: 600 }}
-              >
-                Ayuda
-              </MLink>
+              {[
+                { text: "Clubs", to: "/clubs" },
+                { text: "Membresías", to: "/membresias" },
+                { text: "TuAbogado", to: "/legal/tuabogado" },
+                { text: "Wiki", to: "/wiki" },
+                { text: "Preguntas Frecuentes", to: "/info/faq" },
+                { text: "Ayuda", to: "/info/ayuda" },
+              ].map((link) => (
+                <MLink
+                  key={link.to}
+                  component={RouterLink}
+                  to={link.to}
+                  underline="hover"
+                  sx={{ color: "#fff200", fontWeight: 600 }}
+                >
+                  {link.text}
+                </MLink>
+              ))}
             </Box>
           </Box>
         </Grid>
 
-        {/* Columna derecha: asistente (visible solo en md o más) */}
+        {/* Columna derecha: asistente (oculto en smartphone) */}
         <Grid item xs={12} sm={3} md={4}>
           <Box
             sx={{
               position: "relative",
               minHeight: { xs: 80, sm: 120 },
-              display: { xs: "none", md: "block" }, // oculto en smartphone
+              display: { xs: "none", md: "block" },
             }}
           >
             <Box
@@ -219,7 +194,7 @@ export default function Footer() {
         </Grid>
       </Grid>
 
-      {/* Línea inferior con Términos y Privacidad */}
+      {/* Línea inferior */}
       <Box
         sx={{
           mt: 4,
