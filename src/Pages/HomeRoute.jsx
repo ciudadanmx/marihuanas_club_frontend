@@ -3,6 +3,8 @@ import { motion } from "framer-motion";
 import leafPattern from "../assets/leaf-pattern.png";
 import leafSmall from "../assets/leaf-small.png";
 import cogollo from "../assets/cogollo.gif";
+import AccionHome from "../components/Home/AccionHome.jsx";
+
 import "../styles/home.css";
 
 export default function Home() {
@@ -145,6 +147,8 @@ export default function Home() {
           </motion.div>
         </div>
       </div>
+
+      <AccionHome />
     </div>
   );
 }
