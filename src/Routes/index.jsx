@@ -39,7 +39,6 @@ import EditarContenido from '../Pages/Blog/EditarContenido';
 import EliminarContenido from '../Pages/Blog/EliminarContenido';
 import Contenido from '../Pages/Blog/Contenido';
 import Cursos from '../Pages/Cursos/Cursos';
-import Prueba from '../Pages/Prueba.jsx';
 import PedidosEntregados from '../Pages/MarketPlace/PedidosEntregados.jsx';
 import PagosTienda from '../Pages/MarketPlace/PagosTienda.jsx';
 import ConfiguracionTienda from '../Pages/MarketPlace/ConfiguracionTienda.jsx';
@@ -71,6 +70,7 @@ import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
 import Activismo from '../Pages/Legal/Activismo.jsx';
 import Anuncios from '../Pages/Anuncios/Anuncios.jsx';
 import Club from '../Pages/Clubs/Club.jsx';
+import QRscanner from '../components/Clubs/QRscanner.jsx';
 
 // 🧩 Wiki
 import WikiBar from '../components/WikiBar.jsx';
@@ -170,8 +170,8 @@ const Rutas = () => (
     <Route path="/contenidos/*" element={<ContenidosPage />} />
     <Route path="/contenido/:slug" element={<Contenido />} />
     <Route path="/ubicacion" element={<MiUbicacion />} />
-    <Route path="/prueba" element={<Prueba />} />
     <Route path="/comunidad/mis-anuncios" element={<Anuncios />} />
+    <Route path="/clubs/qrscanner" element={<QRscanner />} />
 
     {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
     <Route

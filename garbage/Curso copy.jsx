@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { useCurso } from '../../hooks/useCurso';
-import BotonEditar from '../../components/Cursos/BotonEditar.jsx';
+import { useCurso } from '../src/hooks/useCurso.jsx';
+import BotonEditar from '../src/components/Cursos/BotonEditar.jsx';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -14,7 +14,7 @@ import {
     CircularProgress,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import FechaCdmx from '../../utils/FechaCdmx';
+import FechaCdmx from '../src/utils/FechaCdmx.jsx';
 
 const CursoDetalle = () => {
     const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;

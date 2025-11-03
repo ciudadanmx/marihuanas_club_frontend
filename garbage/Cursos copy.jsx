@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Box, Container } from '@mui/material';
-import Buscador from '../../components/Blog/Buscador';
-import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
+import Buscador from '../src/components/Blog/Buscador';
+import CategoriasSlider from '../src/components/MarketPlace/CategoriasSlider';
 
-import { useCategorias } from '../../hooks/useCategorias';
+import { useCategorias } from '../src/hooks/useCategorias';
 
 const Cursos = () => {
   const tabla = 'categorias-cursos';
