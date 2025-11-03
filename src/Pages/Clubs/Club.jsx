@@ -29,6 +29,7 @@ import LanguageIcon from '@mui/icons-material/Language';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import ActionButtons from '../../components/Clubs/ActionButtons.jsx';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
@@ -511,6 +512,7 @@ export default function Club() {
             )}
           </Paper>
         </Grid>
+        <ActionButtons />
       </Grid>
     </Box>
   );
