@@ -11,7 +11,14 @@ import {
   Avatar,
   Chip,
   Link as MuiLink,
-  IconButton
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Stack,
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PlaceIcon from '@mui/icons-material/Place';
@@ -19,43 +26,88 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 import LanguageIcon from '@mui/icons-material/Language';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 
-import guest from '../../assets/guest.png'; // fallback
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
-function safeUrl(u) {
+/* Helpers */
+const safeUrl = (u) => {
   if (!u) return null;
   if (u.startsWith('http://') || u.startsWith('https://')) return u;
-  // si viene como ruta relativa de Strapi
   return `${STRAPI_URL}${u}`;
-}
+};
 
-function extractMediaUrls(field) {
-  // acepta media single o array según cómo venga desde Strapi
+const extractMediaUrls = (field) => {
   if (!field) return [];
-  // si viene con estructura { data: ... }
   const data = field.data ?? field;
   if (!data) return [];
   if (Array.isArray(data)) {
     return data
-      .map(d => d?.attributes?.url || d?.url)
+      .map((d) => d?.attributes?.url ?? d?.url)
       .filter(Boolean)
       .map(safeUrl);
   } else {
-    const url = data?.attributes?.url || data?.url;
+    const url = data?.attributes?.url ?? data?.url;
     return url ? [safeUrl(url)] : [];
   }
-}
+};
 
-function formatDatetime(d) {
+const isImage = (u = '') => /\.(jpe?g|png|webp|avif|gif|svg)(\?.*)?$/i.test(u);
+const isVideo = (u = '') => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(u);
+
+const splitDireccion = (d) => {
+  // recibe string o objeto; intentamos devolver partes ordenadas: calle, zona, ciudad, estado, pais
   if (!d) return null;
-  try {
-    return new Date(d).toLocaleString();
-  } catch {
+  if (typeof d === 'object') {
+    // si ya viene objeto con campos comunes, devolverlo directo
     return d;
   }
-}
+  const raw = String(d);
+  // quitar llaves si viene JSON en string
+  try {
+    const maybeJson = JSON.parse(raw);
+    if (typeof maybeJson === 'object') return maybeJson;
+  } catch { /* no es JSON */ }
 
+  // separar por comas y puntos, limpiar
+  const parts = raw
+    .replace(/\s+/g, ' ')
+    .split(/[,·•\.]+/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+
+  // asignaciones heurísticas
+  const [calleOrPrimera, segunda, ciudad = '', estado = '', pais = ''] = parts;
+  return {
+    calle: calleOrPrimera || null,
+    zona: segunda || null,
+    ciudad: ciudad || null,
+    estado: estado || null,
+    pais: pais || null,
+    raw: raw,
+  };
+};
+
+const formatHorario = (h) => {
+  if (!h) return null;
+  // h expected object por días
+  const daysOrder = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+  return daysOrder.map((d) => {
+    const v = h[d] ?? h[d.toLowerCase()];
+    if (!v) return { dia: d, text: 'No disponible' };
+    if (v.cerrado || v.cerrado === true) return { dia: d, text: 'Cerrado' };
+    const abre = v.abre || v.open || null;
+    const cierra = v.cierra || v.close || null;
+    const t = (abre && cierra) ? `${abre} — ${cierra}` : (abre ? `Abre: ${abre}` : 'Horario incompleto');
+    return { dia: d, text: t };
+  });
+};
+
+const joinNonEmpty = (arr) => (arr.filter(Boolean).join(', ') || null);
+
+/* Componente */
 export default function Club() {
   const { nombre_club: nombreParam } = useParams();
   const navigate = useNavigate();
@@ -72,12 +124,11 @@ export default function Club() {
       setLoading(false);
       return;
     }
-
     let mounted = true;
+
     const fetchClub = async () => {
       setLoading(true);
       try {
-        // Filtramos por nombre_club (ajusta a slug si usas slug)
         const q = `${STRAPI_URL}/api/clubs?filters[nombre_club][$eq]=${encodeURIComponent(safeName)}&populate=*&pagination[pageSize]=1`;
         const res = await fetch(q);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -92,7 +143,7 @@ export default function Club() {
           return;
         }
 
-        // normalizamos campos de media
+        // normalizar medias
         const fotoUrls = extractMediaUrls(attrs.foto_de_perfil);
         const fotos = extractMediaUrls(attrs.fotos);
         const documentos = extractMediaUrls(attrs.documentos);
@@ -100,7 +151,7 @@ export default function Club() {
         const acta = extractMediaUrls(attrs.acta);
         const archivos_legal = extractMediaUrls(attrs.archivos_legal);
 
-        // user owner si existe
+        // owner simplificado
         let owner = null;
         try {
           const userRel = attrs.users_permissions_user ?? attrs.user ?? null;
@@ -113,7 +164,7 @@ export default function Club() {
               email: userAttrs.email ?? null,
             };
           }
-        } catch { /* no hacer nada */ }
+        } catch { /* ignore */ }
 
         const normalized = {
           ...attrs,
@@ -138,7 +189,6 @@ export default function Club() {
     };
 
     fetchClub();
-
     return () => { mounted = false; };
   }, [safeName]);
 
@@ -152,7 +202,7 @@ export default function Club() {
 
   if (error) {
     return (
-      <Box sx={{ maxWidth: 960, mx: 'auto', p: 2 }}>
+      <Box sx={{ maxWidth: 1000, mx: 'auto', p: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Volver</Button>
         <Paper sx={{ p: 3, mt: 2 }}>
           <Typography color="error">Error: {error}</Typography>
@@ -163,7 +213,7 @@ export default function Club() {
 
   if (!club) {
     return (
-      <Box sx={{ maxWidth: 960, mx: 'auto', p: 2 }}>
+      <Box sx={{ maxWidth: 1000, mx: 'auto', p: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Volver</Button>
         <Paper sx={{ p: 3, mt: 2 }}>
           <Typography>No se encontró información del club.</Typography>
@@ -172,7 +222,7 @@ export default function Club() {
     );
   }
 
-  // helpers para mostrar solo si existe
+  // Valores seguros / transformaciones
   const showField = (v) => v !== null && v !== undefined && v !== '';
   const firstFoto = (club.fotoUrls && club.fotoUrls[0]) || null;
   const fotos = club.fotos || [];
@@ -180,32 +230,55 @@ export default function Club() {
   const estatutos = club.estatutos || [];
   const acta = club.acta || [];
   const archivosLegal = club.archivos_legal || [];
+  const direccionParsed = splitDireccion(club.direccion ?? club.direccion?.raw ?? null);
+  const horariosFormatted = formatHorario(club.horarios);
+  const integrantes = (club.num_integrantes === null || club.num_integrantes === undefined) ? 0 : club.num_integrantes;
+  const lugares = (club.lugares === null || club.lugares === undefined) ? 0 : club.lugares;
+  const requiereReservacion = !!club.reservacion;
+  const tipoLabel = (club.tipo === 'ambos') ? 'Cultivo y Consumo' : (club.tipo ?? null);
 
-  // whatsapp format
+  // whatsapp
   const whatsappRaw = club.whatsapp ?? club.whats ?? null;
   const whatsappNumber = whatsappRaw ? String(whatsappRaw).replace(/\D/g, '') : null;
   const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}` : null;
+
+  // status legal resumen
+  const docsCount = (documentos.length + estatutos.length + acta.length + archivosLegal.length);
+  const statusSummaryParts = [];
+  if (showField(club.status_legal)) statusSummaryParts.push(club.status_legal);
+  statusSummaryParts.push(club.en_revision ? 'En revisión' : 'No en revisión');
+  statusSummaryParts.push(club.activo ? 'Activo' : 'Inactivo');
+  statusSummaryParts.push(`${docsCount} documento(s) disponibles`);
+  const statusSummary = statusSummaryParts.filter(Boolean).join(' · ');
+
+  // documentos table list
+  const docsList = [
+    { key: 'estatutos', label: 'Estatutos', urls: estatutos },
+    { key: 'acta', label: 'Acta Constitutiva', urls: acta },
+    { key: 'archivos_legal', label: 'Archivos legales', urls: archivosLegal },
+    { key: 'documentos', label: 'Otros documentos', urls: documentos },
+  ];
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Back</Button>
-        <Typography variant="h5" sx={{ fontWeight: 700 }}>
-          {club.nombre_club ?? safeName}
-        </Typography>
-        {club.activo !== undefined && (
-          <Chip
-            label={club.activo ? 'Activo' : 'Inactivo'}
-            color={club.activo ? 'success' : 'default'}
-            size="small"
-            sx={{ ml: 1 }}
-          />
-        )}
-        {club.tipo && <Chip label={club.tipo} size="small" sx={{ ml: 1 }} />}
+        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="h5" sx={{ fontWeight: 700 }}>{club.nombre_club ?? safeName}</Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            {typeof club.activo !== 'undefined' && (
+              <Chip label={club.activo ? 'Activo' : 'Inactivo'} color={club.activo ? 'success' : 'default'} size="small" />
+            )}
+            {tipoLabel && <Chip label={tipoLabel} size="small" />}
+            <Chip label={`${integrantes} integrantes`} size="small" />
+            <Chip label={`lugares: ${lugares}`} size="small" />
+            <Chip label={`Reservación: ${requiereReservacion ? 'Sí' : 'No'}`} size="small" />
+          </Stack>
+        </Box>
       </Box>
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
-        {/* Left column: foto y datos principales */}
+        {/* Left column */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
@@ -215,34 +288,24 @@ export default function Club() {
                 variant="rounded"
                 sx={{ width: 180, height: 140 }}
               />
-              {!firstFoto && (
-                <Box sx={{ textAlign: 'center', color: 'text.secondary' }}>
-                  <Typography variant="caption">Sin foto de perfil</Typography>
-                </Box>
-              )}
+              {!firstFoto && (<Typography variant="caption" color="text.secondary">Sin foto de perfil</Typography>)}
 
               {showField(club.nombre_titular) && (
                 <Typography variant="subtitle1" sx={{ mt: 1 }}>{club.nombre_titular}</Typography>
               )}
 
-              {/* direccion */}
-              {club.direccion && typeof club.direccion === 'object' && (
-                <Box sx={{ mt: 1, width: '100%' }}>
+              {/* direccion formateada */}
+              {direccionParsed ? (
+                <Box sx={{ mt: 1, width: '100%', wordBreak: 'break-word' }}>
                   <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <PlaceIcon fontSize="small" />{' '}
-                    {[
-                      club.direccion.calle,
-                      club.direccion.num,
-                      club.direccion.colonia,
-                      club.direccion.ciudad,
-                      club.direccion.estado,
-                      club.direccion.codigo_postal
-                    ].filter(Boolean).join(', ') || JSON.stringify(club.direccion)}
+                    <PlaceIcon fontSize="small" /> {joinNonEmpty([direccionParsed.calle, direccionParsed.zona, direccionParsed.ciudad, direccionParsed.estado, direccionParsed.pais]) || direccionParsed.raw}
                   </Typography>
                 </Box>
+              ) : (
+                <Typography variant="body2" color="text.secondary">Dirección no disponible</Typography>
               )}
 
-              {/* lat/lng -> link a Google Maps */}
+              {/* lat/lng -> Google Maps */}
               {club.lat && club.lng && (
                 <Box sx={{ mt: 1, width: '100%' }}>
                   <MuiLink
@@ -267,96 +330,78 @@ export default function Club() {
             </Box>
           </Paper>
 
-          {/* horarios, estatus legal */}
+          {/* horarios y estatus legal */}
           <Paper sx={{ p: 2, mt: 2 }}>
-            {club.horarios ? (
-              <>
-                <Typography variant="subtitle2">Horarios</Typography>
-                <Typography variant="body2">
-                  {typeof club.horarios === 'string' ? club.horarios : JSON.stringify(club.horarios)}
-                </Typography>
-              </>
-            ) : (
-              <Typography variant="body2" color="text.secondary">Horarios no disponibles</Typography>
-            )}
+            <Typography variant="subtitle2">Horarios</Typography>
+            <Box sx={{ mt: 1 }}>
+              {horariosFormatted ? (
+                <TableContainer>
+                  <Table size="small">
+                    <TableBody>
+                      {horariosFormatted.map((row) => (
+                        <TableRow key={row.dia}>
+                          <TableCell sx={{ width: 120, textTransform: 'capitalize', borderBottom: 'none', p: 0.5 }}>{row.dia}</TableCell>
+                          <TableCell sx={{ borderBottom: 'none', p: 0.5 }}>{row.text}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Typography variant="body2" color="text.secondary">Horarios no disponibles</Typography>
+              )}
+            </Box>
 
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle2">Estatus legal</Typography>
-              {showField(club.status_legal) ? (
-                <Typography variant="body2">{club.status_legal}</Typography>
-              ) : (
-                <Typography variant="body2" color="text.secondary">No especificado</Typography>
-              )}
-
-              {/* archivos legales (enlaces) */}
-              {archivosLegal.length > 0 && (
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <DescriptionIcon fontSize="small" /> Archivos legales
-                  </Typography>
-                  <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {archivosLegal.map((u, i) => (
-                      <MuiLink key={i} href={u} target="_blank" rel="noopener noreferrer" underline="hover">
-                        {u.split('/').pop() ?? `archivo-${i + 1}`}
-                      </MuiLink>
-                    ))}
-                  </Box>
-                </Box>
-              )}
+              <Typography variant="body2">{statusSummary}</Typography>
             </Box>
           </Paper>
 
-          {/* documentos / estatutos / acta (enlaces) */}
+          {/* documentos / tabla */}
           <Paper sx={{ p: 2, mt: 2 }}>
             <Typography variant="subtitle2">Documentos</Typography>
-            { (documentos.length + estatutos.length + acta.length) === 0 ? (
-              <Typography variant="body2" color="text.secondary">No hay documentos publicados.</Typography>
-            ) : (
-              <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {estatutos.length > 0 && (
-                  <Box>
-                    <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <DescriptionIcon fontSize="small" /> Estatutos
-                    </Typography>
-                    {estatutos.map((u, i) => (
-                      <MuiLink key={`estat-${i}`} href={u} target="_blank" rel="noopener noreferrer" underline="hover" display="block">
-                        {u.split('/').pop() ?? `estatuto-${i + 1}`}
-                      </MuiLink>
-                    ))}
-                  </Box>
-                )}
-
-                {acta.length > 0 && (
-                  <Box>
-                    <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <DescriptionIcon fontSize="small" /> Acta
-                    </Typography>
-                    {acta.map((u, i) => (
-                      <MuiLink key={`acta-${i}`} href={u} target="_blank" rel="noopener noreferrer" display="block">
-                        {u.split('/').pop() ?? `acta-${i + 1}`}
-                      </MuiLink>
-                    ))}
-                  </Box>
-                )}
-
-                {documentos.length > 0 && (
-                  <Box>
-                    <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <DescriptionIcon fontSize="small" /> Otros documentos
-                    </Typography>
-                    {documentos.map((u, i) => (
-                      <MuiLink key={`doc-${i}`} href={u} target="_blank" rel="noopener noreferrer" display="block">
-                        {u.split('/').pop() ?? `documento-${i + 1}`}
-                      </MuiLink>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            )}
+            <TableContainer sx={{ mt: 1 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Tipo</TableCell>
+                    <TableCell>Disponible</TableCell>
+                    <TableCell>Acción</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {docsList.map((d) => {
+                    const has = (d.urls && d.urls.length > 0);
+                    return (
+                      <TableRow key={d.key}>
+                        <TableCell sx={{ borderBottom: 'none' }}>{d.label}</TableCell>
+                        <TableCell sx={{ borderBottom: 'none' }}>
+                          {has ? <CheckCircleOutlineIcon color="success" /> : <HighlightOffIcon color="error" />}
+                        </TableCell>
+                        <TableCell sx={{ borderBottom: 'none' }}>
+                          {has ? (
+                            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                              {d.urls.map((u, i) => (
+                                <MuiLink key={i} href={u} target="_blank" rel="noopener noreferrer" underline="hover" sx={{ wordBreak: 'break-all' }}>
+                                  {u.split('/').pop() ?? `archivo-${i + 1}`}
+                                </MuiLink>
+                              ))}
+                            </Stack>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">No disponible</Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
           </Paper>
         </Grid>
 
-        {/* Right column: descripción, servicios, fotos, metadata */}
+        {/* Right column */}
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 2 }}>
             {showField(club.descripcion) && (
@@ -387,30 +432,52 @@ export default function Club() {
               </Box>
             )}
 
-            {/* fotos galer�a */}
+            {/* galería: detecta imagen/video */}
             <Box sx={{ mt: 2 }}>
               <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PhotoLibraryIcon fontSize="small" /> Fotos
+                <PhotoLibraryIcon fontSize="small" /> Galería
               </Typography>
+
               {fotos.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">No hay fotos disponibles.</Typography>
+                <Typography variant="body2" color="text.secondary">No hay fotos o videos disponibles.</Typography>
               ) : (
                 <Grid container spacing={1} sx={{ mt: 1 }}>
                   {fotos.map((u, i) => (
-                    <Grid item key={`foto-${i}`} xs={6} sm={4} md={3}>
+                    <Grid item key={`media-${i}`} xs={6} sm={4} md={3}>
                       <Paper
                         elevation={1}
                         sx={{
                           overflow: 'hidden',
-                          height: 120,
+                          height: 160,
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer'
                         }}
-                        onClick={() => window.open(u, '_blank')}
                       >
-                        <img src={u} alt={`foto-${i}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'cover' }} />
+                        {isImage(u) ? (
+                          <img src={u} alt={`media-${i}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onClick={() => window.open(u, '_blank')} />
+                        ) : isVideo(u) ? (
+                          <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
+                            <video
+                              src={u}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              controls={false}
+                              preload="metadata"
+                            />
+                            <IconButton
+                              sx={{ position: 'absolute', top: 8, right: 8, bgcolor: 'rgba(0,0,0,0.4)', color: '#fff' }}
+                              onClick={() => window.open(u, '_blank')}
+                            >
+                              <PlayCircleOutlineIcon />
+                            </IconButton>
+                          </Box>
+                        ) : (
+                          // desconocido: mostrar enlace
+                          <MuiLink href={u} target="_blank" rel="noopener noreferrer" sx={{ p: 1, wordBreak: 'break-all' }}>
+                            {u.split('/').pop() ?? `media-${i + 1}`}
+                          </MuiLink>
+                        )}
                       </Paper>
                     </Grid>
                   ))}
@@ -418,23 +485,15 @@ export default function Club() {
               )}
             </Box>
 
-            {/* metadata: fecha alta / activado / en_revision / num_integrantes */}
+            {/* metadata */}
             <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-              {club.fecha_alta && (
-                <Chip label={`Alta: ${formatDatetime(club.fecha_alta)}`} size="small" />
-              )}
-              {club.fecha_activado && (
-                <Chip label={`Activado: ${formatDatetime(club.fecha_activado)}`} size="small" />
-              )}
-              {club.en_revision !== undefined && (
-                <Chip label={club.en_revision ? 'En revisión' : 'No en revisión'} size="small" />
-              )}
-              {club.num_integrantes !== undefined && (
-                <Chip label={`${club.num_integrantes} integrantes`} size="small" />
-              )}
+              {club.fecha_alta && <Chip label={`Alta: ${new Date(club.fecha_alta).toLocaleString()}`} size="small" />}
+              {club.fecha_activado && <Chip label={`Activado: ${new Date(club.fecha_activado).toLocaleString()}`} size="small" />}
+              {typeof club.en_revision !== 'undefined' && <Chip label={club.en_revision ? 'En revisión' : 'No en revisión'} size="small" />}
+              <Chip label={`${integrantes} integrantes de ${lugares} lugares`} size="small" />
             </Box>
 
-            {/* link externo si hay auth_name o sitio */}
+            {/* link externo */}
             {showField(club.auth_name) && (
               <Box sx={{ mt: 2 }}>
                 <MuiLink href={club.auth_name} target="_blank" rel="noopener noreferrer" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
