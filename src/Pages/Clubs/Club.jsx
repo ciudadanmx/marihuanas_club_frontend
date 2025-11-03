@@ -29,8 +29,9 @@ import LanguageIcon from '@mui/icons-material/Language';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import ActionButtons from '../../components/Clubs/ActionButtons.jsx';
 import AddClubButton from '../../components/Clubs/AddClubButton.jsx';
+import ComentariosClub from '../../components/Clubs/ComentariosClub.jsx';
+import CalificacionesClub from '../../components/Clubs/CalificacionesClub.jsx';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
@@ -261,9 +262,19 @@ export default function Club() {
     { key: 'documentos', label: 'Otros documentos', urls: documentos },
   ];
 
+  // mostrar AddClubButton solo si tipo es 'cultivo' o 'ambos' (case-insensitive)
+  const tipoRaw = String(club.tipo ?? '').toLowerCase();
+  const canShowAdd = tipoRaw === 'cultivo' || tipoRaw === 'ambos';
+
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: 2 }}>
-        <AddClubButton />
+      {/* botón de afiliar solo si aplica */}
+      {canShowAdd && (
+        <Box sx={{ mb: 2 }}>
+          <AddClubButton />
+        </Box>
+      )}
+
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Back</Button>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -514,7 +525,27 @@ export default function Club() {
             )}
           </Paper>
         </Grid>
-        <ActionButtons />
+
+        {/* Footer placeholders dentro del grid para mantener layout */}
+        {canShowAdd && (
+          <Grid item xs={12}>
+            <AddClubButton />
+          </Grid>
+        )}
+
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Calificaciones</Typography>
+            <CalificacionesClub />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Comentarios</Typography>
+            <ComentariosClub />
+          </Paper>
+        </Grid>
       </Grid>
     </Box>
   );
