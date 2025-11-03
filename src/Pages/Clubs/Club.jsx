@@ -30,6 +30,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import ActionButtons from '../../components/Clubs/ActionButtons.jsx';
+import AddClubButton from '../../components/Clubs/AddClubButton.jsx';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
@@ -262,6 +263,7 @@ export default function Club() {
 
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: 2 }}>
+        <AddClubButton />
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate(-1)}>Back</Button>
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
