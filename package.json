@@ -26,6 +26,8 @@
     "ethers": "^6.13.2",
     "framer-motion": "^12.18.1",
     "highlight.js": "^11.11.1",
+    "html5-qrcode": "^2.3.8",
+    "jsqr": "^1.4.0",
     "lodash-es": "^4.17.21",
     "lucide-react": "^0.516.0",
     "moment": "^2.30.1",
