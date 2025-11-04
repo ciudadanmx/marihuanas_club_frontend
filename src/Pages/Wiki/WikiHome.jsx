@@ -6,7 +6,7 @@ const WikiHome = () => {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" gutterBottom>
-        Bienvenido a Ciudadan Wiki 📚
+        Bienvenido a la Wiki.Marihuanas.Club 📚
       </Typography>
       <Typography variant="body1">
         Aquí encontrarás documentación, guías y recursos sobre los proyectos.
