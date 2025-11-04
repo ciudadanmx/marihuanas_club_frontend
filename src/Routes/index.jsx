@@ -11,6 +11,7 @@ import Clubs from '../Pages/Clubs/Clubs.jsx';
 import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
 import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
+import MiClub from '../Pages/Clubs/MiClub.jsx';
 //Membresías
 import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
@@ -133,7 +134,7 @@ const Rutas = () => (
     <Route path="/juegos" element={<Juegos />} />
     <Route path="/juega/:nombre" element={<JuegoStatic />} />
     <Route path="/perfil/:username" element={<Perfil />} />
-    <Route path="/usuario" element={<UsuarioPage />} />
+    <Route path="/miqr" element={<UsuarioPage />} />
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/info/quienes" element={<QuienesSomos />} />
     <Route path="/info/faq" element={<PreguntasFrecuentes />} />
@@ -141,6 +142,7 @@ const Rutas = () => (
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/clubs" element={<Clubs />} />
+    <Route path="/clubs/miclub/*" element={<MiClub />} />
     <Route path="/clubs/:nombre_club" element={<Club />} />
     <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
