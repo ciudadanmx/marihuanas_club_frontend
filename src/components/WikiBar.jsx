@@ -6,13 +6,10 @@ import { motion } from "framer-motion";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import UserIcon from "./NavBar/UserIcon"; 
 import { useAuth0 } from "@auth0/auth0-react";
-
 // assets
 import logo from "../assets/wiki_marihuanas_club.png";
 import guestImg from "../assets/guest.png";
 import guestImage from '../assets/guest.png'; // Ajusta la ruta si es necesario
-
-
 
 // ----- Animaciones CSS para el neón -----
 const neonMove = keyframes`
@@ -78,28 +75,18 @@ const Subtitle = styled(Typography)(({ theme }) => ({
 const WikiBar = ({ SetIsMenuOpen }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
-  const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
-  
+  const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);  
   const profileRef = useRef(null); 
-  const InfoRef = useRef(null);
-
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); 
   const closeAllMenus = () => {
     setIsProfileMenuOpen(false);
-    //setIsNotificationMenuOpen(false);
-    //setIsInfoMenuOpen(false);
   };
-
-    const handleLinkClick = (path) => {
-    // Realiza la navegación
+  const handleLinkClick = (path) => {
     navigate(path);
-    // Cierra el menú
     setIsMenuOpen(false);
   };
 
-    const handleLogin = () => {
+  const handleLogin = () => {
     // Guarda la URL actual antes de hacer login
     const currentUrl = window.location.pathname + window.location.search;
     document.cookie = `returnTo=${encodeURIComponent(currentUrl)}; path=/; max-age=3600`;
@@ -113,7 +100,7 @@ const WikiBar = ({ SetIsMenuOpen }) => {
     console.log('cerrando sesión');
     // Elimina la cookie de retorno antes de cerrar sesión
     document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    console.log("Cookie de returnTo eliminada antes de logout");
+    //console.log("Cookie de returnTo eliminada antes de logout");
     // Redirige a la página principal después del logout
     logout({ returnTo: window.location.origin });
     setIsMenuOpen(false);
@@ -199,22 +186,20 @@ const WikiBar = ({ SetIsMenuOpen }) => {
             {/* MenuIcon personalizado importado */}
             <motion.div whileHover={{ scale: 1.06 }} whileTap={{ scale: 0.98 }}>
               <UserIcon 
-                              handleLogin={handleLogin}
-                              isMenuOpen={isProfileMenuOpen}
-                              setIsMenuOpen={(open) => {
-                                closeAllMenus(); // <--- CIERRA LOS DEMÁS
-                                setIsProfileMenuOpen(open);
-                              }}
-                              handleLogout={handleLogout}
-                              handleLinkClick={handleLinkClick}
-                              defaultProfileImage={guestImage}
-                              guestImage={guestImage}
-                              Link={Link}
-                              containerRef={profileRef}
-                            />
-            </motion.div>
-
-            
+                handleLogin={handleLogin}
+                isMenuOpen={isProfileMenuOpen}
+                setIsMenuOpen={(open) => {
+                  closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                  setIsProfileMenuOpen(open);
+                }}
+                handleLogout={handleLogout}
+                handleLinkClick={handleLinkClick}
+                defaultProfileImage={guestImage}
+                guestImage={guestImage}
+                Link={Link}
+                containerRef={profileRef}
+              />
+            </motion.div>           
           </RightArea>
         </Toolbar>
 

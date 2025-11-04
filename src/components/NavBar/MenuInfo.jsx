@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import '../../styles/NotificationsMenu.css';
 import '../../styles/MenuInfo.css';
-
 import wikiImage from '../../assets/wiki_marihuanas_club.png'; 
 import quienesImage from '../../assets/quienes.png'; 
 import logoImage from '../../assets/logo_cuadro.png'; 
