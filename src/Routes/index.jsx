@@ -19,7 +19,7 @@ import MembershipCheckout from '../components/Membresias/MembershipCheckout.jsx'
 import ProbarMembresia from '../components/Membresias/ProbarMembresia.jsx';
 import Anuncios from '../Pages/Anuncios/Anuncios.jsx';
 import Club from '../Pages/Clubs/Club.jsx';
-import QRscanner from '../components/Clubs/QRscanner.jsx';
+import QrScanner from '../components/Clubs/QrScanner.jsx';
 import ComunidadPage from '../Pages/ComunidadPage';
 //Stripe y Ubicación
 import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
@@ -147,7 +147,7 @@ const Rutas = () => (
     <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
     <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
-    <Route path="/clubs/qrscanner" element={<QRscanner />} />
+    <Route path="/clubs/qrscanner" element={<QrScanner />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
     <Route path="/agregar-curso" element={<AgregarCurso />} />
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
