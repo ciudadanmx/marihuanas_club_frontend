@@ -49,7 +49,7 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
     { label: membershipLabel, icon: 'card_membership', onClick: () => navigate('/membresias'), show: true },
     { label: 'Tu Club', icon: 'home', onClick: () => navigate('/clubs/miclub/info'), show: isAuthenticated },
     { label: 'Tus Anuncios', icon: 'campaign', onClick: () => navigate('/comunidad/mis-anuncios'), show: isAuthenticated },
-    { label: 'Tus Compras', icon: 'shopping_bag', onClick: () => navigate('/compras'), show: isAuthenticated },
+    { label: 'Tus Compras', icon: 'shopping_bag', onClick: () => navigate('/market/compras/pedidos'), show: isAuthenticated },
     { label: 'Tu Tienda', icon: 'shopping_cart', onClick: () => handleVender(), show: isAuthenticated },
     { label: 'Tus Cursos', icon: 'menu_book', onClick: () => navigate('/cursos/mis-cursos'), show: isAuthenticated },
     { label: 'Dashboard Admin', icon: 'dashboard', component: Link, to: '/admin/dashboard', show: isAdmin() },
