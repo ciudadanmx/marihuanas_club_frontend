@@ -55,6 +55,7 @@ import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
 import Gana from '../Pages/Gana/Gana.jsx';
 import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
 import Internacional from '../Pages/Internacional/Internacional.jsx';
+import GeneraContenidos from '../Pages/Gana/GeneraContenidos.jsx';
 //Usuario
 import UsuarioPage from '../Pages/Usuarios/UsuarioPage';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
@@ -174,6 +175,7 @@ const Rutas = () => (
     <Route path="/gana/internacionaliza" element={<Internacional />} />
     <Route path="/gana/promueve" element={<PromueveMembresias />} />
     <Route path="/gana/vende" element={<VendePage />} />
+    <Route path="/gana/genera-contenidos" element={<GeneraContenidos />} />
     <Route path="/contenidos/editar/:slug" element={<EditarContenidoWrapper />} />
     <Route path="/contenidos/eliminar/:slug" element={<EliminarContenidoWrapper />} />
     <Route path="/contenidos/*" element={<ContenidosPage />} />
