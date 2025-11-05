@@ -9,6 +9,7 @@ import Documentos from '../../components/Clubs/Documentos.jsx';
 import MisPlantas from '../../components/Clubs/MisPlantas.jsx';
 
 const MiClub = () => {
+  const jardinero = false;
   const location = useLocation();
   const { isLoading } = useAuth0();
 
@@ -16,12 +17,24 @@ const MiClub = () => {
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   
   const basePrueba = '/clubs/miclub';
-  const tabs = [
-    { label: 'Info tu Club', path: 'info' },                     // /clubs/miclub/info
-    { label: 'Mi Bitácora', path: 'bitacora' },         // /clubs/miclub/bitacora
-    { label: 'Documentación Legal', path: 'documentos' }, // /comunidad/mis-anuncios/historial
-    { label: 'Mis Plantas', path: 'misplantas' }      // /comunidad/mis-anuncios/configuracion
-  ];
+
+  let tabs = [];
+  if (!jardinero){
+    tabs = [
+        { label: 'Info tu Club', path: 'info' },                     // /clubs/miclub/info
+        { label: 'Mi Bitácora', path: 'bitacora' },         // /clubs/miclub/bitacora
+        { label: 'Documentación Legal', path: 'documentos' }, // /comunidad/mis-anuncios/historial
+        { label: 'Mis Plantas', path: 'misplantas' }      // /comunidad/mis-anuncios/configuracion
+    ];
+  }
+  else {
+    tabs = [                   // /clubs/miclub/info
+        { label: 'Mi Bitácora', path: 'bitacora' },         // /clubs/miclub/bitacora
+        { label: 'Documentación Legal', path: 'documentos' }, // /comunidad/mis-anuncios/historial
+        { label: 'Mis Plantas', path: 'misplantas' },      // /comunidad/mis-anuncios/configuracion
+        { label: 'Info tu Club', path: 'info' }  
+    ];
+  }
 
   
     // responsive listener (solo para la UI local)

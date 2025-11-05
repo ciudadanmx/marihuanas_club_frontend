@@ -5,6 +5,7 @@ import { Routes, Route, useParams } from 'react-router-dom';
 import LmAi from '../components/Asistente/LmAi';
 import HomeRoute from '../Pages/HomeRoute';
 import Perfil from '../components/Usuarios/Perfil.jsx';
+import Favoritos from '../components/Usuarios/Favoritos.jsx';
 import CallbackPage from '../Pages/CallbackPage';
 //Clubs
 import Clubs from '../Pages/Clubs/Clubs.jsx';
@@ -134,6 +135,7 @@ const Rutas = () => (
     <Route path="/juegos" element={<Juegos />} />
     <Route path="/juega/:nombre" element={<JuegoStatic />} />
     <Route path="/perfil/:username" element={<Perfil />} />
+    <Route path="/favoritos" element={<Favoritos />} />
     <Route path="/miqr" element={<UsuarioPage />} />
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/info/quienes" element={<QuienesSomos />} />
