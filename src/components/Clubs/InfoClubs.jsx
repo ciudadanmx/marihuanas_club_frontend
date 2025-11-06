@@ -31,6 +31,10 @@ import { motion } from "framer-motion";
 
 // IMPORT DEL VIDEO LOCAL (coloca clubs.mp4 en src/assets/)
 import clubsVideo from "../../assets/clubs.mp4";
+// IMPORTS ADICIONALES SOLICITADOS (importando desde assets, no con URL)
+import esLegalImage from "../../assets/eslegalcannabismexico.png";
+import consumoVideo from "../../assets/clubsconsumo.mp4";
+import cultivoVideo from "../../assets/clubscultivo.mp4";
 
 /**
  * InfoClubs (VERSIÓN MORADA + VIDEO CON CONTROLES PERSONALIZADOS)
@@ -249,6 +253,80 @@ export default function InfoClubs() {
     videoRef.current.loop = isLoop;
     videoRef.current.muted = isMuted;
   }, [isLoop, isMuted]);
+
+  // ------------------- REPRODUCTOR REUTILIZABLE -------------------
+  // Este reproductor lo añadimos para usar en los summaries de consumo y cultivo
+  function LocalPlayer({ src, poster, maxHeight = 260 }) {
+    const localRef = useRef(null);
+    const [localPlaying, setLocalPlaying] = useState(false);
+    const [localMuted, setLocalMuted] = useState(true); // por defecto muted para evitar bloqueo
+    const [localLoop, setLocalLoop] = useState(true);
+
+    useEffect(() => {
+      if (!localRef.current) return;
+      localRef.current.loop = localLoop;
+      localRef.current.muted = localMuted;
+    }, [localLoop, localMuted]);
+
+    return (
+      <Box sx={{ mt: 2, borderRadius: 2, overflow: "hidden", border: "1px solid rgba(255,255,255,0.03)", background: styles.moradoGradient, position: "relative" }}>
+        <video
+          ref={localRef}
+          src={src}
+          poster={poster}
+          playsInline
+          controls
+          style={{ width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight }}
+        />
+
+        <Box sx={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 1, alignItems: "center", zIndex: 30 }}>
+          <IconButton
+            onClick={() => {
+              if (!localRef.current) return;
+              if (localRef.current.paused) {
+                localRef.current.play().catch(() => {});
+                setLocalPlaying(true);
+              } else {
+                localRef.current.pause();
+                setLocalPlaying(false);
+              }
+            }}
+            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
+          >
+            {localPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+          </IconButton>
+
+          <IconButton
+            onClick={() => {
+              const next = !localLoop;
+              setLocalLoop(next);
+              if (localRef.current) localRef.current.loop = next;
+            }}
+            sx={{ bgcolor: localLoop ? "rgba(124,255,90,0.14)" : "rgba(0,0,0,0.45)", color: localLoop ? "#062e00" : "#fff", "&:hover": { bgcolor: localLoop ? "rgba(124,255,90,0.18)" : "rgba(0,0,0,0.55)" } }}
+          >
+            <ReplayIcon />
+          </IconButton>
+
+          <IconButton
+            onClick={() => {
+              const nextMuted = !localMuted;
+              setLocalMuted(nextMuted);
+              if (localRef.current) {
+                localRef.current.muted = nextMuted;
+                if (!nextMuted && localRef.current.paused) {
+                  localRef.current.play().catch(() => {});
+                  setLocalPlaying(true);
+                }
+              }
+            }}
+            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
+          >
+            {localMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          </IconButton>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <motion.div initial="hidden" animate="show" variants={parent}>
@@ -596,6 +674,21 @@ export default function InfoClubs() {
                         }
                         return null;
                       })}
+
+                      {/* AÑADIMOS AQUÍ LOS MEDIOS SOLICITADOS SIN TOCAR NADA MÁS */}
+                      {s.id === "legalidad" && (
+                        <Box sx={{ mt: 2 }}>
+                          <Box component="img" src={esLegalImage} alt="Es legal Cannabis México" sx={{ width: "100%", borderRadius: 2, display: "block", maxHeight: 420, objectFit: "cover", border: "1px solid rgba(255,255,255,0.03)" }} />
+                        </Box>
+                      )}
+
+                      {s.id === "consumo" && (
+                        <LocalPlayer src={consumoVideo} poster={undefined} maxHeight={300} />
+                      )}
+
+                      {s.id === "cultivo" && (
+                        <LocalPlayer src={cultivoVideo} poster={undefined} maxHeight={300} />
+                      )}
 
                       <Stack direction="row" spacing={1} mt={1} alignItems="center">
                         <Avatar sx={{ width: 36, height: 36, bgcolor: "transparent" }}>🌿</Avatar>
