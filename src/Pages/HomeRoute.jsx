@@ -42,10 +42,11 @@ export default function Home() {
     `🎓 Compra y Vende en nuestra marketplace sin comisión por compra ni por venta.`,
     `🎓 Accede a cursos, talleres, asesorías legales y agronómicas, además de contenido exclusivo y descuentos en toda la red.`,
     `🫱‍🫲 No cobramos comisiones a los clubes ni a los instructores. Solo pedimos que ofrezcan descuentos a nuestros miembros.`,
-    `¿Cómo funciona?`,
-    `🔒 Membresía mensual, semestral o anual.`,
-    `🧾 Con tu membresía anual te tramitamos el permiso de autoconsumo sin costo adicional.`,
-    `⚖️ Amparo a precio preferencial tras tu primer semestre o con anualidad.`,
+    `<h1>¿Cómo funciona?</h1>`,
+    `🔒 Membresía de Red de Clubs de Consumo, de Club de Cultivo Solidario o Kits de AutoCultivo Individual.`,
+    `🧾 Con tu membresía te tramitamos el permiso de autoconsumo sin costo adicional.`,
+    `⚖️ Amparo a precio preferencial en membresías de Consumo, e incluido en las de Club de Cultivo Solidario y Jardineros.`,
+    `🤝 Te brindamos las herramientas y formatos para que des de alta tu club ante el SAT y ante COFEPRIS como Organización sin fines de lucro.`,
     `💚 ¡Sé parte de una red que protege tus derechos y apoya el uso libre e informado del cannabis!`,
   ];
 

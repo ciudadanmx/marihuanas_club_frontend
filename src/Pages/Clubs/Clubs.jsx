@@ -1,42 +1,196 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Typography, useMediaQuery } from '@mui/material';
+// src/pages/Clubs.jsx
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  lazy,
+  Suspense,
+  useCallback,
+  useTransition,
+} from 'react';
+import {
+  Box,
+  Button,
+  Typography,
+  useMediaQuery,
+  Skeleton,
+  Stack,
+  Tabs,
+  Tab,
+} from '@mui/material';
+import { useRoles } from '../../Contexts/RolesContext'; 
 import { useTheme } from '@mui/material/styles';
-import { useNavigate } from 'react-router-dom';  // <-- Importa useNavigate
+import { useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react'; // <- usamos auth0 para obtener user
 import clubs from '../../assets/red_de_clubs_marihuanas_club.png';
 import afilia from '../../assets/afilia_tu_club.png';
 import '../../styles/clubs.css';
-import MapaClubs from '../../components/Clubs/MapaClubs.jsx';
-import InfoClubs from '../../components/Clubs/InfoClubs.jsx';
-import Suscribete from '../../components/Clubs/Suscribete.jsx';
 
+// IMPORTS LAZY: no se importan hasta que haya intención/visibilidad
+const importMapaClubs = () => import('../../components/Clubs/MapaClubs.jsx');
+const importInfoClubs = () => import('../../components/Clubs/InfoClubs.jsx');
+const importSuscribete = () => import('../../components/Clubs/Suscribete.jsx');
+const importDirectorioClubs = () => import('../../components/Clubs/DirectorioClubs.jsx');
+const importMiClubBar = () => import('../../components/Clubs/MiClubBar.jsx');
+
+const MapaClubsLazy = lazy(importMapaClubs);
+const InfoClubsLazy = lazy(importInfoClubs);
+const SuscribeteLazy = lazy(importSuscribete);
+const DirectorioClubsLazy = lazy(importDirectorioClubs);
+const MiClubBarLazy = lazy(importMiClubBar);
+
+/* Hook para detectar visibilidad on-screen */
 const useOnScreen = (ref, rootMargin = '0px') => {
   const [isIntersecting, setIntersecting] = useState(false);
 
   useEffect(() => {
+    if (!ref.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => setIntersecting(entry.isIntersecting),
       { rootMargin }
     );
-    if (ref.current) observer.observe(ref.current);
+    observer.observe(ref.current);
     return () => observer.disconnect();
   }, [ref, rootMargin]);
 
   return isIntersecting;
 };
 
+/* Prefetch helper - dispara la importación para cachear el módulo */
+const prefetchModule = (importFn) => {
+  importFn();
+};
+
 const Clubs = () => {
+  const { roles, membresia } = useRoles();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const navigate = useNavigate(); // <-- Hook useNavigate
+  const navigate = useNavigate();
 
-  const ref1 = useRef();
-  const ref2 = useRef();
+  // auth0 user
+  const { user } = useAuth0();
+
+  // refs para observar sección mapa / info / suscribe
+  const ref1 = useRef(); // para la primera imagen (mantener compatibilidad)
+  const ref2 = useRef(); // para la segunda imagen (mantener compatibilidad)
+  const mapContainerRef = useRef(null);
+  const infoContainerRef = useRef(null);
+  const susContainerRef = useRef(null);
+
   const visible1 = useOnScreen(ref1, '-100px');
   const visible2 = useOnScreen(ref2, '-100px');
 
-  // Función para manejar click y navegar
-  const handleAfiliaClick = () => {
+  // estados de carga de imágenes (se usan para mostrar Skeleton inicialmente)
+  const [img1Loaded, setImg1Loaded] = useState(false);
+  const [img2Loaded, setImg2Loaded] = useState(false);
+
+  // estado para saber si hemos intentado cargar el mapa/otros (intención explícita)
+  const [mapRequested, setMapRequested] = useState(false);
+  const [infoRequested, setInfoRequested] = useState(false);
+  const [susRequested, setSusRequested] = useState(false);
+
+  // tab del mapa: 0 => Mapa, 1 => Directorio
+  const [mapTab, setMapTab] = useState(0);
+
+  // transición para operaciones no bloqueantes (opcional)
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    // Si el contenedor del mapa entra en viewport, prefetcheamos el módulo (non-blocking)
+    if (mapContainerRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              startTransition(() => {
+                prefetchModule(importMapaClubs);
+                setMapRequested(true); // marcar que lo hemos prefeteado/solicitado
+              });
+            }
+          });
+        },
+        { rootMargin: '-120px' }
+      );
+      observer.observe(mapContainerRef.current);
+      return () => observer.disconnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapContainerRef.current]);
+
+  useEffect(() => {
+    // Prefetch ligero para Info cuando su contenedor entra en viewport
+    if (infoContainerRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              startTransition(() => {
+                prefetchModule(importInfoClubs);
+                setInfoRequested(true);
+              });
+            }
+          });
+        },
+        { rootMargin: '-120px' }
+      );
+      observer.observe(infoContainerRef.current);
+      return () => observer.disconnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [infoContainerRef.current]);
+
+  useEffect(() => {
+    // Prefetch ligero para Suscribete cuando su contenedor entra en viewport
+    if (susContainerRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              startTransition(() => {
+                prefetchModule(importSuscribete);
+                setSusRequested(true);
+              });
+            }
+          });
+        },
+        { rootMargin: '-120px' }
+      );
+      observer.observe(susContainerRef.current);
+      return () => observer.disconnect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [susContainerRef.current]);
+
+  // navegación al listado de tipos (CTA principal)
+  const handleAfiliaClick = useCallback(() => {
     navigate('/clubs/tipos-clubs');
+  }, [navigate]);
+
+  // prefetch por intención cuando el usuario hace hover/focus en CTA
+  const handleAfiliaHover = useCallback(() => {
+    prefetchModule(importInfoClubs);
+    prefetchModule(importMapaClubs);
+    prefetchModule(importSuscribete);
+    // marcamos que se hizo intento (útil si queremos render condicional)
+    startTransition(() => {
+      setMapRequested(true);
+      setInfoRequested(true);
+      setSusRequested(true);
+    });
+  }, []);
+
+  // manejar cambio de tab dentro del mapa: si el usuario va a Directorio, prefetch/import
+  const handleMapTabChange = (event, newValue) => {
+    setMapTab(newValue);
+    if (newValue === 1) {
+      // intención explícita de ver el directorio
+      startTransition(() => {
+        prefetchModule(importDirectorioClubs);
+      });
+    } else if (newValue === 0) {
+      // si vuelve a mapa, aseguramos que el mapa esté prefeteado
+      startTransition(() => prefetchModule(importMapaClubs));
+    }
   };
 
   return (
@@ -81,11 +235,13 @@ const Clubs = () => {
           component="img"
           src={clubs}
           alt="Red de Clubs"
+          onLoad={() => setImg1Loaded(true)}
           sx={{
             width: { xs: '100%', md: '48%' },
             borderRadius: 3,
             boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
           }}
+          loading="lazy"
         />
 
         {/* Botón solo en móviles */}
@@ -104,12 +260,14 @@ const Clubs = () => {
               boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
             }}
             fullWidth
+            onMouseEnter={handleAfiliaHover}
+            onFocus={handleAfiliaHover}
           >
             Ver el Directorio de Clubs 420
           </Button>
         )}
 
-        {/* Imagen 2 con botón flotante mejorado */}
+        {/* Imagen 2 con botón flotante (sin cambios visuales, sólo prefetch en hover) */}
         <Box
           ref={ref2}
           className={`animated-box ${visible2 ? 'fade-zoom-right' : ''}`}
@@ -125,16 +283,20 @@ const Clubs = () => {
             component="img"
             src={afilia}
             alt="Afilia tu Club"
+            onLoad={() => setImg2Loaded(true)}
             sx={{
               width: '100%',
               display: 'block',
               borderRadius: 3,
             }}
+            loading="lazy"
           />
 
           {/* Botón con borde y glow */}
           <Button
             onClick={handleAfiliaClick} // <-- Navegación
+            onMouseEnter={handleAfiliaHover}
+            onFocus={handleAfiliaHover}
             variant="contained"
             sx={{
               position: 'absolute',
@@ -172,13 +334,91 @@ const Clubs = () => {
         className="animated-box fade-in-bottom"
         sx={{ mt: 4 }}
       >
-       
-            <MapaClubs />
+        <h1>Acaaaa { user?.membresia_vigente } </h1>
+        {/* Aquí mantenemos la misma posición del mapa como antes, pero con Tabs:
+            - "Mapa" muestra MapaClubs
+            - "Directorio" muestra DirectorioClubs
+            Lazy + Suspense para ambos */}
+        <Box ref={mapContainerRef} sx={{ width: '100%' }}>
+          {/* Si membresia?.activa === true mostramos MiClubBar por encima de las tabs */}
+          {membresia?.activa === true ? (
+            <Suspense fallback={null}>
+              <MiClubBarLazy />
+            </Suspense>
+          ) : null}
 
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
+            <Tabs
+              value={mapTab}
+              onChange={handleMapTabChange}
+              aria-label="Mapa o Directorio de clubs"
+              centered={isMobile ? false : true}
+            >
+              <Tab label="Mapa" id="tab-mapa" aria-controls="tabpanel-mapa" />
+              <Tab label="Directorio" id="tab-directorio" aria-controls="tabpanel-directorio" />
+            </Tabs>
+          </Box>
+
+          {/* Panel Mapa */}
+          {mapTab === 0 && (
+            <Suspense
+              fallback={
+                <Box sx={{ width: '100%', display: 'block', py: { xs: 2, md: 4 } }}>
+                  <Skeleton variant="rectangular" height={isMobile ? 180 : 360} />
+                  <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
+                    <Skeleton variant="rectangular" width={100} height={36} />
+                    <Skeleton variant="rectangular" width={100} height={36} />
+                  </Stack>
+                </Box>
+              }
+            >
+              <MapaClubsLazy />
+            </Suspense>
+          )}
+
+          {/* Panel Directorio */}
+          {mapTab === 1 && (
+            <Suspense
+              fallback={
+                <Box sx={{ width: '100%', display: 'block', py: { xs: 2, md: 4 } }}>
+                  <Skeleton variant="rectangular" height={isMobile ? 180 : 360} />
+                  <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
+                    <Skeleton variant="rectangular" width={140} height={36} />
+                  </Stack>
+                </Box>
+              }
+            >
+              <DirectorioClubsLazy />
+            </Suspense>
+          )}
+        </Box>
       </Typography>
 
-      <InfoClubs />
-      <Suscribete />
+      {/* InfoClubs (manteniendo exactamente lo que tenías, pero lazy) */}
+      <Box ref={infoContainerRef} sx={{ mt: 3 }}>
+        <Suspense
+          fallback={
+            <Box sx={{ width: '100%', py: 2 }}>
+              <Skeleton variant="rectangular" height={140} />
+            </Box>
+          }
+        >
+          <InfoClubsLazy />
+        </Suspense>
+      </Box>
+
+      {/* Suscribete (mantener estructura original, pero lazy load para rendimiento) */}
+      <Box ref={susContainerRef} sx={{ mt: 2 }}>
+        <Suspense
+          fallback={
+            <Box sx={{ width: '100%', py: 2 }}>
+              <Skeleton variant="rectangular" height={96} />
+            </Box>
+          }
+        >
+          <SuscribeteLazy />
+        </Suspense>
+      </Box>
     </Box>
   );
 };

@@ -51,169 +51,130 @@ const TiposClub = () => {
   const handleOpenKitModal = () => setOpenKitModal(true);
   const handleCloseKitModal = () => setOpenKitModal(false);
 
-    // ---------------------------------------------------
-  // Reemplaza tu función extractImageUrl (si la tienes) y el useEffect por esto
-  // ---------------------------------------------------
+// ------------------------------
+// Reemplazar extractImageUrl + useEffect
+// ------------------------------
 
-  // Extrae URL de imagen desde posibles formas que devuelve Strapi
-  const extractImageUrl = (field, envBaseFallback) => {
-    console.log("[kit][debug] extractImageUrl - raw field:", field);
-    if (!field) return null;
+const extractImageUrl = (field, envBaseFallback) => {
+  if (!field) return null;
 
-    let url = null;
-    try {
-      // Caso: field es string directo
-      if (typeof field === "string") {
-        url = field;
-      }
-      // Strapi v4: field = { data: [{ attributes: { url }}, ...] }
-      else if (field.data && Array.isArray(field.data) && field.data.length > 0) {
-        url = field.data[0]?.attributes?.url || field.data[0]?.url || null;
-      }
-      // Strapi v4: field = { data: { attributes: { url } } }
-      else if (field.data && field.data.attributes) {
-        url = field.data.attributes.url || null;
-      }
-      // Otra forma: field = { attributes: { url } }
-      else if (field.attributes && field.attributes.url) {
-        url = field.attributes.url;
-      }
-      // Forma simple: field.url
-      else if (field.url) {
-        url = field.url;
-      }
-    } catch (e) {
-      console.warn("[kit][debug] error extrayendo url:", e);
-      url = null;
+  let url = null;
+  try {
+    if (typeof field === "string") {
+      url = field;
+    } else if (field.data && Array.isArray(field.data) && field.data.length > 0) {
+      url = field.data[0]?.attributes?.url || field.data[0]?.url || null;
+    } else if (field.data && field.data.attributes) {
+      url = field.data.attributes.url || null;
+    } else if (field.attributes && field.attributes.url) {
+      url = field.attributes.url;
+    } else if (field.url) {
+      url = field.url;
     }
+  } catch (e) {
+    console.warn("[kit][debug] error extrayendo url:", e);
+    url = null;
+  }
 
-    if (!url) return null;
+  if (!url) return null;
 
-    // Si la url es relativa, anteponer base (env o origin)
-    if (url.startsWith("/")) {
-      const base = envBaseFallback || window.location.origin;
-      return `${base}${url}`;
-    }
-    return url;
-  };
+  if (url.startsWith("/")) {
+    const base = envBaseFallback || window.location.origin;
+    return `${base}${url}`;
+  }
+  return url;
+};
 
-  useEffect(() => {
-    // --- Prueba con el slug correcto (plural) ---
-    const slug = "/api/kitjardineros?populate=*"; // <-- aquí: kitjardineros (plural)
-    const envBase = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "");
-    const originBase = window.location.origin;
+useEffect(() => {
+  const uniq = ['https://back.ciudadan.org/api/kitjardineros?populate=*'];
+  console.log("Endpoints usados:", uniq);
 
-    // Construye candidatos: preferir env -> origin -> relativo
-    const candidates = [];
-    if (envBase) candidates.push(`${envBase}${slug}`);
-    candidates.push(`${originBase}${slug}`);
-    candidates.push(slug);
+  async function fetchItems() {
+    setLoadingItems(true);
+    setErrorItems(null);
 
-    // quitar duplicados
-    const uniq = [...new Map(candidates.map((u) => [u, u])).values()];
+    let parsed = [];
+    let foundUrl = null;
 
-    async function fetchItems() {
-      setLoadingItems(true);
-      setErrorItems(null);
-
-      let parsed = [];
-      let foundUrl = null;
-
-      for (const url of uniq) {
-        console.log("[kit] probando endpoint:", url);
-        try {
-          const res = await fetch(url, { method: "GET", mode: "cors" });
-          console.log(`[kit] respuesta ${url} => status: ${res.status} ok:${res.ok}`);
-
-          // log headers (útil para ver CORS)
-          try {
-            const h = {};
-            res.headers.forEach((v, k) => (h[k] = v));
-            console.log("[kit] headers:", h);
-          } catch (hh) {
-            console.warn("[kit] no pude leer headers", hh);
-          }
-
-          const text = await res.text();
-          console.log(`[kit] body (slice) de ${url}:\n`, text.slice(0, 1500));
-
-          if (!res.ok) {
-            console.warn("[kit] no ok, siguiente...");
-            continue;
-          }
-
-          let json = null;
-          try {
-            json = text ? JSON.parse(text) : null;
-          } catch (jerr) {
-            console.warn("[kit] JSON parse error en", url, jerr);
-            continue;
-          }
-
-          // parse flexible tipo Strapi
-          if (Array.isArray(json.data)) {
-            parsed = json.data.map((d) => d.attributes || d);
-          } else if (json.data && json.data.attributes) {
-            const attrs = json.data.attributes;
-            const arrFromAttrs = Object.values(attrs).find(
-              (v) => Array.isArray(v) || (v && v.data && Array.isArray(v.data))
-            );
-            if (Array.isArray(arrFromAttrs)) {
-              parsed = arrFromAttrs.map((i) => (i.attributes ? i.attributes : i));
-            } else if (arrFromAttrs && Array.isArray(arrFromAttrs.data)) {
-              parsed = arrFromAttrs.data.map((i) => (i.attributes ? i.attributes : i));
-            } else {
-              // el propio attributes es el item
-              if ("cantidad" in attrs && "nombre" in attrs) parsed = [attrs];
-            }
-          } else {
-            // fallback: busca el primer array en el JSON
-            const possible = Object.values(json).find((v) => Array.isArray(v));
-            if (Array.isArray(possible)) parsed = possible;
-          }
-
-
-          foundUrl = url;
-          break; // usamos este endpoint
-        } catch (err) {
-          console.error("[kit] error fetch a", url, err);
+    for (const url of uniq) {
+      try {
+        const res = await fetch(url, { method: "GET", mode: "cors" });
+        if (!res.ok) {
           continue;
         }
-      } // end for
 
-      if (!foundUrl) {
-        setErrorItems(
-          "No se encontró endpoint válido (revisa REACT_APP_STRAPI_URL, CORS o que la ruta /api/kitjardineros esté disponible). Mira la consola."
-        );
-        setKitItems([]);
-        setLoadingItems(false);
-        return;
+        const text = await res.text();
+        let json = null;
+        try {
+          json = text ? JSON.parse(text) : null;
+        } catch (jerr) {
+          continue;
+        }
+
+        // Caso Strapi: array en json.data
+        if (Array.isArray(json.data)) {
+          console.log('⁉️⁉️⁉️⁉️aca si');
+          parsed = json.data.map((d) => d.attributes || d);
+        }
+        // Caso Strapi: json.data con attributes que contienen una colección
+        else if (json.data && json.data.attributes) {
+          const attrs = json.data.attributes;
+          const arrFromAttrs = Object.values(attrs).find(
+            (v) => Array.isArray(v) || (v && v.data && Array.isArray(v.data))
+          );
+          if (Array.isArray(arrFromAttrs)) {
+            parsed = arrFromAttrs.map((i) => (i.attributes ? i.attributes : i));
+          } else if (arrFromAttrs && Array.isArray(arrFromAttrs.data)) {
+            parsed = arrFromAttrs.data.map((i) => (i.attributes ? i.attributes : i));
+          } else {
+            if ("cantidad" in attrs && "nombre" in attrs) parsed = [attrs];
+          }
+        }
+        // Fallback: buscar primer array en el JSON
+        else {
+          const possible = Object.values(json).find((v) => Array.isArray(v));
+          if (Array.isArray(possible)) parsed = possible;
+        }
+
+        foundUrl = url;
+        break; // usamos este endpoint válido
+      } catch (err) {
+        console.error("[kit] error fetch a", url, err);
+        continue;
       }
+    } // end for
 
-      // Normaliza e intenta extraer imagen por cada item (imprime logs por cada item)
-      const envBaseForImages = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "") || window.location.origin;
-      const normalized = (parsed || []).map((it) => {
-        // 'it' normalmente ya es attributes de Strapi
-        const imageField = it.imagen ?? it.imagenes ?? it.image ?? null;
-        const imagenUrl = extractImageUrl(imageField, envBaseForImages);
-        console.log("[kit][debug] item raw:", it, " -> imagenUrl:", imagenUrl);
-        return {
-          cantidad: it.cantidad ?? it.Cantidad ?? 0,
-          nombre: it.nombre ?? it.name ?? it.titulo ?? "",
-          texto: it.texto ?? it.descripcion ?? it.description ?? "",
-          precio: it.precio ?? null,
-          imagenUrl,
-          id: it.id ?? Math.random().toString(36).slice(2, 9),
-        };
-      });
-
-      setKitItems(normalized);
+    if (!foundUrl) {
+      setErrorItems(
+        "No se encontró endpoint válido (revisa REACT_APP_STRAPI_URL, CORS o que la ruta /api/kitjardineros esté disponible). Mira la consola."
+      );
+      setKitItems([]);
       setLoadingItems(false);
+      return;
     }
 
-    fetchItems();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    const envBaseForImages = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "") || window.location.origin;
+    const normalized = (parsed || []).map((it) => {
+      const imageField = it.imagen ?? it.imagenes ?? it.image ?? null;
+      const imagenUrl = extractImageUrl(imageField, envBaseForImages);
+      return {
+        cantidad: it.cantidad ?? it.Cantidad ?? 0,
+        nombre: it.nombre ?? it.name ?? it.titulo ?? "",
+        texto: it.texto ?? it.descripcion ?? it.description ?? "",
+        precio: it.precio ?? null,
+        imagenUrl,
+        id: it.id ?? Math.random().toString(36).slice(2, 9),
+      };
+    });
+
+    setKitItems(normalized);
+    setLoadingItems(false);
+  }
+
+  fetchItems();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
 
 
   return (
