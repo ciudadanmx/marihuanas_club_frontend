@@ -62,7 +62,7 @@ const prefetchModule = (importFn) => {
 };
 
 const Clubs = () => {
-  const { roles, membresia } = useRoles();
+  const { membresia } = useRoles();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
@@ -334,7 +334,6 @@ const Clubs = () => {
         className="animated-box fade-in-bottom"
         sx={{ mt: 4 }}
       >
-        <h1>Acaaaa { user?.membresia_vigente } </h1>
         {/* Aquí mantenemos la misma posición del mapa como antes, pero con Tabs:
             - "Mapa" muestra MapaClubs
             - "Directorio" muestra DirectorioClubs
