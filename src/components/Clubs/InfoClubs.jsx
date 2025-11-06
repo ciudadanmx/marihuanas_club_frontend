@@ -379,7 +379,7 @@ export default function InfoClubs() {
             <motion.div whileHover={{ scale: 1.06, rotate: -3 }}>
               <GlowChip
                 icon={<EmojiObjectsIcon />}
-                label="Información verificada"
+                label="Lectura Recomendada"
                 variant="outlined"
                 sx={{
                   px: 1.5,
@@ -709,36 +709,7 @@ export default function InfoClubs() {
 
           <Divider sx={{ my: 2 }} />
 
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ mt: 1 }}
-          >
-            <Box>
-              <Typography sx={{ fontWeight: 700, color: "rgba(255,255,255,0.92)" }}>
-                ¿Quieres que personalice los estatutos del club o los formatee con tu logo?
-              </Typography>
-              <Typography variant="caption" color="rgba(255,255,255,0.65)">
-                Dime el estilo (formal, minimal, vintage) y te lo adapto.
-              </Typography>
-            </Box>
-
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <IconButton
-                sx={{
-                  borderRadius: 2,
-                  px: 1.2,
-                  background: "linear-gradient(90deg, rgba(124,255,90,0.06), rgba(139,92,246,0.04))",
-                  border: "1px solid rgba(255,255,255,0.03)"
-                }}
-                aria-label="info"
-              >
-                <EmojiObjectsIcon />
-              </IconButton>
-            </Box>
-          </Stack>
+         
         </CardContent>
       </Card>
     </motion.div>
