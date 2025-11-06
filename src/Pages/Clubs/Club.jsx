@@ -539,9 +539,10 @@ export default function Club() {
             <Box sx={{ mt: 3, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
               {club.fecha_alta && <Chip label={`Alta: ${new Date(club.fecha_alta).toLocaleString()}`} size="small" />}
               {club.fecha_activado && <Chip label={`Activado: ${new Date(club.fecha_activado).toLocaleString()}`} size="small" />}
-              {typeof club.en_revision !== 'undefined' && <Chip label={club.en_revision ? 'En revisión' : 'No en revisión'} size="small" />}
+              {typeof club.en_revision !== 'undefined' && <Chip label={club.en_revision ? 'En revisión' : ''} size="small" />}
               {/* metadata también con "de" */}
               <Chip label={`${integrantes} integrantes de ${lugares} lugares`} size="small" />
+              <Chip label={`${lugares - integrantes}  lugares disponibles`} size="small" />
             </Box>
 
             {/* link externo */}
