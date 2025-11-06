@@ -218,87 +218,86 @@ export default function MapaClubs({ membresia = false }) {
     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
       {/* --- FILA superior: chips de cultivo (si aplica) + nombre */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4, flexWrap: 'wrap' }}>
-  {/* Solo si es cultivo o ambas */}
-  {(() => {
-    const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
-    const isCultivo = tipo === 'cultivo' || tipo === 'ambas' || tipo === 'ambos' || tipo.includes('cultivo');
-    if (!isCultivo) return null;
+        {/* Solo si es cultivo o ambas */}
+        {(() => {
+          const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
+          const isCultivo = tipo === 'cultivo' || tipo === 'ambas' || tipo === 'ambos' || tipo.includes('cultivo');
+          if (!isCultivo) return null;
 
-    const numIntegrantes =
-      typeof hoveredClub.num_integrantes === 'number' ? hoveredClub.num_integrantes : null;
-    const lugares =
-      typeof hoveredClub.lugares === 'number' ? hoveredClub.lugares : null;
+          // lugares solo si existe (mostramos chip únicamente en ese caso)
+          const lugares = typeof hoveredClub.lugares === 'number' ? hoveredClub.lugares : null;
+          // si num_integrantes no viene, asumimos 0 para calcular libres
+          const numIntegrantes = typeof hoveredClub.num_integrantes === 'number' ? hoveredClub.num_integrantes : 0;
 
-    let libres = null;
-    if (numIntegrantes !== null && lugares !== null && lugares > 0) {
-      libres = lugares - numIntegrantes;
-      if (libres < 0) libres = 0;
-    }
+          if (lugares === null) return null; // **no mostramos nada si no hay dato de lugares**
 
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, mr: 0.6 }}>
-        <Chip
-          size="small"
-          label={
-            libres !== null && lugares !== null
-              ? `${libres} de ${lugares} lugares libres`
-              : '— lugares libres'
-          }
-          sx={{ bgcolor: '#000', color: '#fff', fontWeight: 700 }}
-        />
+          const libres = Math.max(0, lugares - numIntegrantes);
+
+          return (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, mr: 0.6 }}>
+              <Chip
+                size="small"
+                label={`${libres} de ${lugares} lugares libres`}
+                sx={{
+                  bgcolor: '#000',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: 12,
+                }}
+              />
+            </Box>
+          );
+        })()}
+
+        {/* Nombre y chip tipo (alineado en la misma fila cuando hay espacio) */}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexWrap: 'wrap', minWidth: 0 }}>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              fontWeight: 700,
+              fontSize: 15,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxWidth: 180
+            }}
+          >
+            {hoveredClub.nombre_club || 'Club sin nombre'}
+          </Typography>
+
+          {(() => {
+            const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
+            if (tipo === 'consumo') {
+              return (
+                <Chip
+                  label="Club de Consumo"
+                  size="small"
+                  sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }}
+                />
+              );
+            }
+            if (tipo === 'cultivo') {
+              return (
+                <Chip
+                  label="Club de Cultivo"
+                  size="small"
+                  sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }}
+                />
+              );
+            }
+            if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
+              return (
+                <Chip
+                  label="Club de Cultivo y Consumo"
+                  size="small"
+                  sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }}
+                />
+              );
+            }
+            return null;
+          })()}
+        </Box>
       </Box>
-    );
-  })()}
-
-  {/* Nombre y chip tipo (alineado en la misma fila cuando hay espacio) */}
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexWrap: 'wrap', minWidth: 0 }}>
-    <Typography
-      variant="subtitle1"
-      sx={{
-        fontWeight: 700,
-        fontSize: 15,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        maxWidth: 180
-      }}
-    >
-      {hoveredClub.nombre_club || 'Club sin nombre'}
-    </Typography>
-
-    {(() => {
-      const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
-      if (tipo === 'consumo') {
-        return (
-          <Chip
-            label="Club de Consumo"
-            size="small"
-            sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }}
-          />
-        );
-      }
-      if (tipo === 'cultivo') {
-        return (
-          <Chip
-            label="Club de Cultivo"
-            size="small"
-            sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }}
-          />
-        );
-      }
-      if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
-        return (
-          <Chip
-            label="Club de Cultivo y Consumo"
-            size="small"
-            sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }}
-          />
-        );
-      }
-      return null;
-    })()}
-  </Box>
-</Box>
 
       {/* Descripción */}
       <Typography variant="body2" sx={{ maxHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary', fontSize: 13 }}>
@@ -393,27 +392,31 @@ export default function MapaClubs({ membresia = false }) {
     {hoveredClub.reservacion === true && (
       <Box
         sx={{
-          position: 'absolute',
-          left: 8,
-          right: 8,
-          bottom: 6,
+          position: 'sticky',
+          left: 10,
+          right: 10,
+          bottom: -10,
           bgcolor: '#d32f2f',
           color: '#fff',
-          px: 1,
-          py: 0.4,
+          px: 1.2,
+          py: 0.5,
           borderRadius: 1,
           textAlign: 'center',
-          fontWeight: 700,
-          zIndex: 9999,
-          boxShadow: 3,
-          fontSize: 12
+          fontWeight: 800,
+          zIndex: 4000,
+          boxShadow: 4,
+          fontSize: 12,
+          // pointerEvents none para que no interrumpa clicks si quieres que no sea interactiva
+          pointerEvents: 'auto'
         }}
       >
         Requiere reservación
+        <br /><br />
       </Box>
     )}
   </Box>
 </InfoWindow>
+
 
           )}
         </GoogleMap>
