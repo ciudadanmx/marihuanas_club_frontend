@@ -1,7 +1,7 @@
 // src/components/MapaClubs.jsx
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLoadScript, GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
-import { Box, CircularProgress, Typography, Button, Avatar } from '@mui/material';
+import { Box, CircularProgress, Typography, Button, Avatar, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
 import cultivoIcon from '../../assets/marcador_club_cultivo.png';
@@ -190,40 +190,139 @@ export default function MapaClubs({ membresia = false }) {
 
           {/* InfoWindow que aparece al hacer hover (o touch) */}
           {hoveredClub && hoveredClub.lat && hoveredClub.lng && (
-            <InfoWindow
-              position={{ lat: hoveredClub.lat, lng: hoveredClub.lng }}
-              onCloseClick={() => setHoveredClub(null)}
-              options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
-            >
-              <Box sx={{ maxWidth: 260, display: 'flex', gap: 1, alignItems: 'flex-start' }}>
-                <Avatar
-                  src={hoveredClub.fotoUrl || undefined}
-                  variant="rounded"
-                  sx={{ width: 64, height: 64 }}
-                >
-                  {(!hoveredClub.fotoUrl && (hoveredClub.nombre_club || '').charAt(0)) || ''}
-                </Avatar>
-                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{hoveredClub.nombre_club}</Typography>
-                  <Typography variant="body2" sx={{ maxHeight: 48, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {hoveredClub.descripcion || 'Sin descripción.'}
-                  </Typography>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    sx={{ mt: 1, alignSelf: 'flex-start' }}
-                    onClick={() => {
-                      const safeName = encodeURIComponent(hoveredClub.nombre_club || hoveredClub.id);
-                      // navega al club (también cierra el InfoWindow)
-                      setHoveredClub(null);
-                      navigate(`/clubs/${safeName}`);
-                    }}
-                  >
-                    Ver club
-                  </Button>
+           <InfoWindow
+  position={{ lat: hoveredClub.lat, lng: hoveredClub.lng }}
+  onCloseClick={() => setHoveredClub(null)}
+  options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
+>
+  <Box sx={{ maxWidth: 320, display: 'flex', gap: 1, alignItems: 'flex-start', fontFamily: "'Roboto', sans-serif" }}>
+    {/* Imagen y columna principal */}
+    <Avatar
+      src={hoveredClub.foto_de_perfil?.url || hoveredClub.fotoUrl || undefined}
+      alt={hoveredClub.nombre_club || 'Club'}
+      variant="rounded"
+      sx={{ width: 56, height: 56, flexShrink: 0, boxShadow: 1 }}
+    >
+      {(!hoveredClub.foto_de_perfil?.url && !hoveredClub.fotoUrl && (hoveredClub.nombre_club || '').charAt(0)) || ''}
+    </Avatar>
+
+    <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      {/* Nombre y tipo */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {hoveredClub.nombre_club || 'Club sin nombre'}
+        </Typography>
+
+        {/* Chip tipo */}
+        {(() => {
+          const tipo = (hoveredClub.tipo || '').toLowerCase();
+          if (tipo === 'consumo') {
+            return <Chip label="Club de Consumo" size="small" sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }} />;
+          }
+          if (tipo === 'cultivo') {
+            return <Chip label="Club de Cultivo" size="small" sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }} />;
+          }
+          if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
+            return <Chip label="Club de Cultivo y Consumo" size="small" sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }} />;
+          }
+          return null;
+        })()}
+      </Box>
+
+      {/* Descripción */}
+      <Typography variant="body2" sx={{ maxHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary', fontSize: 13 }}>
+        {hoveredClub.descripcion || 'Sin descripción.'}
+      </Typography>
+
+      {/* Productos y Servicios */}
+      <Box sx={{ mt: 0.6, display: 'flex', gap: 1, flexDirection: 'column' }}>
+        {/* Productos (si trae) */}
+        {Array.isArray(hoveredClub.productos) && hoveredClub.productos.length > 0 && (
+          <Box>
+            <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Productos</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {hoveredClub.productos.slice(0, 6).map((p, i) => (
+                <Chip
+                  key={i}
+                  label={(typeof p === 'string' ? p : (p.nombre || p.titulo || JSON.stringify(p))).slice(0, 30)}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+              {hoveredClub.productos.length > 6 && <Typography variant="caption" sx={{ alignSelf: 'center' }}>+{hoveredClub.productos.length - 6}</Typography>}
+            </Box>
+          </Box>
+        )}
+
+        {/* Servicios (si trae) */}
+        {Array.isArray(hoveredClub.servicios) && hoveredClub.servicios.length > 0 && (
+          <Box sx={{ mt: 0.4 }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Servicios</Typography>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3 }}>
+              {hoveredClub.servicios.slice(0, 4).map((s, i) => (
+                <Typography key={i} variant="body2" sx={{ fontSize: 12, color: 'text.secondary' }}>
+                  • {typeof s === 'string' ? s : (s.nombre || s.descripcion || JSON.stringify(s))}
+                </Typography>
+              ))}
+              {hoveredClub.servicios.length > 4 && <Typography variant="caption">+{hoveredClub.servicios.length - 4} más</Typography>}
+            </Box>
+          </Box>
+        )}
+      </Box>
+
+      {/* Horarios */}
+      {hoveredClub.horarios && typeof hoveredClub.horarios === 'object' && (
+        <Box sx={{ mt: 0.7 }}>
+          {/* helper: render single horario (tipoName: 'Consumo' | 'Cultivo') */}
+          {['consumo', 'cultivo'].map((tipoKey) => {
+            const bloque = hoveredClub.horarios[tipoKey];
+            if (!bloque) return null;
+            const titulo = tipoKey === 'consumo' ? 'Horario de Consumo' : 'Horario de Cultivo';
+            return (
+              <Box key={tipoKey} sx={{ mb: 0.6 }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>
+                  {titulo}
+                </Typography>
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0.3 }}>
+                  {['lunes','martes','miércoles','jueves','viernes','sábado','domingo'].map((dia) => {
+                    const d = bloque[dia] || bloque[dia.toLowerCase()] || { abre: 'cerrado', cierra: '' };
+                    const abierto = d.abre && d.abre.toLowerCase() !== 'cerrado' && d.abre !== '';
+                    return (
+                      <Box key={dia} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
+                        <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{dia.charAt(0).toUpperCase() + dia.slice(1)}</Typography>
+                        <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
+                          {abierto ? `${d.abre} — ${d.cierra}` : 'Cerrado'}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
                 </Box>
               </Box>
-            </InfoWindow>
+            );
+          })}
+        </Box>
+      )}
+
+      {/* Botón ver club */}
+      <Box sx={{ mt: 0.6 }}>
+        <Button
+          size="small"
+          variant="contained"
+          sx={{ mt: 0.3, alignSelf: 'flex-start' }}
+          onClick={() => {
+            const safeName = encodeURIComponent(hoveredClub.nombre_club || hoveredClub.id || '');
+            setHoveredClub(null);
+            navigate(`/clubs/${safeName}`);
+          }}
+        >
+          Ver club
+        </Button>
+      </Box>
+    </Box>
+  </Box>
+</InfoWindow>
+
           )}
         </GoogleMap>
       </Box>
