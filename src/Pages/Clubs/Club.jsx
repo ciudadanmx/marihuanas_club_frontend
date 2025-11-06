@@ -100,10 +100,12 @@ const formatHorario = (h) => {
   return daysOrder.map((d) => {
     const v = h[d] ?? h[d.toLowerCase()];
     if (!v) return { dia: d, text: 'No disponible' };
-    if (v.cerrado || v.cerrado === true) return { dia: d, text: 'Cerrado' };
+    // manejar caso "cerrado" como string o booleano
+    const cerradoFlag = v.cerrado === true || String(v.abre || v.open).toLowerCase() === 'cerrado' || String(v.cierra || v.close).toLowerCase() === 'cerrado';
+    if (cerradoFlag) return { dia: d, text: 'Cerrado' };
     const abre = v.abre || v.open || null;
     const cierra = v.cierra || v.close || null;
-    const t = (abre && cierra) ? `${abre} — ${cierra}` : (abre ? `Abre: ${abre}` : 'Horario incompleto');
+    const t = (abre && cierra) ? `${abre} — ${cierra}` : (abre ? `Abre: ${abre}` : (cierra ? `Cierra: ${cierra}` : 'Horario incompleto'));
     return { dia: d, text: t };
   });
 };
@@ -234,7 +236,15 @@ export default function Club() {
   const acta = club.acta || [];
   const archivosLegal = club.archivos_legal || [];
   const direccionParsed = splitDireccion(club.direccion ?? club.direccion?.raw ?? null);
-  const horariosFormatted = formatHorario(club.horarios);
+
+  // --- Horarios: ahora puede traer { consumo: {...}, cultivo: {...} } ---
+  const horariosObj = club.horarios ?? club.horarios ?? {};
+  const consumoHorario = horariosObj?.consumo ?? null;
+  const cultivoHorario = horariosObj?.cultivo ?? null;
+  const consumoFormatted = consumoHorario ? formatHorario(consumoHorario) : null;
+  const cultivoFormatted = cultivoHorario ? formatHorario(cultivoHorario) : null;
+  // ---------------------------------------------------------------
+
   const integrantes = (club.num_integrantes === null || club.num_integrantes === undefined) ? 0 : club.num_integrantes;
   const lugares = (club.lugares === null || club.lugares === undefined) ? 0 : club.lugares;
   const requiereReservacion = !!club.reservacion;
@@ -284,9 +294,9 @@ export default function Club() {
               <Chip label={club.activo ? 'Activo' : 'Inactivo'} color={club.activo ? 'success' : 'default'} size="small" />
             )}
             {tipoLabel && <Chip label={tipoLabel} size="small" />}
-            <Chip label={`${integrantes} integrantes`} size="small" />
-            <Chip label={`lugares: ${lugares}`} size="small" />
-            <Chip label={`Reservación: ${requiereReservacion ? 'Sí' : 'No'}`} size="small" />
+            {/* Aquí unimos integrantes y lugares con la preposición "de" */}
+            <Chip label={`${integrantes} integrantes de ${lugares} lugares`} size="small" />
+            <Chip label={`Requiere Reservación: ${requiereReservacion ? 'Sí' : 'No'}`} size="small" />
           </Stack>
         </Box>
       </Box>
@@ -317,7 +327,7 @@ export default function Club() {
                 </Box>
               ) : (
                 <Typography variant="body2" color="text.secondary">Dirección no disponible</Typography>
-              )}
+              )} 
 
               {/* lat/lng -> Google Maps */}
               {club.lat && club.lng && (
@@ -348,19 +358,45 @@ export default function Club() {
           <Paper sx={{ p: 2, mt: 2 }}>
             <Typography variant="subtitle2">Horarios</Typography>
             <Box sx={{ mt: 1 }}>
-              {horariosFormatted ? (
-                <TableContainer>
-                  <Table size="small">
-                    <TableBody>
-                      {horariosFormatted.map((row) => (
-                        <TableRow key={row.dia}>
-                          <TableCell sx={{ width: 120, textTransform: 'capitalize', borderBottom: 'none', p: 0.5 }}>{row.dia}</TableCell>
-                          <TableCell sx={{ borderBottom: 'none', p: 0.5 }}>{row.text}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              {/* Mostramos solo las secciones que existan */}
+              {consumoFormatted || cultivoFormatted ? (
+                <>
+                  {consumoFormatted && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>Consumo</Typography>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableBody>
+                            {consumoFormatted.map((row) => (
+                              <TableRow key={`consumo-${row.dia}`}>
+                                <TableCell sx={{ width: 120, textTransform: 'capitalize', borderBottom: 'none', p: 0.5 }}>{row.dia}</TableCell>
+                                <TableCell sx={{ borderBottom: 'none', p: 0.5 }}>{row.text}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Box>
+                  )}
+
+                  {cultivoFormatted && (
+                    <Box sx={{ mb: 0 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, mb: 1 }}>Entrega de cosecha (cultivo)</Typography>
+                      <TableContainer>
+                        <Table size="small">
+                          <TableBody>
+                            {cultivoFormatted.map((row) => (
+                              <TableRow key={`cultivo-${row.dia}`}>
+                                <TableCell sx={{ width: 120, textTransform: 'capitalize', borderBottom: 'none', p: 0.5 }}>{row.dia}</TableCell>
+                                <TableCell sx={{ borderBottom: 'none', p: 0.5 }}>{row.text}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    </Box>
+                  )}
+                </>
               ) : (
                 <Typography variant="body2" color="text.secondary">Horarios no disponibles</Typography>
               )}
@@ -504,6 +540,7 @@ export default function Club() {
               {club.fecha_alta && <Chip label={`Alta: ${new Date(club.fecha_alta).toLocaleString()}`} size="small" />}
               {club.fecha_activado && <Chip label={`Activado: ${new Date(club.fecha_activado).toLocaleString()}`} size="small" />}
               {typeof club.en_revision !== 'undefined' && <Chip label={club.en_revision ? 'En revisión' : 'No en revisión'} size="small" />}
+              {/* metadata también con "de" */}
               <Chip label={`${integrantes} integrantes de ${lugares} lugares`} size="small" />
             </Box>
 
