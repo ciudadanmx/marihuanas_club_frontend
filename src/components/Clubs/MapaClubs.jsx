@@ -195,8 +195,17 @@ export default function MapaClubs({ membresia = false }) {
   onCloseClick={() => setHoveredClub(null)}
   options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
 >
-  <Box sx={{ maxWidth: 320, display: 'flex', gap: 1, alignItems: 'flex-start', fontFamily: "'Roboto', sans-serif" }}>
-    {/* Imagen y columna principal */}
+  <Box
+    sx={{
+      maxWidth: 340,
+      display: 'flex',
+      gap: 1,
+      alignItems: 'flex-start',
+      fontFamily: "'Roboto', sans-serif",
+      position: 'relative' // necesario para colocar la barra de reservación
+    }}
+  >
+    {/* Imagen */}
     <Avatar
       src={hoveredClub.foto_de_perfil?.url || hoveredClub.fotoUrl || undefined}
       alt={hoveredClub.nombre_club || 'Club'}
@@ -207,27 +216,89 @@ export default function MapaClubs({ membresia = false }) {
     </Avatar>
 
     <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-      {/* Nombre y tipo */}
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.3 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, fontSize: 15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {hoveredClub.nombre_club || 'Club sin nombre'}
-        </Typography>
+      {/* --- FILA superior: chips de cultivo (si aplica) + nombre */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4, flexWrap: 'wrap' }}>
+  {/* Solo si es cultivo o ambas */}
+  {(() => {
+    const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
+    const isCultivo = tipo === 'cultivo' || tipo === 'ambas' || tipo === 'ambos' || tipo.includes('cultivo');
+    if (!isCultivo) return null;
 
-        {/* Chip tipo */}
-        {(() => {
-          const tipo = (hoveredClub.tipo || '').toLowerCase();
-          if (tipo === 'consumo') {
-            return <Chip label="Club de Consumo" size="small" sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }} />;
+    const numIntegrantes =
+      typeof hoveredClub.num_integrantes === 'number' ? hoveredClub.num_integrantes : null;
+    const lugares =
+      typeof hoveredClub.lugares === 'number' ? hoveredClub.lugares : null;
+
+    let libres = null;
+    if (numIntegrantes !== null && lugares !== null && lugares > 0) {
+      libres = lugares - numIntegrantes;
+      if (libres < 0) libres = 0;
+    }
+
+    return (
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, mr: 0.6 }}>
+        <Chip
+          size="small"
+          label={
+            libres !== null && lugares !== null
+              ? `${libres} de ${lugares} lugares libres`
+              : '— lugares libres'
           }
-          if (tipo === 'cultivo') {
-            return <Chip label="Club de Cultivo" size="small" sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }} />;
-          }
-          if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
-            return <Chip label="Club de Cultivo y Consumo" size="small" sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }} />;
-          }
-          return null;
-        })()}
+          sx={{ bgcolor: '#000', color: '#fff', fontWeight: 700 }}
+        />
       </Box>
+    );
+  })()}
+
+  {/* Nombre y chip tipo (alineado en la misma fila cuando hay espacio) */}
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexWrap: 'wrap', minWidth: 0 }}>
+    <Typography
+      variant="subtitle1"
+      sx={{
+        fontWeight: 700,
+        fontSize: 15,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        maxWidth: 180
+      }}
+    >
+      {hoveredClub.nombre_club || 'Club sin nombre'}
+    </Typography>
+
+    {(() => {
+      const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
+      if (tipo === 'consumo') {
+        return (
+          <Chip
+            label="Club de Consumo"
+            size="small"
+            sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }}
+          />
+        );
+      }
+      if (tipo === 'cultivo') {
+        return (
+          <Chip
+            label="Club de Cultivo"
+            size="small"
+            sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }}
+          />
+        );
+      }
+      if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
+        return (
+          <Chip
+            label="Club de Cultivo y Consumo"
+            size="small"
+            sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }}
+          />
+        );
+      }
+      return null;
+    })()}
+  </Box>
+</Box>
 
       {/* Descripción */}
       <Typography variant="body2" sx={{ maxHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary', fontSize: 13 }}>
@@ -236,7 +307,6 @@ export default function MapaClubs({ membresia = false }) {
 
       {/* Productos y Servicios */}
       <Box sx={{ mt: 0.6, display: 'flex', gap: 1, flexDirection: 'column' }}>
-        {/* Productos (si trae) */}
         {Array.isArray(hoveredClub.productos) && hoveredClub.productos.length > 0 && (
           <Box>
             <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Productos</Typography>
@@ -254,7 +324,6 @@ export default function MapaClubs({ membresia = false }) {
           </Box>
         )}
 
-        {/* Servicios (si trae) */}
         {Array.isArray(hoveredClub.servicios) && hoveredClub.servicios.length > 0 && (
           <Box sx={{ mt: 0.4 }}>
             <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Servicios</Typography>
@@ -270,10 +339,9 @@ export default function MapaClubs({ membresia = false }) {
         )}
       </Box>
 
-      {/* Horarios */}
+      {/* Horarios (consumo / cultivo si existen) */}
       {hoveredClub.horarios && typeof hoveredClub.horarios === 'object' && (
         <Box sx={{ mt: 0.7 }}>
-          {/* helper: render single horario (tipoName: 'Consumo' | 'Cultivo') */}
           {['consumo', 'cultivo'].map((tipoKey) => {
             const bloque = hoveredClub.horarios[tipoKey];
             if (!bloque) return null;
@@ -287,7 +355,7 @@ export default function MapaClubs({ membresia = false }) {
                 <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0.3 }}>
                   {['lunes','martes','miércoles','jueves','viernes','sábado','domingo'].map((dia) => {
                     const d = bloque[dia] || bloque[dia.toLowerCase()] || { abre: 'cerrado', cierra: '' };
-                    const abierto = d.abre && d.abre.toLowerCase() !== 'cerrado' && d.abre !== '';
+                    const abierto = d.abre && d.abre.toString().toLowerCase() !== 'cerrado' && d.abre !== '';
                     return (
                       <Box key={dia} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
                         <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{dia.charAt(0).toUpperCase() + dia.slice(1)}</Typography>
@@ -320,6 +388,30 @@ export default function MapaClubs({ membresia = false }) {
         </Button>
       </Box>
     </Box>
+
+    {/* Barra de reservación (si aplica) */}
+    {hoveredClub.reservacion === true && (
+      <Box
+        sx={{
+          position: 'absolute',
+          left: 8,
+          right: 8,
+          bottom: 6,
+          bgcolor: '#d32f2f',
+          color: '#fff',
+          px: 1,
+          py: 0.4,
+          borderRadius: 1,
+          textAlign: 'center',
+          fontWeight: 700,
+          zIndex: 9999,
+          boxShadow: 3,
+          fontSize: 12
+        }}
+      >
+        Requiere reservación
+      </Box>
+    )}
   </Box>
 </InfoWindow>
 
