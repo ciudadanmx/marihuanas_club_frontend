@@ -406,6 +406,52 @@ const Clubs = () => {
         </Suspense>
       </Box>
 
+
+            <Box ref={susContainerRef} sx={{ mt: 2 }}>
+        <Box
+          sx={{
+            textAlign: "center",
+            mt: { xs: 3, md: 4 },
+            mb: { xs: 1, md: 2 },
+            fontFamily: "'Space Grotesk', sans-serif",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 600,
+              color: "#006400", // verde fuerte
+              mb: 0.5,
+              fontFamily: "'Righteous', cursive",
+              fontSize: { xs: "1rem", sm: "1.1rem", md: "1.25rem" },
+            }}
+          >
+            ¿Cuentas con un espacio para recibir consumidores o alojar plantas?
+          </Typography>
+
+          <Typography
+            onClick={() => navigate("/clubs/tipos-clubs")}
+            sx={{
+              display: "inline-block",
+              fontSize: { xs: "0.85rem", sm: "0.9rem" },
+              color: "#39FF14", // verde neón-limoso
+              textDecoration: "none",
+              fontFamily: "'Tilt Neon', sans-serif",
+              letterSpacing: 0.3,
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              "&:hover": {
+                color: "#00C853",
+                textShadow: "0 0 6px rgba(57,255,20,0.6)",
+                transform: "scale(1.03)",
+              },
+            }}
+          >
+            Abre / Afilia tu Club a la red <b>marihuanas.club</b>
+          </Typography>
+        </Box>
+      </Box>
+
       {/* Suscribete (mantener estructura original, pero lazy load para rendimiento) */}
       <Box ref={susContainerRef} sx={{ mt: 2 }}>
         <Suspense
@@ -419,6 +465,10 @@ const Clubs = () => {
         </Suspense>
       </Box>
     </Box>
+
+
+    
+
   );
 };
 

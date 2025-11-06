@@ -1,5 +1,5 @@
 // src/pages/TiposClub.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import {
   Button,
@@ -28,6 +28,26 @@ import { useNavigate } from "react-router-dom";
 import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
 import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
 import TarjetasModal from '../../components/Clubs/TarjetasModal.jsx';
+
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PauseIcon from "@mui/icons-material/Pause";
+import ReplayIcon from "@mui/icons-material/Replay";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import VolumeOffIcon from "@mui/icons-material/VolumeOff";
+
+import jardinero from "../../assets/jardineros.mp4";
+
+const styles = {
+  accentGradient: "linear-gradient(90deg,#8ef56b,#6ae6a6 45%,#b48bff 100%)",
+  moradoGradient:
+    "linear-gradient(120deg, rgba(132,94,255,0.12) 0%, rgba(175,96,255,0.08) 40%, rgba(58,12,89,0.04) 100%)",
+  cardBg:
+    "linear-gradient(180deg, rgba(18,10,30,0.6), rgba(40,10,60,0.45))", // morado oscuro sutil
+  glassBorder: "rgba(255,255,255,0.04)",
+  titleFont: `"Poppins", "Inter", "Segoe UI", Roboto, sans-serif`,
+  bodyFont: `"Inter", "Roboto", "Segoe UI", sans-serif`
+};
+
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -175,6 +195,78 @@ useEffect(() => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
+
+function LocalPlayer({ src, poster, maxHeight = 260 }) {
+    const localRef = useRef(null);
+    const [localPlaying, setLocalPlaying] = useState(false);
+    const [localMuted, setLocalMuted] = useState(true); // por defecto muted para evitar bloqueo
+    const [localLoop, setLocalLoop] = useState(true);
+
+    useEffect(() => {
+      if (!localRef.current) return;
+      localRef.current.loop = localLoop;
+      localRef.current.muted = localMuted;
+    }, [localLoop, localMuted]);
+
+    return (
+      <Box sx={{ mt: 2, borderRadius: 2, overflow: "hidden", border: "1px solid rgba(255,255,255,0.03)", background: styles.moradoGradient, position: "relative" }}>
+        <video
+          ref={localRef}
+          src={src}
+          poster={poster}
+          playsInline
+          controls
+          style={{ width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight }}
+        />
+
+        <Box sx={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 1, alignItems: "center", zIndex: 30 }}>
+          <IconButton
+            onClick={() => {
+              if (!localRef.current) return;
+              if (localRef.current.paused) {
+                localRef.current.play().catch(() => {});
+                setLocalPlaying(true);
+              } else {
+                localRef.current.pause();
+                setLocalPlaying(false);
+              }
+            }}
+            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
+          >
+            {localPlaying ? <PauseIcon /> : <PlayArrowIcon />}
+          </IconButton>
+
+          <IconButton
+            onClick={() => {
+              const next = !localLoop;
+              setLocalLoop(next);
+              if (localRef.current) localRef.current.loop = next;
+            }}
+            sx={{ bgcolor: localLoop ? "rgba(124,255,90,0.14)" : "rgba(0,0,0,0.45)", color: localLoop ? "#062e00" : "#fff", "&:hover": { bgcolor: localLoop ? "rgba(124,255,90,0.18)" : "rgba(0,0,0,0.55)" } }}
+          >
+            <ReplayIcon />
+          </IconButton>
+
+          <IconButton
+            onClick={() => {
+              const nextMuted = !localMuted;
+              setLocalMuted(nextMuted);
+              if (localRef.current) {
+                localRef.current.muted = nextMuted;
+                if (!nextMuted && localRef.current.paused) {
+                  localRef.current.play().catch(() => {});
+                  setLocalPlaying(true);
+                }
+              }
+            }}
+            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
+          >
+            {localMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+          </IconButton>
+        </Box>
+      </Box>
+    );
+  }
 
 
   return (
@@ -587,6 +679,10 @@ useEffect(() => {
                   - Envío nacional en dos entregas con manual, soporte y acceso inmediato al sistema.<br />
                   - Certificación digital como Jardinero Responsable tras tu primer trimestre.
                 </Typography>
+
+
+                  <LocalPlayer src={jardinero} poster={undefined} maxHeight={300} />
+
               </Grid>
 
               {/* Imagen del kit a la derecha (medianona) - reducida apenas para evitar corte */}
