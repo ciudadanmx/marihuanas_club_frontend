@@ -637,6 +637,129 @@ export default function InfoClubs() {
                   </AccordionSummary>
 
                   <AccordionDetails sx={{ px: { xs: 2, md: 3 }, pb: 2 }}>
+                  {s.id === "legalidad" ? (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", md: "row" },
+                        alignItems: "stretch",
+                        gap: 2,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          flex: 1,
+                          pl: { xs: 0, md: 1 },
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {s.content.map((block, i) => {
+                          if (block.type === "lead") {
+                            return (
+                              <Typography
+                                key={i}
+                                variant="h6"
+                                sx={{
+                                  fontWeight: 800,
+                                  color: "#FFD86B",
+                                  mb: 1,
+                                  textShadow: "0 6px 18px rgba(0,0,0,0.12)",
+                                }}
+                              >
+                                {block.text}
+                              </Typography>
+                            );
+                          }
+                          if (block.type === "p") {
+                            const highlighted = block.text
+                              .replace(/(\\bCOFEPRIS\\b)/g, "<b>$1</b>")
+                              .replace(/(\\bsemillas\\b|\\bSemillas\\b)/g, "<b>$1</b>");
+                            return (
+                              <Typography
+                                key={i}
+                                variant="body1"
+                                sx={{
+                                  mb: 1,
+                                  lineHeight: 1.6,
+                                  color: "rgba(255,255,255,0.92)",
+                                }}
+                                dangerouslySetInnerHTML={{ __html: highlighted }}
+                              />
+                            );
+                          }
+                          return null;
+                        })}
+
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          mt={1}
+                          alignItems="center"
+                        >
+                          <Avatar sx={{ width: 36, height: 36, bgcolor: "transparent" }}>
+                            🌿
+                          </Avatar>
+                          <Typography
+                            variant="caption"
+                            color="rgba(255,255,255,0.7)"
+                            sx={{
+                              mb: { xs: 85, sm: 90, md: 105 }, // más aire en pantallas medianas
+                            }}
+                          >
+                            Consejo: infórmate bien y considera riesgos legales antes de
+                            cualquier decisión.
+                          </Typography>
+                        </Stack>
+                      </Box>
+
+                      <Box
+                        sx={{
+                          flex: 1,
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          maxHeight: { xs: 320, md: 500 },
+                        }}
+                      >
+                        <Box
+                          component="img"
+                          src={esLegalImage}
+                          alt="Es legal Cannabis México"
+                          sx={{
+                            width: "100%",
+                            height: "auto",
+                            maxHeight: {
+                              xs: 340,  // móviles
+                              sm: 374,  // tablets chicas
+                              md: 440,  // tablets grandes o laptops medianas
+                              lg: 500,  // monitores medianos
+                              xl: 600,  // pantallas grandes
+                            },
+                            borderRadius: 2,
+                            objectFit: "contain",
+                            border: "1px solid rgba(255,255,255,0.03)",
+                            pt: {
+                              xs: 30,  // ≈64px
+                              sm: 34,  // ≈72px
+                              md: 20, // ≈80px
+                              lg: 4,  // regresa a menos en pantallas grandes
+                              xl: 6,
+                            },
+                            pb: {
+                              xs: 31, // 110px en mobile
+                              sm: 31, // igual en tablet chica
+                              md: 38,  // ≈64px en laptop
+                              lg: 4,  // ≈48px en desktop
+                              xl: 6,  // ≈32px en monitores grandes
+                            },
+                          }}
+                        />
+                        
+                      </Box>
+                    </Box>
+                  ) : (
                     <Box sx={{ pl: { xs: 0, md: 1 } }}>
                       {s.content.map((block, i) => {
                         if (block.type === "lead") {
@@ -648,7 +771,7 @@ export default function InfoClubs() {
                                 fontWeight: 800,
                                 color: "#FFD86B",
                                 mb: 1,
-                                textShadow: "0 6px 18px rgba(0,0,0,0.12)"
+                                textShadow: "0 6px 18px rgba(0,0,0,0.12)",
                               }}
                             >
                               {block.text}
@@ -657,8 +780,8 @@ export default function InfoClubs() {
                         }
                         if (block.type === "p") {
                           const highlighted = block.text
-                            .replace(/(\bCOFEPRIS\b)/g, "<b>$1</b>")
-                            .replace(/(\bsemillas\b|\bSemillas\b)/g, "<b>$1</b>");
+                            .replace(/(\\bCOFEPRIS\\b)/g, "<b>$1</b>")
+                            .replace(/(\\bsemillas\\b|\\bSemillas\\b)/g, "<b>$1</b>");
                           return (
                             <Typography
                               key={i}
@@ -666,7 +789,7 @@ export default function InfoClubs() {
                               sx={{
                                 mb: 1,
                                 lineHeight: 1.6,
-                                color: "rgba(255,255,255,0.92)"
+                                color: "rgba(255,255,255,0.92)",
                               }}
                               dangerouslySetInnerHTML={{ __html: highlighted }}
                             />
@@ -674,13 +797,6 @@ export default function InfoClubs() {
                         }
                         return null;
                       })}
-
-                      {/* AÑADIMOS AQUÍ LOS MEDIOS SOLICITADOS SIN TOCAR NADA MÁS */}
-                      {s.id === "legalidad" && (
-                        <Box sx={{ mt: 2 }}>
-                          <Box component="img" src={esLegalImage} alt="Es legal Cannabis México" sx={{ width: "100%", borderRadius: 2, display: "block", maxHeight: 420, objectFit: "cover", border: "1px solid rgba(255,255,255,0.03)" }} />
-                        </Box>
-                      )}
 
                       {s.id === "consumo" && (
                         <LocalPlayer src={consumoVideo} poster={undefined} maxHeight={300} />
@@ -691,17 +807,19 @@ export default function InfoClubs() {
                       )}
 
                       <Stack direction="row" spacing={1} mt={1} alignItems="center">
-                        <Avatar sx={{ width: 36, height: 36, bgcolor: "transparent" }}>🌿</Avatar>
+                        <Avatar sx={{ width: 36, height: 36, bgcolor: "transparent" }}>
+                          🌿
+                        </Avatar>
                         <Typography variant="caption" color="rgba(255,255,255,0.7)">
-                          {s.id === "legalidad"
-                            ? "Consejo: infórmate bien y considera riesgos legales antes de cualquier decisión."
-                            : s.id === "consumo"
+                          {s.id === "consumo"
                             ? "Beneficio: consumo colectivo, más seguro y con reglas claras."
                             : "Pro tip: documenta todo (estatutos, consentimiento y espacios). La trazabilidad es tu mejor defensa."}
                         </Typography>
                       </Stack>
                     </Box>
-                  </AccordionDetails>
+                  )}
+                </AccordionDetails>
+
                 </Accordion>
               </motion.div>
             ))}
