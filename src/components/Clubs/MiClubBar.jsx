@@ -1,13 +1,20 @@
 // src/components/Clubs/MiClubBar.jsx
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { Box, Typography, Chip, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Button,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const MiClubBar = () => {
   const { user, isAuthenticated } = useAuth0();
   const [loading, setLoading] = useState(false);
   const [haveClub, setHaveClub] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!isAuthenticated || !user?.email) return;
@@ -34,7 +41,6 @@ const MiClubBar = () => {
         const json = await res.json();
         console.log("[MiClubBar] Respuesta Strapi (raw JSON):", json);
 
-        // 🔥 Aquí tomamos directamente el valor de haveclub
         let value = null;
         if (Array.isArray(json?.data) && json.data.length > 0) {
           value = json.data[0]?.haveclub ?? json.data[0]?.attributes?.haveclub;
@@ -57,20 +63,37 @@ const MiClubBar = () => {
     fetchData();
   }, [isAuthenticated, user?.email]);
 
+  // --- estilos condicionales según estado ---
+  const isGreen = haveClub === true;
+  const gradient = isGreen
+    ? "linear-gradient(90deg, #d7f8d1 0%, #f0fff4 100%)"
+    : "linear-gradient(90deg, #ffe0b2 0%, #fff3e0 100%)";
+  const textColor = isGreen ? "#1b5e20" : "#e65100";
+
   return (
     <Box
       sx={{
+        p: 2,
+        borderRadius: 2,
+        background: gradient,
+        border: "1px solid rgba(0,0,0,0.08)",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        p: 1,
-        bgcolor: "#fffdf0",
-        borderRadius: 1,
-        border: "1px solid rgba(0,0,0,0.06)",
+        flexDirection: "column",
+        gap: 1,
       }}
     >
-      <Typography variant="subtitle2" sx={{ color: "#2e7d32" }}>
-        🌱 MiClubBar
+      <Typography
+        variant="subtitle1"
+        sx={{
+          fontWeight: 600,
+          color: textColor,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        🌿 Mi Club
       </Typography>
 
       {loading ? (
@@ -82,24 +105,45 @@ const MiClubBar = () => {
         <Typography variant="body2" color="error">
           Error: {error}
         </Typography>
+      ) : haveClub === true ? (
+        <Box>
+          <Typography
+            variant="body1"
+            sx={{ color: "#1b5e20", fontWeight: 500, mb: 1 }}
+          >
+            ✅ Ya tienes un club
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/clubs/miclub/info")}
+            sx={{
+              background: "linear-gradient(90deg, #66bb6a 0%, #81c784 100%)",
+              color: "#fff",
+              fontWeight: 600,
+              textTransform: "none",
+              "&:hover": {
+                background: "linear-gradient(90deg, #57a65e 0%, #6fbf73 100%)",
+              },
+            }}
+          >
+            Ir a las herramientas de tu club
+          </Button>
+        </Box>
       ) : (
-        <Chip
-          label={
-            haveClub === true
-              ? "Tiene club ✅"
-              : haveClub === false
-              ? "No tiene club 🚫"
-              : "Sin datos"
-          }
-          color={
-            haveClub === true
-              ? "success"
-              : haveClub === false
-              ? "default"
-              : "warning"
-          }
-          variant="outlined"
-        />
+        <Box>
+          <Typography
+            variant="body1"
+            sx={{ color: "#e65100", fontWeight: 500 }}
+          >
+            🌱 Selecciona un club de consumo para afiliarte
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ color: "#8d6e63", fontStyle: "italic", mt: 0.5 }}
+          >
+            Puedes ver los clubs disponibles a continuación:
+          </Typography>
+        </Box>
       )}
     </Box>
   );
