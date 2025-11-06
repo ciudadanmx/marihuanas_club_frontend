@@ -116,7 +116,7 @@ export default function MapaClubs({ membresia = false }) {
   if (!isLoaded) return <Box sx={{ textAlign: 'center', my: 4 }}><CircularProgress /></Box>;
 
   // opciones para el autocomplete/searchbox
-  const searchOptions = cityOnly ? { types: ['(cities)'] } : {};
+  const searchOptions = cityOnly ? { types: ['(cities)'], componentRestrictions: { country: 'mx' } } : {};
 
   const handlePlacesChanged = () => {
     const sb = searchBoxRef.current;
