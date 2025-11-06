@@ -1,6 +1,12 @@
 // src/components/DirectorioClubs.jsx
-import React, { useState, useEffect, useCallback } from 'react';
-import { Box, TextField, MenuItem, FormControl, InputLabel, Select, CircularProgress, Typography, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { 
+  Box, TextField, MenuItem, FormControl, InputLabel, Select, CircularProgress, 
+  Typography, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  InputAdornment 
+} from '@mui/material';
+import { StandaloneSearchBox } from '@react-google-maps/api';
+import SearchIcon from '@mui/icons-material/Search';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
@@ -12,7 +18,7 @@ export default function DirectorioClubs() {
   const [filterCity, setFilterCity] = useState('');
   const [filterTipo, setFilterTipo] = useState(''); // cultivo, consumo, ambos
 
-  const [ciudadesDisponibles, setCiudadesDisponibles] = useState([]);
+  const searchBoxRef = useRef(null);
 
   const fetchClubs = useCallback(async () => {
     setLoading(true);
@@ -36,11 +42,6 @@ export default function DirectorioClubs() {
       });
 
       setClubs(items);
-
-      // extraemos las ciudades disponibles
-      const ciudades = Array.from(new Set(items.map(c => c.ciudad).filter(Boolean))).sort();
-      setCiudadesDisponibles(ciudades);
-
     } catch (err) {
       setError(err.message || String(err));
     } finally {
@@ -50,45 +51,73 @@ export default function DirectorioClubs() {
 
   useEffect(() => { fetchClubs(); }, [fetchClubs]);
 
+  const handlePlacesChanged = () => {
+    const sb = searchBoxRef.current;
+    if (!sb) return;
+    const places = sb.getPlaces ? sb.getPlaces() : [];
+    if (!places || places.length === 0) return;
+    const place = places[0];
+    if (place && place.formatted_address) {
+      setFilterCity(place.formatted_address);
+    }
+  };
+
+  const handleSearchLoad = (ref) => { searchBoxRef.current = ref; };
+
+  // Filtramos clubs según dirección y tipo
   const filteredClubs = clubs.filter(club => {
     let matchCity = true;
     let matchTipo = true;
 
     if (filterCity) {
-      matchCity = club.ciudad?.toLowerCase().includes(filterCity.toLowerCase());
+      const direccionTexto = (club.direccion?.direccion || '').toLowerCase();
+      matchCity = direccionTexto.includes(filterCity.toLowerCase());
     }
 
     if (filterTipo) {
       const tipo = (club.tipo || '').toLowerCase();
       if (filterTipo === 'consumo') matchTipo = tipo === 'consumo';
       else if (filterTipo === 'cultivo') matchTipo = tipo === 'cultivo';
-      else if (filterTipo === 'ambos') matchTipo = tipo === 'ambas' || tipo === 'ambos' || tipo.includes('consumo') && tipo.includes('cultivo');
+      else if (filterTipo === 'ambos') matchTipo = tipo === 'ambas' || tipo === 'ambos' || (tipo.includes('consumo') && tipo.includes('cultivo'));
     }
 
     return matchCity && matchTipo;
   });
 
-  if (loading) return <Box sx={{ textAlign: 'center', my: 4 }}><CircularProgress /><Typography>Cargando clubes...</Typography></Box>;
+  if (loading) return (
+    <Box sx={{ textAlign: 'center', my: 4 }}>
+      <CircularProgress />
+      <Typography>Cargando clubes...</Typography>
+    </Box>
+  );
   if (error) return <Typography color="error">Error: {error}</Typography>;
 
   return (
     <Box sx={{ width: '95%', mx: 'auto', mt: 2 }}>
       {/* FILTROS */}
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
-        <FormControl sx={{ minWidth: 180 }}>
-          <InputLabel>Ciudad</InputLabel>
-          <Select
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-            label="Ciudad"
-          >
-            <MenuItem value="">Todas</MenuItem>
-            {ciudadesDisponibles.map(ciudad => (
-              <MenuItem key={ciudad} value={ciudad}>{ciudad}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {/* Autocomplete de Google Places para ciudades */}
+        <StandaloneSearchBox
+          onLoad={handleSearchLoad}
+          onPlacesChanged={handlePlacesChanged}
+          options={{ types: ['(cities)'], componentRestrictions: { country: 'mx' } }}
+        >
+          <TextField
+            size="small"
+            variant="outlined"
+            placeholder="Buscar ciudad..."
+            sx={{ minWidth: 220 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </StandaloneSearchBox>
 
+        {/* Select de Tipo */}
         <FormControl sx={{ minWidth: 180 }}>
           <InputLabel>Tipo</InputLabel>
           <Select
@@ -111,7 +140,7 @@ export default function DirectorioClubs() {
             <TableRow>
               <TableCell>Nombre</TableCell>
               <TableCell>Tipo</TableCell>
-              <TableCell>Ciudad</TableCell>
+              <TableCell>Dirección</TableCell>
               <TableCell>Integrantes</TableCell>
               <TableCell>Lugares</TableCell>
               <TableCell>Productos / Servicios</TableCell>
@@ -128,7 +157,7 @@ export default function DirectorioClubs() {
                     sx={{ fontWeight: 700 }}
                   />
                 </TableCell>
-                <TableCell>{club.ciudad || '-'}</TableCell>
+                <TableCell>{club.direccion?.direccion || '-'}</TableCell>
                 <TableCell>{club.num_integrantes || 0}</TableCell>
                 <TableCell>{club.lugares || '-'}</TableCell>
                 <TableCell>
