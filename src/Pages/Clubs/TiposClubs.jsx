@@ -28,14 +28,9 @@ import { useNavigate } from "react-router-dom";
 import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
 import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
 import TarjetasModal from '../../components/Clubs/TarjetasModal.jsx';
-
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import PauseIcon from "@mui/icons-material/Pause";
 import ReplayIcon from "@mui/icons-material/Replay";
-import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import VolumeOffIcon from "@mui/icons-material/VolumeOff";
-
 import jardinero from "../../assets/jardineros.mp4";
+import afiliaconsumo from "../../assets/afiliaconsumo.mp4";
 
 const styles = {
   accentGradient: "linear-gradient(90deg,#8ef56b,#6ae6a6 45%,#b48bff 100%)",
@@ -202,7 +197,7 @@ useEffect(() => {
 
 
 
-function LocalPlayer({ src, poster, maxHeight = 260 }) {
+function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
     const localRef = useRef(null);
     const [localPlaying, setLocalPlaying] = useState(false);
     const [localMuted, setLocalMuted] = useState(true); // por defecto muted para evitar bloqueo
@@ -221,7 +216,7 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
           poster={poster}
           playsInline
           controls
-          style={{ width: "100%", height: "auto", display: "block", objectFit: "cover", maxHeight }}
+          style={{ width: width, height: "auto", display: "block", objectFit: "cover", maxHeight }}
         />
 
         <Box sx={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 1, alignItems: "center", zIndex: 30 }}>
@@ -657,7 +652,7 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
                 </Typography>
 
 
-                  <LocalPlayer src={jardinero} poster={undefined} maxHeight={300} />
+                  <LocalPlayer src={jardinero} poster={undefined} width="100%" maxHeight={300} />
 
               </Grid>
 
@@ -747,6 +742,15 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
 
         <ClubConsumo />
 
+        <center>
+              <LocalPlayer
+                src={afiliaconsumo}
+                poster={undefined}
+                width={{ xs: "80%", s: "80", md: "60%" }}
+                sx={{ maxHeight: 300 }}
+              />
+        </center>
+
         {/* Modals / cards de modalidades (mantengo tu estructura original) */}
         <Grid container spacing={4} justifyContent="center" maxWidth="1200px" mx="auto">
           <Grid item xs={12} md={4}>
@@ -771,6 +775,8 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
                     Gestiona un club de hasta 20 miembros y ofrece tus servicios de jardinero
                     bajo lógica cooperativa. Incluye respaldo jurídico y herramientas digitales.
                   </Typography>
+
+                  
                   <Button
                     variant="contained"
                     color="success"
@@ -804,6 +810,8 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
                     Si tienes un espacio adecuado para recibir usuarios con permiso COFEPRIS,
                     puedes afiliarte gratis.
                   </Typography>
+
+                  
                   <Button
                     variant="contained"
                     color="success"

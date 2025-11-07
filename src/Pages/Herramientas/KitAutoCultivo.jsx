@@ -162,147 +162,190 @@ export default function KitAutoCultivo() {
 
         {/* Loading / error states */}
         {!loading && !error && (
-        <Grid container spacing={4}>
-            {/* Primera fila: Intro y GIF */}
-            <Grid item xs={12} md={6}>
-            <Box>
-                <Typography
-                variant="h4"
-                sx={{ fontWeight: 900, mb: 2, color: "#7effa8", fontFamily: "'Space Grotesk', sans-serif" }}
-                >
-                AutoCultiva: independencia verde 🌿
-                </Typography>
-                <Typography sx={{ color: "rgba(255,255,255,0.9)", mb: 2 }}>
-                Cultivar tus propias plantas no solo te da control total sobre su calidad, sino que reduce costos,
-                promueve el autoconsumo responsable y te conecta directamente con la naturaleza. Aquí tienes kits
-                completos — desde el básico para principiantes hasta el Full Production para quienes buscan rendimiento profesional.
-                </Typography>
+  <Grid container spacing={4}>
+    {/* Primera fila: Intro y GIF */}
+    <Grid item xs={12} md={6}>
+      <Box>
+        <Typography
+          variant="h4"
+          sx={{ fontWeight: 900, mb: 2, color: "#7effa8", fontFamily: "'Space Grotesk', sans-serif" }}
+        >
+          AutoCultiva: independencia verde 🌿
+        </Typography>
+        <Typography sx={{ color: "rgba(255,255,255,0.9)", mb: 2 }}>
+          Cultivar tus propias plantas no solo te da control total sobre su calidad, sino que reduce costos,
+          promueve el autoconsumo responsable y te conecta directamente con la naturaleza. Aquí tienes kits
+          completos — desde el básico para principiantes hasta el Full Production para quienes buscan rendimiento profesional.
+        </Typography>
 
-                <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                
-                </Box>
-            </Box>
-            </Grid>
+        <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/market/kitautocultivobasico")}
+            sx={{
+              background: "linear-gradient(90deg, #00ff99, #00cc66)",
+              color: "#000",
+              fontWeight: 800,
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+              boxShadow: "0 0 20px rgba(0,255,120,0.15)",
+            }}
+          >
+            🌿 Obtener Kit Básico
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/market/kitautocultivofull")}
+            sx={{
+              borderColor: "rgba(255,255,255,0.08)",
+              color: "#e9fff0",
+              fontWeight: 700,
+              borderRadius: 3,
+              px: 3,
+              py: 1,
+            }}
+          >
+            💡 Ver Kit Full
+          </Button>
+        </Box>
+      </Box>
+    </Grid>
 
-            <Grid item xs={12} md={6} sx={{ display: "flex", justifyContent: "center" }}>
-            <motion.img
-                src={autocultivaGif}
-                alt="Autocultiva"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.9 }}
-                style={{ width: "100%", maxWidth: 420, borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
-            />
-            </Grid>
+    <Grid item xs={12} md={6} sx={{ display: "flex", justifyContent: "center" }}>
+      <motion.img
+        src={autocultivaGif}
+        alt="Autocultiva"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.9 }}
+        style={{ width: "100%", maxWidth: 420, borderRadius: 16, boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}
+      />
+    </Grid>
 
-            {/* Segunda fila: Kits */}
-            <Grid item xs={12} md={6}>
-            {/* Kit Sencillo */}
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#a6f8c9", mb: 1 }}>🌱 Kit Básico — Sencilla</Typography>
-            <Typography sx={{ color: "rgba(255,255,255,0.85)", mb: 2 }}>
-                Ideal para principiantes o espacios reducidos. Incluye los elementos esenciales para 2–3 plantas.
+    {/* Segunda fila: Kits */}
+    <Grid item xs={12} md={6}>
+      {/* Kit Sencillo */}
+      <Typography variant="h5" sx={{ fontWeight: 800, color: "#a6f8c9", mb: 1 }}>🌱 Kit Básico — Sencilla</Typography>
+      <Typography sx={{ color: "rgba(255,255,255,0.85)", mb: 2 }}>
+        Ideal para principiantes o espacios reducidos. Incluye los elementos esenciales para 2–3 plantas.
+      </Typography>
+
+      <Box sx={{ textAlign: "center", mb: 3 }}>
+        <motion.div
+          animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.03, 1] }}
+          transition={{ repeat: Infinity, duration: 3 }}
+          style={{ display: "inline-block", fontWeight: 900, fontSize: "1.9rem", textShadow: "0 0 12px #00ff99" }}
+        >
+          ${kits.sencilla.length ? kits.sencilla[0].precio?.toLocaleString() : 4200} MXN
+        </motion.div>
+      </Box>
+
+      <Box sx={{ textAlign: "center", mb: 2 }}>
+        <Box
+          component={motion.img}
+          src={kitSencilloImg}
+          alt="Kit Sencillo"
+          whileHover={{ scale: 1.03 }}
+          sx={{ width: "100%", borderRadius: 2, maxWidth: 420, boxShadow: "0 18px 40px rgba(0,0,0,0.6)" }}
+        />
+      </Box>
+
+      {/* Incluye */}
+      <Typography sx={{ fontWeight: 800, color: "#ffd600", mb: 1 }}>Incluye:</Typography>
+
+      {kits.sencilla.map((it) => (
+        <Accordion
+          key={it.id}
+          sx={{
+            mb: 2,
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(6px)",
+            border: "none",
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#ffd600", fontSize: "1.5rem" }} />}
+          >
+            <Typography sx={{ fontWeight: 800, color: "#d8ffd8" }}>
+              {it.nombre} {it.cantidad ? `x${it.cantidad}` : ""}
             </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography sx={{ color: "rgba(255,255,255,0.85)", whiteSpace: "pre-line" }}>{it.texto || "No hay descripción disponible."}</Typography>
+          </AccordionDetails>
+        </Accordion>
+      ))}
 
-            <Box sx={{ textAlign: "center", mb: 3 }}>
-                <motion.div
-                animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.03, 1] }}
-                transition={{ repeat: Infinity, duration: 3 }}
-                style={{ display: "inline-block", fontWeight: 900, fontSize: "1.9rem", textShadow: "0 0 12px #00ff99" }}
-                >
-                ${kits.sencilla.length ? kits.sencilla[0].precio?.toLocaleString() : 4200} MXN
-                </motion.div>
-            </Box>
+      <Box sx={{ textAlign: "center", mt: 2 }}>
+        <Button onClick={() => navigate(`/market/kitautocultivobasico`)} variant="contained" sx={{ background: "linear-gradient(90deg, #00ff99, #00cc66)", color: "#000", fontWeight: 800, borderRadius: 3, px: 3, py: 1 }}>
+          Solicítalo ahora
+        </Button>
+      </Box>
+    </Grid>
 
-            <Box sx={{ textAlign: "center", mb: 3 }}>
-                <Box
-                component={motion.img}
-                src={kitSencilloImg}
-                alt="Kit Sencillo"
-                whileHover={{ scale: 1.03 }}
-                sx={{ width: "100%", borderRadius: 2, maxWidth: 420, boxShadow: "0 18px 40px rgba(0,0,0,0.6)" }}
-                />
-            </Box>
+    <Grid item xs={12} md={6}>
+      {/* Kit Full */}
+      <Typography variant="h5" sx={{ fontWeight: 800, color: "#cbb7ff", mb: 1 }}>💡 Kit Full Production</Typography>
+      <Typography sx={{ color: "rgba(255,255,255,0.85)", mb: 2 }}>
+        Diseñado para cultivadores que buscan máxima producción y control profesional del ambiente.
+      </Typography>
 
-            {kits.sencilla.map((it) => (
-                <Accordion
-                key={it.id}
-                sx={{
-                    mb: 2,
-                    background: "rgba(255,255,255,0.05)", // más leve, blanco translucido
-                    backdropFilter: "blur(6px)",
-                    border: "none",
-                }}
-                >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography sx={{ fontWeight: 800, color: "#d8ffd8" }}>{it.nombre}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Typography sx={{ color: "rgba(255,255,255,0.85)", whiteSpace: "pre-line" }}>{it.texto || "No hay descripción disponible."}</Typography>
-                </AccordionDetails>
-                </Accordion>
-            ))}
+      <Box sx={{ textAlign: "center", mb: 3 }}>
+        <motion.div
+          animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.03, 1] }}
+          transition={{ repeat: Infinity, duration: 3 }}
+          style={{ display: "inline-block", fontWeight: 900, fontSize: "1.9rem", textShadow: "0 0 12px #b388ff" }}
+        >
+          ${kits.full.length ? kits.full[0].precio?.toLocaleString() : 7100} MXN
+        </motion.div>
+      </Box>
 
-            <Box sx={{ textAlign: "center", mt: 2 }}>
-                <Button onClick={() => navigate(`/market/kitautocultivobasico`)} variant="contained" sx={{ background: "linear-gradient(90deg, #00ff99, #00cc66)", color: "#000", fontWeight: 800, borderRadius: 3, px: 3, py: 1 }}>
-                Solicítalo ahora
-                </Button>
-            </Box>
-            </Grid>
+      <Box sx={{ textAlign: "center", mb: 2 }}>
+        <Box
+          component={motion.img}
+          src={kitFullImg}
+          alt="Kit Full"
+          whileHover={{ scale: 1.03 }}
+          sx={{ width: "100%", borderRadius: 2, maxWidth: 420, boxShadow: "0 18px 40px rgba(0,0,0,0.6)" }}
+        />
+      </Box>
 
-            <Grid item xs={12} md={6}>
-            {/* Kit Full */}
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "#cbb7ff", mb: 1 }}>💡 Kit Full Production</Typography>
-            <Typography sx={{ color: "rgba(255,255,255,0.85)", mb: 2 }}>
-                Diseñado para cultivadores que buscan máxima producción y control profesional del ambiente.
+      {/* Incluye */}
+      <Typography sx={{ fontWeight: 800, color: "#ffd600", mb: 1 }}>Incluye:</Typography>
+
+      {kits.full.map((it) => (
+        <Accordion
+          key={it.id}
+          sx={{
+            mb: 2,
+            background: "rgba(255,255,255,0.05)",
+            backdropFilter: "blur(6px)",
+            border: "none",
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#ffd600", fontSize: "1.5rem" }} />}
+          >
+            <Typography sx={{ fontWeight: 800, color: "#f0e7ff" }}>
+              {it.nombre} {it.cantidad ? `x${it.cantidad}` : ""}
             </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography sx={{ color: "rgba(255,255,255,0.85)", whiteSpace: "pre-line" }}>{it.texto || "No hay descripción disponible."}</Typography>
+          </AccordionDetails>
+        </Accordion>
+      ))}
 
-            <Box sx={{ textAlign: "center", mb: 3 }}>
-                <motion.div
-                animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.03, 1] }}
-                transition={{ repeat: Infinity, duration: 3 }}
-                style={{ display: "inline-block", fontWeight: 900, fontSize: "1.9rem", textShadow: "0 0 12px #b388ff" }}
-                >
-                ${kits.full.length ? kits.full[0].precio?.toLocaleString() : 7100} MXN
-                </motion.div>
-            </Box>
+      <Box sx={{ textAlign: "center", mt: 2 }}>
+        <Button onClick={() => navigate(`/market/kitautocultivofull`)} variant="contained" sx={{ background: "linear-gradient(90deg, #7c4dff, #b388ff)", color: "#000", fontWeight: 800, borderRadius: 3, px: 3, py: 1 }}>
+          Solicítalo ahora
+        </Button>
+      </Box>
+    </Grid>
+  </Grid>
+)}
 
-            <Box sx={{ textAlign: "center", mb: 3 }}>
-                <Box
-                component={motion.img}
-                src={kitFullImg}
-                alt="Kit Full"
-                whileHover={{ scale: 1.03 }}
-                sx={{ width: "100%", borderRadius: 2, maxWidth: 420, boxShadow: "0 18px 40px rgba(0,0,0,0.6)" }}
-                />
-            </Box>
-
-            {kits.full.map((it) => (
-                <Accordion
-                key={it.id}
-                sx={{
-                    mb: 2,
-                    background: "rgba(255,255,255,0.05)", // más leve, blanco translucido
-                    backdropFilter: "blur(6px)",
-                    border: "none",
-                }}
-                >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Typography sx={{ fontWeight: 800, color: "#f0e7ff" }}>{it.nombre}</Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                    <Typography sx={{ color: "rgba(255,255,255,0.85)", whiteSpace: "pre-line" }}>{it.texto || "No hay descripción disponible."}</Typography>
-                </AccordionDetails>
-                </Accordion>
-            ))}
-
-            <Box sx={{ textAlign: "center", mt: 2 }}>
-                <Button onClick={() => navigate(`/market/kitautocultivofull`)} variant="contained" sx={{ background: "linear-gradient(90deg, #7c4dff, #b388ff)", color: "#000", fontWeight: 800, borderRadius: 3, px: 3, py: 1 }}>
-                Solicítalo ahora
-                </Button>
-            </Box>
-            </Grid>
-        </Grid>
-        )}
 
 
       </Box>
