@@ -37,7 +37,7 @@ export default function EventosGrid() {
   const [mesSelected, setMesSelected] = useState(new Date().getMonth());
   const [ciudadSelected, setCiudadSelected] = useState();
   const isMobile = useMediaQuery('(max-width:600px)');
-  const { isActivaMembresia } = useRoles();
+  const { roles, membresia } = useRoles();
   const baseURL = process.env.REACT_APP_STRAPI_URL;
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -133,7 +133,7 @@ export default function EventosGrid() {
           Agenda de {meses[mesSelected]}
         </Typography>
 
-        {isActivaMembresia && (
+        {membresia?.activa && (
           <Button
             variant="contained"
             component={Link}
