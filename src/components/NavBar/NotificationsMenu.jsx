@@ -24,9 +24,7 @@ const NotificationsMenu = ({ handleLogout, isOpen, containerRef }) => {
                   <div className="notif-grid">
                     <img src={notificationIcon} alt="icon" className="notif-icon" />
                     <div className="notif-content">
-                      <div className="notif-title">
-                        <strong>{tipo}</strong> {leida ? '✅' : '📬'}
-                      </div>
+                      
                       <div className="notif-message">{textoCuerpo}</div>
                       <div className="notif-date">{new Date(timestamp).toLocaleString()}</div>
                     </div>

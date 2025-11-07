@@ -66,10 +66,10 @@ menu-menu.open {
     background-color: rgba(190, 243, 163, 0.925);
     padding: 13px;
     border-radius: 13px;
-    height: 33vh;
     margin-left: -30vw;
     top: 30vw;
     padding-bottom:30px;
+    height: auto;
 }
 
 .grid-item {
@@ -101,7 +101,7 @@ menu-menu.open {
 
 @media (max-width: 480px) {
     .grid-container {
-        grid-template-columns: 2fr; /* Cambia a 1 columna en pantallas muy pequeñas */
+        grid-template-columns: repeat(2, 1fr); /* Cambia a 1 columna en pantallas muy pequeñas */
     }
 }
 
@@ -121,7 +121,7 @@ menu-menu.open {
     .grid-container {
         position: fixed;
         margin-left: 10px;
-        width: 90vw;
+        width: 120vw;
         right: 5vw;
         left: 3vw;
         
@@ -129,5 +129,101 @@ menu-menu.open {
         grid-template-columns: 2fr;
         gap: 4px;
         padding: 3px;
+        height: auto;
+    }
+}
+
+
+
+
+/* ===== Menú general ===== */
+.menu-menu {
+    position: absolute;
+    top: 50px; /* debajo del icono */
+    right: 10px;
+    background-color: white;
+    display: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    width: 300px; /* ancho base en PC */
+    z-index: 5000;
+}
+
+.menu-menu.open {
+    display: block;
+}
+
+.menu-menu ul {
+    list-style: none;
+    padding: 10px;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 columnas en PC */
+    gap: 12px;
+}
+
+.menu-menu li {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.menu-menu li:hover {
+    background-color: #f0f0f0;
+}
+
+.menu-menu li img {
+    max-width: 40px;
+    height: auto;
+    display: block;
+    margin: 0 auto 5px;
+}
+
+/* ===== Tablet ===== */
+@media (max-width: 1024px) {
+    .menu-menu {
+        width: 260px; /* ancho más compacto */
+        right: 20px; /* más a la izquierda */
+        top: 45px; /* ajusta si hace falta */
+    }
+
+    .menu-menu ul {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas */
+        gap: 8px; /* menos espacio */
+    }
+
+    .menu-menu li img {
+        max-width: 35px; /* íconos un poco más pequeños */
+    }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+    .menu-menu {
+        width: 90vw; /* ancho casi total */
+        left: 5%; /* centrado horizontal */
+        right: 5%; /* centrado horizontal */
+        top: 50px; /* debajo del icono */
+    }
+
+    .menu-menu ul {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas obligatorias */
+        gap: 6px; /* gap reducido */
+    }
+
+    .menu-menu li img {
+        max-width: 30px; /* íconos más pequeños */
+    }
+}
+
+/* ===== Extra pequeño ===== */
+@media (max-width: 480px) {
+    .menu-menu ul {
+        grid-template-columns: repeat(2, 1fr); /* sigue siendo 2 columnas */
+    }
+
+    .menu-menu li img {
+        max-width: 25px;
     }
 }
