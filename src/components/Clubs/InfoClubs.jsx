@@ -265,8 +265,8 @@ export default function InfoClubs() {
     useEffect(() => {
       if (!localRef.current) return;
       localRef.current.loop = localLoop;
-      localRef.current.muted = localMuted;
-    }, [localLoop, localMuted]);
+      // ❌ Quitamos esto: localRef.current.muted = localMuted;
+    }, [localLoop]);
 
     return (
       <Box sx={{ mt: 2, borderRadius: 2, overflow: "hidden", border: "1px solid rgba(255,255,255,0.03)", background: styles.moradoGradient, position: "relative" }}>

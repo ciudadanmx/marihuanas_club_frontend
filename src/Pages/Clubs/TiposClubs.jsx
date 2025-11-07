@@ -173,7 +173,12 @@ useEffect(() => {
       return;
     }
 
-    const envBaseForImages = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "") || window.location.origin;
+    // 🪴 Filtrar solo los items con pack === "jardinero"
+    parsed = parsed.filter((it) => it.pack === "jardinero");
+
+    const envBaseForImages =
+      (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "") ||
+      window.location.origin;
     const normalized = (parsed || []).map((it) => {
       const imageField = it.imagen ?? it.imagenes ?? it.image ?? null;
       const imagenUrl = extractImageUrl(imageField, envBaseForImages);
@@ -196,6 +201,7 @@ useEffect(() => {
 }, []);
 
 
+
 function LocalPlayer({ src, poster, maxHeight = 260 }) {
     const localRef = useRef(null);
     const [localPlaying, setLocalPlaying] = useState(false);
@@ -205,7 +211,6 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
     useEffect(() => {
       if (!localRef.current) return;
       localRef.current.loop = localLoop;
-      localRef.current.muted = localMuted;
     }, [localLoop, localMuted]);
 
     return (
@@ -220,21 +225,7 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
         />
 
         <Box sx={{ position: "absolute", right: 12, bottom: 12, display: "flex", gap: 1, alignItems: "center", zIndex: 30 }}>
-          <IconButton
-            onClick={() => {
-              if (!localRef.current) return;
-              if (localRef.current.paused) {
-                localRef.current.play().catch(() => {});
-                setLocalPlaying(true);
-              } else {
-                localRef.current.pause();
-                setLocalPlaying(false);
-              }
-            }}
-            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
-          >
-            {localPlaying ? <PauseIcon /> : <PlayArrowIcon />}
-          </IconButton>
+
 
           <IconButton
             onClick={() => {
@@ -247,22 +238,7 @@ function LocalPlayer({ src, poster, maxHeight = 260 }) {
             <ReplayIcon />
           </IconButton>
 
-          <IconButton
-            onClick={() => {
-              const nextMuted = !localMuted;
-              setLocalMuted(nextMuted);
-              if (localRef.current) {
-                localRef.current.muted = nextMuted;
-                if (!nextMuted && localRef.current.paused) {
-                  localRef.current.play().catch(() => {});
-                  setLocalPlaying(true);
-                }
-              }
-            }}
-            sx={{ bgcolor: "rgba(0,0,0,0.45)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.55)" } }}
-          >
-            {localMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-          </IconButton>
+          
         </Box>
       </Box>
     );

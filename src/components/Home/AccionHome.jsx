@@ -266,7 +266,7 @@ export default function AccionHome() {
         <Grid container spacing={{ xs: 1, sm: 1.6 }} alignItems="stretch">
           <Grid item xs={12} sm={4}>
             <ActionCard
-              to="/kitautocultivo"
+              to="/herramientas/kitautocultivo"
               imgSrc={kitGif}
               title="Kit AutoCultivo"
               subtitle="Todo lo que necesitas para comenzar tu huerta en casa"
