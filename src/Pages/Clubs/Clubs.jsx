@@ -347,6 +347,7 @@ const Clubs = () => {
           ) : null}
 
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
+            1000 Lugares en 50 clubs
             <Tabs
               value={mapTab}
               onChange={handleMapTabChange}

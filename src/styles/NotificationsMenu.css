@@ -6,7 +6,7 @@
   display: none;
 
   border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(143, 218, 108, 0.753);
   width: 33vw;
 
   /*     z-index: 9000; */
@@ -27,11 +27,14 @@
 
 .notifications-menu-contenedor.open {
   display: block;
+  background-color: #f0f0f0;
   /* z-index: 99999 !important; */
 }
 
 .purple {
-  background-color: purple;
+  background-color: rgba(141, 7, 90, 0.932);
+  color: rgba(202, 247, 100, 0.959);
+  font-weight: 900;
 }
 
 .textoChico {
@@ -165,7 +168,7 @@
 
  .notifications-menu {
   /* width: 320px; */
-  max-height: 350px;
+  /* max-height: 350px; */
   overflow-y: auto;
   /* background: #fff200;
   border: 1px solid #6d6e71;
@@ -184,10 +187,10 @@
 
 .notif-loading,
 .notif-empty {
-  padding: 6px;
+  padding: 1px;
   text-align: center;
-  font-size: 10px;
-  color: #444;
+  font-size: 14px;
+  color: #111111;
 }
 
 .notif-logout {
@@ -235,7 +238,7 @@
   width: 72vw;
   left: -28vw;
   right: 4vw;
-  background-color: purple;
+  background-color: rgb(163, 141, 163);
   top: 6vh;
 }
 }

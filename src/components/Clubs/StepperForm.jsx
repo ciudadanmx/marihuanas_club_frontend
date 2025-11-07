@@ -139,13 +139,31 @@ export default function StepperForm({
 
   return (
     <Box sx={{ width: "100%", maxWidth: 800, mx: "auto" }}>
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {steps.map((step, i) => (
-          <Step key={i}>
-            <StepLabel>{step.label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+      <Stepper
+  activeStep={activeStep}
+  alternativeLabel
+  sx={{
+    "& .MuiStepIcon-root": {
+      color: "lightgreen", // color default pasos no activos
+    },
+    "& .MuiStepIcon-root.Mui-active": {
+      color: "green", // color paso activo
+    },
+    "& .MuiStepIcon-root.Mui-completed": {
+      color: "green", // color pasos completados
+    },
+    "& .MuiStepLabel-label.Mui-active": {
+      fontWeight: "bold",
+      color: "green", // texto activo
+    },
+  }}
+>
+  {steps.map((step, i) => (
+    <Step key={i}>
+      <StepLabel>{step.label}</StepLabel>
+    </Step>
+  ))}
+</Stepper>
 
       <Box sx={{ my: 4 }}>{handleStepContent(activeStep)}</Box>
 

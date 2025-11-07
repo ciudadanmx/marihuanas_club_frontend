@@ -6,12 +6,13 @@ import StepperForm from "./StepperForm";
 export default function AgregarClub() {
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
   const [userId, setUserId] = useState(null);
+  const STRAPI_URL = process.env.REACT_APP_STRAPI_URL ;
 
   useEffect(() => {
     const fetchUserId = async () => {
       if (user && user.email) {
         try {
-          const res = await fetch(`http://localhost:1337/api/users?email=${user.email}`);
+          const res = await fetch(`${STRAPI_URL}/api/users?email=${user.email}`);
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0 && data[0].id) {
             setUserId(data[0].id);

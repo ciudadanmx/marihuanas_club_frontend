@@ -639,7 +639,31 @@ function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
                 </Typography>
 
 
-                  <LocalPlayer src={jardinero} poster={undefined} width="100%" maxHeight={300} />
+                  <Box
+                    sx={{
+                      width: "100%",
+                      backgroundColor: "rgba(144, 238, 144, 0.3)", // verde clarito
+                      py: 3,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      flexDirection: "column",
+                      borderRadius: 2,
+                      mt: 3,
+                    }}
+                  >
+                    <LocalPlayer src={jardinero} poster={undefined} width="100%" sx={{ maxHeight: 300 }} />
+
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="large"
+                      sx={{ mt: 3, borderRadius: "999px", px: 5 }}
+                      onClick={() => navigate("/clubs/requisitos-jardinero")}
+                    >
+                      Afiliar mi Club de Cultivo
+                    </Button>
+                  </Box>
 
               </Grid>
 
@@ -730,12 +754,37 @@ function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
         <ClubConsumo />
 
         <center>
-              <LocalPlayer
-                src={afiliaconsumo}
-                poster={undefined}
-                width={{ xs: "80%", s: "80", md: "60%" }}
-                sx={{ maxHeight: 300 }}
-              />
+          <Box
+            sx={{
+              width: "100%",
+              backgroundColor: "rgba(144, 238, 144, 0.3)", // verde clarito
+              py: 3,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexDirection: "column",
+              borderRadius: 2,
+              mt: 3,
+            }}
+          >
+            <LocalPlayer
+              src={afiliaconsumo}
+              poster={undefined}
+              width={{ xs: "100%", md: "60%" }}
+              sx={{ maxHeight: 300 }}
+            />
+
+            <Button
+              variant="contained"
+              color="success"
+              size="large"
+              sx={{ mt: 3, borderRadius: "999px", px: 5 }}
+              onClick={() => navigate("/clubs/agregar-club")}
+            >
+              Afiliar mi Club de Consumo
+            </Button>
+          </Box>
+
         </center>
 
         {/* Modals / cards de modalidades (mantengo tu estructura original) */}
@@ -832,10 +881,10 @@ function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
                     Combina ambas modalidades y ofrece experiencias completas.
                   </Typography>
                   <Box display="flex" flexDirection="column" gap={2} mt={3}>
-                    <Button variant="contained" color="success" size="large" sx={{ borderRadius: "999px" }}>
+                    <Button variant="contained" color="success" size="large" sx={{ borderRadius: "999px" }} onClick={() => navigate("/clubs/requisitos-jardinero")}>
                       Afiliar mi Club de Cultivo
                     </Button>
-                    <Button variant="outlined" color="success" size="large" sx={{ borderRadius: "999px" }}>
+                    <Button variant="outlined" color="success" size="large" sx={{ borderRadius: "999px" }} onClick={() => navigate("/clubs/agregar-club")}>
                       Afiliar mi Club de Consumo
                     </Button>
                   </Box>

@@ -13,7 +13,7 @@ const NotificationsMenu = ({ handleLogout, isOpen, containerRef }) => {
           {cargando ? (
             <li className="notif-loading">Cargando...</li>
           ) : notificaciones.length === 0 ? (
-            <li className="notif-empty">No hay notificaciones</li>
+            <li className="notif-empty">No hay notificacionessssssssssssssssssss</li>
           ) : (
             notificaciones.map((notif, i) => {
               const { tipo, leida, timestamp, cuerpo } = notif.attributes;
