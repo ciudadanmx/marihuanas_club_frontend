@@ -148,6 +148,7 @@ export default function Footer() {
               {[
                 { text: "Clubs", to: "/clubs" },
                 { text: "Membresías", to: "/membresias" },
+                { text: "AutoCultiva", to: "/herramientas/kitautocultivo" },
                 { text: "TuAbogado", to: "/legal/tuabogado" },
                 { text: "Wiki", to: "/wiki" },
                 { text: "Preguntas Frecuentes", to: "/info/faq" },
