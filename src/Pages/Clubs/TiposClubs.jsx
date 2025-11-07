@@ -21,7 +21,6 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import headerImage from "../../assets/tiposclubs.png";
 import kitImage from "../../assets/kitjardinero.png";
 import { useNavigate } from "react-router-dom";
@@ -101,7 +100,8 @@ const extractImageUrl = (field, envBaseFallback) => {
 };
 
 useEffect(() => {
-  const uniq = ['https://back.ciudadan.org/api/kitjardineros?populate=*'];
+  const dirx = process.env.REACT_APP_STRAPI_URL + '/api/kitjardineros?populate=*';
+  const uniq = [dirx];
   console.log("Endpoints usados:", uniq);
 
   async function fetchItems() {
@@ -128,23 +128,11 @@ useEffect(() => {
 
         // Caso Strapi: array en json.data
         if (Array.isArray(json.data)) {
-          console.log('⁉️⁉️⁉️⁉️aca si');
+          //console.log('⁉️⁉️⁉️⁉️aca si');
           parsed = json.data.map((d) => d.attributes || d);
         }
         // Caso Strapi: json.data con attributes que contienen una colección
-        else if (json.data && json.data.attributes) {
-          const attrs = json.data.attributes;
-          const arrFromAttrs = Object.values(attrs).find(
-            (v) => Array.isArray(v) || (v && v.data && Array.isArray(v.data))
-          );
-          if (Array.isArray(arrFromAttrs)) {
-            parsed = arrFromAttrs.map((i) => (i.attributes ? i.attributes : i));
-          } else if (arrFromAttrs && Array.isArray(arrFromAttrs.data)) {
-            parsed = arrFromAttrs.data.map((i) => (i.attributes ? i.attributes : i));
-          } else {
-            if ("cantidad" in attrs && "nombre" in attrs) parsed = [attrs];
-          }
-        }
+        
         // Fallback: buscar primer array en el JSON
         else {
           const possible = Object.values(json).find((v) => Array.isArray(v));
@@ -199,7 +187,6 @@ useEffect(() => {
 
 function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
     const localRef = useRef(null);
-    const [localPlaying, setLocalPlaying] = useState(false);
     const [localMuted, setLocalMuted] = useState(true); // por defecto muted para evitar bloqueo
     const [localLoop, setLocalLoop] = useState(true);
 
@@ -478,48 +465,48 @@ function LocalPlayer({ src, poster, width, maxHeight = 420 }) {
                     </Box>
 
                      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <Tooltip
-          title={
-            <span>
-              Financia con tarjetas participantes — opciones en mensualidades.
-              <br />
-              🚀 ¡Aplica promoción lanzamiento!
-            </span>
-          }
-          arrow
-          placement="top"
-        >
-          <Chip
-            label="💳 tarjetas participantes"
-            size="small"
-            onClick={handleOpenModal}
-            sx={{
-              bgcolor: "rgba(33, 150, 243, 0.2)",
-              color: "#1976d2",
-              borderRadius: "8px",
-              fontWeight: 700,
-              cursor: "pointer",
-              transition: "all 0.2s ease-in-out",
-              "&:hover": {
-                bgcolor: "rgba(33, 150, 243, 0.3)",
-                transform: "scale(1.05)",
-                boxShadow: "0 0 8px rgba(33,150,243,0.6)",
-              },
-            }}
-          />
-        </Tooltip>
-      </Box>
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        position: "relative",
+                        zIndex: 1,
+                      }}
+                    >
+                      <Tooltip
+                        title={
+                          <span>
+                            Financia con tarjetas participantes — opciones en mensualidades.
+                            <br />
+                            🚀 ¡Aplica promoción lanzamiento!
+                          </span>
+                        }
+                        arrow
+                        placement="top"
+                      >
+                        <Chip
+                          label="💳 tarjetas participantes"
+                          size="small"
+                          onClick={handleOpenModal}
+                          sx={{
+                            bgcolor: "rgba(33, 150, 243, 0.2)",
+                            color: "#1976d2",
+                            borderRadius: "8px",
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              bgcolor: "rgba(33, 150, 243, 0.3)",
+                              transform: "scale(1.05)",
+                              boxShadow: "0 0 8px rgba(33,150,243,0.6)",
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    </Box>
 
-      {/* Modal con info estática */}
-      <TarjetasModal open={openModal} onClose={handleCloseModal} />
+                    {/* Modal con info estática */}
+                    <TarjetasModal open={openModal} onClose={handleCloseModal} />
                   </Box>
                 </Box>
 
