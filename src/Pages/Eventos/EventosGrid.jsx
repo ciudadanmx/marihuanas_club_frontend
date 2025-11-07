@@ -35,8 +35,9 @@ export default function EventosGrid() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mesSelected, setMesSelected] = useState(new Date().getMonth());
+  const [ciudadSelected, setCiudadSelected] = useState();
   const isMobile = useMediaQuery('(max-width:600px)');
-  const { isEditor } = useRoles();
+  const { isActivaMembresia } = useRoles();
   const baseURL = process.env.REACT_APP_STRAPI_URL;
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
@@ -84,174 +85,216 @@ export default function EventosGrid() {
     );
   }
 
-// Generar días del mes
-const year = new Date().getFullYear();
-const totalDiasMes = new Date(year, mesSelected + 1, 0).getDate();
-const diasDelMes = [];
+  // Generar días del mes
+  const year = new Date().getFullYear();
+  const totalDiasMes = new Date(year, mesSelected + 1, 0).getDate();
+  const diasDelMes = [];
 
-for (let d = 1; d <= totalDiasMes; d++) {
-  const fecha = new Date(year, mesSelected, d);
-  diasDelMes.push({
-    dia: d,
-    fecha,
-    diaSemana: fecha.getDay(),
+  for (let d = 1; d <= totalDiasMes; d++) {
+    const fecha = new Date(year, mesSelected, d);
+    diasDelMes.push({
+      dia: d,
+      fecha,
+      diaSemana: fecha.getDay(),
+    });
+  }
+
+  // Agrupar eventos por fecha exacta en formato YYYY-MM-DD
+  const eventosPorFecha = {};
+  eventos.forEach(ev => {
+    const fechaStr = new Date(ev.fecha_inicio).toISOString().split('T')[0];
+    if (!eventosPorFecha[fechaStr]) eventosPorFecha[fechaStr] = [];
+    eventosPorFecha[fechaStr].push(ev);
   });
-}
 
-// Agrupar eventos por fecha exacta en formato YYYY-MM-DD
-const eventosPorFecha = {};
-eventos.forEach(ev => {
-  const fechaStr = new Date(ev.fecha_inicio).toISOString().split('T')[0];
-  if (!eventosPorFecha[fechaStr]) eventosPorFecha[fechaStr] = [];
-  eventosPorFecha[fechaStr].push(ev);
-});
+  // Generar lista de ciudades únicas a partir de los eventos (ordenada)
+  const ciudades = Array.from(new Set(eventos.map(e => e.ciudad).filter(Boolean))).sort();
 
-
-return (
-  <Box sx={{ px: 2, py: 4 }}>
-    <Box
-      sx={{
-        mb: 3,
-        display: 'flex',
-        flexDirection: isMobile ? 'column' : 'row',
-        alignItems: isMobile ? 'flex-start' : 'center',
-        justifyContent: 'space-between',
-        gap: 2,
-      }}
-    >
-      <Typography
-        variant="h4"
+  return (
+    <Box sx={{ px: 2, py: 4 }}>
+      <Box
         sx={{
-          color: '#b8ff57',
-          textAlign: isMobile ? 'left' : 'center',
-          flexGrow: 1,
+          mb: 3,
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          justifyContent: 'space-between',
+          gap: 2,
         }}
       >
-        Agenda de {meses[mesSelected]}
-      </Typography>
-
-      {isEditor && (
-        <Button
-          variant="contained"
-          component={Link}
-          to="/eventos/crear-evento"
+        <Typography
+          variant="h4"
           sx={{
-            backgroundColor: '#91ff49',
-            color: '#1a1a1a',
-            fontWeight: 'bold',
-            '&:hover': { backgroundColor: '#a5ff30' },
-            borderRadius: '12px',
-            px: 3,
-            boxShadow: '0 0 10px #91ff49',
+            color: '#b8ff57',
+            textAlign: isMobile ? 'left' : 'center',
+            flexGrow: 1,
           }}
         >
-          + Agregar evento
-        </Button>
-      )}
+          Agenda de {meses[mesSelected]}
+        </Typography>
 
-      <FormControl
-        sx={{
-          minWidth: 150,
-          borderRadius: '12px',
-          background: '#101b10',
-          boxShadow: '0 0 8px #7fff8d66',
-        }}
-      >
-        <InputLabel id="mes-label" sx={{ color: '#7fff8d' }}>
-          Mes
-        </InputLabel>
-        <Select
-          labelId="mes-label"
-          id="mes"
-          value={mesSelected}
-          label="Mes"
-          onChange={(e) => setMesSelected(e.target.value)}
-          sx={{ color: '#b8ff57' }}
-        >
-          {meses.map((m, idx) => (
-            <MenuItem key={idx} value={idx}>
-              {m}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-    </Box>
-
-    <Grid container spacing={2}>
-      {diasDelMes.map(({ dia, fecha, diaSemana }) => {
-        const fechaStr = fecha.toISOString().split('T')[0];
-        const eventosDelDia = eventosPorFecha[fechaStr] || [];
-        const label = `${['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][diaSemana]} ${dia}`;
-
-        return (
-          <Grid
-            key={fechaStr}
-            item
-            xs={12}
-            sm={6}
-            md={1.7}
-            sx={{ minWidth: 150, flexGrow: 1 }}
+        {isActivaMembresia && (
+          <Button
+            variant="contained"
+            component={Link}
+            to="/eventos/crear-evento"
+            sx={{
+              backgroundColor: '#91ff49',
+              color: '#1a1a1a',
+              fontWeight: 'bold',
+              '&:hover': { backgroundColor: '#a5ff30' },
+              borderRadius: '12px',
+              px: 3,
+              boxShadow: '0 0 10px #91ff49',
+            }}
           >
-            <Typography
-              variant="h6"
-              align="center"
-              sx={{
-                color: '#b8ff57',
-                mb: 1,
-                borderBottom: '1px solid #b8ff57',
-              }}
+            + Agregar evento
+          </Button>
+        )}
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 2,
+            alignItems: 'center',
+            flexShrink: 0,
+            mt: isMobile ? 1 : 0,
+          }}
+        >
+          <FormControl
+            sx={{
+              minWidth: 150,
+              borderRadius: '12px',
+              background: '#101b10',
+              boxShadow: '0 0 8px #7fff8d66',
+            }}
+          >
+            <InputLabel id="mes-label" sx={{ color: '#7fff8d' }}>
+              Mes
+            </InputLabel>
+            <Select
+              labelId="mes-label"
+              id="mes"
+              value={mesSelected}
+              label="Mes"
+              onChange={(e) => setMesSelected(e.target.value)}
+              sx={{ color: '#b8ff57' }}
             >
-              {label}
-            </Typography>
+              {meses.map((m, idx) => (
+                <MenuItem key={idx} value={idx}>
+                  {m}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-            {eventosDelDia.map((evento) => (
-              <Link
-                key={evento.slug}
-                to={`/evento/${evento.slug}`}
-                style={{ textDecoration: 'none' }}
+          <FormControl
+            sx={{
+              minWidth: 180,
+              borderRadius: '12px',
+              background: '#101b10',
+              boxShadow: '0 0 8px #7fff8d66',
+            }}
+          >
+            <InputLabel id="ciudad-label" sx={{ color: '#7fff8d' }}>
+              Ciudad
+            </InputLabel>
+            <Select
+              labelId="ciudad-label"
+              id="ciudad"
+              value={ciudadSelected ?? ''}
+              label="Ciudad"
+              onChange={(e) => setCiudadSelected(e.target.value || undefined)}
+              sx={{ color: '#b8ff57' }}
+            >
+              <MenuItem value="">
+                Todas
+              </MenuItem>
+              {ciudades.map((c) => (
+                <MenuItem key={c} value={c}>
+                  {c}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      </Box>
+
+      <Grid container spacing={2}>
+        {diasDelMes.map(({ dia, fecha, diaSemana }) => {
+          const fechaStr = fecha.toISOString().split('T')[0];
+          let eventosDelDia = eventosPorFecha[fechaStr] || [];
+          // Aplicar filtro por ciudad si fue seleccionada
+          eventosDelDia = eventosDelDia.filter(ev => !ciudadSelected || ev.ciudad === ciudadSelected);
+          const label = `${['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][diaSemana]} ${dia}`;
+
+          return (
+            <Grid
+              key={fechaStr}
+              item
+              xs={12}
+              sm={6}
+              md={1.7}
+              sx={{ minWidth: 150, flexGrow: 1 }}
+            >
+              <Typography
+                variant="h6"
+                align="center"
+                sx={{
+                  color: '#b8ff57',
+                  mb: 1,
+                  borderBottom: '1px solid #b8ff57',
+                }}
               >
-                <CardAnimada sx={{ mb: 2, cursor: 'pointer' }}>
-                  <CardMedia
-                    component="img"
-                    height="120"
-                    image={
-                      evento.portada?.data?.attributes?.url
-                        ? `${baseURL}${evento.portada.data.attributes.url}`
-                        : placeholder
-                    }
-                    alt={evento.titulo}
-                    sx={{
-                      objectFit: 'cover',
-                      borderTopLeftRadius: '14px',
-                      borderTopRightRadius: '14px',
-                    }}
-                  />
-                  <CardContent sx={{ p: 2 }}>
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 'bold', color: '#a5ff30' }}
-                    >
-                      {evento.titulo}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.7 }}>
-                      {evento.ciudad} • {evento.estado}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ display: 'block', mt: 1 }}
-                    >
-                      {evento.hora_inicio} hrs
-                    </Typography>
-                  </CardContent>
-                </CardAnimada>
-              </Link>
-            ))}
-          </Grid>
-        );
-      })}
-    </Grid>
-  </Box>
-);
+                {label}
+              </Typography>
 
-
+              {eventosDelDia.map((evento) => (
+                <Link
+                  key={evento.slug}
+                  to={`/evento/${evento.slug}`}
+                  style={{ textDecoration: 'none' }}
+                >
+                  <CardAnimada sx={{ mb: 2, cursor: 'pointer' }}>
+                    <CardMedia
+                      component="img"
+                      height="120"
+                      image={
+                        evento.portada?.data?.attributes?.url
+                          ? `${baseURL}${evento.portada.data.attributes.url}`
+                          : placeholder
+                      }
+                      alt={evento.titulo}
+                      sx={{
+                        objectFit: 'cover',
+                        borderTopLeftRadius: '14px',
+                        borderTopRightRadius: '14px',
+                      }}
+                    />
+                    <CardContent sx={{ p: 2 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 'bold', color: '#a5ff30' }}
+                      >
+                        {evento.titulo}
+                      </Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.7 }}>
+                        {evento.ciudad} • {evento.estado}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ display: 'block', mt: 1 }}
+                      >
+                        {evento.hora_inicio} hrs
+                      </Typography>
+                    </CardContent>
+                  </CardAnimada>
+                </Link>
+              ))}
+            </Grid>
+          );
+        })}
+      </Grid>
+    </Box>
+  );
 }
