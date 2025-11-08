@@ -4,6 +4,8 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import ShareIcon from '@mui/icons-material/Share';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { motion } from 'framer-motion';
+import LocalPlayer from '../../components/utils/LocalPlayer.jsx';
+import influencers from '../../assets/influencers.mp4';
 
 const MotionBox = motion(Box);
 
@@ -98,7 +100,7 @@ export default function GeneraContenidos() {
               <CardContent>
                 <Typography variant="body1" sx={{ color: '#F2FFF2', mb: 1.5 }}>
                   Monetiza tu pasión con{' '}
-                  <Link href="http://marihuanas.club" target="_blank" underline="hover" sx={{ color: '#A6FF00', fontWeight: 700 }}>
+                  <Link href="" underline="hover" sx={{ color: '#A6FF00', fontWeight: 700 }}>
                     marihuanas.club
                   </Link>{' '}
                   ganando de <strong>5 a 25 pesos mensuales</strong> por cada usuario que adquiera su membresía usando tu código de descuento.
@@ -196,6 +198,13 @@ export default function GeneraContenidos() {
             </MotionBox>
           </Grid>
         </Grid>
+
+          <LocalPlayer
+            src={influencers}
+            poster={undefined}
+            width={{ xs: "100%", md: "100%" }}
+            sx={{ maxHeight: 300 }}
+          />
       </MotionBox>
     </Box>
   );
