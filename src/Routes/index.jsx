@@ -56,7 +56,7 @@ import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
 //Gana
 import Gana from '../Pages/Gana/Gana.jsx';
 import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
-import Internacional from '../Pages/Internacional/Internacional.jsx';
+import Internacional from '../Pages/Gana/Internacional/Internacional.jsx';
 import GeneraContenidos from '../Pages/Gana/GeneraContenidos.jsx';
 //Usuario
 import UsuarioPage from '../Pages/Usuarios/UsuarioPage';
