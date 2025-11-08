@@ -1,10 +1,15 @@
 // src/components/ClubConsumoBar.jsx
 import React from "react";
 import { motion } from "framer-motion";
-import { Box, Container, Typography, Stack, Link } from "@mui/material";
+import { Box, Container, Typography, Stack, Link, Button } from "@mui/material";
 
-const ClubConsumoBar = () => {
+import { useNavigate } from "react-router-dom";
+
+const ClubConsumoBar = ({LocalPlayer, afiliaconsumo}) => {
+  const navigate = useNavigate();
+  
   return (
+    <>
     <Box
       component={motion.section}
       initial={{ y: -30, opacity: 0 }}
@@ -126,6 +131,40 @@ const ClubConsumoBar = () => {
         </Stack>
       </Container>
     </Box>
+    <Box
+      sx={{
+        width: "100%",
+        backgroundColor: "rgba(144, 238, 144, 0.3)", // verde clarito
+        py: 3,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+        borderRadius: 2,
+        mt: 3,
+      }}
+    >
+
+    <LocalPlayer
+      src={afiliaconsumo}
+      poster={undefined}
+      width={{ xs: "100%", md: "60%" }}
+      sx={{ maxHeight: 300 }}
+    />
+
+    <Button
+      variant="contained"
+      color="success"
+      size="large"
+      sx={{ mt: 3, borderRadius: "999px", px: 5 }}
+      onClick={() => navigate("/clubs/agregar-club")}
+    >
+      Afiliar mi Club de Consumo
+    </Button>
+    </Box>
+    </>
+
+    
   );
 };
 
