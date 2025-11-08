@@ -1,5 +1,6 @@
 // src/components/KitJardinero.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Button,
   Card,
@@ -12,24 +13,93 @@ import {
 } from "@mui/material";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import PrecioKitJardinero from "./Clubs/PrecioKitJardinero.jsx";
+import PrecioKitJardinero from "../components/Clubs/PrecioKitJardinero.jsx";
 import KitItem from "./KitItem.jsx";
 import jardinero from "../assets/jardineros.mp4";
 
+/**
+ * getMediaUrl: extrae URL desde campo media de Strapi v4
+ */
+const getMediaUrl = (imagenField) => {
+  if (!imagenField) return null;
+  const data = Array.isArray(imagenField.data) ? imagenField.data[0] : imagenField.data;
+  if (!data) return null;
+  const attrs = data.attributes ?? data;
+  if (!attrs) return null;
+  if (attrs.formats?.small?.url) return attrs.formats.small.url;
+  if (attrs.formats?.medium?.url) return attrs.formats.medium.url;
+  if (attrs.formats?.large?.url) return attrs.formats.large.url;
+  if (attrs.url) return attrs.url;
+  return null;
+};
+
+const prefixIfRelative = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  const host = process.env.REACT_APP_STRAPI_URL || window.location?.origin || "";
+  return `${host.replace(/\/$/, "")}/${url.replace(/^\//, "")}`;
+};
+
 const KitJardinero = ({
   kitImage,
-  loadingItems,
-  errorItems,
-  kitItems,
   setOpenKitModal,
   handleOpenKitModal,
   LocalPlayer,
 }) => {
   const navigate = useNavigate();
-  const [openModal, setOpenModal] = useState(false);
 
-  const openPrecioModal = () => setOpenModal(true);
-  const closePrecioModal = () => setOpenModal(false);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const BASE = process.env.REACT_APP_STRAPI_URL || "";
+    const endpoint = `${BASE.replace(/\/$/, "")}/api/kitjardineros?populate=imagen`;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const res = await axios.get(endpoint);
+        const entries = res.data?.data ?? [];
+        const mapped = entries
+          .map((entry) => {
+            const attrs = entry.attributes ?? {};
+            const rawImagen = attrs.imagen ?? null;
+            let url = getMediaUrl(rawImagen);
+            url = prefixIfRelative(url);
+            return {
+              id: entry.id ?? attrs.id ?? Math.random().toString(36).slice(2, 9),
+              ...attrs,
+              imagenUrl: url,
+            };
+          })
+          // filtrar sólo pack === 'jardinero' (case-insensitive)
+          .filter((it) => {
+            const p = it?.pack;
+            return typeof p === "string" && p.trim().toLowerCase() === "jardinero";
+          });
+
+        if (!cancelled) {
+          setItems(mapped);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message || "Error al cargar items");
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
@@ -45,10 +115,9 @@ const KitJardinero = ({
       >
         Red de Clubs Solidarios 🌱
       </Typography>
+
       <Typography variant="h6" sx={{ color: "#1f2937", maxWidth: "900px", mx: "auto", mb: 3 }}>
-        Conoce las tres modalidades para participar en la red de clubs sin fines
-        de lucro. Puedes iniciar con un kit de jardinero, abrir un club de
-        consumo o combinar ambas opciones.
+        Conoce las modalidades para participar en la red. Aquí mostramos los componentes del kit para jardineros.
       </Typography>
 
       <Card
@@ -68,11 +137,7 @@ const KitJardinero = ({
                 🌱 Kit Inicial del Jardinero del Club
               </Typography>
 
-              <PrecioKitJardinero
-                handleOpenModal={openPrecioModal}
-                handleCloseModal={closePrecioModal}
-                openModal={openModal}
-              />
+              <PrecioKitJardinero />
 
               <Typography sx={{ mb: 2 }}>
                 👨‍🌾 Tu punto de partida para crear un club de cultivo
@@ -100,20 +165,19 @@ const KitJardinero = ({
               </Typography>
 
               <Box sx={{ mb: 2, overflow: "visible" }}>
-                {loadingItems ? (
+                {loading ? (
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <CircularProgress size={20} />
                     <Typography>Cargando componentes del kit...</Typography>
                   </Box>
-                ) : errorItems ? (
-                  <Typography color="error">No fue posible cargar los componentes: {errorItems}</Typography>
-                ) : kitItems?.length === 0 ? (
+                ) : error ? (
+                  <Typography color="error">No fue posible cargar los componentes: {String(error)}</Typography>
+                ) : items?.length === 0 ? (
                   <Typography sx={{ opacity: 0.8 }}>
-                    No hay items registrados en la colección <code>kitjardinero</code>.
+                    No hay items registrados para el pack "jardinero".
                   </Typography>
                 ) : (
-                  // Usamos KitItem para cada elemento
-                  kitItems.map((it) => <KitItem key={it.id} item={it} />)
+                  items.map((it) => <KitItem key={it.id} item={it} />)
                 )}
               </Box>
 
@@ -121,26 +185,22 @@ const KitJardinero = ({
                 💻 Herramientas digitales del jardinero
               </Typography>
               <Typography sx={{ mb: 2 }}>
-                Incluye acceso al sistema de gestión y bitácoras automatizadas: registro de fotos, videos, trazabilidad por semilla, firma digital y almacenamiento en la nube. Cada usuario lleva sus propias semillas, el jardinero solo renta el espacio y servicios de cultivo.
+                Incluye acceso al sistema de gestión y bitácoras automatizadas.
               </Typography>
 
-              <Typography variant="h6" color="success.dark" fontWeight="bold">
-                ⚡ Sistema de energía individualizada
-              </Typography>
-              <Typography sx={{ mb: 2 }}>
-                Cada nuevo miembro instala su propio medidor ante CFE, garantizando consumo transparente y sustentable.
-              </Typography>
-
-              <Typography variant="h6" color="success.dark" fontWeight="bold">
-                📦 Entrega y soporte
-              </Typography>
-              <Typography sx={{ mb: 1 }}>
-                - Financiado con las dos primeras mensualidades. <br />
-                - Envío nacional en dos entregas con manual, soporte y acceso inmediato al sistema. <br />
-                - Certificación digital como Jardinero Responsable tras tu primer trimestre.
-              </Typography>
-
-              <Box sx={{ width: "100%", backgroundColor: "rgba(144, 238, 144, 0.3)", py: 3, display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", borderRadius: 2, mt: 3, overflow: "visible" }}>
+              <Box
+                sx={{
+                  width: "100%",
+                  backgroundColor: "rgba(144, 238, 144, 0.3)",
+                  py: 3,
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexDirection: "column",
+                  borderRadius: 2,
+                  mt: 3,
+                }}
+              >
                 {LocalPlayer && <LocalPlayer src={jardinero} poster={undefined} width="100%" sx={{ maxHeight: 300 }} />}
 
                 <Button variant="contained" color="success" size="large" sx={{ mt: 3, borderRadius: "999px", px: 5 }} onClick={() => navigate("/clubs/requisitos-jardinero")}>
@@ -150,8 +210,20 @@ const KitJardinero = ({
             </Grid>
 
             {/* Columna derecha */}
-            <Grid item xs={12} md={4} sx={{ display: "flex", justifyContent: "center", overflow: "visible" }}>
-              <Box component={motion.div} whileHover={{ scale: 1.02 }} sx={{ width: { xs: "90%", md: "92%" }, borderRadius: 2, overflow: "hidden", boxShadow: "0 18px 40px rgba(0,0,0,0.12)", border: "1px solid rgba(0,0,0,0.06)", background: "linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,250,0.4))", p: 1 }}>
+            <Grid item xs={12} md={4} sx={{ display: "flex", justifyContent: "center" }}>
+              <Box
+                component={motion.div}
+                whileHover={{ scale: 1.02 }}
+                sx={{
+                  width: { xs: "90%", md: "92%" },
+                  borderRadius: 2,
+                  overflow: "hidden",
+                  boxShadow: "0 18px 40px rgba(0,0,0,0.12)",
+                  border: "1px solid rgba(0,0,0,0.06)",
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.6), rgba(250,250,250,0.4))",
+                  p: 1,
+                }}
+              >
                 <Box
                   onClick={() => {
                     if (typeof handleOpenKitModal === "function") handleOpenKitModal();
@@ -162,18 +234,6 @@ const KitJardinero = ({
                     overflow: "hidden",
                     borderRadius: 1,
                     cursor: "pointer",
-                    "& img": {
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      objectPosition: "center left",
-                      transition: "object-position 700ms ease, transform 300ms ease",
-                      display: "block",
-                    },
-                    "&:hover img": {
-                      objectPosition: "center right",
-                      transform: "scale(1.02)",
-                    },
                   }}
                   aria-label="Abrir imagen ampliada del kit"
                   role="button"
@@ -188,10 +248,6 @@ const KitJardinero = ({
                   <Typography variant="caption" sx={{ opacity: 0.75 }}>
                     Imagen ilustrativa con todos los componentes incluidos.
                   </Typography>
-
-                  <Button variant="contained" size="small" onClick={() => window.open("/downloads/kit-detalles.pdf", "_blank")} sx={{ mt: 1, borderRadius: "999px", textTransform: "none" }}>
-                    📄 Ficha técnica (PDF)
-                  </Button>
                 </Box>
               </Box>
             </Grid>
