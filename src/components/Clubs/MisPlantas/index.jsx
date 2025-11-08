@@ -8,18 +8,23 @@ import StatusCard from "./StatusCard";
 import EmptyState from "./EmptyState";
 import PlantCard from "./PlantCard";
 import { firstImageFromMedia, formatFechaEnEsp, COLORS, PLACEHOLDER, cardVariants, STRAPI_BASE } from "./utils";
+import { useRoles } from "../../../Contexts/RolesContext.jsx"; // <- AJUSTA esta ruta a donde tengas el provider
 
-const MisPlantas = ({ user }) => {
+const MisPlantas = () => {
   const navigate = useNavigate();
+  const { userData, fetchRolesYMembresia } = useRoles(); // userData viene del contexto RolesProvider
+
+  // Normalizar email (variantes posibles)
+  const userEmail = userData?.email ?? userData?.usuario_email ?? null;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [plantas, setPlantas] = useState([]);
   const [bitacoras, setBitacoras] = useState([]);
-  const [userStrapi, setUserStrapi] = useState(null);
   const [linkVideos, setLinkVideos] = useState(null);
 
+  // refs para logs
   const didClearConsoleRef = useRef(false);
   const didDumpOnceRef = useRef(false);
 
@@ -29,8 +34,8 @@ const MisPlantas = ({ user }) => {
     if (!didClearConsoleRef.current) {
       try {
         console.clear();
-        console.log("Console was cleared");
-      } catch (e) { /* noop */ }
+        console.log("Console was cleared (MisPlantas component)");
+      } catch (e) {}
       didClearConsoleRef.current = true;
     }
 
@@ -38,8 +43,9 @@ const MisPlantas = ({ user }) => {
       let lv = null;
       try {
         if (!didDumpOnceRef.current) {
-          console.log("=== MisPlantas: inicio de carga ===");
-          console.log("MisPlantas: user.email ->", email);
+          console.log("=== MisPlantas: inicio de carga usando userData desde RolesContext ===");
+          console.log("MisPlantas: userEmail ->", email);
+          console.log("MisPlantas: userData raw ->", userData);
         } else {
           console.log("MisPlantas: recargando para", email);
         }
@@ -79,30 +85,61 @@ const MisPlantas = ({ user }) => {
         if (resPlantas.status === "fulfilled") {
           const entries = resPlantas.value.data?.data ?? [];
           if (!didDumpOnceRef.current) console.log("resPlantas.value.data (raw):", resPlantas.value.data);
-          plantasData = entries.map((e) => {
+
+          plantasData = entries.map((e, idx) => {
             const attrs = e.attributes ?? {};
-            const media = attrs.media ?? null;
-            const imagenUrl = firstImageFromMedia(media) || attrs.imagenUrl || null;
-            // Normalize keys: some objetos tienen 'codigo', otros 'codigoplanta'
+
+            // posibles campos donde Strapi guarda la media
+            const mediaField =
+              attrs.media ??
+              attrs.imagen ??
+              attrs.imagenes ??
+              attrs.images ??
+              (attrs.media && attrs.media.data ? attrs.media.data : null) ??
+              null;
+
+            // DEBUG por planta: mostrar mediaField
+            console.log(`MisPlantas: planta[${idx}] - mediaField ->`, mediaField);
+
+            // Intentar extraer imagen desde mediaField usando helper
+            const imagenUrlFromMedia = firstImageFromMedia(mediaField, `planta[${idx}]`);
+
+            // Fallbacks probables
+            const imagenUrl =
+              imagenUrlFromMedia ||
+              attrs.imagenUrl ||
+              attrs.url ||
+              attrs.picture ||
+              attrs.foto ||
+              firstImageFromMedia(attrs.image ?? attrs.images ?? attrs.imagenes ?? null, `planta[${idx}] fallback2`) ||
+              null;
+
+            // Normalize keys: 'codigoplanta' u 'codigo'
             const codigo = attrs.codigoplanta ?? attrs.codigo ?? attrs.id ?? null;
-            return { id: e.id, ...attrs, imagenUrl, codigo };
+
+            console.log(`MisPlantas: planta[${idx}] -> id:${e.id} codigo:${codigo} imagenUrl:`, imagenUrl);
+
+            return {
+              id: e.id,
+              ...attrs,
+              imagenUrl,
+              codigo,
+            };
           });
         } else {
           console.error("Error obteniendo plantas:", resPlantas.reason || resPlantas);
         }
 
-        // Usuario Strapi
-        let userData = null;
+        // Usuario Strapi (lo guardamos por si hay actualizaciones)
+        let userDataFromStrapi = null;
         if (resUser.status === "fulfilled") {
           const uentries = resUser.value.data?.data ?? [];
           if (!didDumpOnceRef.current) console.log("resUser.value.data (raw):", resUser.value.data);
           if (Array.isArray(uentries) && uentries.length > 0) {
-            userData = uentries[0].attributes ?? null;
-          } else {
-            userData = null;
+            userDataFromStrapi = uentries[0].attributes ?? null;
           }
         } else {
-          console.error("Error obteniendo usuario Strapi:", resUser.reason || resUser);
+          console.error("Error obteniendo usuario Strapi (fetch adicional):", resUser.reason || resUser);
         }
 
         // Bitacoras
@@ -121,12 +158,11 @@ const MisPlantas = ({ user }) => {
           console.error("Error obteniendo bitácoras:", resBit.reason || resBit);
         }
 
-        // linkVideos
+        // linkVideos desde plantas
         lv = (plantasData.find((p) => !!p.linkvideos)?.linkvideos) || plantasData[0]?.linkvideos || null;
 
         if (!cancelled) {
           setPlantas(plantasData);
-          setUserStrapi(userData);
           setBitacoras(bitData);
           setLinkVideos(lv);
           setLoading(false);
@@ -136,7 +172,7 @@ const MisPlantas = ({ user }) => {
           console.log("=== Resumen cargado (primer dump) ===");
           console.log("Plantas count:", plantasData.length);
           console.log("Plantas ejemplo 0:", plantasData[0] ?? null);
-          console.log("UserStrapi:", userData);
+          console.log("UserStrapi (extra fetch):", userDataFromStrapi);
           console.log("Bitacoras count:", bitData.length);
           console.log("Bitacoras ejemplo 0:", bitData[0] ?? null);
           console.log("LinkVideos:", lv);
@@ -152,21 +188,21 @@ const MisPlantas = ({ user }) => {
       }
     };
 
-    if (user?.email) {
-      loadAll(user.email);
+    if (userEmail) {
+      loadAll(userEmail);
     } else {
       setPlantas([]);
-      setUserStrapi(null);
       setBitacoras([]);
       setLinkVideos(null);
       setLoading(false);
-      if (!didDumpOnceRef.current) console.log("MisPlantas: no hay user.email aún. Esperando autenticación.");
+      if (!didDumpOnceRef.current) console.log("MisPlantas: no hay userEmail aún en RolesContext. Esperando autenticación.");
     }
 
     return () => {
       cancelled = true;
     };
-  }, [user?.email]);
+    // Dependemos únicamente de la cadena userEmail para evitar re-ejecuciones por referencia
+  }, [userEmail]);
 
   const numeroPlantasVivas = useMemo(() => {
     try {
@@ -178,16 +214,17 @@ const MisPlantas = ({ user }) => {
 
   const fechaProximaCosecha = useMemo(() => {
     try {
-      const raw = userStrapi?.proximacosecha ?? userStrapi?.proximaCosecha ?? null;
+      // userData proviene del context (RolesProvider) y contiene los atributos que guardaste en Strapi
+      const raw = (userData?.proximacosecha ?? userData?.proximaCosecha ?? userData?.attributes?.proximacosecha) ?? null;
       const iso = typeof raw === "string" ? raw : raw?.value ?? raw?.fecha ?? null;
       return formatFechaEnEsp(iso);
     } catch {
       return null;
     }
-  }, [userStrapi]);
+  }, [userData]);
 
-  const curado = Number(userStrapi?.curado ?? 0);
-  const secado = Number(userStrapi?.secado ?? 0);
+  const curado = Number(userData?.curado ?? userData?.attributes?.curado ?? 0);
+  const secado = Number(userData?.secado ?? userData?.attributes?.secado ?? 0);
   const totalCuradoSecado = curado + secado;
 
   const latestBitByCodigo = useMemo(() => {
@@ -211,7 +248,7 @@ const MisPlantas = ({ user }) => {
       if (!Object.keys(slots).includes(colorCandidate)) continue;
       const plantaObj = plantas.find(
         (p) =>
-          (String(p.codigoplanta ?? p.codigo ?? p.codigo_planta ?? p.codigoPlanta ?? p.id) === String(cod)) &&
+          (String(p.codigoplanta ?? p.codigo ?? p.id ?? p.codigo_planta ?? p.codigoPlanta) === String(cod)) &&
           (p.viva === true || String(p.viva) === "true")
       );
       if (!plantaObj) continue;
@@ -258,7 +295,6 @@ const MisPlantas = ({ user }) => {
       .filter((p) => p?.viva === true || String(p?.viva) === "true")
       .slice(0, 6)
       .map((p) => {
-        // intentar inferir código y color
         const codigo = p.codigoplanta ?? p.codigo ?? p.id ?? `p-${p.id}`;
         const colorKey = (p.color ?? p.colorName ?? "").toLowerCase?.() ?? null;
         const matchedColor = COLORS.find((c) => c.key === colorKey) ?? null;
@@ -275,7 +311,6 @@ const MisPlantas = ({ user }) => {
       });
   }, [gridItems, plantas]);
 
-  // Usaremos fallbackGridItems si existe, sino gridItems normal
   const itemsToRender = (fallbackGridItems && fallbackGridItems.length > 0) ? fallbackGridItems : gridItems;
 
   useEffect(() => {
@@ -286,13 +321,13 @@ const MisPlantas = ({ user }) => {
       gridItemsCount: gridItems.length,
       fallbackGridItemsCount: fallbackGridItems ? fallbackGridItems.length : 0,
       bitacorasCount: bitacoras.length,
-      userStrapi,
+      userData,
       fechaProximaCosecha,
       curado,
       secado,
       linkVideos,
     });
-  }, [loading, error, plantas, gridItems, fallbackGridItems, bitacoras, userStrapi, fechaProximaCosecha, curado, secado, linkVideos]);
+  }, [loading, error, plantas, gridItems, fallbackGridItems, bitacoras, userData, fechaProximaCosecha, curado, secado, linkVideos]);
 
   const sinPlantas = plantas.length === 0 && (!itemsToRender || itemsToRender.length === 0);
 
@@ -328,7 +363,6 @@ const MisPlantas = ({ user }) => {
 
           <Grid container spacing={3}>
             {itemsToRender.map((g) => (
-              // PlantCard espera prop g y navigate
               <PlantCard key={g.codigoplanta ?? g.planta?.id ?? Math.random()} g={g} navigate={navigate} />
             ))}
           </Grid>

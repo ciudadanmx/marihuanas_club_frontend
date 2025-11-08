@@ -1,24 +1,90 @@
 // Helpers compartidos (STRAPI base, formatos, extractor de imagen)
 export const STRAPI_BASE = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "");
 
-export const firstImageFromMedia = (mediaField) => {
+export const firstImageFromMedia = (mediaField, debugLabel = "") => {
   try {
-    if (!mediaField) return null;
-    const data = Array.isArray(mediaField.data) ? mediaField.data : mediaField;
-    const first =
-      Array.isArray(data) ? data.find((d) => d?.attributes?.mime?.startsWith?.("image")) || data[0] : data;
-    const attrs = first?.attributes ?? first;
-    const url =
-      attrs?.formats?.small?.url ??
-      attrs?.formats?.medium?.url ??
-      attrs?.formats?.thumbnail?.url ??
-      attrs?.url ??
-      null;
-    if (!url) return null;
-    if (url.startsWith("http://") || url.startsWith("https://")) return url;
+    if (!mediaField) {
+      //console.log(`firstImageFromMedia(${debugLabel}): no mediaField`);
+      return null;
+    }
+
+    // Normalizar varias formas
+    let data = mediaField;
+    if (mediaField.data) data = mediaField.data;
+    if (mediaField.attributes && mediaField.attributes.data) data = mediaField.attributes.data;
+
+    const arr = Array.isArray(data) ? data : [data];
+
+    // Recorremos elementos hasta encontrar URL
+    for (const item of arr) {
+      if (!item) continue;
+      // El candidate puede tener attributes o ser el objeto directo
+      const candidate = item.attributes ?? item;
+
+      // 1) provider_url (Cloudinary / external provider)
+      if (candidate?.provider_url && typeof candidate.provider_url === "string") {
+        // console.log(`firstImageFromMedia(${debugLabel}): provider_url ->`, candidate.provider_url);
+        return candidate.provider_url;
+      }
+
+      // 2) formats (small / medium / thumbnail)
+      const formats = candidate?.formats ?? null;
+      if (formats) {
+        const preferred = formats.small ?? formats.medium ?? formats.thumbnail ?? null;
+        const urlFromFormats = preferred?.url ?? preferred?.provider_url ?? null;
+        if (urlFromFormats) {
+          // console.log(`firstImageFromMedia(${debugLabel}): formats ->`, urlFromFormats);
+          return makeAbsoluteUrl(urlFromFormats);
+        }
+        // si no hay preferred, buscar cualquier format disponible
+        for (const k of Object.keys(formats)) {
+          const f = formats[k];
+          if (f?.url) return makeAbsoluteUrl(f.url);
+          if (f?.provider_url) return f.provider_url;
+        }
+      }
+
+      // 3) url directo en candidate
+      if (candidate?.url && typeof candidate.url === "string") {
+        // console.log(`firstImageFromMedia(${debugLabel}): direct url ->`, candidate.url);
+        return makeAbsoluteUrl(candidate.url);
+      }
+
+      // 4) uri (por si viene así)
+      if (candidate?.uri && typeof candidate.uri === "string") {
+        return makeAbsoluteUrl(candidate.uri);
+      }
+
+      // 5) nested data
+      if (candidate?.data) {
+        const nested = firstImageFromMedia(candidate.data, debugLabel + " > nested");
+        if (nested) return nested;
+      }
+
+      // 6) provider_metadata o campos raros
+      if (candidate?.provider_metadata?.public_id && candidate?.provider_metadata?.resource_type) {
+        // no podemos construir la url exacta sin saber el provider, saltamos
+      }
+    }
+
+    // ninguno arrojo url
+    // console.log(`firstImageFromMedia(${debugLabel}): no url encontrada en mediaField`, mediaField);
+    return null;
+  } catch (e) {
+    // console.error("firstImageFromMedia EX", e);
+    return null;
+  }
+};
+
+// helper para normalizar urls relativas con STRAPI_BASE
+const makeAbsoluteUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  // STRAPI_BASE exportado en este archivo
+  try {
     return `${STRAPI_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
   } catch {
-    return null;
+    return url;
   }
 };
 
