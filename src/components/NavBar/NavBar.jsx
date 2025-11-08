@@ -25,10 +25,6 @@ import NavButton from './NavButton.jsx';
 import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
 import '../../styles/AccountMenu.css';
-
-import Direccionador from '../../utils/Direccionador';
-import CiudadanBadge from '../CiudadanBadge';
-
 import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
 
@@ -107,6 +103,24 @@ const NavBar = ({ SetIsMenuOpen }) => {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+
+
+
+
+    const allowedSections = ["clubs", "legal", "membresias", "market", "contenidos", "cursos", "herramientas","eventos", "comunidad", "gana"];
+    const segments = location.pathname.split('/').filter(Boolean); // elimina entradas vacías
+    const firstSegment = (segments[0] || '').toLowerCase();
+    if (allowedSections.includes(firstSegment)) {
+      // setea activeTab con el mismo formato que usa NavButton (sin slash)
+      setActiveTab(firstSegment);
+      // también sincroniza lastRoute para consistencia con handleNavigation
+      setLastRoute(`/${firstSegment}`);
+    }else if (location.pathname === '/' || location.pathname.startsWith('/info/')) {
+      // si estamos en home o info, limpiamos
+      setActiveTab('');
+      setLastRoute('');
+    }
+
   }, []);
 
   useEffect(() => {

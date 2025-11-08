@@ -63,30 +63,35 @@ const ClubConsumoBar = ({LocalPlayer, afiliaconsumo}) => {
               variant="body1"
               sx={{ color: "#184d27", mb: 1.5, lineHeight: 1.45 }}
             >
-              ¿Cansado de ser estigmatizado o segregado por tu consumo de Cannabis?
+              ¿Cuentas con un espacio en donde recibir de forma cómoda y segura a usuarios de la red para que realicen consumo recreativo?
             </Typography>
 
             <Typography
               variant="body1"
               sx={{ color: "#184d27", mb: 1.5, lineHeight: 1.45 }}
             >
-              ¿Te enfrentas a problemas incluso en tu casa o tienes que esconderte o
-              pasar incomodidades para consumir?
+              ¿Realizas actividades económicas periféricas a la industria de cannabis como pueden ser cocina, entretenimiento, formación, etc.?
             </Typography>
 
             <Typography
               variant="body1"
               sx={{ color: "#184d27", mb: 1.5, lineHeight: 1.45 }}
             >
-              ¿O simplemente buscando nuevos espacios y comunidades para compartir
-              tu consumo?
+              AHORA PUEDES ABRIR TU CLUB Y AFILIARLO A LA RED MARIHUANAS.CLUB 
+            </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{ color: "#184d27", mb: 1.5, lineHeight: 1.45 }}
+            >
+              Y MONETIZAR TU SOLIDARIDAD Y COMUNIDAD 4:20. 
             </Typography>
 
             <Typography
               variant="body1"
               sx={{ color: "#184d27", mt: 0, lineHeight: 1.5 }}
             >
-              Adquiere tu membresía de la red de clubs{" "}
+              Afiliar tu club de consumo no tiene costo, solo se requiere que hagas 10% de descuento en sus consumos en tu club a todos los usuarios de la red{" "}
               <Link
                 href="http://marihuanas.club"
                 target="_blank"
@@ -96,13 +101,16 @@ const ClubConsumoBar = ({LocalPlayer, afiliaconsumo}) => {
               >
                 marihuanas.club
               </Link>{" "}
-              y además de obtener acceso al directorio de espacios compartidos por
-              otros usuarios para consumo comunitario autogestionado de Cannabis y
-              otras actividades relacionadas en ambientes seguros y con protección
-              jurídica, obtén <strong>10% de descuento</strong> en tus consumos en
-              los clubs de la red, además de diversas herramientas digitales desde
-              nuestra app.
+              con membresía vigente (se identifican mediante un qr que scanneas desde la app), si quieres involucrarte más y remunerar tu esfuerzo puedes adquirir tu kit de jardinero y además integrarte como club de cultivo.
             </Typography>
+
+            <Typography
+              variant="body1"
+              sx={{ color: "#184d27", mb: 1.5, lineHeight: 1.45 }}
+            >
+              Entre más actividades haces más ganas !! 
+            </Typography>
+
           </Box>
 
           {/* Columna de emoji + micro-animación (oculta en pantallas chicas) */}

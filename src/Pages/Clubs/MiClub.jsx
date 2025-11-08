@@ -6,12 +6,12 @@ import { useAuth0 } from '@auth0/auth0-react';
 import InfoMiClub from '../../components/Clubs/InfoMiClub.jsx';
 import Bitacora from '../../components/Clubs/Bitacora.jsx';
 import Documentos from '../../components/Clubs/Documentos.jsx';
-import MisPlantas from '../../components/Clubs/MisPlantas.jsx';
+import MisPlantas from '../../components/Clubs/MisPlantas/index.jsx';
 
 const MiClub = () => {
   const jardinero = false;
   const location = useLocation();
-  const { isLoading } = useAuth0();
+  const { user, isLoading } = useAuth0();
 
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
@@ -46,6 +46,7 @@ const MiClub = () => {
   
     // sincroniza tabIndex con la URL de prueba (usa includes para detectar subrutas)
     useEffect(() => {
+      console.log('aver',user);
       const path = (location.pathname || '').toLowerCase();
   
       if (path.includes(`${basePrueba}/info`)) setTabIndex(0);
@@ -80,7 +81,7 @@ const MiClub = () => {
               {tabIndex === 0 && <InfoMiClub />}
               {tabIndex === 1 && <Bitacora />}
               {tabIndex === 2 && <Documentos />}
-              {tabIndex === 3 && <MisPlantas />}
+              {tabIndex === 3 && <MisPlantas user={user} />}
             </div>
           </div>
         </div>
