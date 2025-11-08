@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Button,
   Grid,
   Box,
   Dialog,
@@ -12,7 +11,6 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import headerImage from "../../assets/tiposclubs.png";
 import kitImage from "../../assets/kitjardinero.png";
-import { useNavigate } from "react-router-dom";
 import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
 import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
 import afiliaconsumo from "../../assets/afiliaconsumo.mp4";
@@ -35,229 +33,110 @@ const TiposClub = () => {
   const handleCloseKitModal = () => setOpenKitModal(false);
   const handleOpenKitModal = () => setOpenKitModal(true);
 
-  
-// ------------------------------
-// Reemplazar extractImageUrl + useEffect
-// ------------------------------
-
-const extractImageUrl = (field, envBaseFallback) => {
-  if (!field) return null;
-
-  let url = null;
-  try {
-    if (typeof field === "string") {
-      url = field;
-    } else if (field.data && Array.isArray(field.data) && field.data.length > 0) {
-      url = field.data[0]?.attributes?.url || field.data[0]?.url || null;
-    } else if (field.data && field.data.attributes) {
-      url = field.data.attributes.url || null;
-    } else if (field.attributes && field.attributes.url) {
-      url = field.attributes.url;
-    } else if (field.url) {
-      url = field.url;
-    }
-  } catch (e) {
-    console.warn("[kit][debug] error extrayendo url:", e);
-    url = null;
-  }
-
-  if (!url) return null;
-
-  if (url.startsWith("/")) {
-    const base = envBaseFallback || window.location.origin;
-    return `${base}${url}`;
-  }
-  return url;
-};
-
   useEffect(() => {
-    const dirx = process.env.REACT_APP_STRAPI_URL + '/api/kitjardineros?populate=*';
-    const uniq = [dirx];
-    console.log("Endpoints usados:", uniq);
-
-    async function fetchItems() {
-      setLoadingItems(true);
-      setErrorItems(null);
-
-      let parsed = [];
-      let foundUrl = null;
-
-      for (const url of uniq) {
-        try {
-          const res = await fetch(url, { method: "GET", mode: "cors" });
-          if (!res.ok) {
-            continue;
-          }
-
-          const text = await res.text();
-          let json = null;
-          try {
-            json = text ? JSON.parse(text) : null;
-          } catch (jerr) {
-            continue;
-          }
-
-          // Caso Strapi: array en json.data
-          if (Array.isArray(json.data)) {
-            //console.log('⁉️⁉️⁉️⁉️aca si');
-            parsed = json.data.map((d) => d.attributes || d);
-          }
-          // Caso Strapi: json.data con attributes que contienen una colección
-          
-          // Fallback: buscar primer array en el JSON
-          else {
-            const possible = Object.values(json).find((v) => Array.isArray(v));
-            if (Array.isArray(possible)) parsed = possible;
-          }
-
-          foundUrl = url;
-          break; // usamos este endpoint válido
-        } catch (err) {
-          console.error("[kit] error fetch a", url, err);
-          continue;
-        }
-      } // end for
-
-      if (!foundUrl) {
-        setErrorItems(
-          "No se encontró endpoint válido (revisa REACT_APP_STRAPI_URL, CORS o que la ruta /api/kitjardineros esté disponible). Mira la consola."
-        );
-        setKitItems([]);
-        setLoadingItems(false);
-        return;
-      }
-
-      // 🪴 Filtrar solo los items con pack === "jardinero"
-      parsed = parsed.filter((it) => it.pack === "jardinero");
-
-      const envBaseForImages =
-        (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "") ||
-        window.location.origin;
-      const normalized = (parsed || []).map((it) => {
-        const imageField = it.imagen ?? it.imagenes ?? it.image ?? null;
-        const imagenUrl = extractImageUrl(imageField, envBaseForImages);
-        return {
-          cantidad: it.cantidad ?? it.Cantidad ?? 0,
-          nombre: it.nombre ?? it.name ?? it.titulo ?? "",
-          texto: it.texto ?? it.descripcion ?? it.description ?? "",
-          precio: it.precio ?? null,
-          imagenUrl,
-          id: it.id ?? Math.random().toString(36).slice(2, 9),
-        };
-      });
-
-    setKitItems(normalized);
+    // No se realizan llamadas a endpoints desde este componente.
+    // Dejamos el estado listo para que la UI funcione sin backend.
     setLoadingItems(false);
-  }
-
-  fetchItems();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
-
+    setErrorItems(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <>
-    <Box sx={{ backgroundColor: "#f9fdf9", color: "#1a1a1a", pb: 8 }}>
-      {/* Imagen Full Width */}
-      <Box
-        component={motion.div}
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2 }}
-        sx={{
-          position: "relative",
-          width: "100%",
-          height: { xs: 260, md: 420 },
-          overflow: "hidden",
-        }}
-      >
+      <Box sx={{ backgroundColor: "#f9fdf9", color: "#1a1a1a", pb: 8 }}>
+        {/* Imagen Full Width */}
         <Box
-          component="img"
-          src={headerImage}
-          alt="Encabezado Tipos Club"
+          component={motion.div}
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2 }}
           sx={{
+            position: "relative",
             width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            filter: "saturate(1.05) contrast(1.03)",
+            height: { xs: 260, md: 420 },
+            overflow: "hidden",
           }}
-        />
-      </Box>
+        >
+          <Box
+            component="img"
+            src={headerImage}
+            alt="Encabezado Tipos Club"
+            sx={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "saturate(1.05) contrast(1.03)",
+            }}
+          />
+        </Box>
 
-      <Box
-        component={motion.div}
-        variants={fadeIn}
-        initial="hidden"
-        whileInView="show"
-        sx={{ px: { xs: 2, md: 6 }, mt: { xs: 3, md: 6 } }}
-      >
-
-        <KitJardinero
-          kitImage={kitImage} 
-          loadingItems={loadingItems}
-          errorItems={errorItems}
-          kitItems={kitItems}
-          setOpenKitModal={setOpenKitModal}
-          handleOpenKitModal={handleOpenKitModal}
-          LocalPlayer={LocalPlayer}
-        />
-
+        <Box
+          component={motion.div}
+          variants={fadeIn}
+          initial="hidden"
+          whileInView="show"
+          sx={{ px: { xs: 2, md: 6 }, mt: { xs: 3, md: 6 } }}
+        >
+          <KitJardinero
+            kitImage={kitImage}
+            loadingItems={loadingItems}
+            errorItems={errorItems}
+            kitItems={kitItems}
+            setOpenKitModal={setOpenKitModal}
+            handleOpenKitModal={handleOpenKitModal}
+            LocalPlayer={LocalPlayer}
+          />
           <ClubConsumoTitulo />
-
-          <ClubConsumo 
-            LocalPlayer={LocalPlayer} 
+          <ClubConsumo
+            LocalPlayer={LocalPlayer}
             afiliaconsumo={afiliaconsumo}
           />
-         
-      </Box>
+        </Box>
 
         {/* Modals / cards de modalidades (mantengo tu estructura original) */}
         <Grid container spacing={4} justifyContent="center" maxWidth="1200px" mx="auto">
-          
           <ClubCultivoCard />
-
           <ClubConsumoCard />
-
           <AmbosClubsCard />
         </Grid>
-    </Box>
-
-    <Dialog
-      open={openKitModal}
-      onClose={handleCloseKitModal}
-      maxWidth="lg"
-      fullWidth
-      aria-labelledby="kit-image-dialog"
-    >
-      <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
-        <IconButton onClick={handleCloseKitModal} aria-label="Cerrar">
-          <CloseIcon />
-        </IconButton>
       </Box>
-      <DialogContent
-        id="kit-image-dialog"
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          p: { xs: 1, md: 3 },
-        }}
+
+      <Dialog
+        open={openKitModal}
+        onClose={handleCloseKitModal}
+        maxWidth="lg"
+        fullWidth
+        aria-labelledby="kit-image-dialog"
       >
-        <Box
-          component="img"
-          src={kitImage}
-          alt="Kit Jardinero - ampliada"
+        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}>
+          <IconButton onClick={handleCloseKitModal} aria-label="Cerrar">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <DialogContent
+          id="kit-image-dialog"
           sx={{
-            maxWidth: "100%",
-            maxHeight: { xs: "70vh", md: "80vh" },
-            objectFit: "contain",
-            borderRadius: 2,
-            boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            p: { xs: 1, md: 3 },
           }}
-        />
-      </DialogContent>
-    </Dialog>
-  </>
+        >
+          <Box
+            component="img"
+            src={kitImage}
+            alt="Kit Jardinero - ampliada"
+            sx={{
+              maxWidth: "100%",
+              maxHeight: { xs: "70vh", md: "80vh" },
+              objectFit: "contain",
+              borderRadius: 2,
+              boxShadow: "0 24px 60px rgba(0,0,0,0.45)",
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
