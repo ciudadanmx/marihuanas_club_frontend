@@ -1,7 +1,7 @@
 import React from "react";
-import { Box, Typography, Button, Container } from "@mui/material";
+import { Box, Typography, Container } from "@mui/material";
 import { keyframes } from "@mui/system";
-import leafPattern from "../../../assets/leaf-pattern.png"; // ya importado en assets
+import leafPattern from "../../../assets/leaf-pattern.png";
 import intlGif from "../../../assets/internationalclub.gif";
 
 const floatAnimation = keyframes`
@@ -13,6 +13,12 @@ const floatAnimation = keyframes`
 const swirlAnimation = keyframes`
   0% { transform: rotate(0deg) translateX(0) rotate(0deg); }
   100% { transform: rotate(360deg) translateX(50px) rotate(-360deg); }
+`;
+
+const glowAnimation = keyframes`
+  0% { filter: drop-shadow(0 0 6px #00ff99) drop-shadow(0 0 10px #00ff99); }
+  50% { filter: drop-shadow(0 0 20px #00ff99) drop-shadow(0 0 35px #00ff99); }
+  100% { filter: drop-shadow(0 0 6px #00ff99) drop-shadow(0 0 10px #00ff99); }
 `;
 
 const leavesCount = 14;
@@ -36,7 +42,6 @@ const InternationalHero = () => {
         zIndex: 0,
       }}
     >
-      {/* Hojas (background, zIndex bajo) */}
       {leaves.map((_, i) => (
         <Box
           key={i}
@@ -53,15 +58,13 @@ const InternationalHero = () => {
             transformOrigin: "center",
             pointerEvents: "none",
             zIndex: 0,
-            animation: `${floatAnimation} ${6 + (i % 5) * 2}s ease-in-out infinite alternate,
-                        ${swirlAnimation} ${22 + (i % 7) * 5}s linear infinite`,
+            animation: `${floatAnimation} ${6 + (i % 5) * 2}s ease-in-out infinite alternate, ${swirlAnimation} ${22 + (i % 7) * 5}s linear infinite`,
             willChange: "transform, opacity",
             filter: "drop-shadow(0 6px 10px rgba(0,0,0,0.6))",
           }}
         />
       ))}
 
-      {/* Contenido del hero (visible encima de las hojas) */}
       <Container
         sx={{
           position: "relative",
@@ -75,39 +78,39 @@ const InternationalHero = () => {
           pt: { xs: 8, md: 10 },
         }}
       >
-        {/* GIF centrado encima del título, ajustado a mitad de la subida anterior */}
         <Box
-          component="img"
-          src={intlGif}
-          alt="InternationaClub GIF"
-          aria-hidden
-          sx={{
-            position: "absolute",
-            top: { xs: -65, sm: -80, md: -105 }, // a mitad de la subida anterior
-            left: "50%",
-            transform: "translateX(-50%)",
-            maxHeight: { xs: 60, sm: 110, md: 160 },
-            width: "auto",
-            zIndex: 3,
-            pointerEvents: "none",
-            userSelect: "none",
-            filter: "drop-shadow(0 8px 20px rgba(0,0,0,0.6))",
-          }}
-        />
+  component="img"
+  src={intlGif}
+  alt="InternationaClub GIF"
+  aria-hidden
+  sx={{
+    position: "absolute",
+    // solo sube a partir de 1200 px
+    top: { xs: 10, sm: 10, md: 10, lg: -105 },
+    left: "50%",
+    transform: "translateX(-50%)",
+    maxHeight: { xs: 140, sm: 150, md: 170, lg: 180 },
+    width: "auto",
+    zIndex: 3,
+    pointerEvents: "none",
+    userSelect: "none",
+    animation: `${glowAnimation} 4s ease-in-out infinite`,
+  }}
+/>
 
-        <Typography
-          variant="h3"
-          component="h1"
-          sx={{
-            fontWeight: 900,
-            mt: { xs: 3, md: 5 },
-            mb: 2,
-            color: "#e0ff9f",
-            textShadow: "0 0 20px #00ff99, 0 0 28px rgba(0,255,150,0.15)",
-          }}
-        >
-          🌍 Internacionalización Marihuanas.Club
-        </Typography>
+<Typography
+  variant="h3"
+  component="h1"
+  sx={{
+    fontWeight: 900,
+    mt: { xs: 14, sm: 15, md: 20, lg: 6 }, // se baja más en móvil, tablet y rango medio; sube en escritorio grande
+    mb: 2,
+    color: "#e0ff9f",
+    textShadow: "0 0 20px #00ff99, 0 0 28px rgba(0,255,150,0.15)",
+  }}
+>
+  🌍 Internacionalización Marihuanas.Club
+</Typography>
 
         <Typography
           variant="h6"
@@ -122,7 +125,6 @@ const InternationalHero = () => {
           Conecta tu club cannábico con una red internacional 🌿 — tecnología, trazabilidad y
           soporte legal adaptado a tu país.
         </Typography>
-
       </Container>
     </Box>
   );

@@ -35,6 +35,8 @@ const Internacional = () => {
           px: 2,
           borderTopLeftRadius: { xs: 0, md: 12 },
           borderTopRightRadius: { xs: 0, md: 12 },
+          mt: -4,
+          mb: -7,
         }}
       >
         <Container maxWidth="md" sx={{ textAlign: "left" }}>
