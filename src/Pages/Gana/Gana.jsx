@@ -216,7 +216,7 @@ export default function Gana() {
   const containerH = H + 3 * (H * 0.75) + HALF_H;
 
   return (
-  <Box sx={{ background: '#0f1f17', py: 6, px: 2, mt: '-100px', overflow: 'hidden' }}>
+  <Box sx={{ background: '#0f1f17', py: 6, px: 2, mt: '-100px', mb: '-42px', overflow: 'hidden' }}>
     <style>{animationStyles}</style>
     
     {/* Contenedor externo que permite scroll horizontal en móvil */}
