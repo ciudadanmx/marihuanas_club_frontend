@@ -8,11 +8,11 @@ import StatusCard from "./StatusCard";
 import EmptyState from "./EmptyState";
 import PlantCard from "./PlantCard";
 import { firstImageFromMedia, formatFechaEnEsp, COLORS, PLACEHOLDER, cardVariants, STRAPI_BASE } from "./utils";
-import { useRoles } from "../../../Contexts/RolesContext.jsx"; // <- AJUSTA esta ruta a donde tengas el provider
+import { useRoles } from "../../../Contexts/RolesContext.jsx";
 
 const MisPlantas = () => {
   const navigate = useNavigate();
-  const { userData, fetchRolesYMembresia } = useRoles(); // userData viene del contexto RolesProvider
+  const { userData } = useRoles(); // userData viene del contexto RolesProvider
 
   // Normalizar email (variantes posibles)
   const userEmail = userData?.email ?? userData?.usuario_email ?? null;
