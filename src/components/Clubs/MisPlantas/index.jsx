@@ -1,3 +1,4 @@
+// src/components/Clubs/MisPlantas/index.jsx
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import axios from "axios";
 import { Box, Grid, Typography, Button, CircularProgress } from "@mui/material";
@@ -81,8 +82,10 @@ const MisPlantas = ({ user }) => {
           plantasData = entries.map((e) => {
             const attrs = e.attributes ?? {};
             const media = attrs.media ?? null;
-            const imagenUrl = firstImageFromMedia(media);
-            return { id: e.id, ...attrs, imagenUrl };
+            const imagenUrl = firstImageFromMedia(media) || attrs.imagenUrl || null;
+            // Normalize keys: some objetos tienen 'codigo', otros 'codigoplanta'
+            const codigo = attrs.codigoplanta ?? attrs.codigo ?? attrs.id ?? null;
+            return { id: e.id, ...attrs, imagenUrl, codigo };
           });
         } else {
           console.error("Error obteniendo plantas:", resPlantas.reason || resPlantas);
@@ -110,13 +113,15 @@ const MisPlantas = ({ user }) => {
           bitData = bentries.map((b) => {
             const attrs = b.attributes ?? {};
             const media = attrs.media ?? null;
-            const imagenUrl = firstImageFromMedia(media);
-            return { id: b.id, ...attrs, imagenUrl, createdAt: b.attributes?.createdAt ?? null };
+            const imagenUrl = firstImageFromMedia(media) || attrs.imagenUrl || null;
+            const codigo = attrs.codigoplanta ?? attrs.codigo ?? null;
+            return { id: b.id, ...attrs, imagenUrl, codigo, createdAt: attrs.createdAt ?? b.attributes?.createdAt ?? null };
           });
         } else {
           console.error("Error obteniendo bitácoras:", resBit.reason || resBit);
         }
 
+        // linkVideos
         lv = (plantasData.find((p) => !!p.linkvideos)?.linkvideos) || plantasData[0]?.linkvideos || null;
 
         if (!cancelled) {
@@ -188,7 +193,7 @@ const MisPlantas = ({ user }) => {
   const latestBitByCodigo = useMemo(() => {
     const map = new Map();
     for (const b of bitacoras) {
-      const code = b?.codigoplanta;
+      const code = b?.codigoplanta ?? b?.codigo ?? b?.codigo_planta ?? b?.codigoPlanta ?? null;
       if (!code) continue;
       if (!map.has(code)) map.set(code, b);
     }
@@ -204,7 +209,11 @@ const MisPlantas = ({ user }) => {
       const colorCandidate = parts[parts.length - 1]?.toLowerCase?.() ?? null;
       if (!colorCandidate) continue;
       if (!Object.keys(slots).includes(colorCandidate)) continue;
-      const plantaObj = plantas.find((p) => String(p.codigoplanta) === String(cod) && (p.viva === true || String(p.viva) === "true"));
+      const plantaObj = plantas.find(
+        (p) =>
+          (String(p.codigoplanta ?? p.codigo ?? p.codigo_planta ?? p.codigoPlanta ?? p.id) === String(cod)) &&
+          (p.viva === true || String(p.viva) === "true")
+      );
       if (!plantaObj) continue;
       if (!slots[colorCandidate]) {
         slots[colorCandidate] = {
@@ -219,19 +228,55 @@ const MisPlantas = ({ user }) => {
     return slots;
   }, [latestBitByCodigo, plantas]);
 
-  const gridItems = useMemo(() => {
-    return COLORS.map((c) => {
-      const slot = colorSlots[c.key];
-      if (!slot) return null;
-      return {
-        colorKey: c.key,
-        colorLabel: c.label,
-        bg: c.bg,
-        accent: c.accent,
-        ...slot,
-      };
-    }).filter(Boolean).slice(0, 6);
+  // items calculados a partir de colorSlots
+  let gridItems = useMemo(() => {
+    return Object.keys(colorSlots)
+      .map((k) => {
+        const slot = colorSlots[k];
+        if (!slot) return null;
+        const colorMeta = COLORS.find((c) => c.key === k) ?? { label: k, bg: "", accent: "#000" };
+        return {
+          colorKey: k,
+          colorLabel: colorMeta.label ?? slot.planta?.color ?? k,
+          bg: colorMeta.bg,
+          accent: colorMeta.accent,
+          ...slot,
+        };
+      })
+      .filter(Boolean)
+      .slice(0, 6);
   }, [colorSlots]);
+
+  // FALLBACK: si gridItems está vacío pero hay plantas, generamos tarjetas básicas desde plantas
+  const fallbackGridItems = useMemo(() => {
+    if (gridItems.length > 0) return null;
+    if (!plantas || plantas.length === 0) return null;
+
+    console.log("MisPlantas: generando gridItems fallback desde plantas (no hay bitácoras)");
+
+    return plantas
+      .filter((p) => p?.viva === true || String(p?.viva) === "true")
+      .slice(0, 6)
+      .map((p) => {
+        // intentar inferir código y color
+        const codigo = p.codigoplanta ?? p.codigo ?? p.id ?? `p-${p.id}`;
+        const colorKey = (p.color ?? p.colorName ?? "").toLowerCase?.() ?? null;
+        const matchedColor = COLORS.find((c) => c.key === colorKey) ?? null;
+        return {
+          codigoplanta: codigo,
+          imagenUrl: p.imagenUrl || PLACEHOLDER,
+          planta: p,
+          registro: null,
+          colorKey: matchedColor?.key ?? "plata",
+          colorLabel: matchedColor?.label ?? (p.color ?? "Color"),
+          bg: matchedColor?.bg ?? "linear-gradient(135deg,#e6e9ee,#bfc7d6)",
+          accent: matchedColor?.accent ?? "#111",
+        };
+      });
+  }, [gridItems, plantas]);
+
+  // Usaremos fallbackGridItems si existe, sino gridItems normal
+  const itemsToRender = (fallbackGridItems && fallbackGridItems.length > 0) ? fallbackGridItems : gridItems;
 
   useEffect(() => {
     console.log("MisPlantas: estado antes de render ->", {
@@ -239,6 +284,7 @@ const MisPlantas = ({ user }) => {
       error,
       plantasCount: plantas.length,
       gridItemsCount: gridItems.length,
+      fallbackGridItemsCount: fallbackGridItems ? fallbackGridItems.length : 0,
       bitacorasCount: bitacoras.length,
       userStrapi,
       fechaProximaCosecha,
@@ -246,9 +292,9 @@ const MisPlantas = ({ user }) => {
       secado,
       linkVideos,
     });
-  }, [loading, error, plantas, gridItems, bitacoras, userStrapi, fechaProximaCosecha, curado, secado, linkVideos]);
+  }, [loading, error, plantas, gridItems, fallbackGridItems, bitacoras, userStrapi, fechaProximaCosecha, curado, secado, linkVideos]);
 
-  const sinPlantas = plantas.length === 0 && gridItems.length === 0;
+  const sinPlantas = plantas.length === 0 && (!itemsToRender || itemsToRender.length === 0);
 
   return (
     <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 5 } }}>
@@ -281,8 +327,9 @@ const MisPlantas = ({ user }) => {
           </Box>
 
           <Grid container spacing={3}>
-            {gridItems.map((g) => (
-              <PlantCard key={g.codigoplanta} g={g} navigate={navigate} />
+            {itemsToRender.map((g) => (
+              // PlantCard espera prop g y navigate
+              <PlantCard key={g.codigoplanta ?? g.planta?.id ?? Math.random()} g={g} navigate={navigate} />
             ))}
           </Grid>
         </>
