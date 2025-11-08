@@ -98,12 +98,6 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
           </Box>
         ))}
 
-        {/* Dark mode toggle spans 2 columns */}
-        <Box gridColumn="1 / span 2" display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-          <Typography variant="body2">Modo Oscuro (beta)</Typography>
-          <FormControlLabel control={<Switch />} label="" />
-        </Box>
-
         {/* Login/Logout spans 2 columns */}
         <Box gridColumn="1 / span 2">
           {isAuthenticated ? (
