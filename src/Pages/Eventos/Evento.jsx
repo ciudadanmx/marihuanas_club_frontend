@@ -10,9 +10,19 @@ import {
   CircularProgress,
   useMediaQuery,
   Link as MuiLink,
+  Button,
+  Menu,
+  MenuItem,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { motion } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import DownloadIcon from '@mui/icons-material/Download';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 const StyledCard = styled(Card)(() => ({
   position: 'relative',
@@ -53,6 +63,8 @@ export default function Evento() {
   const { slug } = useParams();
   const [evento, setEvento] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const isMenuOpen = Boolean(anchorEl);
   const isMobile = useMediaQuery('(max-width:600px)');
   const baseURL = process.env.REACT_APP_STRAPI_URL;
 
@@ -98,7 +110,7 @@ export default function Evento() {
 
   const {
     titulo,
-    descripcion,
+    description,
     url,
     creador,
     portada,
@@ -131,8 +143,35 @@ export default function Evento() {
       ? creador.data.attributes.nombre
       : null;
 
-  // Normalizar descripción
-  const rawDesc = descripcion?.data ?? descripcion;
+  // Normalizar descripción (ahora la convertimos a Markdown respetando saltos de línea)
+  const rawDesc = description?.data ?? description;
+
+  function blocksToMarkdown(blocks) {
+    // Strapi rich text suele venir como array de bloques con children
+    try {
+      if (!Array.isArray(blocks)) return String(blocks ?? '');
+      return blocks
+        .map(b => {
+          if (b.type === 'paragraph') {
+            // unir los textos de los children respetando saltos
+            const text = (b.children || []).map(c => c.text || '').join('');
+            return text;
+          }
+          // manejar otros tipos sencillos
+          if (b.type === 'heading') {
+            const text = (b.children || []).map(c => c.text || '').join('');
+            return `# ${text}`;
+          }
+          // fallback: concatenar todo el contenido textual
+          return (b.children || []).map(c => c.text || '').join('');
+        })
+        .join('\n\n');
+    } catch (e) {
+      return String(blocks ?? '');
+    }
+  }
+
+  const markdownDesc = typeof rawDesc === 'string' ? rawDesc : blocksToMarkdown(rawDesc);
 
   // Normalizar colaboradores (puede venir como objeto single o array)
   let collabs = [];
@@ -153,6 +192,79 @@ export default function Evento() {
   const portadaURL = portada?.data?.attributes?.url
     ? `${baseURL}${portada.data.attributes.url}`
     : null;
+
+  // --- Funciones para calendarios ---
+  const openMenu = (e) => setAnchorEl(e.currentTarget);
+  const closeMenu = () => setAnchorEl(null);
+
+  function formatForGoogle(date) {
+    // google acepta YYYYMMDDTHHMMSSZ
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  }
+
+  function buildDates() {
+    // construir fechas start/end como Date
+    const start = fecha_inicio ? new Date(`${fecha_inicio}T${hora_inicio ?? '00:00'}`) : null;
+    let end = null;
+    if (fecha_fin) {
+      end = new Date(`${fecha_fin}T${hora_fin ?? hora_inicio ?? '23:59'}`);
+    } else if (start) {
+      end = new Date(start.getTime() + 1000 * 60 * 60 * 2); // +2 horas por defecto
+    }
+    return { start, end };
+  }
+
+  function openGoogleCalendar() {
+    const { start, end } = buildDates();
+    const dates = start && end ? `${formatForGoogle(start)}/${formatForGoogle(end)}` : '';
+    const details = markdownDesc || '';
+    const location = `${ciudad ?? ''}${estado ? ', ' + estado : ''}`;
+    const url = `https://calendar.google.com/calendar/r/eventedit?text=${encodeURIComponent(titulo || '')}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+    window.open(url, '_blank');
+    closeMenu();
+  }
+
+  function openOutlookWeb() {
+    // Outlook web (Office 365) admite rru=addevent con startdt/enddt en ISO
+    const { start, end } = buildDates();
+    const startISO = start ? start.toISOString() : '';
+    const endISO = end ? end.toISOString() : '';
+    const url = `https://outlook.live.com/owa/?rru=addevent&startdt=${encodeURIComponent(startISO)}&enddt=${encodeURIComponent(endISO)}&subject=${encodeURIComponent(titulo || '')}&body=${encodeURIComponent(markdownDesc || '')}&location=${encodeURIComponent(ciudad || '')}`;
+    window.open(url, '_blank');
+    closeMenu();
+  }
+
+  function downloadICS() {
+    const { start, end } = buildDates();
+    const dtStart = start ? start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z' : '';
+    const dtEnd = end ? end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z' : '';
+    const uid = `${Date.now()}@evento`;
+    const description = (markdownDesc || '').replace(/\n/g, '\\n');
+    const icsLines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//MiProyecto//Eventos//ES',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `SUMMARY:${titulo || ''}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
+      `DESCRIPTION:${description}`,
+      `LOCATION:${ciudad || ''}${estado ? ', ' + estado : ''}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ];
+    const icsContent = icsLines.join('\r\n');
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${(titulo || 'evento').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    closeMenu();
+  }
 
   return (
     <Box sx={{ p: isMobile ? 2 : 6 }}>
@@ -214,20 +326,45 @@ export default function Evento() {
               </Typography>
             )}
 
-            {/* Descripción */}
+            {/* Botón para agregar a calendarios */}
+            <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+                <Button
+                  variant="contained"
+                  startIcon={<CalendarTodayIcon />}
+                  onClick={openMenu}
+                  sx={{
+                    background: 'linear-gradient(90deg,#7fff8d,#b8ff57)',
+                    color: '#1a1a1a',
+                    fontWeight: '700',
+                    borderRadius: 3,
+                    px: 3,
+                    py: 1,
+                    boxShadow: '0 6px 18px #7fff8a66',
+                  }}
+                >
+                  Agregar a calendario
+                </Button>
+              </motion.div>
+
+              <Tooltip title="Abrir Google Calendar">
+                <IconButton onClick={openGoogleCalendar} sx={{ bgcolor: '#222', color: '#7fff8d' }}>
+                  <OpenInNewIcon />
+                </IconButton>
+              </Tooltip>
+
+              <Menu anchorEl={anchorEl} open={isMenuOpen} onClose={closeMenu}>
+                <MenuItem onClick={openGoogleCalendar}>Google Calendar (abrir)</MenuItem>
+                <MenuItem onClick={openOutlookWeb}>Outlook / Office365 (web)</MenuItem>
+                <MenuItem onClick={downloadICS}>
+                  Descargar archivo .ics <DownloadIcon sx={{ ml: 1 }} />
+                </MenuItem>
+              </Menu>
+            </Box>
+
+            {/* Descripción (ahora respetando markdown y saltos de línea) */}
             <Box sx={{ mt: 3 }}>
-              {typeof rawDesc === 'string' ? (
-                <Typography variant="body1" sx={{ color: '#ddd', mb: 1 }}>
-                  {rawDesc}
-                </Typography>
-              ) : (
-                Array.isArray(rawDesc) &&
-                rawDesc.map((block, i) => (
-                  <Typography key={i} variant="body1" sx={{ color: '#ddd', mb: 1 }}>
-                    {block.children.map(c => c.text).join('')}
-                  </Typography>
-                ))
-              )}
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdownDesc || ''}</ReactMarkdown>
             </Box>
 
             {/* Fechas adicionales */}
