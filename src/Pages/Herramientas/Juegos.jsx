@@ -165,6 +165,7 @@ export default function Juegos() {
                       '&:hover': { backgroundColor: '#a5ff30' },
                       borderRadius: '12px',
                       px: 3,
+                      py:3,
                       boxShadow: '0 0 10px #91ff49',
                     }}
                   >
