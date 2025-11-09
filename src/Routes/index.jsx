@@ -50,6 +50,7 @@ import FloratecaLayout from '../components/Florateca/FloratecaLayout.jsx';
 import Juegos from '../Pages/Herramientas/Juegos.jsx';
 import JuegoStatic from '../Pages/Herramientas/JuegoStatic';
 import KitAutoCultivo from '../Pages/Herramientas/KitAutoCultivo.jsx';
+import Maria from '../Pages/Herramientas/Maria.jsx';
 //Eventos
 import EventosPage from '../components/Eventos/index.jsx';
 import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
@@ -130,6 +131,7 @@ const Rutas = () => (
     <Route path="/callback" element={<CallbackPage />} />
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />
+    <Route path="/herramientas/maria" element={<Maria />} />
     <Route path="/herramientas/kitautocultivo" element={<KitAutoCultivo />} />
     <Route path="/herramientas" element={<HerramientasPage />} />
     <Route path="/herramientas/florateca" element={<FloratecaLayout />}>
