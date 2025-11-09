@@ -11,11 +11,18 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InfoIcon from '@mui/icons-material/Info';
 import { motion } from 'framer-motion';
 import MariaGif from '../../assets/maria.gif';
+import { useNavigate } from 'react-router-dom';
 
 const MotionBox = motion(Box);
 
 export default function MariaDescription() {
   const isMobile = useMediaQuery('(max-width:600px)');
+
+  const navigate = useNavigate();
+
+  const handleAffiliate = () => {
+    navigate('/membresias');
+  };
 
     return (
     <Box
@@ -101,7 +108,7 @@ export default function MariaDescription() {
             <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
               <Button
                 variant="contained"
-                href="/registro"
+                onClick={handleAffiliate}
                 sx={{
                   background: 'linear-gradient(90deg,#A6FF00,#00FFD1)',
                   color: '#051322',
