@@ -23,6 +23,8 @@ import remarkGfm from 'remark-gfm';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import DownloadIcon from '@mui/icons-material/Download';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import RoomIcon from '@mui/icons-material/Room';
 
 const StyledCard = styled(Card)(() => ({
   position: 'relative',
@@ -34,27 +36,165 @@ const StyledCard = styled(Card)(() => ({
   boxShadow: '0 0 20px #86ff81aa',
 }));
 
-function EventoLocacion({ ciudad, estado }) {
+/**
+ * Helper que normaliza coords:
+ * - acepta { lat, lng } con string o number
+ * - acepta string JSON '{"lat":...,"lng":...}'
+ * - devuelve { lat: Number, lng: Number } o null si no válidas
+ */
+function parseCoords(val) {
+  if (!val) return null;
+  try {
+    // si viene como string que parece JSON
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      // si es algo como "lat,lng"
+      if (/^-?\d+(\.\d+)?\s*,\s*-?\d+(\.\d+)?$/.test(trimmed)) {
+        const [latS, lngS] = trimmed.split(',').map(s => s.trim());
+        const latN = Number(latS), lngN = Number(lngS);
+        if (!Number.isNaN(latN) && !Number.isNaN(lngN)) return { lat: latN, lng: lngN };
+      }
+      // intentar parsear JSON
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (parsed && (parsed.lat !== undefined || parsed.lng !== undefined)) {
+          const latN = Number(parsed.lat);
+          const lngN = Number(parsed.lng);
+          if (!Number.isNaN(latN) && !Number.isNaN(lngN)) return { lat: latN, lng: lngN };
+        }
+      } catch (e) {
+        // no es JSON, continuar
+      }
+    }
+
+    // si es objeto
+    if (typeof val === 'object') {
+      const latN = Number(val.lat ?? val.latitude ?? val.latitud);
+      const lngN = Number(val.lng ?? val.lon ?? val.longitude ?? val.long);
+      if (!Number.isNaN(latN) && !Number.isNaN(lngN)) return { lat: latN, lng: lngN };
+    }
+  } catch (e) {
+    // ignore
+  }
+  return null;
+}
+
+function EventoLocacion({ direccionObj, ciudad, estado }) {
+  // direccionObj puede ser:
+  // - null
+  // - { direccion: 'texto', coords: {lat,lng} } (atributos de Strapi)
+  // - o cualquier otra forma retornada por Strapi
+  const attrs = direccionObj ?? {};
+  // Strapi a veces entrega como objeto en data.attributes
+  const attrObj = attrs.attributes ?? attrs;
+  const addressText =
+    attrObj?.direccion ||
+    attrObj?.address ||
+    (ciudad || estado ? `${ciudad ?? ''}${estado ? ', ' + estado : ''}` : null);
+
+  const coordsCandidate = attrObj?.coords || attrObj?.location || (attrObj?.lat && attrObj?.lng ? { lat: attrObj.lat, lng: attrObj.lng } : null);
+
+
+  const coords = parseCoords(coordsCandidate);
+
+  const mapsQuery = coords ? `${coords.lat},${coords.lng}` : encodeURIComponent(addressText || '');
+  const mapsUrl = coords
+    ? `https://www.google.com/maps/search/?api=1&query=${coords.lat},${coords.lng}`
+    : `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+  const handleCopy = async () => {
+    if (!coords) return;
+    const text = `${coords.lat}, ${coords.lng}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      // Feedback mínimo: usar alert para compatibilidad
+      alert(`Coordenadas copiadas: ${text}`);
+    } catch {
+      alert(`No se pudo copiar. Copia manualmente: ${text}`);
+    }
+  };
+
   return (
     <Box mt={4}>
       <Typography variant="h6" sx={{ color: '#91ff49', mb: 1 }}>
         Ubicación del evento:
       </Typography>
-      <Box
-        sx={{
-          width: '100%',
-          height: 300,
-          bgcolor: '#333',
-          borderRadius: 2,
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          color: '#777',
-          border: '1px dashed #555',
-        }}
-      >
-        <Typography>Mapa de {ciudad}, {estado}</Typography>
-      </Box>
+
+      {coords ? (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Box
+            sx={{
+              width: '100%',
+              height: { xs: 220, sm: 320 },
+              borderRadius: 2,
+              overflow: 'hidden',
+              border: '1px solid #444',
+              boxShadow: '0 6px 18px #00000088',
+            }}
+          >
+            {/* Google Maps embed centrado en las coords */}
+            <iframe
+              title="Mapa del evento"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              allowFullScreen
+              src={`https://www.google.com/maps?q=${coords.lat},${coords.lng}&z=15&output=embed`}
+            />
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+            <Typography sx={{ color: '#ccc' }}>
+              <RoomIcon sx={{ verticalAlign: 'middle', mr: 0.5 }} /> {addressText ?? `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`}
+            </Typography>
+
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<OpenInNewIcon />}
+              onClick={() => window.open(mapsUrl, '_blank')}
+              sx={{ color: '#b8ff57', borderColor: '#4bff6a' }}
+            >
+              Abrir en Google Maps
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        // fallback si no hay coords: mostramos placeholder o texto
+        <Box
+          sx={{
+            width: '100%',
+            height: 300,
+            bgcolor: '#333',
+            borderRadius: 2,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: '#777',
+            border: '1px dashed #555',
+            p: 2,
+            textAlign: 'center',
+          }}
+        >
+          <Box>
+            <Typography sx={{ color: '#bbb', mb: 1 }}>
+              {addressText ? `Dirección: ${addressText}` : 'Ubicación no disponible'}
+            </Typography>
+            {addressText && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<OpenInNewIcon />}
+                onClick={() => window.open(mapsUrl, '_blank')}
+                sx={{ color: '#b8ff57', borderColor: '#4bff6a' }}
+              >
+                Buscar en Google Maps
+              </Button>
+            )}
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 }
@@ -125,6 +265,7 @@ export default function Evento() {
     precio,
     fechas_horarios_adicionales,
     colaboradores,
+    direccion, // <-- aquí viene la relación de direcciones
   } = evento;
 
   // Normalizar URL (puede ser string o relación)
@@ -147,22 +288,18 @@ export default function Evento() {
   const rawDesc = description?.data ?? description;
 
   function blocksToMarkdown(blocks) {
-    // Strapi rich text suele venir como array de bloques con children
     try {
       if (!Array.isArray(blocks)) return String(blocks ?? '');
       return blocks
         .map(b => {
           if (b.type === 'paragraph') {
-            // unir los textos de los children respetando saltos
             const text = (b.children || []).map(c => c.text || '').join('');
             return text;
           }
-          // manejar otros tipos sencillos
           if (b.type === 'heading') {
             const text = (b.children || []).map(c => c.text || '').join('');
             return `# ${text}`;
           }
-          // fallback: concatenar todo el contenido textual
           return (b.children || []).map(c => c.text || '').join('');
         })
         .join('\n\n');
@@ -198,18 +335,16 @@ export default function Evento() {
   const closeMenu = () => setAnchorEl(null);
 
   function formatForGoogle(date) {
-    // google acepta YYYYMMDDTHHMMSSZ
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   }
 
   function buildDates() {
-    // construir fechas start/end como Date
     const start = fecha_inicio ? new Date(`${fecha_inicio}T${hora_inicio ?? '00:00'}`) : null;
     let end = null;
     if (fecha_fin) {
       end = new Date(`${fecha_fin}T${hora_fin ?? hora_inicio ?? '23:59'}`);
     } else if (start) {
-      end = new Date(start.getTime() + 1000 * 60 * 60 * 2); // +2 horas por defecto
+      end = new Date(start.getTime() + 1000 * 60 * 60 * 2);
     }
     return { start, end };
   }
@@ -225,7 +360,6 @@ export default function Evento() {
   }
 
   function openOutlookWeb() {
-    // Outlook web (Office 365) admite rru=addevent con startdt/enddt en ISO
     const { start, end } = buildDates();
     const startISO = start ? start.toISOString() : '';
     const endISO = end ? end.toISOString() : '';
@@ -267,7 +401,7 @@ export default function Evento() {
   }
 
   return (
-    <Box sx={{ p: isMobile ? 2 : 6 }}>
+    <Box sx={{ mt: isMobile ? 0 : "-40px", p: isMobile ? 2 : 6 , mb: "-52px"}}>
       <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <StyledCard>
           {portadaURL && <CardMedia component="img" height="320" image={portadaURL} alt={titulo} />}
@@ -415,8 +549,8 @@ export default function Evento() {
               </Box>
             )}
 
-            {/* Placeholder para localización */}
-            <EventoLocacion ciudad={ciudad} estado={estado} />
+            {/* Localización real: si hay direccion (relación) mostramos coords si existen */}
+            <EventoLocacion direccionObj={direccion?.data ?? direccion} ciudad={ciudad} estado={estado} />
           </CardContent>
         </StyledCard>
       </motion.div>
