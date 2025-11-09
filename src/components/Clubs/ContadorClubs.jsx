@@ -38,7 +38,78 @@ const AnimatedCounter = ({ target }) => {
   );
 };
 
-const ContadorClubs = ({ lugares = 1000, clubs = 50 }) => {
+const ContadorClubs = () => {
+  const [lugares, setLugares] = useState(0);
+  const [clubsCultivo, setClubsCultivo] = useState(0);
+  const [clubsConsumo, setClubsConsumo] = useState(0);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        const url = `${process.env.REACT_APP_STRAPI_URL}/api/clubs?pagination[limit]=1000`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error al consultar Strapi");
+        const data = await res.json();
+
+        if (!data?.data) throw new Error("Datos no válidos de Strapi");
+
+        const activos = data.data.filter((club) => club.attributes.activo === true);
+
+        // Clubs de cultivo (tipo cultivo o ambos)
+        const cultivo = activos.filter((club) => {
+          const t = club.attributes.tipo?.toLowerCase();
+          return t === "cultivo" || t === "ambos";
+        });
+
+        // Clubs de consumo (tipo consumo o ambos)
+        const consumo = activos.filter((club) => {
+          const t = club.attributes.tipo?.toLowerCase();
+          return t === "consumo" || t === "ambos";
+        });
+
+        // Cálculo de lugares disponibles solo en clubs de cultivo válidos
+        const cultivoValidos = cultivo.filter((club) => {
+          const c = club.attributes;
+          return (
+            typeof c.lugares === "number" &&
+            typeof c.miembrosactivos === "number"
+          );
+        });
+
+        const totalLugares = cultivoValidos.reduce((sum, club) => {
+          const { lugares, miembrosactivos } = club.attributes;
+          const disponibles = lugares - miembrosactivos;
+          return disponibles > 0 ? sum + disponibles : sum;
+        }, 0);
+
+        setClubsCultivo(cultivo.length);
+        setClubsConsumo(consumo.length);
+        setLugares(totalLugares);
+      } catch (err) {
+        console.error(err);
+        setError("No se pudieron cargar los datos.");
+      }
+    };
+
+    fetchClubs();
+  }, []);
+
+  if (error) {
+    return (
+      <div
+        style={{
+          textAlign: "center",
+          color: "#b30000",
+          fontFamily: "Poppins, sans-serif",
+          marginTop: "2rem",
+        }}
+      >
+        {error}
+      </div>
+    );
+  }
+
   return (
     <motion.div
       className="text-center font-extrabold text-3xl md:text-5xl"
@@ -46,9 +117,9 @@ const ContadorClubs = ({ lugares = 1000, clubs = 50 }) => {
       animate={{ opacity: 1 }}
       transition={{ duration: 1.2 }}
       style={{
-        color: "#6b00b8", // púrpura oscuro base
+        color: "#5d008f",
         textShadow: `
-          0 0 5px #3a005f,
+          0 0 5px #2a0045,
           0 0 10px #b300ff,
           0 0 20px #cc33ff,
           0 0 35px #ff66ff
@@ -57,13 +128,14 @@ const ContadorClubs = ({ lugares = 1000, clubs = 50 }) => {
         animation: "pulsePurple 2.5s ease-in-out infinite",
       }}
     >
-      <AnimatedCounter target={lugares} /> Lugares en{" "}
-      <AnimatedCounter target={clubs} /> Clubs
+      <AnimatedCounter target={lugares} /> lugares en{" "}
+      <AnimatedCounter target={clubsCultivo} /> clubs de cultivo y{" "}
+      <AnimatedCounter target={clubsConsumo} /> clubs de consumo
       <style>{`
         @keyframes pulsePurple {
           0%, 100% {
             text-shadow:
-              0 0 5px #3a005f,
+              0 0 5px #2a0045,
               0 0 10px #b300ff,
               0 0 20px #cc33ff,
               0 0 35px #ff66ff;
