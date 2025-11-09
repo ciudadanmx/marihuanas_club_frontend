@@ -130,7 +130,7 @@ export default function Juegos() {
   const handleNav = (name) => () => navigate(`/juega/${name}`);
 
   return (
-    <Box sx={{ p: 4, backgroundColor: '#1a261a', minHeight: '100vh' }}>
+    <Box sx={{ p: 4, backgroundColor: '#1a261a', minHeight: '100vh', mb:"-42px" }}>
       <Grid container spacing={4} justifyContent="center">
         {juegos.map(({ nombre, video }, idx) => (
           <Grid item xs={12} sm={6} md={4} key={nombre}>
