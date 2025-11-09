@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Juego de la Vida - Instrucciones Detalladas</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Solo afecta la imagen del clic */
+    .illustration img[src="grafico_click.png"] {
+      width: 120px;
+      height: auto;
+    }
+  </style>
 </head>
 <body>
   <!-- Modal de instrucciones detalladas -->
@@ -15,7 +22,7 @@
         <h3>1. Encender y Apagar Celdas</h3>
         <p>Haz <strong>clic</strong> en cualquier celda para activarla (verde) o desactivarla (negra).</p>
         <div class="illustration">
-          <img src="grafico_click.svg" alt="Clic en celda ilustración" />
+          <img src="grafico_click.png" alt="Clic en celda ilustración" />
         </div>
 
         <h3>2. Reglas del Juego</h3>
@@ -24,10 +31,20 @@
           <li>🔹 <strong>Supervivencia:</strong> Una celda viva con 2 o 3 vecinos vivos <em>sigue</em> viva.</li>
           <li>🔹 <strong>Muerte:</strong> En cualquier otro caso, la celda <em>muere</em> o <em>permanece muerta</em>.</li>
         </ul>
+
         <div class="illustration-grid">
-          <img src="grafico_nacimiento.svg" alt="Nacimiento gráfico" />
-          <img src="grafico_supervivencia.svg" alt="Supervivencia gráfico" />
-          <img src="grafico_muerte.svg" alt="Muerte gráfico" />
+          <div class="illustration-item">
+            <img src="grafico_nacimiento.png" alt="Nacimiento gráfico" />
+            <p class="illustration-label">Nacimiento</p>
+          </div>
+          <div class="illustration-item">
+            <img src="grafico_supervivencia.png" alt="Supervivencia gráfico" />
+            <p class="illustration-label">Supervivencia</p>
+          </div>
+          <div class="illustration-item">
+            <img src="grafico_muerte.png" alt="Muerte gráfico" />
+            <p class="illustration-label">Muerte</p>
+          </div>
         </div>
 
         <h3>3. Controles</h3>
@@ -49,17 +66,16 @@
   <div class="controls">
     <div id="genCounter">Generación: 0</div>
 
-<button id="start">Iniciar</button>
-<button id="stop">Detener</button>
-<button id="clear">Limpiar</button>
-<button id="random">Aleatorio</button>
-<button id="replay" class="replay-state0">Replay</button>
-<button id="download" disabled>Descargar JSON</button>
-<button id="load">Cargar JSON</button>
+    <button id="start">Iniciar</button>
+    <button id="stop">Detener</button>
+    <button id="clear">Limpiar</button>
+    <button id="random">Aleatorio</button>
+    <button id="replay" class="replay-state0">Replay</button>
+    <button id="download" disabled>Descargar JSON</button>
+    <button id="load">Cargar JSON</button>
 
   </div>
 
-  <!-- Botón Volver con logo -->
   <div class="back-container">
     <img src="logo.png" alt="Logo" class="back-logo" />
     <a href="/juegos" class="back-button">Volver</a>

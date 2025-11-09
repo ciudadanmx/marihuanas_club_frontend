@@ -238,3 +238,66 @@ button:hover {
   display: block;
   margin: 1.5em auto 0;
 }
+
+
+
+
+
+
+
+
+/* --- Estilos específicos para las ilustraciones con rótulo --- */
+.illustration-grid {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 40px;                 /* espacio entre las 3 imágenes */
+  margin-top: 15px;
+  flex-wrap: nowrap;
+}
+
+.illustration-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 150px;              /* ancho fijo para que las tres queden iguales */
+}
+
+.illustration-item img {
+  max-width: 150px;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;        /* suave redondeo opcional */
+  display: block;
+}
+
+/* Rótulo en blanco, centrado, estilo "bonito" como en la imagen */
+.illustration-label {
+  margin-top: 10px;
+  font-size: 1.25rem;        /* tamaño legible */
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1;
+  text-transform: none;
+  text-align: center;
+  letter-spacing: 0.2px;
+  /* Sombra ligera para aumentar contraste sobre fondos oscuros */
+  text-shadow: 0 2px 6px rgba(0,0,0,0.6), 0 0 8px rgba(255,255,255,0.03);
+}
+
+/* Responsive: si la pantalla es pequeña, reducimos y apilamos ligeramente */
+@media (max-width: 640px) {
+  .illustration-grid {
+    gap: 18px;
+    padding: 0 10px;
+    flex-wrap: wrap;
+  }
+  .illustration-item {
+    width: 110px;
+    margin-bottom: 6px;
+  }
+  .illustration-label {
+    font-size: 1rem;
+  }
+}

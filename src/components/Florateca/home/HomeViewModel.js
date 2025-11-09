@@ -106,6 +106,9 @@ class HomeViewModel extends Component {
         <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
           <Container fluid>
             <Row>
+              <h1>La florateca es el buscador de flores por efecto o saber, selecciona si quieres buscar por uno u otro criterio, selecciona las opciones, presiona el botón buscar y obtén las cepas que estás buscando.</h1>
+            </Row>
+            <Row>
               <Col xs={12} md={4} lg={3}>
                 <Box className={css(styles.sidebar) + ' sticky-top'}>
                   <Tabs

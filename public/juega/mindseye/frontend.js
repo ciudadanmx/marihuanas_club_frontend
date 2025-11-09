@@ -337,19 +337,28 @@ function shuffle(array) {
 }
 
 /** Base de datos hardcodeada para pruebas */
+/** Base de datos hardcodeada para pruebas (nombres creativos SIN indicar la categoría) */
 function uglyHardcodedDatabase() {
   return [
-    "Horse Names,Caballo A,Caballo B,Caballo C",
-    "H-Guess,1,0,2",
-    "W-Guess,0,1,1",
-    "ME-Guess,2,1,0",
-    "Weed Names,Hierba X,Hierba Y,Hierba Z",
-    "H-Guess,0,2,0",
-    "W-Guess,1,0,1",
-    "ME-Guess,1,1,1",
-    "Mind's Eye,Visión 1,Visión 2,Visión 3",
-    "H-Guess,0,0,1",
-    "W-Guess,1,1,0",
-    "ME-Guess,1,0,1"
+    // Nombres ambiguos / creativos (8)
+    "Horse Names,Relámpago,Sombra,Trapo Dorado,Ojo Raso,Carretero Nocturno,Latigazo,Alazán Viejo,Bruma",
+    // cuántas veces lo identificaron como CABALLO
+    "H-Guess,4,0,2,1,3,2,5,1",
+    // cuántas veces lo identificaron como MALA HIERBA
+    "W-Guess,0,2,1,3,0,1,0,2",
+    // cuántas veces lo identificaron como OJO DE MI MENTE (invención/visión)
+    "ME-Guess,1,2,3,1,2,3,0,2",
+
+    // Nombres para 'weeds' sin decir hierba (8)
+    "Weed Names,Polvo de Luna,Hueso Verde,Lágrima de Tierra,Garabato,Bochorno,Cola de Gato,Pecho de Orca,Chispa Oxidada",
+    "H-Guess,0,1,0,1,0,0,0,0",
+    "W-Guess,5,3,4,2,3,4,1,2",
+    "ME-Guess,0,1,1,1,0,0,2,1",
+
+    // Nombres de 'mind's eye' sin decir visión (8)
+    "Mind's Eye,Anochecer Cósmico,Puerta entre Paredes,Risa de Metal,Mapa de Sueños,Esquirla de Tiempo,Somnolencia Azul,Mirada Inesperada,Cuenco Roto",
+    "H-Guess,0,0,1,0,1,0,0,0",
+    "W-Guess,1,1,0,1,0,0,1,0",
+    "ME-Guess,6,5,4,6,5,7,6,4"
   ].join('\n');
 }
