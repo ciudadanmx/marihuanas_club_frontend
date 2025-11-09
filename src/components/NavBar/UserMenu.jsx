@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Avatar, MenuItem, ListItemIcon, Typography, Box, Switch, FormControlLabel } from '@mui/material';
+import { Avatar, MenuItem, ListItemIcon, Typography, Box } from '@mui/material';
 import { useStores } from '../../hooks/useStores';
-
 
 // Context de roles y membresía
 import { useRoles } from '../../Contexts/RolesContext';
@@ -13,7 +12,14 @@ import '../../styles/NotificationsMenu.css';
 import '../../styles/MenuInfo.css';
 
 // Iconos desde CDN (material-icons)
-const Icon = ({ name }) => <span className="material-icons" style={{ fontSize: 20, verticalAlign: 'middle' }}>{name}</span>;
+const Icon = ({ name }) => (
+  <span
+    className="material-icons"
+    style={{ fontSize: 20, verticalAlign: 'middle' }}
+  >
+    {name}
+  </span>
+);
 
 const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, defaultProfileImage }) => {
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
@@ -23,12 +29,12 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
   const navigate = useNavigate();
 
   const handleVender = async () => {
-    if (!isAuthenticated ) return;
+    if (!isAuthenticated) return;
 
     setChecking(true);
     try {
       const stores = await getStoreByEmail(user.email);
-      console.log('*** Obteniendo  stores');
+      console.log('*** Obteniendo stores');
       if (stores.length > 0 && stores[0].attributes.terminado) {
         const slug = stores[0].attributes.slug;
         navigate(`/market/store/${slug}`);
@@ -59,61 +65,71 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
 
   return (
     <div ref={containerRef}>
-    <Box className={`notifications-menu ${isOpen ? 'open' : 'closed'} purple`} p={2}>
-      {/* Grid container: 1 column title, then 2 columns options */}
-      <Box display="grid" gridTemplateColumns="1fr 1fr" gap={1}>
-        {/* Welcome spans 2 columns */}
-        {isAuthenticated && user && (
-          <Box gridColumn="1 / span 2">
-            <MenuItem onClick={() => navigate(`/perfil/${user.name.replace(/\s+/g, '-')}`)}>
-              <ListItemIcon>
-                <Avatar
-                  src={userData?.foto_credencial || user.picture || defaultProfileImage}
-                  alt={user.name}
-                  sx={{ width: 48, height: 48, border: '2px solid #6b21a8' }}
-                />
-              </ListItemIcon>
-              <Box>
-                <Typography variant="h6">Bienvenido {userData?.nombre_completo || user.name}</Typography>
-                <Typography variant="body2" color="text.secondary">Tu Perfil</Typography>
-              </Box>
-            </MenuItem>
-          </Box>
-        )}
+      <Box className={`notifications-menu ${isOpen ? 'open' : 'closed'} purple`} p={2}>
+        <Box display="grid" gridTemplateColumns="1fr 1fr" gap={1}>
+          {/* Bienvenida */}
+          {isAuthenticated && user && (
+            <Box gridColumn="1 / span 2">
+              <MenuItem onClick={() => navigate(`/perfil/${user.name.replace(/\s+/g, '-')}`)}>
+                <ListItemIcon>
+                  <Avatar
+                    src={userData?.foto_credencial || user.picture || defaultProfileImage}
+                    alt={user.name}
+                    sx={{ width: 48, height: 48, border: '2px solid #6b21a8' }}
+                  />
+                </ListItemIcon>
+                <Box>
+                  <Typography variant="h6">
+                    Bienvenido {userData?.nombre_completo || user.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Tu Perfil
+                  </Typography>
+                </Box>
+              </MenuItem>
+            </Box>
+          )}
 
-        {/* Opciones en grid */}
-        {options.filter(opt => opt.show).map((opt, idx) => (
-          <Box key={idx}>
-            {opt.component ? (
-              <MenuItem component={opt.component} to={opt.to} sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}>
-                <ListItemIcon><Icon name={opt.icon} /></ListItemIcon>
+          {/* Opciones en grid */}
+          {options.filter(opt => opt.show).map((opt, idx) => (
+            <Box key={idx}>
+              <MenuItem
+                component={opt.component || 'button'}
+                to={opt.to}
+                onClick={opt.onClick}
+                sx={{
+                  '&:hover': {
+                    backgroundColor: '#d5ee66ff',
+                    color: '#000814', // Contraste fuerte sobre el verde lima
+                    textShadow: '0 0 6px #00ff99',
+                  },
+                  transition: 'all 0.2s ease-in-out',
+                }}
+              >
+                <ListItemIcon>
+                  <Icon name={opt.icon} />
+                </ListItemIcon>
                 <Typography>{opt.label}</Typography>
               </MenuItem>
+            </Box>
+          ))}
+
+          {/* Login / Logout */}
+          <Box gridColumn="1 / span 2">
+            {isAuthenticated ? (
+              <MenuItem onClick={() => logout({ returnTo: window.location.origin })}>
+                <ListItemIcon><Icon name="logout" /></ListItemIcon>
+                <Typography>Salir</Typography>
+              </MenuItem>
             ) : (
-              <MenuItem onClick={opt.onClick} sx={{ '&:hover': { backgroundColor: '#f5f5f5' } }}>
-                <ListItemIcon><Icon name={opt.icon} /></ListItemIcon>
-                <Typography>{opt.label}</Typography>
+              <MenuItem onClick={() => loginWithRedirect()}>
+                <ListItemIcon><Icon name="account_circle" /></ListItemIcon>
+                <Typography>Ingresar</Typography>
               </MenuItem>
             )}
           </Box>
-        ))}
-
-        {/* Login/Logout spans 2 columns */}
-        <Box gridColumn="1 / span 2">
-          {isAuthenticated ? (
-            <MenuItem onClick={() => logout({ returnTo: window.location.origin })}>
-              <ListItemIcon><Icon name="logout" /></ListItemIcon>
-              <Typography>Salir</Typography>
-            </MenuItem>
-          ) : (
-            <MenuItem onClick={() => loginWithRedirect()}>
-              <ListItemIcon><Icon name="account_circle" /></ListItemIcon>
-              <Typography>Ingresar</Typography>
-            </MenuItem>
-          )}
         </Box>
       </Box>
-    </Box>
     </div>
   );
 };
