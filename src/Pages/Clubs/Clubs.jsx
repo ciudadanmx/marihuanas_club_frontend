@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react'; // <- usamos auth0 para obtener user
 import clubs from '../../assets/red_de_clubs_marihuanas_club.png';
 import afilia from '../../assets/afilia_tu_club.png';
+import ContadorClubs from '../../components/Clubs/ContadorClubs.jsx';
 import '../../styles/clubs.css';
 
 // IMPORTS LAZY: no se importan hasta que haya intención/visibilidad
@@ -347,7 +348,7 @@ const Clubs = () => {
           ) : null}
 
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 1 }}>
-            1000 Lugares en 50 clubs
+            <ContadorClubs lugares={1000} clubs={20}/>
             <Tabs
               value={mapTab}
               onChange={handleMapTabChange}

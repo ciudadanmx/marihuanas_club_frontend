@@ -76,15 +76,15 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
                   <Avatar
                     src={userData?.foto_credencial || user.picture || defaultProfileImage}
                     alt={user.name}
-                    sx={{ width: 48, height: 48, border: '2px solid #6b21a8' }}
+                    sx={{ width: 48, height: 48, border: '2px solid #cecdcfff' }}
                   />
                 </ListItemIcon>
                 <Box>
                   <Typography variant="h6">
                     Bienvenido {userData?.nombre_completo || user.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Tu Perfil
+                  <Typography variant="body2" color="#cecdcfff">
+                    Tu Perfil / QR
                   </Typography>
                 </Box>
               </MenuItem>

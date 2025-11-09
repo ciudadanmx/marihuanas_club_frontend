@@ -54,7 +54,7 @@
   position: absolute;
   top: 50px;
   right: 0;
-  background: white;
+  background: rgb(215, 236, 22);
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -86,7 +86,7 @@
 
 .account-menu .material-icons {
   font-size: 24px;
-  color: #555;
+  color: #555555;
 }
 
 
