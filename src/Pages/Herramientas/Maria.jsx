@@ -1,5 +1,12 @@
 import React from 'react';
-import { Box, Typography, Grid, Button, Link, IconButton } from '@mui/material';
+import {
+  Box,
+  Grid,
+  Typography,
+  Button,
+  useMediaQuery,
+} from '@mui/material';
+
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import InfoIcon from '@mui/icons-material/Info';
 import { motion } from 'framer-motion';
@@ -8,16 +15,20 @@ import MariaGif from '../../assets/maria.gif';
 const MotionBox = motion(Box);
 
 export default function MariaDescription() {
-  return (
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+    return (
     <Box
       component="section"
       sx={{
         width: '100%',
         background: 'linear-gradient(180deg,#020603 0%, #08110b 100%)',
-        py: { xs: 6, md: 8 },
-        px: { xs: 3, md: 6 },
+        py: { xs: 6, md: 4 },
+        px: { xs: 3, md: 3 },
         display: 'flex',
         justifyContent: 'center',
+        mt: isMobile? 0 : "-12px",
+        mb: "-42px",
       }}
     >
       <MotionBox

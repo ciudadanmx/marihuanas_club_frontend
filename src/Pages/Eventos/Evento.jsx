@@ -401,7 +401,7 @@ export default function Evento() {
   }
 
   return (
-    <Box sx={{ mt: isMobile ? 0 : "-40px", p: isMobile ? 2 : 6 , mb: "-52px"}}>
+    <Box sx={{ mt: isMobile ? 0 : "-40px", p: isMobile ? 2 : 6 , mb: "-60px"}}>
       <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}>
         <StyledCard>
           {portadaURL && <CardMedia component="img" height="320" image={portadaURL} alt={titulo} />}

@@ -133,7 +133,7 @@ export default function EventosGrid() {
           Agenda de {meses[mesSelected]}
         </Typography>
 
-        {membresia?.activa && (
+        
           <Button
             variant="contained"
             component={Link}
@@ -150,7 +150,7 @@ export default function EventosGrid() {
           >
             + Agregar evento
           </Button>
-        )}
+        
 
         <Box
           sx={{
