@@ -144,6 +144,24 @@ export const RolesProvider = ({ children }) => {
     return res;
   };
 
+  const haveClub = () => {
+    const res = isAuthenticated && Boolean(userData?.haveclub);
+    console.log('🔑 haveClub:', res, 'raw:', userData?.haveclub);
+    return res;
+  };
+
+  const isClub = () => {
+    const res = isAuthenticated && Boolean(userData?.isclub);
+    console.log('🔑 isClub:', res, 'raw:', userData?.isclub);
+    return res;
+  };
+
+  const isJardinero = () => {
+    const res = isAuthenticated && Boolean(userData?.isjardinero);
+    console.log('🔑 isJardinero:', res, 'raw:', userData?.isjardinero);
+    return res;
+  };
+
   const isActivaMembresia = () => {
     const active = Boolean(membresia);
     console.log('🔑 isActivaMembresia:', active, 'membresia:', membresia);
@@ -229,7 +247,10 @@ export const RolesProvider = ({ children }) => {
         isActivaMembresia,
         setEditor,
         setAdmin,
-        setRoot
+        setRoot,
+        haveClub,
+        isClub,
+        isJardinero
       }}>
       {children}
     </RolesContext.Provider>
