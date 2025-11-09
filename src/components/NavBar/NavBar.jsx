@@ -19,8 +19,6 @@ import MenuIcon from './MenuIcon';
 import UserIcon from './UserIcon.jsx'
 //import MessagesIcon from './MessagesIcon';
 import CartIcon from './CartIcon';
-import NotificationsIcon from './NotificationsIcon';
-import UserMenu from './UserMenu.jsx';
 import NavButton from './NavButton.jsx';
 import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
@@ -29,7 +27,7 @@ import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
 
 
-const NavBar = ({ SetIsMenuOpen }) => {
+const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);

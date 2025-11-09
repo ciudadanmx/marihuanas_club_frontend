@@ -8,6 +8,8 @@ import mindseye from '../../assets/mindseye.mp4';
 import smokeweedeveryday from '../../assets/smokeweedeveryday.mp4';
 import weedcasino from '../../assets/weedcasino.mp4';
 import helpsnoop from '../../assets/helpsnoop.mp4';
+import juegodelavida from '../../assets/juegodelavida.mp4';
+import dilemadelprisionero from '../../assets/dilemadelprisionero.mp4';
 
 // Animaciones de entrada distintas
 const wiggle1 = keyframes`
@@ -119,8 +121,8 @@ const juegos = [
   { nombre: 'smokeweedeveryday', video: smokeweedeveryday },
   { nombre: 'weedcasino', video: weedcasino },
   { nombre: 'helpsnoop', video: helpsnoop },
-  { nombre: 'juegodelavida', video: helpsnoop },
-  { nombre: 'dilemadelprisionero', video: helpsnoop },
+  { nombre: 'juegodelavida', video: juegodelavida },
+  { nombre: 'dilemadelprisionero', video: dilemadelprisionero },
 ];
 
 export default function Juegos() {
