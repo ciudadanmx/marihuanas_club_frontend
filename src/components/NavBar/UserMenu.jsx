@@ -22,6 +22,7 @@ const Icon = ({ name }) => (
 );
 
 const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, defaultProfileImage }) => {
+  const { roles, membresia } = useRoles();
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const { isAdmin, isEditor, isRoot, isActivaMembresia, userData } = useRoles();
   const [checking, setChecking] = useState(false);
