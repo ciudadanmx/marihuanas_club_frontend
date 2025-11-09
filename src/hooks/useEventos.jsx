@@ -98,96 +98,114 @@ export function useEventos() {
     return data.map(f => f.id);
   }
 
- async function crearEvento(nuevo, media = {}) {
-  const slug = slugify(nuevo.titulo || '', { lower: true });
-  const payload = { ...nuevo, slug, creador: user?.id || null };
+  // -------------------------------------------
+  // Crear Evento (ahora guarda coords como JSON)
+  // -------------------------------------------
+  async function crearEvento(nuevo, media = {}) {
+    const slug = slugify(nuevo.titulo || '', { lower: true });
+    const payload = { ...nuevo, slug, creador: user?.id || null };
 
-  // Formatear hora inicio/fin y fechas adicionales
-  payload.hora_inicio = formatTime(payload.hora_inicio);
-  payload.hora_fin = formatTime(payload.hora_fin);
-  if (Array.isArray(payload.fechas_horarios_adicionales)) {
-    payload.fechas_horarios_adicionales = payload.fechas_horarios_adicionales.map(f => ({
-      fecha: f.fecha,
-      hora: formatTime(f.hora),
-    }));
-  }
+    // Formatear hora inicio/fin y fechas adicionales
+    payload.hora_inicio = formatTime(payload.hora_inicio);
+    payload.hora_fin = formatTime(payload.hora_fin);
+    if (Array.isArray(payload.fechas_horarios_adicionales)) {
+      payload.fechas_horarios_adicionales = payload.fechas_horarios_adicionales.map(f => ({
+        fecha: f.fecha,
+        hora: formatTime(f.hora),
+      }));
+    }
 
-  // Limpiar valores innecesarios o inválidos
-  if (!payload.de_pago || isNaN(Number(payload.precio))) {
-    delete payload.precio;
-  }
-  if (!payload.fecha_fin) delete payload.fecha_fin;
-  if (!payload.hora_fin) delete payload.hora_fin;
-  if (!payload.url) delete payload.url;
+    // Limpiar valores innecesarios o inválidos
+    if (!payload.de_pago || isNaN(Number(payload.precio))) {
+      delete payload.precio;
+    }
+    if (!payload.fecha_fin) delete payload.fecha_fin;
+    if (!payload.hora_fin) delete payload.hora_fin;
+    if (!payload.url) delete payload.url;
 
-  // Mapear modalidad
-  if (payload.modalidad === 'virtual') payload.modalidad = 'en línea';
+    // Mapear modalidad
+    if (payload.modalidad === 'virtual') payload.modalidad = 'en línea';
 
-  // Manejar dirección si NO es virtual
-  if (payload.modalidad !== 'en línea' && payload.direccion) {
-    try {
-      const direccionRes = await fetch(`${STRAPI_URL}/api/direcciones`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: {
-            direccion: payload.direccion,
-            ciudad: payload.ciudad,
-            estado: payload.estado,
-            cp: payload.cp,
-            lat: payload.lat,
-            lng: payload.lng
+    // Manejar dirección si NO es virtual
+    if (payload.modalidad !== 'en línea' && payload.direccion) {
+      try {
+        // Construimos el body para crear la dirección
+        const direccionBody = {
+          direccion: payload.direccion,
+          ciudad: payload.ciudad,
+          estado: payload.estado,
+          cp: payload.cp,
+        };
+
+        // Si tenemos lat/lng, los enviamos dentro de coords (objeto JSON)
+        if (payload.lat !== undefined && payload.lng !== undefined) {
+          // aseguramos que sean números
+          const latNum = Number(payload.lat);
+          const lngNum = Number(payload.lng);
+          if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+            direccionBody.coords = { lat: latNum, lng: lngNum };
           }
-        }),
-      });
+        }
 
-      const direccionJson = await direccionRes.json();
-      if (!direccionRes.ok) {
-        throw new Error(`No se pudo crear la dirección: ${direccionJson.error?.message}`);
+        const direccionRes = await fetch(`${STRAPI_URL}/api/direcciones`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: direccionBody }),
+        });
+
+        const direccionJson = await direccionRes.json();
+        if (!direccionRes.ok) {
+          throw new Error(`No se pudo crear la dirección: ${direccionJson.error?.message || JSON.stringify(direccionJson)}`);
+        }
+
+        // Guardamos la relación de dirección en el payload como id
+        payload.direccion = direccionJson.data.id;
+
+        // Quitamos lat/lng del payload principal (ya están dentro de coords)
+        delete payload.lat;
+        delete payload.lng;
+      } catch (err) {
+        console.error('Error al crear dirección:', err);
+        throw err;
+      }
+    } else {
+      // Si es virtual, no se manda dirección
+      delete payload.direccion;
+      delete payload.ciudad;
+      delete payload.estado;
+      delete payload.cp;
+      delete payload.lat;
+      delete payload.lng;
+    }
+
+    // Construir FormData con archivos
+    const formData = new FormData();
+    formData.append('data', JSON.stringify(payload));
+    if (media.portada) formData.append('files.portada', media.portada);
+    if (media.imagenes) media.imagenes.forEach(f => formData.append('files.imagenes', f));
+
+    // Enviar a Strapi
+    try {
+      const res = await fetch(`${STRAPI_URL}/api/eventos`, {
+        method: 'POST',
+        body: formData,
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        throw new Error(`No se pudo crear el evento (${res.status}): ${json.error?.message || JSON.stringify(json)}`);
       }
 
-      payload.direccion = direccionJson.data.id;
+      await fetchEventos();
     } catch (err) {
-      console.error('Error al crear dirección:', err);
+      console.error('Error crearEvento:', err);
       throw err;
     }
-  } else {
-    // Si es virtual, no se manda dirección
-    delete payload.direccion;
-    delete payload.ciudad;
-    delete payload.estado;
-    delete payload.cp;
-    delete payload.lat;
-    delete payload.lng;
   }
 
-  // Construir FormData con archivos
-  const formData = new FormData();
-  formData.append('data', JSON.stringify(payload));
-  if (media.portada) formData.append('files.portada', media.portada);
-  if (media.imagenes) media.imagenes.forEach(f => formData.append('files.imagenes', f));
-
-  // Enviar a Strapi
-  try {
-    const res = await fetch(`${STRAPI_URL}/api/eventos`, {
-      method: 'POST',
-      body: formData,
-    });
-    const json = await res.json();
-
-    if (!res.ok) {
-      throw new Error(`No se pudo crear el evento (${res.status}): ${json.error?.message}`);
-    }
-
-    await fetchEventos();
-  } catch (err) {
-    console.error('Error crearEvento:', err);
-    throw err;
-  }
-}
-
-
-
+  // -------------------------------------------
+  // Editar Evento (si se dan lat/lng actualiza/crea coords)
+  // -------------------------------------------
   async function editarEvento(id, cambios, media = {}) {
     // Mapear slug y modalidad según cambios
     if (cambios.titulo) cambios.slug = slugify(cambios.titulo, { lower: true });
@@ -200,6 +218,101 @@ export function useEventos() {
         fecha: f.fecha,
         hora: formatTime(f.hora),
       }));
+    }
+
+    // Si modalidad no es virtual y vienen datos de dirección / lat lng, manejarlos
+    try {
+      if (cambios.modalidad !== 'en línea' && (cambios.direccion || cambios.lat !== undefined || cambios.lng !== undefined)) {
+        // Si cambios.direccion es un id numérico -> intentar actualizar esa dirección
+        const dirId = Number(cambios.direccion);
+        const tieneCoords = cambios.lat !== undefined && cambios.lng !== undefined;
+
+        if (!Number.isNaN(dirId) && dirId > 0) {
+          // Preparamos body para update
+          const updateBody = { };
+          if (cambios.direccion) updateBody.direccion = cambios.direccion_text || undefined; // si traes un campo para texto de dirección
+          if (cambios.ciudad) updateBody.ciudad = cambios.ciudad;
+          if (cambios.estado) updateBody.estado = cambios.estado;
+          if (cambios.cp) updateBody.cp = cambios.cp;
+
+          if (tieneCoords) {
+            const latNum = Number(cambios.lat);
+            const lngNum = Number(cambios.lng);
+            if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+              updateBody.coords = { lat: latNum, lng: lngNum };
+            }
+          }
+
+          // Solo enviar los campos que existan
+          const dataToSend = {};
+          for (const k of Object.keys(updateBody)) {
+            if (updateBody[k] !== undefined) dataToSend[k] = updateBody[k];
+          }
+
+          if (Object.keys(dataToSend).length > 0) {
+            const resDir = await fetch(`${STRAPI_URL}/api/direcciones/${dirId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ data: dataToSend }),
+            });
+
+            const jsonDir = await resDir.json();
+            if (!resDir.ok) {
+              console.warn('No se pudo actualizar la dirección existente, intentaremos crear una nueva.', jsonDir);
+              // intentaremos crear una nueva abajo
+              // No lanzamos error aún para permitir fallback a creación
+            }
+          }
+          // aseguramos que cambios.direccion sea el id
+          cambios.direccion = dirId;
+        } else {
+          // Si no hay un id válido, creamos una nueva dirección (similar a crearEvento)
+          const direccionBody = {
+            direccion: cambios.direccion,
+            ciudad: cambios.ciudad,
+            estado: cambios.estado,
+            cp: cambios.cp,
+          };
+
+          if (cambios.lat !== undefined && cambios.lng !== undefined) {
+            const latNum = Number(cambios.lat);
+            const lngNum = Number(cambios.lng);
+            if (!Number.isNaN(latNum) && !Number.isNaN(lngNum)) {
+              direccionBody.coords = { lat: latNum, lng: lngNum };
+            }
+          }
+
+          const resDir = await fetch(`${STRAPI_URL}/api/direcciones`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ data: direccionBody }),
+          });
+
+          const jsonDir = await resDir.json();
+          if (!resDir.ok) {
+            throw new Error(`No se pudo crear la dirección al editar: ${jsonDir.error?.message || JSON.stringify(jsonDir)}`);
+          }
+          cambios.direccion = jsonDir.data.id;
+        }
+
+        // Ya que coords están en la entidad direcciones, removemos lat/lng del payload de evento
+        delete cambios.lat;
+        delete cambios.lng;
+      } else {
+        // Si modalidad es virtual, quitar campos de dirección y coords
+        if (cambios.modalidad === 'en línea') {
+          delete cambios.direccion;
+          delete cambios.ciudad;
+          delete cambios.estado;
+          delete cambios.cp;
+          delete cambios.lat;
+          delete cambios.lng;
+        }
+      }
+    } catch (err) {
+      console.error('Error manejando dirección en editarEvento:', err);
+      // No abortamos aún: permitimos que la edición del evento intente continuar,
+      // pero lanzamos al final si la petición al evento falla.
     }
 
     const formData = new FormData();
@@ -216,7 +329,7 @@ export function useEventos() {
 
       console.log('editarEvento:', res.status, json);
       if (!res.ok) {
-        throw new Error(`No se pudo editar el evento (${res.status}): ${json.error?.message}`);
+        throw new Error(`No se pudo editar el evento (${res.status}): ${json.error?.message || JSON.stringify(json)}`);
       }
       await fetchEventos();
     } catch (err) {
