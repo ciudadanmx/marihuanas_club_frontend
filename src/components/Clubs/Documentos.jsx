@@ -1,8 +1,12 @@
 import React from 'react'
+import RoadMapLegal from './RoadMapLegal.jsx';
 
 const Documentos = () => {
   return (
-    <div>Documentos</div>
+    <>
+      <RoadMapLegal />
+      <div>Documentos</div>
+    </>
   )
 }
 
