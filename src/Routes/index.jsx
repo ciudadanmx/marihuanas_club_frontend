@@ -142,6 +142,7 @@ const Rutas = () => (
     <Route path="/juega/:nombre" element={<JuegoStatic />} />
     <Route path="/perfil/:username" element={<Perfil />} />
     <Route path="/favoritos" element={<Favoritos />} />
+    <Route path="/favoritos/*" element={<Favoritos />} />
     <Route path="/miqr" element={<UsuarioPage />} />
     <Route path="/ubicacion" element={<MiUbicacion />} />
     <Route path="/info/quienes" element={<QuienesSomos />} />

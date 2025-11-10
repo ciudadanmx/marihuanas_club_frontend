@@ -1,6 +1,6 @@
 // src/pages/Favoritos.jsx
 import React, { useEffect, useMemo, useState } from "react";
-import Pestanas from "../../components/Pestanas";
+import Pestanas from "../../components/Pestanas.jsx";
 import { useLocation } from "react-router-dom";
 import { useAuth0 } from "@auth0/auth0-react";
 import {
@@ -20,13 +20,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { motion } from "framer-motion";
 
 /**
- * Favoritos.jsx
- * - Diseñado para Strapi v4
- * - Filtra por usuario_email === user.email
- * - Usa populate=deep,3 para traer relaciones completas
- * - Usa process.env.REACT_APP_STRAPI_URL y opcional REACT_APP_STRAPI_TOKEN
- *
- * Ajusta nombres de atributos según tu modelo si tu colección usa otros campos.
+ * Favoritos.jsx (usa Pestanas)
+ * - Asegura rutas absolutas en tabs (evita ambigüedades)
+ * - Sincroniza tabIndex con location.pathname
+ * - Fetch a Strapi v4 con populate=deep,3
  */
 
 const Favoritos = () => {
@@ -42,35 +39,62 @@ const Favoritos = () => {
   const [loadingItems, setLoadingItems] = useState(false);
   const [error, setError] = useState(null);
 
+  // basePath para Pestanas — absoluto y sin ambigüedad
   const basePrueba = "/favoritos";
 
+  // IMPORTANTE: uso paths absolutos (empiezan con '/') para que Pestanas calcule absPaths sin sorpresas
   const tabs = [
-    { label: "Marketplace", path: "marketplace", tipo: "producto" },
-    { label: "Clubs", path: "clubs", tipo: "club" },
-    { label: "Contenidos", path: "contenidos", tipo: "contenido" },
-    { label: "Cursos", path: "cursos", tipo: "curso" },
+    { label: "Marketplace", path: "/favoritos/marketplace", tipo: "producto" },
+    { label: "Clubs", path: "/favoritos/clubs", tipo: "club" },
+    { label: "Contenidos", path: "/favoritos/contenidos", tipo: "contenido" },
+    { label: "Cursos", path: "/favoritos/cursos", tipo: "curso" },
   ];
 
-  // responsive listener
+  // responsive
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // sincroniza tabIndex con la URL
+  // sincronizo tabIndex a partir de la URL (más robusto que depender solo de onTabChange)
   useEffect(() => {
-    const path = (location.pathname || "").toLowerCase();
-    if (path.includes(`${basePrueba}/marketplace`)) setTabIndex(0);
-    else if (path.includes(`${basePrueba}/clubs`)) setTabIndex(1);
-    else if (path.includes(`${basePrueba}/contenidos`)) setTabIndex(2);
-    else if (path.includes(`${basePrueba}/cursos`)) setTabIndex(3);
-    else setTabIndex(0);
-  }, [location.pathname]);
+    const currentRaw = (location.pathname || "").replace(/\/+$/, "") || "/";
+    // busco el mejor match dentro de absPaths generados igual que Pestanas
+    const normBase = basePrueba === "/" ? "/" : basePrueba.endsWith("/") ? basePrueba.slice(0, -1) : basePrueba;
+    const absPaths = tabs.map((t) => {
+      const p = (t.path || "").toString();
+      if (!p) return normBase || "/";
+      if (p.startsWith("/")) {
+        // si path viene como "/marketplace" -> unir con normBase: "/favoritos" + "/marketplace" = "/favoritos/marketplace"
+        const joined = `${normBase}${p}`;
+        return joined.endsWith("/") && joined !== "/" ? joined.replace(/\/+$/, "") : joined;
+      }
+      const joined = `${normBase}${p ? "/" + p.replace(/^\/+/, "") : ""}`;
+      return joined.endsWith("/") && joined !== "/" ? joined.replace(/\/+$/, "") : joined;
+    });
+
+    // best match
+    let bestIndex = -1;
+    let bestLen = -1;
+    absPaths.forEach((pp, i) => {
+      const p = (pp || "").replace(/\/+$/, "") || "/";
+      if (currentRaw === p) {
+        bestIndex = i;
+        bestLen = p.length;
+      } else if (p !== "/" && currentRaw.startsWith(p + "/")) {
+        if (p.length > bestLen) { bestIndex = i; bestLen = p.length; }
+      } else if (p !== "/" && currentRaw.startsWith(p)) {
+        if (p.length > bestLen) { bestIndex = i; bestLen = p.length; }
+      }
+    });
+    if (bestIndex === -1) bestIndex = 0;
+    setTabIndex(bestIndex);
+  }, [location.pathname]); // eslint-disable-line
 
   const currentTipo = useMemo(() => tabs[tabIndex]?.tipo || "producto", [tabIndex]);
 
-  // Construye URL de Strapi para v4 con filtros y populate=deep,3
+  // fetch cada vez que cambia tipo o usuario
   useEffect(() => {
     if (isLoading) return;
     if (!user || !user.email) {
@@ -87,14 +111,11 @@ const Favoritos = () => {
         const base = baseRaw.replace(/\/+$/, "");
         if (!base) throw new Error("REACT_APP_STRAPI_URL no definido en .env");
 
-        // filters por usuario_email y tipo, populate profundo para relaciones
         const url = `${base}/api/favoritos?filters[usuario_email][$eq]=${encodeURIComponent(
           user.email
         )}&filters[tipo][$eq]=${encodeURIComponent(currentTipo)}&populate=deep,3&sort[0]=id:desc`;
 
-        const headers = {
-          "Content-Type": "application/json",
-        };
+        const headers = { "Content-Type": "application/json" };
         if (process.env.REACT_APP_STRAPI_TOKEN) {
           headers.Authorization = `Bearer ${process.env.REACT_APP_STRAPI_TOKEN}`;
         }
@@ -120,7 +141,7 @@ const Favoritos = () => {
     fetchFavoritos();
   }, [user, isLoading, currentTipo]);
 
-  // eliminar favorito (Strapi v4: DELETE /api/favoritos/:id)
+  // eliminar favorito
   const handleRemove = async (id) => {
     const ok = window.confirm("¿Quitar este favorito?");
     if (!ok) return;
@@ -145,7 +166,6 @@ const Favoritos = () => {
         throw new Error(`Error al eliminar: ${res.status} ${txt}`);
       }
 
-      // actualizar lista localmente
       setItems((prev) => prev.filter((it) => Number(it.id) !== Number(id)));
     } catch (err) {
       console.error(err);
@@ -166,10 +186,14 @@ const Favoritos = () => {
       }}
     >
       <div style={{ flex: "1 1 100%" }}>
+        {/* Usamos tu Pestanas — paths absolutos */}
         <Pestanas
           tabs={tabs.map((t) => ({ label: t.label, path: t.path }))}
           basePath={basePrueba}
-          onTabChange={(index) => setTabIndex(index)}
+          onTabChange={(index) => {
+            // mantener el estado sincronizado si Pestanas lo reporta
+            setTabIndex(index);
+          }}
           collapseAt={640}
         />
 
@@ -184,7 +208,7 @@ const Favoritos = () => {
             borderRadius: 2,
             boxShadow: 3,
             background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,255,255,0.99))",
-            border: `1px solid #6d6e71`, // borde gris del brand
+            border: `1px solid #6d6e71`,
           }}
         >
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -238,11 +262,9 @@ const Favoritos = () => {
           ) : (
             <Grid container spacing={2}>
               {items.map((entry) => {
-                // Strapi v4: entry.id, entry.attributes
                 const id = entry.id;
                 const attrs = entry.attributes || {};
 
-                // usuario: relación (users-permissions user o relación a otro contenido)
                 let usuarioDisplay = "N/A";
                 if (attrs.usuario && attrs.usuario.data && attrs.usuario.data.attributes) {
                   const u = attrs.usuario.data.attributes;
@@ -251,13 +273,9 @@ const Favoritos = () => {
                   usuarioDisplay = attrs.usuario_email;
                 }
 
-                // tipo: puede venir en attrs.tipo (enumeration)
                 const tipo = attrs.tipo || currentTipo;
-
-                // estado publicado/unpublished: Strapi v4 usa publishedAt para entries publicadas
                 const publicado = attrs.publishedAt ? "Published" : "Unpublished";
 
-                // titulo / identificador visible
                 const titulo =
                   attrs.titulo ||
                   attrs.nombre ||
@@ -265,7 +283,6 @@ const Favoritos = () => {
                   (attrs.item && attrs.item.data?.attributes?.title) ||
                   `${tipo} #${id}`;
 
-                // imagen: intenta extraer de distintos posibles campos en populate
                 let imgUrl = null;
                 const pickImageFromMedia = (media) => {
                   if (!media) return null;
@@ -356,23 +373,13 @@ const Favoritos = () => {
                             <IconButton
                               size="small"
                               onClick={() => handleRemove(id)}
-                              sx={{
-                                border: `1px solid #6d6e71`,
-                              }}
+                              sx={{ border: `1px solid #6d6e71` }}
                               title="Quitar favorito"
                             >
                               <DeleteIcon />
                             </IconButton>
 
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => {
-                                // navegar a detalle si lo deseas — ejemplo simple
-                                // window.location.href = `/detalle/${tipo}/${id}`;
-                                console.log("Ver detalle", tipo, id);
-                              }}
-                            >
+                            <Button size="small" variant="outlined" onClick={() => console.log("Ver detalle", tipo, id)}>
                               Ver
                             </Button>
                           </Box>
