@@ -37,9 +37,15 @@ const AppWrapper = () => {
   // Ocultar NavBar para cualquier ruta que empiece con /wiki
   const isWikiRoute = location.pathname.startsWith('/wiki');
 
+  // Extraer la primera sección de la URL: lo que está entre la primera y la segunda "/"
+  // Ejemplo: /market/comprar -> "market"
+  // Si la ruta es "/" o no tiene segmento, queda cadena vacía ''
+  const siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
+
   return (
     <>
-      {!isWikiRoute && <NavBar />}
+      {/* Pasamos siteSection a NavBar solo si no es ruta wiki */}
+      {!isWikiRoute && <NavBar siteSection={siteSection} />}
       <Rutas />
       <Asistente />
       <Footer />

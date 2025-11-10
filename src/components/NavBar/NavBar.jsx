@@ -27,7 +27,7 @@ import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
 
 
-const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
+const NavBar = ({ SetIsMenuOpen, siteSection }) => {
 
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
@@ -42,7 +42,7 @@ const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
   const navigate = useNavigate();
 
   // Estados para llevar la cuenta de la ruta y repeticiones (routeRepeat)
-  const [lastRoute, setLastRoute] = useState('');
+  const [lastRoute, setLastRoute] = useState('siteSection');
   const [routeRepeat, setRouteRepeat] = useState(0);
 
   // Estado para la pestaña activa
@@ -51,6 +51,8 @@ const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
   const isHomeOrInfo = location.pathname === '/' || location.pathname.startsWith('/info/');
 
   const [logoSrc, setLogoSrc] = useState("");
+
+  siteSection = '/'+ siteSection;
 
   const iconMap = {
     clubs: <RiHomeSmileFill />,
@@ -102,23 +104,6 @@ const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
 
-
-
-
-    const allowedSections = ["clubs", "legal", "membresias", "market", "contenidos", "cursos", "herramientas","eventos", "comunidad", "gana"];
-    const segments = location.pathname.split('/').filter(Boolean); // elimina entradas vacías
-    const firstSegment = (segments[0] || '').toLowerCase();
-    if (allowedSections.includes(firstSegment)) {
-      // setea activeTab con el mismo formato que usa NavButton (sin slash)
-      setActiveTab(firstSegment);
-      // también sincroniza lastRoute para consistencia con handleNavigation
-      setLastRoute(`/${firstSegment}`);
-    }else if (location.pathname === '/' || location.pathname.startsWith('/info/')) {
-      // si estamos en home o info, limpiamos
-      setActiveTab('');
-      setLastRoute('');
-    }
-
   }, []);
 
   useEffect(() => {
@@ -126,16 +111,14 @@ const NavBar = ({ SetIsMenuOpen, ctiveTab }) => {
       setLogoSrc(window.innerWidth < 490 ? "/logo193.png" : "/marihuanasclub_logo.png");
     };
 
-    // 🔥 Obtenemos el primer path de la URL actual
-    const path = `/${window.location.pathname.split('/')[1]}`;
-    //llamammos a handlenavigation para que haga setActiveTab y se haga el efecto en el botón de la sección activa
-    //handleNavigation(path);
-
     handleResize(); // Se ejecuta al montar el componente
-
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    setActiveTab(siteSection);
+  }, [location.pathname]);
 
   const handleLinkClick = (path) => {
     // Realiza la navegación
