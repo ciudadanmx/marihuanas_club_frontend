@@ -5,6 +5,7 @@ import { Box, CircularProgress, Typography, Button, Avatar, Chip, TextField, Inp
 import SearchIcon from '@mui/icons-material/Search';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
 import { useNavigate } from 'react-router-dom';
+import { useRoles } from '../../Contexts/RolesContext'; 
 
 import cultivoIcon from '../../assets/marcador_club_cultivo.png';
 import consumoIcon from '../../assets/marcador_club_consumo.png';
@@ -13,6 +14,8 @@ import ambosIcon from '../../assets/marcador_club_ambos.png';
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
 const libraries = ['places'];
+
+const activar = '/membresias';
 
 const mapContainerStyle = {
   width: '80%',
@@ -40,9 +43,10 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
   return R * c;
 }
 
-export default function MapaClubs({ membresia = false }) {
+export default function MapaClubs() {
   const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries });
 
+  const { membresia } = useRoles();
   const [hasAccess, setHasAccess] = useState(membresia);
   const [center, setCenter] = useState(defaultCenter);
   const [zoom, setZoom] = useState(defaultZoom);
@@ -190,8 +194,8 @@ export default function MapaClubs({ membresia = false }) {
             alignItems: 'center',
             zIndex: 10,
           }}>
-            <Typography color="white" variant="h6">Tienes que tener membresía para ver los clubs</Typography>
-            <Button variant="contained" onClick={() => setHasAccess(true)} sx={{ mt: 1 }}>Activar membresía</Button>
+                <Typography color="white" variant="h6">Tienes que tener membresía para ver los clubs</Typography>
+                <Button variant="contained" onClick={() => navigate(activar)} sx={{ mt: 1 }}>Activar membresía</Button>
           </Box>
         )}
 
