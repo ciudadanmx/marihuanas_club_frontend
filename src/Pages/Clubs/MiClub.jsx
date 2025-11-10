@@ -70,6 +70,8 @@ const MiClub = () => {
             maxWidth: '100%',
             overflowX: 'hidden', // 👈 evita el scroll lateral global
             boxSizing: 'border-box',
+            paddingBottom: '0px',
+            marginBottom: '0px',
           }}
         >
           {/* Columna principal (pestañas + panel) */}

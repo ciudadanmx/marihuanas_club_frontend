@@ -13,6 +13,7 @@ import esperaAmparoImg from "../../assets/rutalegal/esperaamparo.png";
 import amparadoImg from "../../assets/rutalegal/amparado.png";
 import concluidoImg from "../../assets/rutalegal/concluido.png";
 
+import MarqueeRutaLegal from "../../components/Clubs/MarqueeRutaLegal.jsx";
 export default function StepSlider({ fetchFromStrapi, initialData, onContinue }) {
   const defaultSteps = [
     { id: 1, title: "Ingreso de Datos", image: altaDatosImg, status: "done", btnText: "" },
@@ -245,7 +246,9 @@ export default function StepSlider({ fetchFromStrapi, initialData, onContinue })
   `;
 
   return (
-    <div style={{ padding: 6 }} className="ss-root">
+    <>
+    <MarqueeRutaLegal />
+    <div style={{ padding: 6 , paddingTop: 20 }} className="ss-root">
       <style>{css}</style>
       <div className="ss-wrap">
         <div className="ss-center">
@@ -320,5 +323,6 @@ export default function StepSlider({ fetchFromStrapi, initialData, onContinue })
         </div>
       </div>
     </div>
+    </>
   );
 }

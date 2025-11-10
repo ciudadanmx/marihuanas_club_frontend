@@ -116,6 +116,8 @@ const Pestanas = ({
           position:relative;
           top: -20px;
           box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+          margin-bottom: 0px;
+          padding-bottom: 0px;
         }
         .pestanas-row {
           display:flex;
