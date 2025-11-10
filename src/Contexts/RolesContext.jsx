@@ -129,38 +129,22 @@ export const RolesProvider = ({ children }) => {
   };
 
   const isEditor = () => {
-    const res = isAuthenticated && hasExtra('editor');
-    console.log('🔑 isEditor:', res);
-    return res;
-  };
-  const isAdmin = () => {
-    const res = isAuthenticated && hasExtra('admin');
-    console.log('🔑 isAdmin:', res);
-    return res;
-  };
-  const isRoot = () => {
-    const res = isAuthenticated && hasExtra('root');
-    console.log('🔑 isRoot:', res);
-    return res;
-  };
-
-  const haveClub = () => {
-    const res = isAuthenticated && Boolean(userData?.haveclub);
-    console.log('🔑 haveClub:', res, 'raw:', userData?.haveclub);
-    return res;
-  };
-
-  const isClub = () => {
-    const res = isAuthenticated && Boolean(userData?.isclub);
-    console.log('🔑 isClub:', res, 'raw:', userData?.isclub);
-    return res;
-  };
-
-  const isJardinero = () => {
-    const res = isAuthenticated && Boolean(userData?.isjardinero);
-    console.log('🔑 isJardinero:', res, 'raw:', userData?.isjardinero);
-    return res;
-  };
+  if (!isAuthenticated || !userData) {
+    console.log('🔒 isEditor: esperando datos de usuario...');
+    return false;
+  }
+  const res = hasExtra('editor');
+  console.log('🔑 isEditor (evaluado con userData):', res);
+  return res;
+};
+const isAdmin = () => {
+  if (!isAuthenticated || !userData) return false;
+  return hasExtra('admin');
+};
+const isRoot = () => {
+  if (!isAuthenticated || !userData) return false;
+  return hasExtra('root');
+};
 
   const isActivaMembresia = () => {
     const active = Boolean(membresia);
@@ -247,10 +231,7 @@ export const RolesProvider = ({ children }) => {
         isActivaMembresia,
         setEditor,
         setAdmin,
-        setRoot,
-        haveClub,
-        isClub,
-        isJardinero
+        setRoot
       }}>
       {children}
     </RolesContext.Provider>

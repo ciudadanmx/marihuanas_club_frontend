@@ -25,26 +25,37 @@ import '../../styles/Contenidos.css';
 
 const Contenidos = ({ filtros, parametros }) => {
 
-    const { isEditor } = useRoles();
+  // Llamada correcta al hook de roles (no cambiar el provider)
+  const { isEditor } = useRoles();
+  const esEditor = typeof isEditor === 'function' ? isEditor() : Boolean(isEditor);
+  //const esEditor = isEditor();
 
-    if (filtros === 'busqueda') {
-        var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
-    }
-    else if (filtros === 'categoria'){
-        var titulo = "Contenidos en Categoría  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
-        var mostrarCategorias = false;
-    }
-    else if (filtros === 'mis-contenidos'){
-        var titulo ="»» Tus Contenidos ««:";
-        var mostrarCategorias = false;
-    }
+  // Normalización defensiva: si isEditor es función (legacy) la ejecutamos,
+  // si por alguna razón fuera booleano lo usamos tal cual.
+  const isEditorFlag = typeof isEditor === 'function' ? Boolean(isEditor()) : Boolean(isEditor);
 
-    else {
-        var titulo = '';
-        var mostrarCategorias = true;
-    }
+  // DEBUG (opcional, quítalo cuando confirmes que ya funciona)
+  console.log('[Contenidos] isEditor (raw) ->', isEditor);
+  console.log('[Contenidos] isEditorFlag ->', isEditorFlag);
 
-    //TODO  REEMPLAZAR POR CONTEXTO
+  if (filtros === 'busqueda') {
+    var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+  }
+  else if (filtros === 'categoria'){
+    var titulo = "Contenidos en Categoría  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+    var mostrarCategorias = false;
+  }
+  else if (filtros === 'mis-contenidos'){
+    var titulo ="»» Tus Contenidos ««:";
+    var mostrarCategorias = false;
+  }
+
+  else {
+    var titulo = '';
+    var mostrarCategorias = true;
+  }
+
+  //TODO  REEMPLAZAR POR CONTEXTO
   //const editor = roles.isEditor;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
@@ -84,7 +95,7 @@ const Contenidos = ({ filtros, parametros }) => {
       setCategorias(cats);
     })();
   }, []);
-
+  
   // Fetch contenidos whenever pagina o porPagina cambian
   useEffect(() => {
     fetchContenidos();
@@ -227,7 +238,7 @@ return authorId === usuarioLogueado;
           </Button>
 
           {/* Botones de editor */}
-          {isEditor && (
+          {isEditor() && (
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
                 onClick={handleMis}
