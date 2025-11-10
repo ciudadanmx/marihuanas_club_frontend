@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import EliminarContenido  from '../../Pages/Blog/EliminarContenido';
 import {
   Box,
   Grid,
@@ -18,11 +17,15 @@ import {
 import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
 import { useContenido } from '../../hooks/useContenido';
+import { useRoles } from '../../Contexts/RolesContext'; 
+import EliminarContenido  from '../../Pages/Blog/EliminarContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
 import ContenidoDetalle from '../../Pages/Blog/Contenido'; 
 import '../../styles/Contenidos.css';
 
 const Contenidos = ({ filtros, parametros }) => {
+
+    const { isEditor } = useRoles();
 
     if (filtros === 'busqueda') {
         var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
@@ -42,7 +45,7 @@ const Contenidos = ({ filtros, parametros }) => {
     }
 
     //TODO  REEMPLAZAR POR CONTEXTO
-  const editor = true;
+  //const editor = roles.isEditor;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "contenidos";
   const { getCategorias } = useCategorias('categorias-contenidos');
@@ -224,7 +227,7 @@ return authorId === usuarioLogueado;
           </Button>
 
           {/* Botones de editor */}
-          {editor && (
+          {isEditor && (
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
                 onClick={handleMis}
