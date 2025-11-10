@@ -197,6 +197,21 @@ const Favoritos = () => {
           collapseAt={640}
         />
 
+        <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    width: 12,
+                    height: 12,
+                    borderRadius: "50%",
+                    backgroundColor: "#fff200",
+                    border: "2px solid #6d6e71",
+                    display: "inline-block",
+                    mr: 1,
+                  }}
+                />
+                Favoritos — {tabs[tabIndex]?.label || "Marketplace"}
+              </Typography>
+
         <Box
           component={motion.div}
           initial={{ opacity: 0, y: 8 }}
@@ -211,37 +226,6 @@ const Favoritos = () => {
             border: `1px solid #6d6e71`,
           }}
         >
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Box>
-              <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Box
-                  sx={{
-                    width: 12,
-                    height: 12,
-                    borderRadius: "50%",
-                    backgroundColor: "#fff200",
-                    border: "2px solid #6d6e71",
-                    display: "inline-block",
-                    mr: 1,
-                  }}
-                />
-                Favoritos — {tabs[tabIndex]?.label || "Marketplace"}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                API ID: favorito
-              </Typography>
-            </Box>
-
-            <Box sx={{ textAlign: "right" }}>
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {user?.email}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {items.length} registros
-              </Typography>
-            </Box>
-          </Box>
-
           <Divider sx={{ mb: 2 }} />
 
           {loadingItems ? (

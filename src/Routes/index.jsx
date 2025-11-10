@@ -93,6 +93,7 @@ import Evento from '../Pages/Eventos/Evento.jsx';
 import WikiBar from '../components/WikiBar.jsx';
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 import WikiHome from '../Pages/Wiki/WikiHome.jsx'; // si planeas tener una página principal para la wiki
+import NotificationTester from '../components/NotificationTester.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -186,6 +187,9 @@ const Rutas = () => (
     <Route path="/contenidos/eliminar/:slug" element={<EliminarContenidoWrapper />} />
     <Route path="/contenidos/*" element={<ContenidosPage />} />
     <Route path="/contenido/:slug" element={<Contenido />} />
+
+
+    <Route path="/notificationtester" element={<NotificationTester />} />
 
     {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
     <Route

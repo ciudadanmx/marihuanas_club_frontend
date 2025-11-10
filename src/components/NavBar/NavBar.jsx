@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // Se agregó useNavigate junto con Link
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import io from 'socket.io-client';
+import axios from 'axios';
+
 import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
 import { FaUniversity, FaDollarSign } from 'react-icons/fa';
-
 import { FaBalanceScale, FaTools  } from 'react-icons/fa';
 import { RiHomeSmileFill } from "react-icons/ri";
 import { BiStore } from "react-icons/bi";
@@ -11,13 +13,9 @@ import { MdOndemandVideo } from "react-icons/md";
 import { IoCalendarNumberOutline } from "react-icons/io5";
 import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 
-import guestImage from '../../assets/guest.png'; // Ajusta la ruta si es necesario
-//import defaultProfileImage from '../../assets/guest.png'; // Cambia esto si tienes una imagen predeterminada de perfil
-//import BotonCircular from './../Usuarios/BotonCircular.jsx';
-
+import guestImage from '../../assets/guest.png';
 import MenuIcon from './MenuIcon';
 import UserIcon from './UserIcon.jsx'
-//import MessagesIcon from './MessagesIcon';
 import CartIcon from './CartIcon';
 import NavButton from './NavButton.jsx';
 import '../../styles/NavBar.css';
@@ -26,9 +24,9 @@ import '../../styles/AccountMenu.css';
 import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
 
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
 const NavBar = ({ SetIsMenuOpen, siteSection }) => {
-
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
   const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
@@ -41,11 +39,9 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
   const navigate = useNavigate();
 
-  // Estados para llevar la cuenta de la ruta y repeticiones (routeRepeat)
   const [lastRoute, setLastRoute] = useState('siteSection');
   const [routeRepeat, setRouteRepeat] = useState(0);
 
-  // Estado para la pestaña activa
   const [activeTab, setActiveTab] = useState('');
   const location = useLocation();
   const isHomeOrInfo = location.pathname === '/' || location.pathname.startsWith('/info/');
@@ -67,13 +63,6 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     gana: < FaDollarSign />
   };
 
-  /*   const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  }; */
-
-
-  
-  // Actualizamos activeTab en el evento onClick y navegamos
   const handleNavigation = (path) => {
     setActiveTab(path);
     if (path === lastRoute) {
@@ -98,12 +87,10 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
       }
     };
 
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-
   }, []);
 
   useEffect(() => {
@@ -111,7 +98,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
       setLogoSrc(window.innerWidth < 490 ? "/logo193.png" : "/marihuanasclub_logo.png");
     };
 
-    handleResize(); // Se ejecuta al montar el componente
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -121,11 +108,97 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   }, [location.pathname]);
 
   const handleLinkClick = (path) => {
-    // Realiza la navegación
     handleNavigation(path);
-    // Cierra el menú
     setIsMenuOpen(false);
   };
+
+  const closeAllMenus = () => {
+    setIsProfileMenuOpen(false);
+    setIsNotificationMenuOpen(false);
+    setIsInfoMenuOpen(false);
+  };
+
+  // --- Notifications context (usa lo que tengas disponible) ---
+  // Asegúrate que tu NotificationsContext exponga refreshNotificaciones si quieres que pushNotification
+  // dispare una recarga desde el servidor.
+  const { notificationsNum, refreshNotificaciones } = useNotifications();
+
+  // contador optimista local para respuesta instantánea en UI
+  const [optimisticUnread, setOptimisticUnread] = useState(0);
+
+  // Cuando el número real cambie (viene del contexto), limpiamos el optimismo
+  // calculamos el número actual a partir de la función
+  const currentNotificationsNum = typeof notificationsNum === 'function' ? notificationsNum() : 0;
+  useEffect(() => {
+    // si el backend refrescó, limpiamos el contador optimista
+    setOptimisticUnread(0);
+  }, [currentNotificationsNum]);
+
+  /**
+   * pushNotification
+   * - notif: objeto recibido por socket (ya mapeado en el on('notification'))
+   * Comportamiento:
+   * 1) incrementa contador optimista para feedback inmediato
+   * 2) si existe refreshNotificaciones en el contexto, la llama para traer la lista actualizada
+   * 3) si ocurre error, mantiene el incremento optimista para que el usuario vea la alerta
+   */
+  const pushNotification = async (notif) => {
+    try {
+      // 1) Feedback inmediato en UI
+      setOptimisticUnread((v) => v + 1);
+
+      // 2) Si tu contexto provee la función para refrescar, la usamos
+      if (typeof refreshNotificaciones === 'function') {
+        await refreshNotificaciones(); // espera a que el servidor responda y el contexto se actualice
+        // al actualizar el contexto, el useEffect que observa currentNotificationsNum limpiará optimisticUnread
+      } else {
+        // Si no existe refresh, opcionalmente podrías guardar la notificación localmente (no lo hacemos aquí)
+        console.warn('pushNotification: refreshNotificaciones no disponible; aplicado incremento optimista.');
+      }
+
+      // opcional: puedes mostrar una pequeña animación, sonido o toast aquí
+      // example: toast('Nueva notificación');
+    } catch (err) {
+      console.error('pushNotification error:', err);
+      // no quitar el optimisticUnread para que el usuario vea algo; podrías revertir si quieres:
+      // setOptimisticUnread((v) => Math.max(0, v - 1));
+    }
+  };
+
+  // ---------- Socket: conectar y escuchar eventos ----------
+  useEffect(() => {
+    if (!SOCKET_URL) {
+      console.warn('REACT_APP_SOCKET_URL no definido; el socket no se conectará.');
+      return;
+    }
+
+    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
+
+    socket.on('connect', () => {
+      console.log('NavBar conectado al socket', SOCKET_URL, 'id:', socket.id);
+    });
+
+    socket.on('notification', (data) => {
+      const newNotif = {
+        id: data.id ?? `notif_${Date.now()}`,
+        title: data.title ?? 'Notificación',
+        message: data.message ?? (data.body ?? JSON.stringify(data)).slice(0, 250),
+        createdAt: data.createdAt ?? new Date().toISOString(),
+        read: false,
+        data,
+        type: data.type ?? 'generic'
+      };
+      // Llamamos a la función que actualiza contador y refresca notificaciones
+      pushNotification(newNotif);
+    });
+
+    socket.on('disconnect', (reason) => console.log('Socket desconectado:', reason));
+    socket.on('connect_error', (err) => console.warn('Error de conexión socket:', err));
+
+    return () => socket.disconnect();
+    // NOTA: pushNotification no está en dependencias para evitar reconectar el socket constantemente.
+    // Si tu linter reclama, puedes envolver pushNotification en useCallback y añadirla.
+  }, [SOCKET_URL]); // intentionally minimal deps
 
   useEffect(() => {
     const handleUserRegistration = async () => {
@@ -135,7 +208,6 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
           const existingUsers = await findUserInStrapi(userEmail);
           if (Array.isArray(existingUsers) && existingUsers.length === 0) {
             const result = await registerUserInStrapi(userEmail, user.name);
-            //console.log('Usuario registrado en Strapi:', result);
           }
         } catch (error) {
           console.error('Error al buscar o registrar usuario en Strapi:', error);
@@ -146,38 +218,23 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   }, [isAuthenticated, user]);
 
   const handleLogin = () => {
-    // Guarda la URL actual antes de hacer login
     const currentUrl = window.location.pathname + window.location.search;
     document.cookie = `returnTo=${encodeURIComponent(currentUrl)}; path=/; max-age=3600`;
-    console.log("URL guardada en cookie antes de login:", currentUrl);
-    // Redirige a Auth0
     loginWithRedirect();
     setIsMenuOpen(false);
   };
 
   const handleLogout = () => {
-    console.log('cerrando sesión');
-    // Elimina la cookie de retorno antes de cerrar sesión
     document.cookie = "returnTo=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    console.log("Cookie de returnTo eliminada antes de logout");
-    // Redirige a la página principal después del logout
     logout({ returnTo: window.location.origin });
     setIsMenuOpen(false);
   };
-  //********************quitar !!!!! */
 
+  // cuenta que pasamos al MenuIcon: número real + optimista
+  const displayCount = currentNotificationsNum + optimisticUnread;
 
-  const closeAllMenus = () => {
-    setIsProfileMenuOpen(false);
-    setIsNotificationMenuOpen(false);
-    setIsInfoMenuOpen(false);
-  };
-  
-  const { notificationsNum } = useNotifications();
   return (
     <>
-
-
       <section className="navbar"
         style={{
           width: "100%",
@@ -189,18 +246,17 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
         }}
       >
         <div>
-        <div className='nav-links columnas'>            
+          <div className='nav-links columnas'>
             <div className="logo-container" alt="MaRiHuaNaS.CLuB --> Red de Clubs 4.20 Mex." onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                <img 
-                    src={logoSrc} 
-                    alt="Marihuanas.Club Logo" 
-                    name="Marihuanas.Club - Red de Clubs 4.20 Mex. - Logo"
-                    className={'logo-img en-home'}
-                />     
+              <img
+                src={logoSrc}
+                alt="Marihuanas.Club Logo"
+                name="Marihuanas.Club - Red de Clubs 4.20 Mex. - Logo"
+                className={'logo-img en-home'}
+              />
             </div>
 
             <div className="columna3">
-           
               <div className="nav-linky">
                 <MenuIcon
                   isOpen={isInfoMenuOpen}
@@ -210,17 +266,18 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
                   className="cuenta-icon"
                   containerRef={InfoRef}
                   setIsOpen={(open) => {
-                    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                    closeAllMenus();
                     setIsInfoMenuOpen(open);
                   }}
                 />
               </div>
+
               <div className="nav-linky">
                 <MenuIcon
                   action='notifications'
                   isOpen={isNotificationMenuOpen}
                   setIsOpen={(open) => {
-                    closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                    closeAllMenus();
                     setIsNotificationMenuOpen(open);
                   }}
                   onClose={() => setIsNotificationMenuOpen(false)}
@@ -229,7 +286,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
                   containerRef={notifRef}
                   className="cuenta-icon"
                   handleLogout={handleLogout}
-                  count={notificationsNum()}
+                  count={displayCount}
                 />
               </div>
 
@@ -243,7 +300,6 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
                 />
               </div>
 
-
               <div className="nav-linky">
                 <CartIcon
                   isOpen={isMenuOpen}
@@ -253,14 +309,12 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
                   className="cuenta-icon"
                 />
               </div>
-              
-              
 
-              <UserIcon 
+              <UserIcon
                 handleLogin={handleLogin}
                 isMenuOpen={isProfileMenuOpen}
                 setIsMenuOpen={(open) => {
-                  closeAllMenus(); // <--- CIERRA LOS DEMÁS
+                  closeAllMenus();
                   setIsProfileMenuOpen(open);
                 }}
                 handleLogout={handleLogout}
@@ -273,23 +327,23 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
             </div>
           </div>
         </div>
-        </section>
-        <section>
+      </section>
+
+      <section>
         <div>
-            <div className="nav-links navbar-abajo">
+          <div className="nav-links navbar-abajo">
             {["clubs", "legal", "membresias", "market", "contenidos", "cursos", "herramientas","eventos", "comunidad", "gana"].map((section) => (
-                <NavButton 
-                  key={section}
-                  section={section}
-                  activeTab={activeTab}
-                  handleNavigation={handleNavigation}
-                  iconMap={iconMap}
-                  handleLogout={handleLogout}
-                />
+              <NavButton
+                key={section}
+                section={section}
+                activeTab={activeTab}
+                handleNavigation={handleNavigation}
+                iconMap={iconMap}
+                handleLogout={handleLogout}
+              />
             ))}
-            </div>
+          </div>
         </div>
-      
       </section>
     </>
   );
