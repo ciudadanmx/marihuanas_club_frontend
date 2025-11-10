@@ -65,19 +65,23 @@ const MiClub = () => {
             flexDirection: isMobile ? 'column-reverse' : 'row',
             padding: '24px',
             gap: '32px',
-            flexWrap: 'wrap'
+            flexWrap: 'wrap',
+            width: '100%',
+            maxWidth: '100%',
+            overflowX: 'hidden', // 👈 evita el scroll lateral global
+            boxSizing: 'border-box',
           }}
         >
           {/* Columna principal (pestañas + panel) */}
-          <div style={{ flex: '1 1 100%' }}>
+          <div style={{ flex: '1 1 100%', maxWidth: '100%' }}>
             <Pestanas
               tabs={tabs}
-              basePath={basePrueba} // <-- todas las rutas de prueba parten de aquí
+              basePath={basePrueba}
               onTabChange={(index) => setTabIndex(index)}
               collapseAt={640}
             />
-    
-            <div>
+
+            <div style={{ width: '100%', overflowX: 'hidden' }}>
               {tabIndex === 0 && <InfoMiClub />}
               {tabIndex === 1 && <Bitacora />}
               {tabIndex === 2 && <Documentos />}
