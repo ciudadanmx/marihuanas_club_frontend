@@ -39,6 +39,7 @@ import {
 } from '../../styles/ColoresBotones.jsx';
 
 const AgregarCurso = () => {
+    console.log('💾💾💾💾💾💾💾💾💾💾💾💾Iniciando agregar curso');
     const { enqueueSnackbar } = useSnackbar();
     const {
         categorias,

@@ -110,9 +110,9 @@ const Tienda = () => {
 
   // ---------- RETORNO TEMPRANO: si la membresía está presente y NO está activa,
   // devolvemos SOLO el componente de activación y NO renderizamos nada más ----------
-if (!isActivaMembresia()) {
-  return <ActivaTuMembresia />;
-}
+  if (!isActivaMembresia()) {
+    return <ActivaTuMembresia />;
+  }
   // -------------------------------------------------------------------------------
 
   const filtros = 'mios';

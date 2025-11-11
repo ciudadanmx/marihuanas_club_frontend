@@ -162,7 +162,7 @@ const Rutas = () => (
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
     <Route path="/clubs/qrscanner" element={<QrScanner />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
-    <Route path="/agregar-curso" element={<AgregarCurso />} />
+    <Route path="/cursos/agregar-curso" element={<AgregarCurso />} />
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
     <Route path="/cursos/eliminar/:slug" element={<EliminarCursoWrapper />} />
     <Route path="/cursos/*" element={<CursosPage />} />
