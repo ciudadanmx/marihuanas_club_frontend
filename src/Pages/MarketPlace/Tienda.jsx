@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import { useRoles } from '../../Contexts/RolesContext';
 import StoreImagePlaceholder from '../../assets/agencia.png';
 import AgregarProducto from './AgregarProducto';
 import PreguntasProducto from '../../components/MarketPlace/PreguntasProducto';
@@ -10,12 +11,16 @@ import PedidosPendientes from './PedidosPendientes';
 import PedidosEntregados from './PedidosEntregados';
 import PagosTienda from './PagosTienda';
 import ConfiguracionTienda from './ConfiguracionTienda';
+import ActivaTuMembresia from '../../components/Membresias/ActivaTuMembresia';
 
 const Tienda = () => {
   const { slug } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isLoading } = useAuth0();
+  const { isActivaMembresia} = useRoles();
+  console.log('🔎🔎🔎🔎🔎🔎🔎🔎🔎🔎🔽🔽🔽 tienda es activa membresia', isActivaMembresia);
+  
 
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -103,6 +108,13 @@ const Tienda = () => {
 
   if (isLoading) return <p>Cargando...</p>;
 
+  // ---------- RETORNO TEMPRANO: si la membresía está presente y NO está activa,
+  // devolvemos SOLO el componente de activación y NO renderizamos nada más ----------
+if (!isActivaMembresia()) {
+  return <ActivaTuMembresia />;
+}
+  // -------------------------------------------------------------------------------
+
   const filtros = 'mios';
 
   return (
@@ -169,7 +181,7 @@ const Tienda = () => {
         <div>
           {tabIndex === 0 && <PedidosPendientes />}
           {tabIndex === 1 && <PedidosEntregados />}
-          {tabIndex === 2 && <MisProductos filtros={filtros}/>}
+          {tabIndex === 2 && <MisProductos filtros={filtros} />}
           {tabIndex === 3 && <AgregarProducto />}
           {tabIndex === 4 && <PreguntasProducto />}
           {tabIndex === 5 && <PagosTienda />}

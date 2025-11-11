@@ -22,7 +22,6 @@ const Wrapper = styled(Box)(() => `
   justify-content: center;
   align-items: center;
   isolation: isolate;
-  margin-bottom: -40px;
 `);
 
 /* GIF central, arriba del humo */
@@ -50,7 +49,7 @@ const ButtonStyled = styled(motion.button)(() => `
   position: absolute;
   right: 3%;
   bottom: 6%;
-  transform: rotate(-35deg);
+  transform: rotate(-15deg);
   background: linear-gradient(145deg, #00c64a, #036622);
   color: white;
   font-size: clamp(18px, 2.8vw, 36px);
@@ -109,7 +108,7 @@ const GlobalStyles = styled("style")(() => ({
     /* pequeño helper para dar más variación en layers */
     .smoke-layer { will-change: transform, opacity, filter, background-position; }
   `
-})));
+}));
 
 /* invisible inline SVG filter que aplicaremos a las capas de humo
    - feTurbulence genera ruido fractal
@@ -270,7 +269,7 @@ export default function ActivaTuMembresia() {
   const navigate = useNavigate();
 
   return (
-    <Wrapper>
+    <Wrapper style={{ marginBottom: -40 }}>
       <GlobalStyles />
       <SvgFilters />
 
