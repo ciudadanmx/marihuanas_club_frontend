@@ -93,7 +93,9 @@ import Evento from '../Pages/Eventos/Evento.jsx';
 import WikiBar from '../components/WikiBar.jsx';
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 import WikiHome from '../Pages/Wiki/WikiHome.jsx'; // si planeas tener una página principal para la wiki
+
 import NotificationTester from '../components/NotificationTester.jsx';
+import ActivaTuMembresia from '../components/Membresias/ActivaTuMembresia.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -190,6 +192,7 @@ const Rutas = () => (
 
 
     <Route path="/notificationtester" element={<NotificationTester />} />
+    <Route path="/activatumembresia" element={<ActivaTuMembresia />} />
 
     {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
     <Route
