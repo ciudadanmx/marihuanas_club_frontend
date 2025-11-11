@@ -1,0 +1,17 @@
+* { box-sizing: border-box; margin:0; padding:0; }
+html,body,#root { height:100%; }
+.app-root { min-height:100vh; font-family: Inter, system-ui, Arial, sans-serif; background:#0b0b0c; color:#fff; }
+
+.topbar { height:64px; display:flex; align-items:center; padding:0 20px; background:rgba(0,0,0,0.3); gap:12px; }
+.brand { font-size:18px; color:#fff200; font-weight:700; }
+.topbar button { margin-left:8px; padding:8px 12px; border-radius:8px; border:none; cursor:pointer; background:#222; color:#fff; }
+.topbar button.active { background:#fff200; color:#000; font-weight:700; }
+
+.main-area { display:flex; gap:24px; padding:28px; align-items:flex-start; justify-content:center; }
+.canvas-wrap { flex:1 1 65%; height:620px; border-radius:12px; overflow:hidden; background:linear-gradient(180deg,#020203,#0b0b0c); display:flex; align-items:center; justify-content:center; }
+.hero-content { flex:0 1 320px; padding:12px; }
+
+@media (max-width:900px){
+  .main-area { flex-direction:column; padding:14px; }
+  .canvas-wrap { height:420px; width:100%; }
+}

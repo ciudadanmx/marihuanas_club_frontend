@@ -96,6 +96,7 @@ import WikiHome from '../Pages/Wiki/WikiHome.jsx'; // si planeas tener una pági
 
 import NotificationTester from '../components/NotificationTester.jsx';
 import ActivaTuMembresia from '../components/Membresias/ActivaTuMembresia.jsx';
+import Humo from '../components/Membresias/Humo/Humo.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -193,6 +194,7 @@ const Rutas = () => (
 
     <Route path="/notificationtester" element={<NotificationTester />} />
     <Route path="/activatumembresia" element={<ActivaTuMembresia />} />
+    <Route path="/humo" element={<Humo />} />
 
     {/* 🧠 RUTAS CON SU PROPIO LAYOUT (sin NavBar, usando WikiBar) */}
     <Route

@@ -54,6 +54,7 @@
     "save": "^2.9.0",
     "socket.io-client": "^4.8.1",
     "spherical-geometry-js": "^3.0.2",
+    "three": "^0.181.1",
     "use-places-autocomplete": "^4.0.1",
     "web-vitals": "^2.1.4"
   },
