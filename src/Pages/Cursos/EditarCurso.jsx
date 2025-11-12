@@ -9,12 +9,7 @@ import {
     colorFondoBotonSecundarioHoover,
     colorBordeBotonSecundarioHoover,
     colorControlSecundario,
-    colorControlSecundarioHoover,
     degradadoIconos,
-    botonEditor,
-    botonEditorBorde,
-    botonEditorFondoHoover,
-    botonEditorBordeHoover,
 } from '../../styles/ColoresBotones.jsx';
 import {
   Box,
@@ -34,7 +29,7 @@ import { useForm, Controller } from 'react-hook-form';
 import dayjs from 'dayjs';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
-import { useCurso } from '../../hooks/useCurso.jsx';
+import { useCursos } from '../../hooks/useCursos.jsx';
 import { useSnackbar } from 'notistack';
 import '../../quillConfig.js'; // registro de módulos personalizados
 
@@ -50,7 +45,7 @@ const EditarCurso = () => {
         loading: loadingHook,
         editarCurso,
         subirMedia,
-    } = useCurso();
+    } = useCursos();
 
     const [cargando, setCargando] = useState(true);
     const [maestroEmail, setMaestroEmail] = useState(true);

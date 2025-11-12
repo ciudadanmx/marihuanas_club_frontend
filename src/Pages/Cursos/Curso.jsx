@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { useCurso } from '../../hooks/useCurso';
+import { useCursos } from '../../hooks/useCursos';
 import BotonEditar from '../../components/Cursos/BotonEditar.jsx';
 import { useNavigate } from 'react-router-dom';
 import {

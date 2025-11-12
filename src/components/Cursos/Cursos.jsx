@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import CategoriasSlider from '../MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
-import { useCurso } from '../../hooks/useCurso';
+import { useCursos } from '../../hooks/useCursos';
 import CursoCard from '../Cursos/CursoCard';
 import CursoDetalle from '../../Pages/Cursos/Curso'; 
 import '../../styles/Contenidos.css';
@@ -56,7 +56,7 @@ const Cursos = ({ filtros, parametros }) => {
     setPorPagina,
     fetchCursos,
     totalItems,
-  } = useCurso();
+  } = useCursos();
 
   const [categorias, setCategorias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
