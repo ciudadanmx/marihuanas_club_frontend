@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Buscador from '../../components/MarketPlace/Buscador';
 import ProductoCard from '../../components/MarketPlace/ProductoCard';
 import BotonVender from '../../components/MarketPlace/BotonVender';
+import { CircularProgress } from '@mui/material';
 import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
 import { useUbicacion } from '../../hooks/useUbicacion';
@@ -93,50 +94,63 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
     })();
   }, []);
 
-  // Fetch no-filter products
-  useEffect(() => {
-    if (filtros) return;
+// Fetch no-filter products (versión incremental)
+useEffect(() => {
+  if (filtros) return;
+  if (!ubicacion?.codigoPostal) return;
 
-    const fetchAll = async () => {
-      const data = await getProductos();
-      if (!data) return;
+  const fetchAll = async () => {
+    setProductos([]); // limpiar antes de empezar
 
-      const enriched = await Promise.all(
-        data.map(async p => {
-          const attr = p.attributes;
-          if (!attr || !attr.nombre || !attr.precio) return null;
+    await getProductos({
+      onChunk: async (p) => {
+        // --- Enriquecimiento por producto ---
+        const attr = p.attributes;
+        if (!attr || !attr.nombre || !attr.precio) return;
 
-          const cpDestino = ubicacion?.codigoPostal || '11560';
-          const cpOrigen = attr.cp || '11590';
+        const cpDestino = ubicacion?.codigoPostal || '11560';
+        const cpOrigen = attr.cp || '11590';
 
-          let envio = null, total = null, img = null;
-          try {
-            envio = await precotizarMienvio(cpOrigen, cpDestino, attr.largo, attr.ancho, attr.alto, attr.peso);
-            total = await precotizacionTotal(p, cpDestino);
-            img = await obtenerImagenProducto(p.id);
-          } catch (err) {
-            console.error('[fetchAll] error:', err);
-          }
+        let envio = null, total = null, img = null;
+        try {
+          envio = await precotizarMienvio(
+            cpOrigen,
+            cpDestino,
+            attr.largo,
+            attr.ancho,
+            attr.alto,
+            attr.peso
+          );
 
-          const precioNum = Number(attr.precio) || 0;
+          total = await precotizacionTotal(p, cpDestino);
+          img = await obtenerImagenProducto(p.id);
+        } catch (err) {
+          console.error('[fetchAll chunk] error:', err);
+        }
 
-          return {
-            ...p,
-            envio,
-            total,
-            imagen: img,
-            calificacion: calificacionPromedio(p),
-            numCalificaciones: obtenerNumeroCalificaciones(p),
-            precio: precioNum,
-          };
-        })
-      );
+        const precioNum = Number(attr.precio) || 0;
 
-      setProductos(enriched.filter(Boolean));
-    };
+        const enriched = {
+          ...p,
+          envio,
+          total,
+          imagen: img,
+          calificacion: calificacionPromedio(p),
+          numCalificaciones: obtenerNumeroCalificaciones(p),
+          precio: precioNum,
+        };
 
-    if (ubicacion?.codigoPostal) fetchAll();
-  }, [ubicacion, filtros]);
+        // se agrega de inmediato a la UI
+        setProductos(prev => [...prev, enriched]);
+      },
+
+      batchSize: 1,   // entrega 1 por 1 para render inmediato
+      chunkDelay: 0,  // puedes subirlo a 20–50ms si quieres efecto "goteo"
+    });
+  };
+
+  fetchAll();
+}, [ubicacion, filtros]);
 
   // Fetch filtered products
   useEffect(() => {
@@ -200,9 +214,27 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
         {listToRender.length === 0 && (
           <Grid item xs={12}>
             <Typography textAlign="center">
-              {filtros
-                ? loadingFiltros ? 'Cargando productos...' : 'No hay productos.'
-                : 'No se encontraron productos disponibles.'}
+              {filtros ? (
+    loadingFiltros ? (
+        'Cargando productos...'
+    ) : (
+        'No hay productos.'
+    )
+) : (
+    <div
+        style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+            width: '100%',
+        }}
+    >
+        <CircularProgress size={28} />
+        <span style={{ marginTop: '10px' }}>Cargando Productos</span>
+    </div>
+)}
             </Typography>
           </Grid>
         )}

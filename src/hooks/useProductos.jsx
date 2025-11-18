@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
 
 const regiones = {
@@ -21,39 +21,24 @@ const obtenerEstadoPorCP = async (cp) => {
   const cpp = cp || '11560';
   try {
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${cpp}&components=country:MX&key=${process.env.REACT_APP_GEOCODING_KEY}`;
-    console.log('Consultando URL:', url);
 
     const res = await fetch(url);
     const data = await res.json();
 
-    console.log('🔗Respuesta completa de la API:', data);
-
-    if (data.status !== 'OK') {
-      console.error('❌Google Maps API error:', data.status);
-      return null;
-    }
+    if (data.status !== 'OK') return null;
 
     const resultados = data.results[0]?.address_components;
-    console.log('🗺️ Componentes de dirección:', resultados);
-
-    if (!resultados) {
-      console.warn('❌ No se encontraron componentes de dirección');
-      return null;
-    }
+    if (!resultados) return null;
 
     const estado = resultados.find(component =>
       component.types.includes('administrative_area_level_1')
     );
 
-    console.log('🗺️ Estado detectado:', estado?.long_name || 'No encontrado');
-
     return estado ? estado.long_name : null;
   } catch (err) {
-    //console.error('Error al consultar Google Maps:', err);
     return null;
   }
 };
-
 
 const obtenerEstadoProducto = async (producto) => {
   return await obtenerEstadoPorCP(producto.cp);
@@ -121,8 +106,9 @@ const useProductos = () => {
 
   const [producto, setProducto] = useState(null);
 
-  const API_URL = process.env.REACT_APP_STRAPI_URL +'/api';
+  const API_URL = process.env.REACT_APP_STRAPI_URL + '/api';
 
+  // Legacy simple fetch (se mantiene para compatibilidad con código existente)
   const fetchProductos = async () => {
     setLoading(true);
     try {
@@ -213,33 +199,67 @@ const useProductos = () => {
     }
   };
 
-
-    // ✅ Obtener todos los productos
-
-  const API_URL_PRODUCTOS = API_URL + '/productos';  
+  // ---------- Mejorado: getProductos incremental / onChunk ----------
+  // params supports: onChunk (fn), batchSize (number), chunkDelay (ms), paginate params
+  const API_URL_PRODUCTOS = API_URL + '/productos';
   const getProductos = async (params = {}) => {
+    // params can be: { onChunk, batchSize = 1, chunkDelay = 0, ...axiosParams }
+    const { onChunk, batchSize = 1, chunkDelay = 0, ...axiosParams } = params || {};
     setLoading(true);
     try {
-      console.log('🌐 Fetching productos desde useHook...');
       const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           populate: '*',
           'pagination[pageSize]': 150,
-          ...params,
+          ...axiosParams,
         },
       });
-      console.log('✅ Productos response: desde hook', res.data);      
-      setProductos(res.data.data);
-      return res.data.data;
+
+      const items = res?.data?.data || [];
+
+      if (typeof onChunk === 'function') {
+        // incremental mode: emit chunks/items one by one (or in batches)
+        if (batchSize <= 1) {
+          for (const item of items) {
+            try {
+              onChunk(item);
+              // update internal state progressively as well
+              setProductos(prev => [...prev, item]);
+            } catch (err) {
+              // swallow per-item errors to avoid breaking the whole stream
+              console.error('Error procesando chunk:', err);
+            }
+            if (chunkDelay) await new Promise(r => setTimeout(r, chunkDelay));
+          }
+        } else {
+          // batch mode
+          for (let i = 0; i < items.length; i += batchSize) {
+            const batch = items.slice(i, i + batchSize);
+            try {
+              batch.forEach(it => onChunk(it));
+              setProductos(prev => prev.concat(batch));
+            } catch (err) {
+              console.error('Error procesando batch:', err);
+            }
+            if (chunkDelay) await new Promise(r => setTimeout(r, chunkDelay));
+          }
+        }
+      } else {
+        // default behavior (backwards compatible): set all at once
+        setProductos(items);
+      }
+
+      return items;
     } catch (err) {
-      console.error('❌ Error al obtener productos:', error);      
+      console.error('❌ Error al obtener productos:', err);
       setError(err);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ Obtener producto por ID
+  // Obtener producto por ID
   const getProducto = async (id) => {
     setLoading(true);
     try {
@@ -253,7 +273,7 @@ const useProductos = () => {
     }
   };
 
-  // ✅ Obtener producto por slug (nuevo método)
+  // Obtener producto por slug
   const getProductoBySlug = async (slug) => {
     setLoading(true);
     setError(null);
@@ -276,7 +296,6 @@ const useProductos = () => {
     }
   };
 
-  // ✅ Buscar productos por descripción, nombre o marca
   const buscarProductos = async (busqueda) => {
     setLoading(true);
     setError(null);
@@ -298,8 +317,6 @@ const useProductos = () => {
     }
   };
 
-
-  // ✅ Obtener productos por categoría
   const getProductosPorCategoria = async (categoriaId) => {
     setLoading(true);
     try {
@@ -318,7 +335,6 @@ const useProductos = () => {
     }
   };
 
-  // ✅ Obtener productos por tienda
   const getProductosPorTienda = async (storeId) => {
     setLoading(true);
     try {
@@ -336,7 +352,6 @@ const useProductos = () => {
       setLoading(false);
     }
   };
-
 
   const agregarResena = async (productoId, datosResena) => {
     try {
@@ -366,7 +381,6 @@ const useProductos = () => {
     }
   };
 
-
   return {
     productos,
     loading,
@@ -388,7 +402,7 @@ const useProductos = () => {
     agregarResena,
     getProductos,
     getProducto,
-    getProductoBySlug,       // <<--- MÉTODO NUEVO
+    getProductoBySlug,
     buscarProductos,
     getProductosPorCategoria,
     getProductosPorTienda,
@@ -397,4 +411,3 @@ const useProductos = () => {
 };
 
 export default useProductos;
-
