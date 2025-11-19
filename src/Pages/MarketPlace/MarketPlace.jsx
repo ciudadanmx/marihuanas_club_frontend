@@ -227,6 +227,7 @@ useEffect(() => {
 }, [ubicacion, filtros]);
 
 // Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
+// --- Fetch filtered products — ahora con fallback de mapeo de filtros ---
 useEffect(() => {
   // si no hay función no hacemos nada
   if (typeof buscarProductos !== 'function') {
@@ -234,23 +235,89 @@ useEffect(() => {
     return;
   }
 
+  // parsear query params
+  const qs = new URLSearchParams(location.search);
+  const marcaQ = qs.get('marca') || qs.get('brand') || '';
+  const tiendaQ = qs.get('tienda') || qs.get('store') || '';
+  const precioMinQ = qs.get('precio_min') || qs.get('precioMin') || qs.get('min') || '';
+  const precioMaxQ = qs.get('precio_max') || qs.get('precioMax') || qs.get('max') || '';
+
   // limpiar debounce anterior
   if (debounceRef.current) clearTimeout(debounceRef.current);
 
-  // debounce de 250ms antes de hacer la petición
   debounceRef.current = setTimeout(async () => {
     const currentRequestId = ++requestIdRef.current;
 
-    // Params tal como los usabas antes
-    try {
-      await buscarProductos({ filtros, parametros, pagina, porPagina });
+    // base params (lo que ya usabas)
+    const baseParams = {
+      filtros,
+      parametros,
+      pagina,
+      porPagina,
+      populate: '*',
+    };
 
-      // Si llegó otra petición más reciente, ignoramos (tu hook actualiza pagHook.productos)
+    // función auxiliar para clonar y agregar filtros
+    const buildParams = (overrides = {}) => ({ ...baseParams, ...overrides });
+
+    // 1) mapeo principal (intuitivo)
+    const mainFilters = { ...baseParams };
+    if (marcaQ) mainFilters['filters[marca][$containsi]'] = marcaQ;
+    if (precioMinQ) mainFilters['filters[precio][$gte]'] = Number(precioMinQ);
+    if (precioMaxQ) mainFilters['filters[precio][$lte]'] = Number(precioMaxQ);
+    if (tiendaQ) {
+      mainFilters['filters[$or][0][store][slug][$eq]'] = tiendaQ;
+      mainFilters['filters[$or][1][store][nombre][$eq]'] = tiendaQ;
+      mainFilters['filters[$or][2][tienda][$containsi]'] = tiendaQ;
+    }
+
+    // 2) mapeo alternativo (por si los campos se llaman diferente en Strapi)
+    const altFilters = { ...baseParams };
+    if (marcaQ) {
+      altFilters['filters[brand][$containsi]'] = marcaQ;
+      altFilters['filters[brand][slug][$eq]'] = marcaQ;
+    }
+    if (precioMinQ) altFilters['filters[attributes.precio][$gte]'] = Number(precioMinQ);
+    if (precioMaxQ) altFilters['filters[attributes.precio][$lte]'] = Number(precioMaxQ);
+    if (tiendaQ) {
+      // intentamos varias rutas alternas
+      altFilters['filters[$or][0][store][slug][$eq]'] = tiendaQ;
+      altFilters['filters[$or][1][store][data][attributes][slug][$eq]'] = tiendaQ;
+      altFilters['filters[$or][2][store_name][$containsi]'] = tiendaQ;
+      altFilters['filters[$or][3][tienda_nombre][$containsi]'] = tiendaQ;
+      altFilters['filters[$or][4][store_id][$eq]'] = tiendaQ;
+    }
+
+    try {
+      console.log('[MarketPlace] llamar buscarProductos con mainFilters:', mainFilters);
+      const itemsMain = await buscarProductos(mainFilters);
+      console.log('[MarketPlace] respuesta main items.length=', Array.isArray(itemsMain) ? itemsMain.length : '(no array)', itemsMain);
+
+      // ignorar si ya llegó otra petición más reciente
       if (currentRequestId !== requestIdRef.current) {
-        console.log('Respuesta de buscarProductos ignorada por ser antigua', currentRequestId);
+        console.log('Respuesta de buscarProductos (main) ignorada por ser antigua', currentRequestId);
         return;
       }
-      // nada más: asumimos que el hook actualiza productosFiltrados internamente
+
+      // si la respuesta principal trae resultados, ya estamos
+      if (Array.isArray(itemsMain) && itemsMain.length > 0) {
+        return;
+      }
+
+      // si no hay resultados y había filtros activos, intentar mapeo alternativo
+      const hadAnyFilter = !!(marcaQ || tiendaQ || precioMinQ || precioMaxQ);
+      if (hadAnyFilter) {
+        console.log('[MarketPlace] mainFilters devolvió 0 items — probando altFilters:', altFilters);
+        const itemsAlt = await buscarProductos(altFilters);
+        console.log('[MarketPlace] respuesta alt items.length=', Array.isArray(itemsAlt) ? itemsAlt.length : '(no array)', itemsAlt);
+
+        if (currentRequestId !== requestIdRef.current) {
+          console.log('Respuesta de buscarProductos (alt) ignorada por ser antigua', currentRequestId);
+          return;
+        }
+
+        // si aún 0, ya devolvemos y MarketPlace mostrará "No hay productos."
+      }
     } catch (err) {
       console.error('[buscarProductos debounce] error:', err);
     }
@@ -259,8 +326,8 @@ useEffect(() => {
   return () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   };
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [filtros, parametros, pagina, porPagina, buscarProductos]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [filtros, parametros, pagina, porPagina, buscarProductos, location.search]);
 
   // Observer
   useEffect(() => {
