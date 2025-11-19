@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Buscador from '../../components/MarketPlace/Buscador';
 import ProductoCard from '../../components/MarketPlace/ProductoCard';
-import BotonVender from '../../components/MarketPlace/BotonVender';
+//mport BotonVender from '../../components/MarketPlace/BotonVender';
 import { CircularProgress } from '@mui/material';
 import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
@@ -13,13 +13,9 @@ import {
   Grid,
   Container,
   Typography,
-  Button,
   TextField,
-  Fade,
-  Slide,
   useMediaQuery,
   useTheme,
-  Stack,
   Pagination,
 } from '@mui/material';
 
@@ -50,6 +46,8 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
 
   // Filters logic
   const pagHook = useProductos({ paginado: true });
+  console.log('buscar pagHook keys:', Object.keys(pagHook));
+  console.log('buscar pagHook full:', pagHook);
   const {
     productos: productosFiltrados = { data: [] },
     loading: loadingFiltros,
@@ -58,9 +56,10 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
     setPagina,
     porPagina,
     setPorPagina,
-    fetchProductos: fetchProductosFiltros,
+    buscarProductos,
     totalItems,
   } = pagHook;
+  console.log('filtrando búsqueda', productosFiltrados);
 
   // UI state
   const [categorias, setCategorias] = useState([]);
@@ -70,6 +69,7 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
   // Handlers
 // Handler de búsqueda — reemplaza el existente
 const handleBuscar = async () => {
+  console.log('🔥🔎🔥🔎🔥🔎 preiniciando búsqueda');
 
   
     // calculamos una clave simple basada en los ids para usar en las dependencias
@@ -79,12 +79,15 @@ const handleBuscar = async () => {
   if (!slug) return;
 
   // navegamos como antes
+  console.log('botón búsqueda');
   navigate(`/productos/busqueda/${slug}`);
 
   // forzamos la paginación a 1 y pedimos resultados filtrados inmediatamente
   try {
+    console.clear();
+    console.log('🔥🔥🔥🔎🔎🔎🔎🔎 Iniciando búsqueda');
     setPagina(1);
-    await fetchProductosFiltros({
+    await buscarProductos({
       filtros: 'busqueda',
       parametros: slug,
       pagina: 1,
@@ -101,7 +104,7 @@ const handleMis = async () => {
 
   try {
     setPagina(1);
-    await fetchProductosFiltros({
+    await buscarProductos({
       filtros: 'mis-productos',
       parametros: '',
       pagina: 1,
@@ -120,7 +123,7 @@ const handleCategoriaClick = async (slug) => {
   // pedimos la lista filtrada por categoria inmediatamente
   try {
     setPagina(1);
-    await fetchProductosFiltros({
+    await buscarProductos({
       filtros: 'categoria',
       parametros: slug,
       pagina: 1,
@@ -154,8 +157,19 @@ const handleCategoriaClick = async (slug) => {
     })();
   }, []);
 
+
+// --- Preparar lista y clave estable para observer ---
+// calculamos lista arriba para reutilizar en observer y en otros efectos
+const lista = filtros ? (productosFiltrados?.data || []) : (productos || []);
+const listaIdsKey = (lista && lista.map(p => p?.id).join('|')) || '';
+
+// Debounce + requestId para evitar respuestas fuera de orden
+const debounceRef = useRef(null);
+const requestIdRef = useRef(0);
+
 // Fetch no-filter products (versión incremental)
 useEffect(() => {
+  console.log('búsqueda buscando', filtros);
   if (filtros) return;
   if (!ubicacion?.codigoPostal) return;
 
@@ -212,11 +226,41 @@ useEffect(() => {
   fetchAll();
 }, [ubicacion, filtros]);
 
-  // Fetch filtered products
-  useEffect(() => {
-    if (!filtros) return;
-    fetchProductosFiltros({ filtros, parametros });
-  }, [pagina, porPagina, filtros, parametros]);
+// Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
+useEffect(() => {
+  // si no hay función no hacemos nada
+  if (typeof buscarProductos !== 'function') {
+    console.warn('buscarProductos no es función en pagHook');
+    return;
+  }
+
+  // limpiar debounce anterior
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+
+  // debounce de 250ms antes de hacer la petición
+  debounceRef.current = setTimeout(async () => {
+    const currentRequestId = ++requestIdRef.current;
+
+    // Params tal como los usabas antes
+    try {
+      await buscarProductos({ filtros, parametros, pagina, porPagina });
+
+      // Si llegó otra petición más reciente, ignoramos (tu hook actualiza pagHook.productos)
+      if (currentRequestId !== requestIdRef.current) {
+        console.log('Respuesta de buscarProductos ignorada por ser antigua', currentRequestId);
+        return;
+      }
+      // nada más: asumimos que el hook actualiza productosFiltrados internamente
+    } catch (err) {
+      console.error('[buscarProductos debounce] error:', err);
+    }
+  }, 250);
+
+  return () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  };
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [filtros, parametros, pagina, porPagina, buscarProductos]);
 
   // Observer
   useEffect(() => {
@@ -226,18 +270,19 @@ useEffect(() => {
           if (e.isIntersecting) {
             const id = e.target.getAttribute('data-id');
             setVisible(v => ({ ...v, [id]: true }));
-            observer.unobserve(e.target);
+            try { observer.unobserve(e.target); } catch(_) {}
           }
         });
       }, { threshold: 0.2 }
     );
-    const lista = filtros ? productosFiltrados?.data || [] : productos || [];
+    // usamos la lista ya calculada arriba y la clave estable listaIdsKey
     lista.forEach(prod => {
       const el = document.querySelector(`[data-id='${prod.id}']`);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [filtros ? productosFiltrados?.data : productos]);
+    // ahora dependemos de listaIdsKey para que solo re-ejecute cuando cambien los ids
+  }, [listaIdsKey, filtros]);
 
   // Render
   const listToRender = filtros ? (productosFiltrados?.data || []) : (productos || []);

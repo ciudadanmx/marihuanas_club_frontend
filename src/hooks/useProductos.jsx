@@ -1,4 +1,5 @@
-import { useState } from 'react';
+// src/hooks/useProductos.js
+import { useState, useCallback, useRef } from 'react';
 import axios from 'axios';
 
 const regiones = {
@@ -99,83 +100,122 @@ const precotizacionTotal = async (producto, cpDestino) => {
   return parseFloat((producto.precio + envio + comision).toFixed(2));
 };
 
-const useProductos = () => {
-  const [productos, setProductos] = useState([]);
+/**
+ * useProductos
+ * @param {Object} options
+ * @param {boolean} options.paginado - si true, el hook devolverá productos en forma { data: [], meta: {} }
+ */
+const useProductos = ({ paginado } = {}) => {
+  const isPaginado = Boolean(paginado);
+  // estado inicial acorde al modo paginado o no
+  const [productos, setProductos] = useState(isPaginado ? { data: [], meta: {} } : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [producto, setProducto] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
 
-  const API_URL = process.env.REACT_APP_STRAPI_URL + '/api';
+  const API_ROOT = process.env.REACT_APP_STRAPI_URL + '/api';
+  const API_URL_PRODUCTOS = `${API_ROOT}/productos`;
 
-  // Legacy simple fetch (se mantiene para compatibilidad con código existente)
-  const fetchProductos = async () => {
+  // ref para evitar multiples updates si es necesario
+  const mountedRef = useRef(true);
+  // cleanup si es necesario (si en el futuro añades useEffect para cancelar peticiones)
+  // useEffect(() => () => { mountedRef.current = false; }, []);
+
+  // helper para setear productos respetando el modo paginado
+  const setProductosNormalized = useCallback((items = [], meta = {}) => {
+    if (isPaginado) {
+      setProductos({ data: items, meta: meta || {} });
+      setTotalItems(meta?.pagination?.total || (items ? items.length : 0));
+    } else {
+      setProductos(items);
+      setTotalItems(items ? items.length : 0);
+    }
+  }, [isPaginado]);
+
+  // Legacy simple fetch (arreglado) - envía items y meta cuando aplica
+  const fetchProductos = useCallback(async (params = {}) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${API_URL}/productos?populate=deep`, {
-        credentials: 'include'
+      const res = await fetch(`${API_URL_PRODUCTOS}`, {
+        credentials: 'include',
       });
-      const data = await res.json();
-      setProductos(data || []);
+      const json = await res.json();
+      const items = json?.data || [];
+      const meta = json?.meta || {};
+      setProductosNormalized(items, meta);
+      return { items, meta };
     } catch (err) {
       setError(err);
+      console.error('fetchProductos error', err);
+      return { items: [], meta: {} };
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS, setProductosNormalized]);
 
-  const createProducto = async (nuevoProducto) => {
+  const createProducto = useCallback(async (nuevoProducto) => {
     try {
-      const res = await fetch(`${API_URL}/productos`, {
+      const res = await fetch(`${API_URL_PRODUCTOS}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ data: nuevoProducto }),
       });
-      return await res.json();
+      const json = await res.json();
+      return json;
     } catch (err) {
       setError(err);
+      console.error('createProducto error', err);
+      return null;
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
-  const updateProducto = async (id, datos) => {
+  const updateProducto = useCallback(async (id, datos) => {
     try {
-      const res = await fetch(`${API_URL}/productos/${id}`, {
+      const res = await fetch(`${API_URL_PRODUCTOS}/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ data: datos }),
       });
-      return await res.json();
+      const json = await res.json();
+      return json;
     } catch (err) {
       setError(err);
+      console.error('updateProducto error', err);
+      return null;
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
-  const deleteProducto = async (id) => {
+  const deleteProducto = useCallback(async (id) => {
     try {
-      const res = await fetch(`${API_URL}/productos/${id}`, {
+      const res = await fetch(`${API_URL_PRODUCTOS}/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      return await res.json();
+      const json = await res.json();
+      return json;
     } catch (err) {
       setError(err);
+      console.error('deleteProducto error', err);
+      return null;
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
-  const calificacionPromedio = (producto) => {
+  const calificacionPromedio = useCallback((producto) => {
     if (!producto.calificacion || producto.calificacion === 0 || !producto.numero_calificaciones) return 0;
     return parseFloat((producto.calificacion / (producto.numero_calificaciones * 5)).toFixed(2));
-  };
+  }, []);
 
-  const obtenerNumeroCalificaciones = (producto) => {
+  const obtenerNumeroCalificaciones = useCallback((producto) => {
     return producto.numero_calificaciones || 0;
-  };
+  }, []);
 
-  const contadorResenas = async (productoId) => {
+  const contadorResenas = useCallback(async (productoId) => {
     try {
-      const res = await fetch(`${API_URL}/resenas?filters[producto][id][$eq]=${productoId}`, {
+      const res = await fetch(`${API_ROOT}/resenas?filters[producto][id][$eq]=${productoId}`, {
         credentials: 'include'
       });
       const data = await res.json();
@@ -184,11 +224,11 @@ const useProductos = () => {
       console.error('Error contando reseñas:', err);
       return 0;
     }
-  };
+  }, [API_ROOT]);
 
-  const obtenerResenas = async (productoId) => {
+  const obtenerResenas = useCallback(async (productoId) => {
     try {
-      const res = await fetch(`${API_URL}/resenas?filters[producto][id][$eq]=${productoId}`, {
+      const res = await fetch(`${API_ROOT}/resenas?filters[producto][id][$eq]=${productoId}`, {
         credentials: 'include'
       });
       const data = await res.json();
@@ -197,15 +237,13 @@ const useProductos = () => {
       console.error('Error obteniendo reseñas:', err);
       return [];
     }
-  };
+  }, [API_ROOT]);
 
-  // ---------- Mejorado: getProductos incremental / onChunk ----------
-  // params supports: onChunk (fn), batchSize (number), chunkDelay (ms), paginate params
-  const API_URL_PRODUCTOS = API_URL + '/productos';
-  const getProductos = async (params = {}) => {
-    // params can be: { onChunk, batchSize = 1, chunkDelay = 0, ...axiosParams }
+  // getProductos (incremental / onChunk)
+  const getProductos = useCallback(async (params = {}) => {
     const { onChunk, batchSize = 1, chunkDelay = 0, ...axiosParams } = params || {};
     setLoading(true);
+    setError(null);
     try {
       const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
@@ -216,37 +254,52 @@ const useProductos = () => {
       });
 
       const items = res?.data?.data || [];
+      const meta = res?.data?.meta || {};
 
       if (typeof onChunk === 'function') {
-        // incremental mode: emit chunks/items one by one (or in batches)
         if (batchSize <= 1) {
           for (const item of items) {
             try {
-              onChunk(item);
-              // update internal state progressively as well
-              setProductos(prev => [...prev, item]);
+              // allow onChunk to be async
+              await onChunk(item);
+              setProductos(prev => {
+                if (isPaginado) {
+                  // in paginado mode we keep data array inside object
+                  const prevData = (prev && prev.data) ? prev.data : [];
+                  const next = { data: [...prevData, item], meta };
+                  return next;
+                }
+                return [...prev, item];
+              });
             } catch (err) {
-              // swallow per-item errors to avoid breaking the whole stream
               console.error('Error procesando chunk:', err);
             }
             if (chunkDelay) await new Promise(r => setTimeout(r, chunkDelay));
           }
+          // after chunks, normalize total/meta
+          setTotalItems(meta?.pagination?.total || items.length);
         } else {
-          // batch mode
           for (let i = 0; i < items.length; i += batchSize) {
             const batch = items.slice(i, i + batchSize);
             try {
               batch.forEach(it => onChunk(it));
-              setProductos(prev => prev.concat(batch));
+              setProductos(prev => {
+                if (isPaginado) {
+                  const prevData = (prev && prev.data) ? prev.data : [];
+                  return { data: prevData.concat(batch), meta };
+                }
+                return prev.concat(batch);
+              });
             } catch (err) {
               console.error('Error procesando batch:', err);
             }
             if (chunkDelay) await new Promise(r => setTimeout(r, chunkDelay));
           }
+          setTotalItems(meta?.pagination?.total || items.length);
         }
       } else {
-        // default behavior (backwards compatible): set all at once
-        setProductos(items);
+        // default behavior
+        setProductosNormalized(items, meta);
       }
 
       return items;
@@ -257,120 +310,174 @@ const useProductos = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS, isPaginado, setProductosNormalized]);
 
-  // Obtener producto por ID
-  const getProducto = async (id) => {
+  // getProducto por id
+  const getProducto = useCallback(async (id) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get(`${API_URL}/productos/${id}?populate=*`);
-      setProducto(res.data.data);
-      return res.data.data;
+      const res = await axios.get(`${API_URL_PRODUCTOS}/${id}`, {
+        params: { populate: '*' }
+      });
+      const item = res.data?.data || null;
+      setProducto(item);
+      return item;
     } catch (err) {
       setError(err);
+      console.error('getProducto error', err);
+      return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
-  // Obtener producto por slug
-  const getProductoBySlug = async (slug) => {
+  // getProductoBySlug
+  const getProductoBySlug = useCallback(async (slug) => {
     setLoading(true);
     setError(null);
-    const API_COMPLETA = API_URL + '/productos/';
     try {
-      const res = await axios.get(API_COMPLETA, {
+      const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           'filters[slug][$eq]': slug,
           populate: '*',
         },
       });
-      const data = res.data.data[0] || null;
+      const data = res.data?.data?.[0] || null;
       setProducto(data);
       return data;
     } catch (err) {
       setError(err);
+      console.error('getProductoBySlug error', err);
       return null;
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
-  const buscarProductos = async (busqueda) => {
+  // buscarProductos: acepta string o un objeto { filtros, parametros, pagina, porPagina, ... }
+  const buscarProductos = useCallback(async (busqueda) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(API_URL, {
-        params: {
-          populate: '*',
-          'filters[$or][0][descripcion][$containsi]': busqueda,
-          'filters[$or][1][nombre][$containsi]': busqueda,
-          'filters[$or][2][marca][$containsi]': busqueda,
-        },
-      });
-      return res.data.data;
+      const endpoint = API_URL_PRODUCTOS;
+      let params = { populate: '*' };
+
+      if (typeof busqueda === 'string') {
+        const q = busqueda;
+        params = {
+          ...params,
+          'filters[$or][0][descripcion][$containsi]': q,
+          'filters[$or][1][nombre][$containsi]': q,
+          'filters[$or][2][marca][$containsi]': q,
+        };
+      } else if (busqueda && typeof busqueda === 'object') {
+        const { filtros, parametros, pagina, porPagina, ...rest } = busqueda;
+
+        if (filtros === 'busqueda' && parametros) {
+          params = {
+            ...params,
+            'filters[$or][0][descripcion][$containsi]': parametros,
+            'filters[$or][1][nombre][$containsi]': parametros,
+            'filters[$or][2][marca][$containsi]': parametros,
+          };
+        } else if (filtros === 'categoria' && parametros) {
+          // Ajusta según tu modelo de categoría en Strapi (slug vs id)
+          params = {
+            ...params,
+            'filters[categoria][slug][$eq]': parametros,
+          };
+        } else if (filtros === 'mis-productos') {
+          // agregar filtro por owner si es necesario
+        }
+
+        if (pagina) params['pagination[page]'] = pagina;
+        if (porPagina) params['pagination[pageSize]'] = porPagina;
+
+        Object.assign(params, rest);
+      }
+
+      const res = await axios.get(endpoint, { params });
+      const items = res?.data?.data || [];
+      const meta = res?.data?.meta || {};
+      setProductosNormalized(items, meta);
+      return items;
     } catch (err) {
       setError(err);
+      console.error('buscarProductos error', err);
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS, setProductosNormalized]);
 
-  const getProductosPorCategoria = async (categoriaId) => {
+  const getProductosPorCategoria = useCallback(async (categoriaId) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get(API_URL, {
+      const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           populate: '*',
           'filters[store_category][id][$eq]': categoriaId,
         },
       });
-      return res.data.data;
+      const items = res.data?.data || [];
+      const meta = res.data?.meta || {};
+      setProductosNormalized(items, meta);
+      return items;
     } catch (err) {
       setError(err);
+      console.error('getProductosPorCategoria error', err);
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS, setProductosNormalized]);
 
-  const getProductosPorTienda = async (storeId) => {
+  const getProductosPorTienda = useCallback(async (storeId) => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await axios.get(API_URL, {
+      const res = await axios.get(API_URL_PRODUCTOS, {
         params: {
           populate: '*',
           'filters[store_id][$eq]': storeId,
         },
       });
-      return res.data.data;
+      const items = res.data?.data || [];
+      const meta = res.data?.meta || {};
+      setProductosNormalized(items, meta);
+      return items;
     } catch (err) {
       setError(err);
+      console.error('getProductosPorTienda error', err);
       return [];
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_URL_PRODUCTOS, setProductosNormalized]);
 
-  const agregarResena = async (productoId, datosResena) => {
+  const agregarResena = useCallback(async (productoId, datosResena) => {
     try {
-      const res = await fetch(`${API_URL}/resenas`, {
+      const res = await fetch(`${API_ROOT}/resenas`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ data: { ...datosResena, producto: productoId } }),
       });
-      return await res.json();
+      const json = await res.json();
+      return json;
     } catch (err) {
       console.error('Error agregando reseña:', err);
       return null;
     }
-  };
+  }, [API_ROOT]);
 
-  const obtenerImagenProducto = async (productoId) => {
+  const obtenerImagenProducto = useCallback(async (productoId) => {
     try {
-      const res = await axios.get(`${API_URL}/productos/${productoId}?populate=imagen_predeterminada`);
+      const res = await axios.get(`${API_URL_PRODUCTOS}/${productoId}`, {
+        params: { populate: 'imagen_predeterminada' }
+      });
       const imagen = res.data?.data?.attributes?.imagen_predeterminada?.data?.[0];
       if (!imagen) return null;
       const url = imagen.attributes?.url;
@@ -379,12 +486,13 @@ const useProductos = () => {
       console.error('Error obteniendo imagen del producto:', err);
       return null;
     }
-  };
+  }, [API_URL_PRODUCTOS]);
 
   return {
     productos,
     loading,
     error,
+    totalItems,
     fetchProductos,
     createProducto,
     updateProducto,
