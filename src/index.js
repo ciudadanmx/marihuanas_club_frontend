@@ -40,7 +40,8 @@ const AppWrapper = () => {
   // Extraer la primera sección de la URL: lo que está entre la primera y la segunda "/"
   // Ejemplo: /market/comprar -> "market"
   // Si la ruta es "/" o no tiene segmento, queda cadena vacía ''
-  const siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
+  var siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
+  if (siteSection === 'productos') siteSection = 'market';
 
   return (
     <>

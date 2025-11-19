@@ -24,6 +24,10 @@ import {
 } from '@mui/material';
 
 const MarketPlace = ({ filtros = '', parametros = '' }) => {
+
+    const observerRef = useRef(null);
+
+
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
@@ -64,13 +68,69 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
   const [visible, setVisible] = useState({});
 
   // Handlers
-  const handleBuscar = () => {
-    const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
-    if (!slug) return;
-    navigate(`/productos/busqueda/${slug}`);
-  };
-  const handleMis = () => navigate('/productos/mis-productos');
-  const handleCategoriaClick = (slug) => navigate(`/productos/categoria/${slug}`);
+// Handler de búsqueda — reemplaza el existente
+const handleBuscar = async () => {
+
+  
+    // calculamos una clave simple basada en los ids para usar en las dependencias
+  const lista = filtros ? productosFiltrados?.data || [] : productos || [];
+  const listaIdsKey = lista.map(p => p.id).join('|'); // cadena estable si los ids no cambian
+  const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
+  if (!slug) return;
+
+  // navegamos como antes
+  navigate(`/productos/busqueda/${slug}`);
+
+  // forzamos la paginación a 1 y pedimos resultados filtrados inmediatamente
+  try {
+    setPagina(1);
+    await fetchProductosFiltros({
+      filtros: 'busqueda',
+      parametros: slug,
+      pagina: 1,
+      porPagina,
+    });
+  } catch (err) {
+    console.error('[handleBuscar] fetchProductosFiltros error:', err);
+  }
+};
+
+// Handler de "mis productos" — reemplaza el existente (solo si quieres que cargue al navegar)
+const handleMis = async () => {
+  navigate('/productos/mis-productos');
+
+  try {
+    setPagina(1);
+    await fetchProductosFiltros({
+      filtros: 'mis-productos',
+      parametros: '',
+      pagina: 1,
+      porPagina,
+    });
+  } catch (err) {
+    console.error('[handleMis] fetchProductosFiltros error:', err);
+  }
+};
+
+// Handler para click en categoría — reemplaza el existente
+const handleCategoriaClick = async (slug) => {
+  // navegamos como antes
+  navigate(`/productos/categoria/${slug}`);
+
+  // pedimos la lista filtrada por categoria inmediatamente
+  try {
+    setPagina(1);
+    await fetchProductosFiltros({
+      filtros: 'categoria',
+      parametros: slug,
+      pagina: 1,
+      porPagina,
+    });
+  } catch (err) {
+    console.error('[handleCategoriaClick] fetchProductosFiltros error:', err);
+  }
+};
+
 
   // Title logic
   let titulo = '';
