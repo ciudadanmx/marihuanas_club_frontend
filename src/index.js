@@ -16,6 +16,9 @@ import { NotificationsProvider } from './Contexts/NotificationsContext';
 import './styles/index.css';
 import Footer from './components/Footer/Footer.jsx';
 
+// IMPORTA ScrollToTop
+import ScrollToTop from './components/ScrollToTop.jsx';
+
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
 const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;   // Si no usas API, quita este prop
@@ -45,6 +48,9 @@ const AppWrapper = () => {
 
   return (
     <>
+      {/* Este componente obliga a hacer scroll arriba en cada navegación */}
+      <ScrollToTop behavior="auto" />
+
       {/* Pasamos siteSection a NavBar solo si no es ruta wiki */}
       {!isWikiRoute && <NavBar siteSection={siteSection} />}
       <Rutas />
