@@ -1,17 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
-  Grid,
   TextField,
   Button,
   Stack,
   Card,
   CardContent,
   Divider,
-  Box
+  Box,
+  CircularProgress
 } from '@mui/material';
+import BoltIcon from "@mui/icons-material/Bolt";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
+
 import { useCart } from '../../Contexts/CartContext'; // Asegúrate de que esté bien la ruta
 import '../../styles/DetalleProducto.css';
+
+const MotionButton = motion(Button);
 
 const DetalleProducto = ({
   producto,
@@ -27,6 +34,10 @@ const DetalleProducto = ({
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const [costoEnvio, setCostoEnvio] = useState('Calculando...');
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
 
   const calcularEnvio = async () => {
     try {
@@ -60,16 +71,41 @@ const DetalleProducto = ({
     console.log('envio');
   }, [cantidad]);
 
-  const handleAddToCart = () => {
+  // Nuevo comportamiento: mostrar loading y luego permitir "Ir al carrito"
+  const handleAddToCart = async () => {
     if (!producto?.id || !producto?.attributes) return;
+    if (adding) return;
 
-    addToCart({
-  id: producto.id,
-  nombre: producto.attributes.nombre,
-  marca: producto.attributes.marca,
-  precio: producto.attributes.precio,
-  imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
-}, cantidad);
+    setAdding(true);
+    try {
+      const result = addToCart({
+        id: producto.id,
+        nombre: producto.attributes.nombre,
+        marca: producto.attributes.marca,
+        precio: producto.attributes.precio,
+        imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
+      }, cantidad);
+
+      // Si addToCart retorna promesa, la esperamos; si no, seguimos.
+      if (result && typeof result.then === 'function') {
+        await result;
+      }
+
+      // Espera mínima para que se vea el "cargando" (mejor UX)
+      await new Promise((r) => setTimeout(r, 500));
+
+      setAdded(true);
+    } catch (e) {
+      console.error('[CART] Error al agregar:', e);
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  // Nueva acción para comprar: navegar a /market/comprar/:slug
+  const handleBuy = () => {
+    const slug = producto?.attributes?.slug || producto?.id;
+    navigate(`/market/comprar/${slug}`);
   };
 
   return (
@@ -107,10 +143,57 @@ const DetalleProducto = ({
             </Button>
           </Stack>
 
-          <Button className="agregar-boton" onClick={handleAddToCart}>
-            <span className="material-icons" style={{ marginRight: '8px' }}>shopping_cart</span>
-            Agregar al carrito
-          </Button>
+          {/* ----------------------- AGREGAR AL CARRITO ----------------------- */}
+      <MotionButton
+        onClick={ added ? () => navigate('/market/carrito') : handleAddToCart }
+        variant="contained"
+        startIcon={
+          adding ? (
+            <CircularProgress size={18} />
+          ) : (
+            <AddShoppingCartIcon />
+          )
+        }
+        sx={{
+          backgroundColor: "#fff200",
+          color: "#000",
+          fontWeight: 700,
+          textTransform: "none",
+          borderRadius: "12px",
+          padding: "10px 18px",
+          "&:hover": {
+            backgroundColor: "#e6d700",
+          },
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.97 }}
+        disabled={adding}
+      >
+        { adding ? 'Cargando...' : (added ? 'Ir al carrito' : 'Agregar al carrito') }
+      </MotionButton>
+
+      {/* ------------------------------ COMPRAR ------------------------------ */}
+      <MotionButton
+        onClick={handleBuy}
+        variant="contained"
+        startIcon={<BoltIcon />}
+        sx={{
+          backgroundColor: "#6d6e71",
+          color: "#fff",
+          fontWeight: 700,
+          textTransform: "none",
+          borderRadius: "12px",
+          padding: "10px 18px",
+          "&:hover": {
+            backgroundColor: "#56575a",
+          },
+        }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.97 }}
+      >
+        Comprar
+      </MotionButton>
+
         </CardContent>
       </Card>
     </div>

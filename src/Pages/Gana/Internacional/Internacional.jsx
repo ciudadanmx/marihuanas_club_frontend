@@ -31,7 +31,7 @@ const Internacional = () => {
           zIndex: 1,
           backgroundColor: "#0f0f0f",
           color: "#f0f0f0",
-          py: { xs: 8, md: 12 },
+          py: { xs: 8, md: 1 },
           px: 2,
           borderTopLeftRadius: { xs: 0, md: 12 },
           borderTopRightRadius: { xs: 0, md: 12 },

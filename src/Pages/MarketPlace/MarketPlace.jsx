@@ -158,7 +158,7 @@ const handleCategoriaClick = async (slug) => {
   }, []);
 
 
-// --- Preparar lista y clave estable para observer ---
+/* --- Preparar lista y clave estable para observer --- */
 // calculamos lista arriba para reutilizar en observer y en otros efectos
 const lista = filtros ? (productosFiltrados?.data || []) : (productos || []);
 const listaIdsKey = (lista && lista.map(p => p?.id).join('|')) || '';
@@ -227,96 +227,103 @@ useEffect(() => {
 }, [ubicacion, filtros]);
 
 // Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
-// --- Fetch filtered products — ahora con fallback de mapeo de filtros ---
+// Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
 useEffect(() => {
-  // si no hay función no hacemos nada
   if (typeof buscarProductos !== 'function') {
     console.warn('buscarProductos no es función en pagHook');
     return;
   }
 
-  // parsear query params
-  const qs = new URLSearchParams(location.search);
-  const marcaQ = qs.get('marca') || qs.get('brand') || '';
-  const tiendaQ = qs.get('tienda') || qs.get('store') || '';
-  const precioMinQ = qs.get('precio_min') || qs.get('precioMin') || qs.get('min') || '';
-  const precioMaxQ = qs.get('precio_max') || qs.get('precioMax') || qs.get('max') || '';
-
-  // limpiar debounce anterior
   if (debounceRef.current) clearTimeout(debounceRef.current);
 
   debounceRef.current = setTimeout(async () => {
     const currentRequestId = ++requestIdRef.current;
 
-    // base params (lo que ya usabas)
-    const baseParams = {
-      filtros,
-      parametros,
-      pagina,
-      porPagina,
-      populate: '*',
-    };
-
-    // función auxiliar para clonar y agregar filtros
-    const buildParams = (overrides = {}) => ({ ...baseParams, ...overrides });
-
-    // 1) mapeo principal (intuitivo)
-    const mainFilters = { ...baseParams };
-    if (marcaQ) mainFilters['filters[marca][$containsi]'] = marcaQ;
-    if (precioMinQ) mainFilters['filters[precio][$gte]'] = Number(precioMinQ);
-    if (precioMaxQ) mainFilters['filters[precio][$lte]'] = Number(precioMaxQ);
-    if (tiendaQ) {
-      mainFilters['filters[$or][0][store][slug][$eq]'] = tiendaQ;
-      mainFilters['filters[$or][1][store][nombre][$eq]'] = tiendaQ;
-      mainFilters['filters[$or][2][tienda][$containsi]'] = tiendaQ;
-    }
-
-    // 2) mapeo alternativo (por si los campos se llaman diferente en Strapi)
-    const altFilters = { ...baseParams };
-    if (marcaQ) {
-      altFilters['filters[brand][$containsi]'] = marcaQ;
-      altFilters['filters[brand][slug][$eq]'] = marcaQ;
-    }
-    if (precioMinQ) altFilters['filters[attributes.precio][$gte]'] = Number(precioMinQ);
-    if (precioMaxQ) altFilters['filters[attributes.precio][$lte]'] = Number(precioMaxQ);
-    if (tiendaQ) {
-      // intentamos varias rutas alternas
-      altFilters['filters[$or][0][store][slug][$eq]'] = tiendaQ;
-      altFilters['filters[$or][1][store][data][attributes][slug][$eq]'] = tiendaQ;
-      altFilters['filters[$or][2][store_name][$containsi]'] = tiendaQ;
-      altFilters['filters[$or][3][tienda_nombre][$containsi]'] = tiendaQ;
-      altFilters['filters[$or][4][store_id][$eq]'] = tiendaQ;
-    }
-
     try {
-      console.log('[MarketPlace] llamar buscarProductos con mainFilters:', mainFilters);
-      const itemsMain = await buscarProductos(mainFilters);
-      console.log('[MarketPlace] respuesta main items.length=', Array.isArray(itemsMain) ? itemsMain.length : '(no array)', itemsMain);
+      const requestParams = { pagina, porPagina };
 
-      // ignorar si ya llegó otra petición más reciente
-      if (currentRequestId !== requestIdRef.current) {
-        console.log('Respuesta de buscarProductos (main) ignorada por ser antigua', currentRequestId);
-        return;
-      }
+      if (filtros) {
+        requestParams.filtros = filtros;
+        if (parametros) requestParams.parametros = parametros;
 
-      // si la respuesta principal trae resultados, ya estamos
-      if (Array.isArray(itemsMain) && itemsMain.length > 0) {
-        return;
-      }
+        // Intentamos leer precio_min y precio_max del DOM (varios selectores comunes)
+        try {
+          const minSelectors = [
+            'input[name="precio_min"]',
+            '#precio_min',
+            'input[data-field="precio_min"]',
+            '.rango-precio-min input',
+            '#rangoPrecioMin'
+          ];
+          const maxSelectors = [
+            'input[name="precio_max"]',
+            '#precio_max',
+            'input[data-field="precio_max"]',
+            '.rango-precio-max input',
+            '#rangoPrecioMax'
+          ];
 
-      // si no hay resultados y había filtros activos, intentar mapeo alternativo
-      const hadAnyFilter = !!(marcaQ || tiendaQ || precioMinQ || precioMaxQ);
-      if (hadAnyFilter) {
-        console.log('[MarketPlace] mainFilters devolvió 0 items — probando altFilters:', altFilters);
-        const itemsAlt = await buscarProductos(altFilters);
-        console.log('[MarketPlace] respuesta alt items.length=', Array.isArray(itemsAlt) ? itemsAlt.length : '(no array)', itemsAlt);
+          let minVal = null;
+          let maxVal = null;
 
-        if (currentRequestId !== requestIdRef.current) {
-          console.log('Respuesta de buscarProductos (alt) ignorada por ser antigua', currentRequestId);
-          return;
+          for (const sel of minSelectors) {
+            const el = document.querySelector(sel);
+            if (el) { minVal = el.value ?? el.getAttribute('value') ?? null; break; }
+          }
+          for (const sel of maxSelectors) {
+            const el = document.querySelector(sel);
+            if (el) { maxVal = el.value ?? el.getAttribute('value') ?? null; break; }
+          }
+
+          // Normalizamos y parseamos a número
+          const minNum = (minVal !== null && minVal !== '') ? Number(String(minVal).replace(/[^0-9.-]+/g, '')) : NaN;
+          const maxNum = (maxVal !== null && maxVal !== '') ? Number(String(maxVal).replace(/[^0-9.-]+/g, '')) : NaN;
+
+          // Solo incluir si ambos son números válidos
+          if (!Number.isNaN(minNum) && !Number.isNaN(maxNum)) {
+            // adicional: evita enviar rangos vacíos o iguales a 0/0 (si tu backend tiene defaults, ajusta aquí)
+            requestParams.precio_min = minNum;
+            requestParams.precio_max = maxNum;
+            console.log('[buscarProductos] enviando precio_min/precio_max:', minNum, maxNum);
+          } else {
+            console.log('[buscarProductos] no se envía rango de precios (min/max inválidos o no encontrados)', { minVal, maxVal });
+          }
+        } catch (err) {
+          console.warn('[buscarProductos] error leyendo precio_min/max del DOM:', err);
         }
+      } else {
+        // Si NO está desplegada la sección de filtros: limpiamos controles de precio del DOM
+        try {
+          const clearSelectors = [
+            'input[name="precio_min"]',
+            'input[name="precio_max"]',
+            '#precio_min',
+            '#precio_max',
+            'input[data-field="precio_min"]',
+            'input[data-field="precio_max"]',
+            '.rango-precio input',
+            'input[type="range"]'
+          ];
+          clearSelectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => {
+              try {
+                if ('value' in el) el.value = '';
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+              } catch (e) { /* ignore */ }
+            });
+          });
+          console.log('[buscarProductos] filtros ocultos: limpiados controles de precio en DOM');
+        } catch (err) {
+          console.warn('[buscarProductos] error limpiando controles de precio en DOM:', err);
+        }
+      }
 
-        // si aún 0, ya devolvemos y MarketPlace mostrará "No hay productos."
+      await buscarProductos(requestParams);
+
+      if (currentRequestId !== requestIdRef.current) {
+        console.log('Respuesta de buscarProductos ignorada por ser antigua', currentRequestId);
+        return;
       }
     } catch (err) {
       console.error('[buscarProductos debounce] error:', err);
@@ -326,8 +333,8 @@ useEffect(() => {
   return () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [filtros, parametros, pagina, porPagina, buscarProductos, location.search]);
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, [filtros, parametros, pagina, porPagina, buscarProductos]);
 
   // Observer
   useEffect(() => {
