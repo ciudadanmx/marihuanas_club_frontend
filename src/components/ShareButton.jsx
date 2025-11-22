@@ -77,10 +77,45 @@ export default function ShareButton({
 
 // Asegura que se muestre como LINK y no como texto
 function handleWhatsapp(urlToShare, mensaje = "") {
-  const text = `${urlToShare}${mensaje ? " " + mensaje : ""}`;
-  const link = `https://wa.me/?text=${encodeURIComponent(text)}`;
+  // Normalizar urlToShare
+  var target = urlToShare && urlToShare.length ? urlToShare : window.location.href;
+  target = 'https://youtube.com';
 
-  window.open(link, "_blank");
+  // Normalizar mensaje: puede venir string, objeto, array, etc.
+  let msgText = "";
+  if (!mensaje) {
+    msgText = "";
+  } else if (typeof mensaje === "string") {
+    msgText = mensaje;
+  } else if (Array.isArray(mensaje)) {
+    // unir arrays con espacios
+    msgText = mensaje.map(item => (typeof item === "string" ? item : JSON.stringify(item))).join(" ");
+  } else if (typeof mensaje === "object") {
+    // si es objeto, priorizar propiedades comunes
+    if (typeof mensaje.text === "string" && mensaje.text.trim()) {
+      msgText = mensaje.text;
+    } else if (typeof mensaje.message === "string" && mensaje.message.trim()) {
+      msgText = mensaje.message;
+    } else {
+      // fallback: tomar valores no vacíos y unirlos
+      msgText = Object.values(mensaje)
+        .filter(v => v !== null && v !== undefined)
+        .map(v => (typeof v === "string" ? v : JSON.stringify(v)))
+        .join(" ");
+    }
+  } else {
+    // otros tipos (number, boolean...)
+    msgText = String(mensaje);
+  }
+
+  // Construir texto: URL primero (mejor para preview), luego mensaje si existe
+  const text = `${target}${msgText ? " " + msgText : ""}`;
+
+  // Enlace recomendado: wa.me/?text=...
+  const waLink = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+  // Abrir en nueva pestaña (evita popups que bloqueen en móviles)
+  window.open(waLink, "_blank");
 }
 
   const handleTelegram = () => {
