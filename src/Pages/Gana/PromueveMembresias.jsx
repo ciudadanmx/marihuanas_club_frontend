@@ -15,6 +15,7 @@ import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import { useNavigate } from 'react-router-dom';
 import promueveGif from '../../assets/promueve.gif';
+import ShareButton from '../../components/ShareButton.jsx';
 
 export default function PromueveMembresias() {
   const navigate = useNavigate();
@@ -252,6 +253,8 @@ export default function PromueveMembresias() {
             * Las cantidades son orientativas y pueden variar según promociones, tipo de membresía y condiciones. Todas las comisiones aparecen detalladas en tu panel.
           </Typography>
         </Box>
+
+        <ShareButton />
       </Box>
     </Box>
   );

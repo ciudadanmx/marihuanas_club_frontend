@@ -14,6 +14,13 @@ import MariaGif from '../../assets/maria.gif';
 import { useNavigate } from 'react-router-dom';
 
 const MotionBox = motion(Box);
+let whatsappNumber = process.env.REACT_APP_WHATSAPP_NUMBER || "";
+
+// Si el número es de 10 dígitos, le agregamos prefijo 52
+if (/^\d{10}$/.test(whatsappNumber)) {
+  whatsappNumber = `52${whatsappNumber}`;
+}
+const initialMessage = encodeURIComponent("Hola quiero saber sobre Maria");
 
 export default function MariaDescription() {
   const isMobile = useMediaQuery('(max-width:600px)');
@@ -123,15 +130,16 @@ export default function MariaDescription() {
               <Button
                 variant="outlined"
                 startIcon={<WhatsAppIcon />}
-                href="https://wa.me/YOUR_NUMBER" 
+                href={`https://wa.me/${whatsappNumber}?text=${initialMessage}`}
                 target="_blank"
+                rel="noopener noreferrer"
                 sx={{
                   borderColor: '#C260FF',
                   color: '#fff',
                   textTransform: 'none',
                 }}
               >
-                Chatea por WhatsApp
+                WhatsApp
               </Button>
             </Box>
 
