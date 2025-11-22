@@ -1,41 +1,29 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  FacebookShareButton,
-  WhatsappShareButton,
-  TelegramShareButton,
-  TwitterShareButton,
-  LinkedinShareButton,
-  RedditShareButton,
-  EmailShareButton,
-  PinterestShareButton,
-  FacebookMessengerShareButton,
-} from "react-share";
 import { FiShare2, FiCopy, FiX } from "react-icons/fi";
 
 /**
- * BotonCompartirProFinal
- * - Todas las redes reciben la misma URL (urlToShare).
- * - Incluye uploadedFileUrl para redes que aceptan media (Pinterest).
- * - Modal centrado verticalmente, scroll interno, muestra la primera opción al abrir.
+ * BotonCompartirFix.jsx
+ * - Todos los canales reciben la misma urlToShare (por defecto window.location.href).
+ * - Enlaces de compartición construidos manualmente para asegurar inserción del link.
+ * - Modal centrado verticalmente, con scroll interno. Primera opción visible y enfocada.
+ * - uploadedFileUrl: ruta local del archivo subido (la transformas en deployment).
  *
- * Props:
- *  - url: (opcional) URL a compartir. Si no se pasa, usa window.location.href
- *  - mensaje: texto por defecto al compartir
+ * Uso: <BotonCompartirFix url="https://mi.url/a/compartir" mensaje="Texto" />
  */
+
 export default function ShareButton({
-  url, // opcional: si se pasa, se usará
+  url, // opcional; si no se pasa usa window.location.href
   mensaje = "Mira esto en Ciudadan 👇",
 }) {
-  // uploadedFileUrl: ruta local del archivo subido. El entorno/servidor debe transformar a URL pública.
+  // ruta local del archivo que subiste (nos la solicitaste usar)
   const uploadedFileUrl = "/mnt/data/86268b5f-48ab-4aa4-b66a-85bb6f4f58d1.png";
 
-  // URL que usaremos en todos los botones (preferencia: prop url > window.location.href)
   const urlToShare =
     typeof url === "string" && url.length > 0
       ? url
       : typeof window !== "undefined"
       ? window.location.href
-      : "https://ciudadan.org";
+      : "https://marihuanas.club";
 
   const [open, setOpen] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -43,52 +31,147 @@ export default function ShareButton({
   const listRef = useRef(null);
   const firstItemRef = useRef(null);
 
+  // Centrar modal, scroll top, focus primer item
   useEffect(() => {
     if (open) {
       setCopiado(false);
       setShareError(null);
-      // Esperar a que el DOM pinte y forzar scroll top y visibilidad del primer elemento
       requestAnimationFrame(() => {
         if (listRef.current) listRef.current.scrollTop = 0;
-        if (firstItemRef.current)
+        if (firstItemRef.current) {
           firstItemRef.current.scrollIntoView({ block: "nearest", behavior: "auto" });
-        if (firstItemRef.current && typeof firstItemRef.current.focus === "function")
-          firstItemRef.current.focus();
+          if (typeof firstItemRef.current.focus === "function") firstItemRef.current.focus();
+        }
       });
-      // bloquear scroll body
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => (document.body.style.overflow = "");
   }, [open]);
+
+  // Abre ventana popup centrada
+  const openPopup = (shareUrl, title = "Compartir", w = 640, h = 520) => {
+    const dualScreenLeft = window.screenLeft !== undefined ? window.screenLeft : window.screenX;
+    const dualScreenTop = window.screenTop !== undefined ? window.screenTop : window.screenY;
+    const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth;
+    const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight;
+    const left = width / 2 - w / 2 + dualScreenLeft;
+    const top = height / 2 - h / 2 + dualScreenTop;
+    const opts = `toolbar=0,status=0,resizable=1,width=${w},height=${h},top=${top},left=${left}`;
+    window.open(shareUrl, title, opts);
+  };
+
+  function handleFacebook(urlToShare) {
+  const link = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+    'https://youtube.com'
+  )}`;
+
+  openPopup(link, "Compartir en Facebook", 780, 640);
+}
+
+
+// ===========================================================
+// ==================  WHATSAPP SHARE ========================
+// ===========================================================
+
+// Asegura que se muestre como LINK y no como texto
+function handleWhatsapp(urlToShare, mensaje = "") {
+  const text = `${urlToShare}${mensaje ? " " + mensaje : ""}`;
+  const link = `https://wa.me/?text=${encodeURIComponent(text)}`;
+
+  window.open(link, "_blank");
+}
+
+  const handleTelegram = () => {
+    const text = `${mensaje} ${urlToShare}`;
+    const link = `https://t.me/share/url?url=${encodeURIComponent(urlToShare)}&text=${encodeURIComponent(mensaje)}`;
+    openPopup(link, "Compartir en Telegram", 650, 560);
+  };
+
+  const handleTwitter = () => {
+    const text = `${mensaje}`;
+    const link = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(urlToShare)}`;
+    openPopup(link, "Compartir en Twitter", 600, 450);
+  };
+
+  const handleLinkedIn = () => {
+    const link = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(urlToShare)}&title=${encodeURIComponent(mensaje)}`;
+    openPopup(link, "Compartir en LinkedIn", 700, 600);
+  };
+
+  const handleReddit = () => {
+    const link = `https://www.reddit.com/submit?url=${encodeURIComponent(urlToShare)}&title=${encodeURIComponent(mensaje)}`;
+    openPopup(link, "Compartir en Reddit", 900, 700);
+  };
+
+  const handlePinterest = () => {
+    // incluye media (imagen) si está disponible
+    const media = uploadedFileUrl ? `&media=${encodeURIComponent(uploadedFileUrl)}` : "";
+    const link = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(urlToShare)}${media}&description=${encodeURIComponent(mensaje)}`;
+    openPopup(link, "Compartir en Pinterest", 900, 700);
+  };
+
+  const handleMessenger = () => {
+    // Messenger Web Dialog (si no funciona, usamos sharer.php con u param)
+    const link = `https://www.facebook.com/dialog/send?link=${encodeURIComponent(urlToShare)}&app_id=123456&redirect_uri=${encodeURIComponent(urlToShare)}`;
+    // fallback a sharer si dialog falla
+    try {
+      openPopup(link, "Compartir en Messenger", 700, 600);
+    } catch (e) {
+      handleFacebook();
+    }
+  };
+
+  const handleEmail = () => {
+    const subject = mensaje;
+    const body = `${mensaje}\n\n${urlToShare}`;
+    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  const handleInstagram = () => {
+    // Instagram no permite compartir link directo en composer web; abrimos perfil o web con query
+    const link = `https://www.instagram.com/?url=${encodeURIComponent(urlToShare)}`;
+    window.open(link, "_blank");
+  };
+
+  const handleTikTok = () => {
+    // TikTok no soporta share url directo; abrimos web y dejamos url en query
+    const link = `https://www.tiktok.com/share?url=${encodeURIComponent(urlToShare)}`;
+    window.open(link, "_blank");
+  };
+
+  const handleDiscord = () => {
+    // Discord no soporta compartir universal desde web; abrimos la app/web
+    const link = `https://discord.com/channels/@me`;
+    window.open(link, "_blank");
+  };
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: document.title || "Compartir", text: mensaje, url: urlToShare });
+        setOpen(false);
+        setShareError(null);
+      } catch (err) {
+        setShareError("Compartir nativo cancelado o falló.");
+      }
+    } else {
+      setShareError("Compartir nativo no soportado en este navegador.");
+    }
+  };
 
   const copiarEnlace = async () => {
     try {
       await navigator.clipboard.writeText(urlToShare);
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 1600);
+      setTimeout(() => setCopiado(false), 1500);
     } catch (e) {
-      alert("No se pudo copiar. Usa Ctrl+C.");
+      setShareError("No se pudo copiar. Usa Ctrl+C.");
     }
   };
 
-  const intentarShareNativo = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: "Ciudadan", text: mensaje, url: urlToShare });
-        setOpen(false);
-      } catch (e) {
-        setShareError("Compartir nativo cancelado o no disponible.");
-      }
-    } else {
-      setShareError("Tu navegador no soporta compartir nativo.");
-    }
-  };
-
-  // estilos inline para copiar-pegar fácil
+  // estilos (inline, listos para pegar)
   const styles = {
     mainButton: {
       display: "inline-flex",
@@ -105,74 +188,70 @@ export default function ShareButton({
       cursor: "pointer",
       textTransform: "uppercase",
     },
-    modalBackdrop: {
+    backdrop: {
       position: "fixed",
       inset: 0,
       background: "rgba(0,0,0,0.45)",
-      zIndex: 9999,
+      zIndex: 99999,
       backdropFilter: "blur(3px)",
       display: "flex",
-      alignItems: "center", // centrado vertical
+      alignItems: "center", // CENTRADO vertical
       justifyContent: "center",
       padding: 20,
     },
-    modalShell: {
+    modal: {
       width: "100%",
       maxWidth: 520,
       maxHeight: "86vh",
-      display: "flex",
-      flexDirection: "column",
       borderRadius: 18,
       overflow: "hidden",
-      boxShadow: "0 18px 50px rgba(0,0,0,0.5)",
+      display: "flex",
+      flexDirection: "column",
       border: "4px solid #2A6400",
       background: "linear-gradient(180deg,#E6FF00 0%, #E1FF66 100%)",
+      boxShadow: "0 18px 50px rgba(0,0,0,0.5)",
     },
-    modalHeader: {
+    header: {
       display: "flex",
       alignItems: "center",
+      justifyContent: "space-between",
       gap: 12,
       padding: 12,
       background: "#2CB34B",
       color: "white",
       fontWeight: 900,
       fontSize: 18,
-      justifyContent: "space-between",
     },
-    headerLeft: { display: "flex", alignItems: "center", gap: 12 },
-    headerImage: { width: 60, height: 44, objectFit: "cover", borderRadius: 8 },
-    scrollList: {
+    headerLeft: { display: "flex", gap: 12, alignItems: "center" },
+    headerImg: { width: 60, height: 44, objectFit: "cover", borderRadius: 8 },
+    list: {
       overflowY: "auto",
       WebkitOverflowScrolling: "touch",
       padding: 8,
     },
-    optionRow: {
+    row: {
       display: "flex",
       alignItems: "center",
       gap: 14,
       padding: "12px 16px",
       cursor: "pointer",
-      background: "transparent",
-      border: "none",
-      width: "100%",
-      textAlign: "left",
-      fontSize: 16,
       fontWeight: 800,
       color: "#101010",
+      fontSize: 16,
     },
     bubble: (bg) => ({
       minWidth: 44,
       minHeight: 44,
       borderRadius: 999,
-      display: "flex",
+      display: "inline-flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: 18,
-      color: "white",
       background: bg,
+      color: "white",
+      fontSize: 18,
       boxShadow: "0 6px 0 rgba(0,0,0,0.18)",
     }),
-    cancelRow: {
+    cancel: {
       padding: 12,
       background: "#C7EA00",
       textAlign: "center",
@@ -180,16 +259,14 @@ export default function ShareButton({
       cursor: "pointer",
       borderTop: "4px solid rgba(0,0,0,0.12)",
     },
-    microNote: { fontSize: 13, color: "#243424", opacity: 0.95 },
+    micro: { fontSize: 13, color: "#243424", opacity: 0.95 },
+    error: { color: "#7a1111", padding: 10, fontWeight: 800 },
   };
-
-  // header image (ruta local subida)
-  const headerImageSrc = uploadedFileUrl;
 
   return (
     <>
       <button aria-label="Compartir" onClick={() => setOpen(true)} style={styles.mainButton}>
-        <FiShare2 size={20} />
+        <FiShare2 size={18} />
         Compartir
       </button>
 
@@ -197,191 +274,129 @@ export default function ShareButton({
         <div
           role="dialog"
           aria-modal="true"
-          style={styles.modalBackdrop}
+          style={styles.backdrop}
           onClick={(e) => e.target === e.currentTarget && setOpen(false)}
         >
-          <div style={styles.modalShell}>
-            <div style={styles.modalHeader}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.header}>
               <div style={styles.headerLeft}>
-                <img src={headerImageSrc} alt="brand" style={styles.headerImage} />
+                <img src={uploadedFileUrl} alt="brand" style={styles.headerImg} />
                 <div>
-                  <div style={{ fontWeight: 900 }}>Compartir</div>
-                  <div style={styles.microNote}>Comparte este enlace con tu parche</div>
+                  <div>Compartir</div>
+                  <div style={styles.micro}>Comparte este enlace con tu parche</div>
                 </div>
               </div>
 
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button
-                  onClick={intentarShareNativo}
-                  title="Compartir (nativo)"
-                  style={{
-                    background: "transparent",
-                    border: "2px solid rgba(255,255,255,0.18)",
-                    color: "white",
-                    padding: "6px 8px",
-                    borderRadius: 10,
-                    fontWeight: 800,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={handleNativeShare} title="Compartir nativo" style={{ background: "transparent", border: "2px solid rgba(255,255,255,0.16)", color: "white", padding: "6px 8px", borderRadius: 10, fontWeight: 800, cursor: "pointer" }}>
                   Share
                 </button>
 
-                <button
-                  onClick={() => setOpen(false)}
-                  aria-label="Cerrar"
-                  style={{
-                    background: "transparent",
-                    border: "none",
-                    color: "white",
-                    padding: 6,
-                    fontSize: 20,
-                    cursor: "pointer",
-                  }}
-                >
+                <button onClick={() => setOpen(false)} aria-label="Cerrar" style={{ background: "transparent", border: "none", color: "white", padding: 6, fontSize: 20, cursor: "pointer" }}>
                   <FiX />
                 </button>
               </div>
             </div>
 
-            {/* lista con scroll - todas las redes usan urlToShare */}
-            <div ref={listRef} style={styles.scrollList}>
-              {/* Facebook */}
-              <div style={{ padding: 8 }}>
-                <FacebookShareButton url={urlToShare} quote={mensaje} style={styles.optionRow}>
-                  <div ref={firstItemRef} style={styles.bubble("#1877F2")}>f</div>
+            <div ref={listRef} style={styles.list}>
+              {/* PRIMERA OPCIÓN (se referencia para focus/scroll) */}
+              <div ref={firstItemRef} tabIndex={-1} style={{ padding: 8 }}>
+                <div onClick={handleFacebook} role="button" style={styles.row}>
+                  <div style={styles.bubble("#1877F2")}>f</div>
                   Facebook
-                </FacebookShareButton>
+                </div>
               </div>
 
-              {/* WhatsApp */}
               <div style={{ padding: 8 }}>
-                <WhatsappShareButton url={urlToShare} title={mensaje} style={styles.optionRow}>
+                <div onClick={handleWhatsapp} role="button" style={styles.row}>
                   <div style={styles.bubble("#25D366")}>W</div>
                   WhatsApp
-                </WhatsappShareButton>
+                </div>
               </div>
 
-              {/* Telegram */}
               <div style={{ padding: 8 }}>
-                <TelegramShareButton url={urlToShare} title={mensaje} style={styles.optionRow}>
+                <div onClick={handleTelegram} role="button" style={styles.row}>
                   <div style={styles.bubble("#2AABEE")}>✈</div>
                   Telegram
-                </TelegramShareButton>
+                </div>
               </div>
 
-              {/* Twitter / X */}
               <div style={{ padding: 8 }}>
-                <TwitterShareButton url={urlToShare} title={mensaje} style={styles.optionRow}>
+                <div onClick={handleTwitter} role="button" style={styles.row}>
                   <div style={styles.bubble("#000000")}>X</div>
                   X / Twitter
-                </TwitterShareButton>
+                </div>
               </div>
 
-              {/* LinkedIn */}
               <div style={{ padding: 8 }}>
-                <LinkedinShareButton url={urlToShare} title={mensaje} style={styles.optionRow}>
+                <div onClick={handleLinkedIn} role="button" style={styles.row}>
                   <div style={styles.bubble("#0A66C2")}>in</div>
                   LinkedIn
-                </LinkedinShareButton>
+                </div>
               </div>
 
-              {/* Reddit */}
               <div style={{ padding: 8 }}>
-                <RedditShareButton url={urlToShare} title={mensaje} style={styles.optionRow}>
+                <div onClick={handleReddit} role="button" style={styles.row}>
                   <div style={styles.bubble("#FF4500")}>r</div>
                   Reddit
-                </RedditShareButton>
+                </div>
               </div>
 
-              {/* Pinterest (usa media: la imagen subida) */}
               <div style={{ padding: 8 }}>
-                <PinterestShareButton url={urlToShare} media={uploadedFileUrl} style={styles.optionRow}>
+                <div onClick={handlePinterest} role="button" style={styles.row}>
                   <div style={styles.bubble("#E60023")}>P</div>
                   Pinterest
-                </PinterestShareButton>
+                </div>
               </div>
 
-              {/* Facebook Messenger */}
               <div style={{ padding: 8 }}>
-                <FacebookMessengerShareButton appId="1234567890" url={urlToShare} style={styles.optionRow}>
+                <div onClick={handleMessenger} role="button" style={styles.row}>
                   <div style={styles.bubble("#0078FF")}>m</div>
                   Messenger
-                </FacebookMessengerShareButton>
+                </div>
               </div>
 
-              {/* Email */}
               <div style={{ padding: 8 }}>
-                <EmailShareButton url={urlToShare} subject={mensaje} style={styles.optionRow}>
+                <div onClick={handleEmail} role="button" style={styles.row}>
                   <div style={styles.bubble("#BA1E1E")}>✉</div>
                   Email
-                </EmailShareButton>
+                </div>
               </div>
 
-              {/* FALLBACKS - abrir web/app con la URL incluida en la query */}
               <div style={{ padding: 8 }}>
-                <button
-                  onClick={() =>
-                    window.open(
-                      `https://www.instagram.com/?url=${encodeURIComponent(urlToShare)}`,
-                      "_blank"
-                    )
-                  }
-                  style={styles.optionRow}
-                >
-                  <div style={styles.bubble("linear-gradient(45deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5)")}>
-                    📸
-                  </div>
+                <div onClick={handleInstagram} role="button" style={styles.row}>
+                  <div style={styles.bubble("linear-gradient(45deg,#FEDA75,#FA7E1E,#D62976,#962FBF,#4F5BD5)")}>📸</div>
                   Instagram (fallback)
-                </button>
+                </div>
               </div>
 
               <div style={{ padding: 8 }}>
-                <button
-                  onClick={() =>
-                    window.open(
-                      `https://www.tiktok.com/share?url=${encodeURIComponent(urlToShare)}`,
-                      "_blank"
-                    )
-                  }
-                  style={styles.optionRow}
-                >
+                <div onClick={handleTikTok} role="button" style={styles.row}>
                   <div style={styles.bubble("#000000")}>♪</div>
                   TikTok (fallback)
-                </button>
+                </div>
               </div>
 
               <div style={{ padding: 8 }}>
-                <button
-                  onClick={() =>
-                    window.open(
-                      `https://discord.com/channels/@me?url=${encodeURIComponent(urlToShare)}`,
-                      "_blank"
-                    )
-                  }
-                  style={styles.optionRow}
-                >
+                <div onClick={handleDiscord} role="button" style={styles.row}>
                   <div style={styles.bubble("#5865F2")}>💬</div>
                   Discord
-                </button>
+                </div>
               </div>
 
-              {/* Copiar enlace */}
               <div style={{ padding: 8 }}>
-                <button onClick={copiarEnlace} style={styles.optionRow}>
+                <div onClick={copiarEnlace} role="button" style={styles.row}>
                   <div style={styles.bubble("#007F00")}>
                     <FiCopy />
                   </div>
                   {copiado ? "Enlace copiado ✔" : "Copiar enlace"}
-                </button>
+                </div>
               </div>
 
-              {shareError && (
-                <div style={{ padding: 10, color: "#600000", fontWeight: 800 }}>{shareError}</div>
-              )}
+              {shareError && <div style={styles.error}>{shareError}</div>}
             </div>
 
-            <div onClick={() => setOpen(false)} style={styles.cancelRow}>
+            <div onClick={() => setOpen(false)} style={styles.cancel}>
               Cerrar
             </div>
           </div>
