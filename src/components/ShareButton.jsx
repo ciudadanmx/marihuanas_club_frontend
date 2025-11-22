@@ -64,7 +64,7 @@ export default function ShareButton({
 
   function handleFacebook(urlToShare) {
   const link = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-    'https://youtube.com'
+    urlToShare
   )}`;
 
   openPopup(link, "Compartir en Facebook", 780, 640);
@@ -79,7 +79,6 @@ export default function ShareButton({
 function handleWhatsapp(urlToShare, mensaje = "") {
   // Normalizar urlToShare
   var target = urlToShare && urlToShare.length ? urlToShare : window.location.href;
-  target = 'https://youtube.com';
 
   // Normalizar mensaje: puede venir string, objeto, array, etc.
   let msgText = "";
@@ -176,11 +175,23 @@ function handleWhatsapp(urlToShare, mensaje = "") {
     window.open(link, "_blank");
   };
 
-  const handleDiscord = () => {
-    // Discord no soporta compartir universal desde web; abrimos la app/web
-    const link = `https://discord.com/channels/@me`;
-    window.open(link, "_blank");
-  };
+  async function handleDiscord(urlToShare, mensaje = "") {
+  const target =
+    urlToShare && typeof urlToShare === "string" && urlToShare.length
+      ? urlToShare
+      : window.location.href;
+
+  const fullMessage = `${target}${mensaje ? " " + mensaje : ""}`;
+
+  try {
+    await navigator.clipboard.writeText(fullMessage);
+  } catch (e) {
+    console.warn("Clipboard no permitido, fallback.");
+  }
+
+  // Abre Discord Web (no soporta ningún parámetro)
+  window.open("https://discord.com/channels/@me", "_blank");
+}
 
   const handleNativeShare = async () => {
     if (navigator.share) {
