@@ -55,6 +55,7 @@ export default function PromueveMembresias() {
         backgroundColor: 'rgba(0,0,0,0.6)',
         display: 'flex',
         justifyContent: 'center',
+        marginBottom: 0,
         alignItems: 'flex-start',
         '@keyframes neonBreath': {
           '0%': { boxShadow: '0 0 10px rgba(0,255,150,0.06)' },

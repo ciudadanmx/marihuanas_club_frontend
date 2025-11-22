@@ -218,22 +218,29 @@ function handleWhatsapp(urlToShare, mensaje = "") {
   };
 
   // estilos (inline, listos para pegar)
-  const styles = {
-    mainButton: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 10,
-      padding: "12px 18px",
-      borderRadius: 999,
-      background: "linear-gradient(180deg,#fff200 0%, #E7E300 100%)",
-      color: "#1b1b1b",
-      border: "3px solid #6d6e71",
-      boxShadow: "0 8px 0 #6d6e71",
-      fontWeight: 800,
-      fontSize: 16,
-      cursor: "pointer",
-      textTransform: "uppercase",
-    },
+const styles = {
+  buttonWrapper: {
+    display: "flex",
+    justifyContent: "center",
+    width: "100%",
+    paddingTop: 50,
+  },
+  mainButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "12px 18px",
+    borderRadius: 999,
+    background: "linear-gradient(180deg,#fff200 0%, #E7E300 100%)",
+    color: "#1b1b1b",
+    border: "3px solid #6d6e71",
+    boxShadow: "0 8px 0 #6d6e71",
+    fontWeight: 800,
+    fontSize: 16,
+    cursor: "pointer",
+    textTransform: "uppercase",
+  },
+
     backdrop: {
       position: "fixed",
       inset: 0,
@@ -311,10 +318,12 @@ function handleWhatsapp(urlToShare, mensaje = "") {
 
   return (
     <>
+      <div style={styles.buttonWrapper}>
       <button aria-label="Compartir" onClick={() => setOpen(true)} style={styles.mainButton}>
         <FiShare2 size={18} />
         Compartir
       </button>
+      </div>
 
       {open && (
         <div
