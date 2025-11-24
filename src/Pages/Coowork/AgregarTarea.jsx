@@ -10,6 +10,7 @@ import {
   MenuItem,
   Button,
   Box,
+  Divider,
   InputAdornment,
   Paper,
   Slider,
@@ -43,11 +44,9 @@ export default function AgregarTarea() {
   });
 
   useEffect(() => {
-    console.log("💃💃💃 useEffect inicializando fetchSocios y fetchAreas");
     fetchSocios("cdmx");
     (async () => {
       const full = await fetchSociosJson("cdmx");
-      console.log("💃💃💃 sociosFull cargados:", full);
       setSociosFull(full);
     })();
     fetchAreas();
@@ -55,13 +54,11 @@ export default function AgregarTarea() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    console.log("💃💃💃 handleChange:", name, value);
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
   function handleSwitchChange(e) {
     const { name, checked } = e.target;
-    console.log("💃💃💃 handleSwitchChange:", name, checked);
     setFormData((prev) => ({
       ...prev,
       [name]: checked,
@@ -70,66 +67,44 @@ export default function AgregarTarea() {
     }));
   }
 
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("💃💃💃 handleSubmit iniciado", formData);
-
-    // 1️⃣ Construimos la nueva tarea con transformaciones seguras
-    const nuevaTarea = {
-        ...formData,
-        fecha_entrega: formData.fecha_entrega
-        ? new Date(formData.fecha_entrega).toISOString()
-        : null,
-    };
-
-    // 2️⃣ Si es subtarea, forzamos un parent_id si no existe
-    if (nuevaTarea.tipo === "subtarea" && !nuevaTarea.parent_id) {
-        nuevaTarea.parent_id = formData.parent_id || null;
-    }
-
-    console.log("💃💃💃 nuevaTarea a enviar:", nuevaTarea);
-
     try {
-        const resultado = await crearTarea(nuevaTarea);
-        console.log("💃💃💃 crearTarea resultado:", resultado);
-
-        if (resultado && resultado.error) {
-        console.error("❌ Error devuelto por el backend:", resultado.error);
-        alert(`Error al crear tarea: ${resultado.error.message || resultado.error}`);
-        return;
-        }
-
-        // 🔄 Reset del formulario solo si no hubo error
-        setFormData({
+      const nuevaTarea = {
+        titulo: formData.titulo,
+        descripcion: formData.descripcion,
+        tipo: formData.tipo,
+        agencia: formData.agencia,
+        usuario_email: formData.usuario_email,
+        enlaces: formData.enlaces,
+        pagos_laborys: Number(formData.pagos_laborys),
+        pagos_efectivo: Number(formData.pagos_efectivo),
+        area: Number(formData.area),
+        minutos_desarrollo: formData.minutos_desarrollo,
+        fecha_entrega: formData.fecha_entrega,
+        vence: formData.vence,
+      };
+      await crearTarea(nuevaTarea);
+      enqueueSnackbar("Tarea creada correctamente", { variant: "success" });
+      setFormData({
         titulo: "",
         descripcion: "",
+        agencia: "cdmx",
         tipo: "tarea",
-        agencia: "",
         usuario_email: "",
         area: "",
-        minutos_desarrollo: 0,
-        pagos_efectivo: 0,
+        enlaces: [],
         pagos_laborys: 0,
+        pagos_efectivo: 0,
+        minutos_desarrollo: 0,
         fecha_entrega: null,
         vence: false,
-        enlaces: [],
-        });
-
-        console.log("💃💃💃 formData reiniciado");
-
-    } catch (error) {
-        console.error("❌ Error al crear tarea:", error);
-
-        // Captura detallada del backend si viene con JSON
-        if (error.response) {
-        const detalle = await error.response.json().catch(() => ({}));
-        console.error("💥 Respuesta del backend:", detalle);
-        alert(`Error del servidor: ${detalle.error?.message || "Desconocido"}`);
-        } else {
-        alert("Error de conexión o formato al crear tarea");
-        }
+        habilitarFechaEntrega: false,
+      });
+    } catch (err) {
+      enqueueSnackbar(`Error al crear tarea: ${err.message}`, { variant: "error" });
     }
-    };
+  }
 
   if (loading)
     return <p className="text-center mt-6 text-white">Cargando áreas...</p>;
@@ -320,10 +295,7 @@ export default function AgregarTarea() {
               </Typography>
               <Slider
                 value={formData.minutos_desarrollo}
-                onChange={(_, val) => {
-                  console.log("💃💃💃 Slider minutos_desarrollo:", val);
-                  setFormData(prev => ({ ...prev, minutos_desarrollo: val }));
-                }}
+                onChange={(_, val) => setFormData(prev => ({ ...prev, minutos_desarrollo: val }))}
                 min={0}
                 max={480}
                 step={5}
@@ -356,10 +328,9 @@ export default function AgregarTarea() {
                 <DateTimePicker
                   label="Fecha de entrega"
                   value={formData.fecha_entrega}
-                  onChange={(newValue) => {
-                    console.log("💃💃💃 Fecha seleccionada:", newValue);
-                    setFormData(prev => ({ ...prev, fecha_entrega: newValue, vence: true }));
-                  }}
+                  onChange={(newValue) =>
+                    setFormData(prev => ({ ...prev, fecha_entrega: newValue, vence: true }))
+                  }
                   renderInput={(params) => (
                     <TextField {...params} size="small" fullWidth sx={{
                       input: { color: "#fff200" },
@@ -380,10 +351,7 @@ export default function AgregarTarea() {
               label="💎 Pagos Laborys"
               name="pagos_laborys"
               value={formData.pagos_laborys}
-              onChange={(e) => {
-                console.log("💃💃💃 Pagos Laborys:", e.target.value);
-                handleChange(e);
-              }}
+              onChange={handleChange}
               type="number"
               InputProps={{
                 startAdornment: <InputAdornment position="start">💎</InputAdornment>,
@@ -408,10 +376,7 @@ export default function AgregarTarea() {
               label="💵 Pagos Efectivo"
               name="pagos_efectivo"
               value={formData.pagos_efectivo}
-              onChange={(e) => {
-                console.log("💃💃💃 Pagos Efectivo:", e.target.value);
-                handleChange(e);
-              }}
+              onChange={handleChange}
               type="number"
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,

@@ -1,5 +1,12 @@
-import { useEffect } from 'react';
-import { initAutocomplete } from '../utils/autocompleteMaps';
+// hooks/useGoogleMaps.jsx
+import { useEffect, useRef } from 'react';
+import { loadGoogleMaps, createMap, addMarker } from '../utils/mapUtils';
+import { initAutocomplete } from '../utils/autocompleteMaps'; // tu helper existente
+
+// Mantuvimos la misma firma que tú tenías para evitar cambiar llamadas:
+// useGoogleMaps(fromCoordinates, setFromCoordinates, setFromMarkerPosition, toCoordinates, setToCoordinates, setToMarkerPosition, setFromAddress, setToAddress, setGoogleMapsLoaded, googleMapsLoaded)
+
+const KEY = process.env.REACT_APP_GOOGLE_MAPS_KEY || process.env.REACT_APP_GOOGLE_MAPS_API_KEY || process.env.REACT_APP_PLACES_KEY;
 
 const useGoogleMaps = (
   fromCoordinates,
@@ -13,88 +20,144 @@ const useGoogleMaps = (
   setGoogleMapsLoaded,
   googleMapsLoaded,
 ) => {
+  const mapRef = useRef(null);
+  const fromMarkerRef = useRef(null);
+  const toMarkerRef = useRef(null);
+  const containerRef = useRef(null); // si quieres usar ref en lugar de id
+
+  // Cargar script de Google Maps (solo una vez)
   useEffect(() => {
-    if (window.google) {
+    if (!KEY) {
+      console.error('useGoogleMaps: falta REACT_APP_GOOGLE_MAPS_KEY en .env');
+      return;
+    }
+    // si ya está en window, marca como cargado
+    if (window.google && window.google.maps) {
       setGoogleMapsLoaded(true);
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_PLACES_KEY}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setGoogleMapsLoaded(true);
-    script.onerror = (error) => {
-      console.error("Error al cargar Google Maps API:", error);
-    };
+    let mounted = true;
+    loadGoogleMaps(KEY)
+      .then(() => {
+        if (mounted) setGoogleMapsLoaded(true);
+      })
+      .catch((err) => {
+        console.error('loadGoogleMaps falló:', err);
+        // no seteamos false explícito, solo log
+      });
 
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
+    // NO removemos el script en cleanup para evitar recargas múltiples en dev
+    return () => { mounted = false; };
   }, [setGoogleMapsLoaded]);
 
+  // Inicializar el mapa y markers cuando google esté listo
   useEffect(() => {
     if (!window.google || !window.google.maps || !googleMapsLoaded) return;
 
-    const mapInstance = new window.google.maps.Map(document.getElementById('map'), {
-      center: fromCoordinates,
-      zoom: 17,
+    // Asegurarse de que #map esté presente y tenga altura
+    const el = document.getElementById('map');
+    if (!el) {
+      console.error('useGoogleMaps: #map no encontrado en DOM');
+      return;
+    }
+    // Si el contenedor no tiene altura explícita, asegúralo (evita 0px)
+    const computed = window.getComputedStyle(el);
+    if ((!computed.height || computed.height === '0px') && !el.style.height) {
+      el.style.height = '400px'; // valor seguro por defecto
+      console.warn('useGoogleMaps: #map no tenía altura; se asignó 400px para inicializar.');
+    }
+
+    // Crear mapa solo si no existe
+    if (!mapRef.current) {
+      try {
+        mapRef.current = createMap(el, fromCoordinates, 14);
+        console.log('useGoogleMaps: mapa creado', mapRef.current);
+      } catch (err) {
+        console.error('useGoogleMaps createMap error:', err);
+        return;
+      }
+    }
+
+    // Markers: crear si no existen
+    if (!fromMarkerRef.current) {
+      fromMarkerRef.current = addMarker(mapRef.current, fromCoordinates);
+    } else {
+      fromMarkerRef.current.setPosition(fromCoordinates);
+    }
+
+    if (!toMarkerRef.current) {
+      toMarkerRef.current = addMarker(mapRef.current, toCoordinates);
+    } else {
+      toMarkerRef.current.setPosition(toCoordinates);
+    }
+
+    // Listener para click en mapa (actualiza coords/markers)
+    const clickListener = mapRef.current.addListener('click', (event) => {
+      const lat = event.latLng.lat();
+      const lng = event.latLng.lng();
+      setFromCoordinates({ lat, lng });
+      setToCoordinates({ lat, lng });
+      setFromMarkerPosition({ lat, lng });
+      setToMarkerPosition({ lat, lng });
+
+      if (fromMarkerRef.current) fromMarkerRef.current.setPosition({ lat, lng });
+      if (toMarkerRef.current) toMarkerRef.current.setPosition({ lat, lng });
     });
 
-    const fromMarker = new window.google.maps.Marker({
-      map: mapInstance,
-      position: fromCoordinates,
-    });
+    // Inicializa Autocomplete (tu helper)
+    try {
+      initAutocomplete({
+        fromInputId: 'from-input',
+        toInputId: 'to-input',
+        onFromChanged: (fromPlace) => {
+          if (!fromPlace || !fromPlace.geometry) return;
+          const newFromLat = fromPlace.geometry.location.lat();
+          const newFromLng = fromPlace.geometry.location.lng();
+          setFromCoordinates({ lat: newFromLat, lng: newFromLng });
+          setFromMarkerPosition({ lat: newFromLat, lng: newFromLng });
+          if (fromMarkerRef.current) fromMarkerRef.current.setPosition({ lat: newFromLat, lng: newFromLng });
+          setFromAddress(fromPlace.formatted_address || fromPlace.name || '');
+          // centrar mapa
+          if (mapRef.current) mapRef.current.setCenter({ lat: newFromLat, lng: newFromLng });
+        },
+        onToChanged: (toPlace) => {
+          if (!toPlace || !toPlace.geometry) return;
+          const newToLat = toPlace.geometry.location.lat();
+          const newToLng = toPlace.geometry.location.lng();
+          setToCoordinates({ lat: newToLat, lng: newToLng });
+          setToMarkerPosition({ lat: newToLat, lng: newToLng });
+          if (toMarkerRef.current) toMarkerRef.current.setPosition({ lat: newToLat, lng: newToLng });
+          setToAddress(toPlace.formatted_address || toPlace.name || '');
+        },
+      });
+    } catch (err) {
+      console.warn('useGoogleMaps: initAutocomplete falló o no está presente:', err);
+    }
 
-    const toMarker = new window.google.maps.Marker({
-      map: mapInstance,
-      position: toCoordinates,
-    });
+    // cleanup: remover listener del mapa (no removemos script ni markers)
+    return () => {
+      if (clickListener && clickListener.remove) clickListener.remove();
+    };
+  }, [
+    googleMapsLoaded,
+    fromCoordinates,
+    toCoordinates,
+    setFromCoordinates,
+    setToCoordinates,
+    setFromMarkerPosition,
+    setToMarkerPosition,
+    setFromAddress,
+    setToAddress,
+  ]);
 
-    window.google.maps.event.addListener(mapInstance, 'click', (event) => {
-      const { latLng } = event;
-      const newLat = latLng.lat();
-      const newLng = latLng.lng();
-
-      setFromCoordinates({ lat: newLat, lng: newLng });
-      setToCoordinates({ lat: newLat, lng: newLng });
-      setFromMarkerPosition({ lat: newLat, lng: newLng });
-      setToMarkerPosition({ lat: newLat, lng: newLng });
-
-      fromMarker.setPosition({ lat: newLat, lng: newLng });
-      toMarker.setPosition({ lat: newLat, lng: newLng });
-    });
-
-    // Usamos el helper para inicializar el Autocomplete en los inputs
-    initAutocomplete({
-      fromInputId: 'from-input',
-      toInputId: 'to-input',
-      onFromChanged: (fromPlace) => {
-        const newFromLat = fromPlace.geometry.location.lat();
-        const newFromLng = fromPlace.geometry.location.lng();
-
-        setFromCoordinates({ lat: newFromLat, lng: newFromLng });
-        setFromMarkerPosition({ lat: newFromLat, lng: newFromLng });
-        fromMarker.setPosition({ lat: newFromLat, lng: newFromLng });
-
-        setFromAddress(fromPlace.formatted_address);
-      },
-      onToChanged: (toPlace) => {
-        const newToLat = toPlace.geometry.location.lat();
-        const newToLng = toPlace.geometry.location.lng();
-
-        setToCoordinates({ lat: newToLat, lng: newToLng });
-        setToMarkerPosition({ lat: newToLat, lng: newToLng });
-        toMarker.setPosition({ lat: newToLat, lng: newToLng });
-
-        setToAddress(toPlace.formatted_address);
-      },
-    });
-  }, [googleMapsLoaded, fromCoordinates, toCoordinates, setFromCoordinates, setToCoordinates, setFromMarkerPosition, setToMarkerPosition, setFromAddress, setToAddress]);
-
-  return;
+  // retornamos refs por si quieres acceder desde el componente (opcional)
+  return {
+    mapRef,           // instancia del mapa (ref.current)
+    fromMarkerRef,
+    toMarkerRef,
+    containerRef,     // no usado en este flujo, queda para evolucionar
+  };
 };
 
 export default useGoogleMaps;

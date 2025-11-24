@@ -85,11 +85,14 @@ import ITokens from './Pages/Cartera/ITokens.jsx';
 import Catalogo from './Pages/Cartera/FreeBoocks/Catalogo.jsx';
 import Coowork from './Pages/Coowork/Coowork.jsx';
 import Agencia from './Pages/Coowork/Agencia.jsx';
+import Pasajero from './components/Taxis/Pasajero.jsx';
 
 /* ---------- Contexts / Providers adicionales ---------- */
 import { CartProvider } from './Contexts/CartContext';
 import { NotificationsProvider } from './Contexts/NotificationsContext';
 import { SnackbarProvider } from 'notistack';
+
+import WikiViewer from './components/Wiki/WikiViewer.jsx';
 
 /* ---------- Helpers / Wrappers ---------- */
 const getReturnUrl = () => {
@@ -146,7 +149,7 @@ function AppWithConditionalNavbar() {
 
       <Routes>
         {/* Rutas sin Navbar */}
-        <Route path="/wiki" element={<Wiki />} />
+        <Route path="/wiki" element={<WikiViewer />} />
 
         {/* Rutas con Navbar */}
         <Route path="/" element={<HomeRoute />} />
@@ -157,6 +160,7 @@ function AppWithConditionalNavbar() {
         <Route path="/taxis/conductor/preregistro" element={<PreRegistroConductor />} />
         <Route path="/taxis/conductor/requisitos" element={<RequisitosConductor />} />
         <Route path="/taxis/pasajero/registro" element={<RegistroPasajero />} />
+        <Route path="/taxis/pasajero/viaje" element={<Pasajero />} />
         <Route path="/food" element={<RestaurantesRoute />} />
         <Route path="/market" element={<MarketPlace />} />
         <Route path="/academia" element={<Rompecabezas />} />
@@ -165,6 +169,7 @@ function AppWithConditionalNavbar() {
         <Route path="/gen" element={<GenRoute />} />
         <Route path="/cartera/itokens" element={<ITokens />} />
         <Route path="/cartera/FreeBoocks" element={<Catalogo />} />
+        <Route path="/cartera/:moneda" element={<OpWalletRoute />} />
         <Route path="/cartera" element={<OpWalletRoute />} />
         <Route path="/perfil/:username" element={<Perfil />} />
         <Route path="/tts" element={<TTS />} />
@@ -174,7 +179,7 @@ function AppWithConditionalNavbar() {
         <Route path="/eventos" element={<EventosPage />} />
         <Route path="/eventos/crear-evento" element={<CrearEvento />} />
         <Route path="/legal" element={<LegalPage />} />
-        <Route path="/quienes-somos" element={<QuienesSomos />} />
+        <Route path="/quienes-somos" element={<WikiViewer />} />
         <Route path="/preguntas-frecuentes" element={<PreguntasFrecuentes />} />
         <Route path="/marketplaces" element={<MarketPlace />} />
         <Route path="/clubs" element={<Clubs />} />
@@ -210,6 +215,11 @@ function AppWithConditionalNavbar() {
         <Route path="/productos/eliminar/:slug" element={<EliminarProductoWrapper />} />
         <Route path="/productos/*" element={<ProductosPage />} />
         <Route path="/comida" element={<Food />} />
+        <Route path="/ayuda" element={<WikiViewer />} />
+        <Route path="/documentacion-transparencia" element={<WikiViewer />} />
+        
+        <Route path="/comprar-tokens" element={<OpWalletRoute />} />
+        
         <Route path="/herramientas" element={<HerramientasPage />} />
         <Route path="/herramientas/test-consumo" element={<TestConsumoResponsable />} />
         <Route path="/herramientas/juegos" element={<Juegos />} />

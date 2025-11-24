@@ -1,119 +1,196 @@
-// mapUtils.jsx
+// utils/mapUtils.jsx
+// Versión compatible: exporta funciones nuevas y mantiene los nombres antiguos (aliases).
+// Asegúrate de tener en .env REACT_APP_GOOGLE_MAPS_KEY con la API key correcta.
 
-// Centra el mapa en unas coordenadas y ajusta el zoom a 14.5 (o el que se indique)
-export const initializeMap = (mapRef, userCoords) => {
-    if (mapRef.current) {
-      mapRef.current.setCenter(userCoords);
-      mapRef.current.setZoom(14.5);
+/////////////////////
+// Loader + Helpers
+/////////////////////
+
+export function loadGoogleMaps(apiKey) {
+  return new Promise((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('No window'));
+
+    if (window.google && window.google.maps) {
+      console.log('loadGoogleMaps: window.google ya disponible');
+      return resolve(window.google);
     }
-  };
-  
-  // Agrega un marcador de taxi en el mapa con un ícono personalizado (por ejemplo, taxi rosa)
-  export const addTaxiMarker = (mapRef, userCoords, taxiIcon) => {
-    if (mapRef.current && window.google) {
-      return new window.google.maps.Marker({
-        map: mapRef.current,
-        position: userCoords,
-        icon: {
-          url: taxiIcon,
-          scaledSize: new window.google.maps.Size(48, 48),
-        },
+
+    const existing = document.querySelector('script[data-google-maps]');
+    if (existing) {
+      console.log('loadGoogleMaps: script existente detectado');
+      if (window.google && window.google.maps) return resolve(window.google);
+      existing.addEventListener('load', () => {
+        if (window.google && window.google.maps) resolve(window.google);
+        else reject(new Error('Script cargado pero window.google no disponible'));
       });
-    }
-    return null;
-  };
-  
-  // Carga la API de Google Maps de forma dinámica
-  export const loadGoogleMaps = (setGoogleMapsLoaded) => {
-    if (window.google) {
-      setGoogleMapsLoaded(true);
+      existing.addEventListener('error', () => reject(new Error('Error cargando script existente')));
       return;
     }
+
+    if (!apiKey) {
+      return reject(new Error('No API key provista a loadGoogleMaps'));
+    }
+
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_PLACES_KEY}&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
-    script.onload = () => setGoogleMapsLoaded(true);
-    script.onerror = (error) => {
-      console.error('Error al cargar Google Maps API:', error);
-    };
-    document.head.appendChild(script);
-    return () => {
-      document.head.removeChild(script);
-    };
-  };
-  
-  // Inicializa el mapa en el contenedor con ID 'map' usando las coordenadas centrales y el zoom indicado (por defecto 14)
-  export const initMap = (mapRef, centerCoords, zoom = 14) => {
-    if (!window.google || !mapRef.current) return;
-    mapRef.current = new window.google.maps.Map(document.getElementById('map'), {
-      center: centerCoords,
-      zoom: zoom,
-    });
-  };
-  
-  // Agrega un marcador en el mapa, con opción de ícono personalizado
-  export const addMarker = (mapRef, position, icon = null) => {
-    if (!window.google || !mapRef.current) return;
-    return new window.google.maps.Marker({
-      map: mapRef.current,
-      position: position,
-      icon: icon ? { url: icon, scaledSize: new window.google.maps.Size(32, 32) } : null,
-    });
-  };
-  
-  // Crea un DirectionsRenderer y lo asocia al mapa
-  export const createDirectionsRenderer = (mapRef) => {
-    const directionsRenderer = new window.google.maps.DirectionsRenderer();
-    directionsRenderer.setMap(mapRef.current);
-    return directionsRenderer;
-  };
-  
-  // Actualiza o crea el marcador del punto de recogida
-  export const updatePickupMarker = (startLocation, map, pickupMarkerRef) => {
-    if (!pickupMarkerRef.current) {
-      pickupMarkerRef.current = new window.google.maps.Marker({
-        position: startLocation,
-        map: map,
-        title: "Punto de recogida",
-      });
-    } else {
-      pickupMarkerRef.current.setPosition(startLocation);
-      pickupMarkerRef.current.setMap(map);
-    }
-  };
-  
-  // Solicita direcciones entre origen y destino, actualiza el DirectionsRenderer y coloca el marcador de recogida
-  export const getDirections = (
-    origin,
-    destination,
-    directionsService,
-    directionsRendererRef,
-    mapRef,
-    pickupMarkerRef
-  ) => {
-    directionsService.route(
-      {
-        origin: origin,
-        destination: destination,
-        travelMode: window.google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === window.google.maps.DirectionsStatus.OK) {
-          directionsRendererRef.current.setDirections(result);
-          const startLocation = result.routes[0].legs[0].start_location;
-          updatePickupMarker(startLocation, mapRef.current, pickupMarkerRef);
-        } else {
-          console.error("Error fetching directions", result);
-        }
+    script.setAttribute('data-google-maps', 'true');
+
+    script.onload = () => {
+      if (window.google && window.google.maps) {
+        console.log('Google Maps script cargado OK');
+        resolve(window.google);
+      } else {
+        reject(new Error('Script cargado pero window.google.maps no está listo'));
       }
-    );
-  };
-  
-  // Resetea el zoom del mapa al valor indicado (por defecto 17)
-  export const resetMapZoom = (mapRef, zoom = 14) => {
-    if (mapRef.current) {
-      mapRef.current.setZoom(zoom);
+    };
+
+    script.onerror = (e) => {
+      reject(new Error('Error cargando Google Maps script'));
+    };
+
+    // handler global para errores de key/restricciones - solo logging
+    window.gm_authFailure = function() {
+      console.error('gm_authFailure: problema con la API key o restricciones de referrer');
+    };
+
+    document.head.appendChild(script);
+  });
+}
+
+export const createMap = (el, center = { lat: 19.432607, lng: -99.133209 }, zoom = 14) => {
+  if (!el) throw new Error('createMap: elemento DOM requerido');
+  if (!window.google || !window.google.maps) throw new Error('createMap: google.maps no disponible');
+  return new window.google.maps.Map(el, { center, zoom });
+};
+
+export const addMarker = (map, position, icon = null, title = '') => {
+  if (!map || !window.google) return null;
+  return new window.google.maps.Marker({
+    map,
+    position,
+    icon: icon ? { url: icon, scaledSize: new window.google.maps.Size(32, 32) } : null,
+    title,
+  });
+};
+
+export const createDirectionsRenderer = (map) => {
+  if (!map || !window.google) return null;
+  const dr = new window.google.maps.DirectionsRenderer();
+  dr.setMap(map);
+  return dr;
+};
+
+// getDirectionsOnce: wrapper para solicitar ruta una sola vez
+export const getDirectionsOnce = (origin, destination, callback) => {
+  if (!window.google) {
+    callback(null, new Error('Google no disponible'));
+    return;
+  }
+  const directionsService = new window.google.maps.DirectionsService();
+  directionsService.route(
+    { origin, destination, travelMode: window.google.maps.TravelMode.DRIVING },
+    (result, status) => {
+      if (status === window.google.maps.DirectionsStatus.OK || status === 'OK') {
+        callback(result, null);
+      } else {
+        callback(null, new Error('Directions error: ' + status));
+      }
     }
-  };
-  
+  );
+};
+
+/////////////////////
+// Funciones legacy / aliases (para compatibilidad con tu código existente)
+/////////////////////
+
+// initializeMap  <- alias de createMap (mantiene firma: (mapRef, userCoords) en tu código antiguo)
+// Aquí asumimos que initializeMap recibe mapRef (un objeto ref) y las coords, así que lo implementamos en esa forma.
+export const initializeMap = (mapRef, userCoords, zoom = 14) => {
+  if (!mapRef) throw new Error('initializeMap: mapRef requerido');
+  const el = document.getElementById('map');
+  if (!el) throw new Error('initializeMap: elemento #map no encontrado en DOM');
+  // asegurar altura mínima
+  const computed = window.getComputedStyle(el);
+  if ((!computed.height || computed.height === '0px') && !el.style.height) {
+    el.style.height = '400px';
+  }
+  mapRef.current = createMap(el, userCoords, zoom);
+  return mapRef.current;
+};
+
+// addTaxiMarker <- alias de addMarker, con scaledSize 48 (como tenías antes)
+export const addTaxiMarker = (mapRef, userCoords, taxiIcon) => {
+  const mapInstance = mapRef.current ? mapRef.current : mapRef;
+  if (!mapInstance) return null;
+  if (!window.google) return null;
+  return new window.google.maps.Marker({
+    map: mapInstance,
+    position: userCoords,
+    icon: {
+      url: taxiIcon,
+      scaledSize: new window.google.maps.Size(48, 48),
+    },
+  });
+};
+
+// getDirections <- alias que crea DirectionsService + DirectionsRenderer y usa callback
+// Firma: getDirections(origin, destination, directionsService, directionsRenderer)
+export const getDirections = (origin, destination, directionsService, directionsRenderer) => {
+  if (!window.google) {
+    console.error('getDirections: google no disponible');
+    return;
+  }
+  // Si directionsService no fue pasado, creamos uno temporal
+  const ds = directionsService || new window.google.maps.DirectionsService();
+  const dr = directionsRenderer || new window.google.maps.DirectionsRenderer();
+  if (!dr.getMap || !dr.getMap()) dr.setMap(ds && ds.getMap ? ds.getMap() : null);
+  ds.route(
+    {
+      origin,
+      destination,
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    },
+    (result, status) => {
+      if (status === window.google.maps.DirectionsStatus.OK || status === 'OK') {
+        try {
+          if (directionsRenderer && directionsRenderer.setDirections) {
+            directionsRenderer.setDirections(result);
+          } else {
+            dr.setDirections(result);
+          }
+        } catch (e) {
+          console.warn('getDirections: error al setDirections', e);
+        }
+      } else {
+        console.error('getDirections error', status, result);
+      }
+    }
+  );
+};
+
+// updatePickupMarker (mantengo firma similar a la tuya)
+export const updatePickupMarker = (startLocation, map, pickupMarkerRef) => {
+  if (!window.google) return;
+  if (!pickupMarkerRef || !pickupMarkerRef.current) {
+    pickupMarkerRef.current = new window.google.maps.Marker({
+      position: startLocation,
+      map: map,
+      title: 'Punto de recogida',
+    });
+  } else {
+    pickupMarkerRef.current.setPosition(startLocation);
+    pickupMarkerRef.current.setMap(map);
+  }
+};
+
+// resetMapZoom (alias)
+export const resetMapZoom = (mapRefObj, zoom = 14) => {
+  const mapInstance = mapRefObj.current ? mapRefObj.current : mapRefObj;
+  if (mapInstance && mapInstance.setZoom) {
+    mapInstance.setZoom(zoom);
+  }
+};
+
+// export default not used; export named
