@@ -55,7 +55,7 @@ export default function PromueveMembresias() {
         backgroundColor: 'rgba(0,0,0,0.6)',
         display: 'flex',
         justifyContent: 'center',
-        marginBottom: 0,
+        marginBottom: "-40px",
         alignItems: 'flex-start',
         '@keyframes neonBreath': {
           '0%': { boxShadow: '0 0 10px rgba(0,255,150,0.06)' },
@@ -95,7 +95,7 @@ export default function PromueveMembresias() {
             </Typography>
 
             <Typography variant="subtitle1" sx={{ mb: 2, color: '#004d26' }}>
-              Convierte tu red en ingresos recurrentes: comparte tu QR, refiere amigos y gana cada mes mientras tus referidos conserven su membresía.
+              Convierte tu red en ingresos recurrentes: comparte tu Código Promocional, refiere amigos y gana cada mes mientras tus referidos conserven su membresía con un 10% de descuento.
             </Typography>
 
             <Box
@@ -110,7 +110,7 @@ export default function PromueveMembresias() {
               }}
             >
               <Typography variant="body1" sx={{ mb: 1 }}>
-                📣 <b>¿Cómo funciona?</b> Te damos un <b>QR y un enlace único</b> para que lo compartas. Cada persona que se suscriba usando tu código será registrada como tu referido y te generará comisión.
+                📣 <b>¿Cómo funciona?</b> Te damos un <b>Código Promocional</b> para que lo compartas. Cada persona que se suscriba usando tu código será registrada como tu referido y te generará comisiones cada mes.
               </Typography>
 
               <Typography variant="body1" sx={{ mt: 1 }}>
@@ -125,6 +125,25 @@ export default function PromueveMembresias() {
               <Typography variant="body2" sx={{ mt: 1, color: '#004d26' }}>
                 Ejemplo: si refieres 10 personas con membresía y permanecen 3 meses, podrías haber cobrado entre <b>$300 y $450 MXN</b> acumulados en ese periodo (y seguir cobrando cada mes mientras sigan activos).
               </Typography>
+
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/membresias')}
+                sx={{
+                  borderColor: '#00ff88',
+                  color: '#004d26',
+                  fontWeight: 700,
+                  px: 3,
+                  py: 1.1,
+                  '&:hover': {
+                    backgroundColor: 'rgba(0,255,136,0.06)',
+                    borderColor: '#00ff99',
+                  },
+                  mt: 3,
+                }}
+              >
+                Adquiere tu membresía
+              </Button>
             </Box>
 
             <Typography variant="h6" sx={{ mb: 2, color: '#006633', fontWeight: 700 }}>
@@ -158,23 +177,7 @@ export default function PromueveMembresias() {
                 Generar QR y Referir
               </Button>
 
-              <Button
-                variant="outlined"
-                onClick={() => navigate('/membresias')}
-                sx={{
-                  borderColor: '#00ff88',
-                  color: '#004d26',
-                  fontWeight: 700,
-                  px: 3,
-                  py: 1.1,
-                  '&:hover': {
-                    backgroundColor: 'rgba(0,255,136,0.06)',
-                    borderColor: '#00ff99',
-                  },
-                }}
-              >
-                Adquiere tu membresía
-              </Button>
+              
             </Box>
 
             <Divider sx={{ my: 4 }} />

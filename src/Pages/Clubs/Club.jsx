@@ -1,5 +1,5 @@
 // src/pages/Club.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -61,27 +61,18 @@ const isImage = (u = '') => /\.(jpe?g|png|webp|avif|gif|svg)(\?.*)?$/i.test(u);
 const isVideo = (u = '') => /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(u);
 
 const splitDireccion = (d) => {
-  // recibe string o objeto; intentamos devolver partes ordenadas: calle, zona, ciudad, estado, pais
   if (!d) return null;
-  if (typeof d === 'object') {
-    // si ya viene objeto con campos comunes, devolverlo directo
-    return d;
-  }
+  if (typeof d === 'object') return d;
   const raw = String(d);
-  // quitar llaves si viene JSON en string
   try {
     const maybeJson = JSON.parse(raw);
     if (typeof maybeJson === 'object') return maybeJson;
-  } catch { /* no es JSON */ }
-
-  // separar por comas y puntos, limpiar
+  } catch {}
   const parts = raw
     .replace(/\s+/g, ' ')
     .split(/[,·•\.]+/)
     .map((p) => p.trim())
     .filter(Boolean);
-
-  // asignaciones heurísticas
   const [calleOrPrimera, segunda, ciudad = '', estado = '', pais = ''] = parts;
   return {
     calle: calleOrPrimera || null,
@@ -95,17 +86,20 @@ const splitDireccion = (d) => {
 
 const formatHorario = (h) => {
   if (!h) return null;
-  // h expected object por días
   const daysOrder = ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
   return daysOrder.map((d) => {
     const v = h[d] ?? h[d.toLowerCase()];
     if (!v) return { dia: d, text: 'No disponible' };
-    // manejar caso "cerrado" como string o booleano
-    const cerradoFlag = v.cerrado === true || String(v.abre || v.open).toLowerCase() === 'cerrado' || String(v.cierra || v.close).toLowerCase() === 'cerrado';
+    const cerradoFlag =
+      v.cerrado === true ||
+      String(v.abre || v.open).toLowerCase() === 'cerrado' ||
+      String(v.cierra || v.close).toLowerCase() === 'cerrado';
     if (cerradoFlag) return { dia: d, text: 'Cerrado' };
     const abre = v.abre || v.open || null;
     const cierra = v.cierra || v.close || null;
-    const t = (abre && cierra) ? `${abre} — ${cierra}` : (abre ? `Abre: ${abre}` : (cierra ? `Cierra: ${cierra}` : 'Horario incompleto'));
+    const t = (abre && cierra)
+      ? `${abre} — ${cierra}`
+      : (abre ? `Abre: ${abre}` : (cierra ? `Cierra: ${cierra}` : 'Horario incompleto'));
     return { dia: d, text: t };
   });
 };
@@ -113,7 +107,7 @@ const formatHorario = (h) => {
 const joinNonEmpty = (arr) => (arr.filter(Boolean).join(', ') || null);
 
 /* Componente */
-export default function Club() {
+export default function Club({ miclub }) {
   const { nombre_club: nombreParam } = useParams();
   const navigate = useNavigate();
 
@@ -123,18 +117,35 @@ export default function Club() {
 
   const safeName = nombreParam ? decodeURIComponent(nombreParam) : null;
 
+  const valorBusqueda = useMemo(() => {
+    if (typeof miclub === 'string' && miclub.trim() !== '') {
+      return miclub.trim();
+    }
+    if (typeof safeName === 'string' && safeName.trim() !== '') {
+      return safeName.trim();
+    }
+    return null;
+  }, [miclub, safeName]);
+
   useEffect(() => {
-    if (!safeName) {
+    if (!valorBusqueda) {
       setError('Nombre del club no especificado');
       setLoading(false);
       return;
     }
+
     let mounted = true;
 
     const fetchClub = async () => {
       setLoading(true);
       try {
-        const q = `${STRAPI_URL}/api/clubs?filters[nombre_club][$eq]=${encodeURIComponent(safeName)}&populate=*&pagination[pageSize]=1`;
+        const q = `${STRAPI_URL}/api/clubs?filters[nombre_club][$eq]=${encodeURIComponent(
+          valorBusqueda
+        )}&populate=*&pagination[pageSize]=1`;
+
+        console.log('BUSCANDO CLUB CON:', valorBusqueda);
+        console.log('QUERY:', q);
+
         const res = await fetch(q);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
@@ -148,7 +159,6 @@ export default function Club() {
           return;
         }
 
-        // normalizar medias
         const fotoUrls = extractMediaUrls(attrs.foto_de_perfil);
         const fotos = extractMediaUrls(attrs.fotos);
         const documentos = extractMediaUrls(attrs.documentos);
@@ -156,7 +166,6 @@ export default function Club() {
         const acta = extractMediaUrls(attrs.acta);
         const archivos_legal = extractMediaUrls(attrs.archivos_legal);
 
-        // owner simplificado
         let owner = null;
         try {
           const userRel = attrs.users_permissions_user ?? attrs.user ?? null;
@@ -169,7 +178,7 @@ export default function Club() {
               email: userAttrs.email ?? null,
             };
           }
-        } catch { /* ignore */ }
+        } catch {}
 
         const normalized = {
           ...attrs,
@@ -195,7 +204,9 @@ export default function Club() {
 
     fetchClub();
     return () => { mounted = false; };
-  }, [safeName]);
+  }, [valorBusqueda]);
+
+
 
   if (loading) {
     return (

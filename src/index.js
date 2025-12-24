@@ -45,6 +45,8 @@ const AppWrapper = () => {
   // Si la ruta es "/" o no tiene segmento, queda cadena vacía ''
   var siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
   if (siteSection === 'productos') siteSection = 'market';
+  if (siteSection === 'contenido') siteSection = 'contenidos';
+  //...
 
   return (
     <>
