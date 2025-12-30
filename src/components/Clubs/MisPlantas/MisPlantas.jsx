@@ -21,7 +21,7 @@ const MisPlantas = () => {
   const { userData } = useRoles();
 
   // Normalizar email (variantes posibles)
-  const userEmail = userData?.email ?? userData?.usuario_email ?? null;
+  const userEmail = userData?.email ?? null;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
