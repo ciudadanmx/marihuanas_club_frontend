@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 const MiClubBar = () => {
   const { user, isAuthenticated } = useAuth0();
   const [loading, setLoading] = useState(false);
-  const [haveClub, setHaveClub] = useState(null);
+  const [haveClub, setHaveClub] = useState(false);
+  const [clubName, setClubName] = useState(null);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
@@ -21,41 +22,42 @@ const MiClubBar = () => {
 
     const base = (process.env.REACT_APP_STRAPI_URL || "").replace(/\/$/, "");
     const token = process.env.REACT_APP_STRAPI_TOKEN;
+
     const url = `${base}/api/users?filters[email][$eq]=${encodeURIComponent(
       user.email
-    )}&populate=deep,3`;
+    )}&populate[club]=*`;
 
     const fetchData = async () => {
       setLoading(true);
-      try {
-        console.log("[MiClubBar] Fetch Strapi - user.email:", user.email);
-        console.log("[MiClubBar] URL ->", url);
+      setError(null);
 
+      try {
         const headers = { "Content-Type": "application/json" };
         if (token) headers.Authorization = `Bearer ${token}`;
 
         const res = await fetch(url, { headers });
-        if (!res.ok)
-          throw new Error(`Error ${res.status}: ${res.statusText}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
         const json = await res.json();
-        console.log("[MiClubBar] Respuesta Strapi (raw JSON):", json);
 
-        let value = null;
-        if (Array.isArray(json?.data) && json.data.length > 0) {
-          value = json.data[0]?.haveclub ?? json.data[0]?.attributes?.haveclub;
-        } else if (Array.isArray(json) && json.length > 0) {
-          value = json[0]?.haveclub;
+        if (Array.isArray(json) && json.length > 0) {
+          const userEntry = json[0];
+
+          const resolvedHaveClub = Boolean(userEntry?.haveclub);
+          const resolvedClubName =
+            userEntry?.club?.nombre_club ?? null;
+
+          setHaveClub(resolvedHaveClub);
+          setClubName(resolvedClubName);
         } else {
-          value = json?.haveclub;
+          setHaveClub(false);
+          setClubName(null);
         }
-
-        console.log("[MiClubBar] Valor haveclub:", value);
-        setHaveClub(value);
-        setLoading(false);
       } catch (err) {
-        console.error("[MiClubBar] Error:", err);
         setError(err.message);
+        setHaveClub(false);
+        setClubName(null);
+      } finally {
         setLoading(false);
       }
     };
@@ -63,7 +65,6 @@ const MiClubBar = () => {
     fetchData();
   }, [isAuthenticated, user?.email]);
 
-  // --- estilos condicionales según estado ---
   const isGreen = haveClub === true;
   const gradient = isGreen
     ? "linear-gradient(90deg, #d7f8d1 0%, #f0fff4 100%)"
@@ -105,24 +106,28 @@ const MiClubBar = () => {
         <Typography variant="body2" color="error">
           Error: {error}
         </Typography>
-      ) : haveClub === true ? (
+      ) : haveClub ? (
         <Box>
           <Typography
             variant="body1"
             sx={{ color: "#1b5e20", fontWeight: 500, mb: 1 }}
           >
-            ✅ Ya tienes un club
+            ✅ Estás afiliado al club:{" "}
+            <strong>{clubName}</strong>
           </Typography>
+
           <Button
             variant="contained"
             onClick={() => navigate("/clubs/miclub/info")}
             sx={{
-              background: "linear-gradient(90deg, #66bb6a 0%, #81c784 100%)",
+              background:
+                "linear-gradient(90deg, #66bb6a 0%, #81c784 100%)",
               color: "#fff",
               fontWeight: 600,
               textTransform: "none",
               "&:hover": {
-                background: "linear-gradient(90deg, #57a65e 0%, #6fbf73 100%)",
+                background:
+                  "linear-gradient(90deg, #57a65e 0%, #6fbf73 100%)",
               },
             }}
           >
