@@ -79,6 +79,9 @@ const PLACEHOLDER =
     `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'><rect width='100%' height='100%' fill='#fafafa'/><g fill='#cbd5e1' font-family='Arial' text-anchor='middle'><text x='50%' y='50%' dy='-6' font-size='20'>Sin foto</text><text x='50%' y='50%' dy='18' font-size='12'>Añade imágenes en la bitácora</text></g></svg>`
   );
 
+  const isPlaceholderImage = (url) =>
+  typeof url === "string" && url.startsWith("data:image/svg+xml");
+
 const cardVariants = {
   initial: { scale: 0.985, y: 6, opacity: 0 },
   enter: { scale: 1, y: 0, opacity: 1, transition: { duration: 0.36, ease: "easeOut" } },
@@ -128,12 +131,12 @@ const MisPlantas = ({ user }) => {
         setError(null);
 
         const base = STRAPI_BASE || "";
-        const urlPlantas = `${base}/api/plantas?filters[usuario_email][$eq]=${encodeURIComponent(email)}&populate=media`;
+        const urlPlantas = `${base}/api/plantas?filters[usuario_email][$eq]=${encodeURIComponent(email)}&populate=galeria`;
         const urlUser = `${base}/api/users?filters[email][$eq]=${encodeURIComponent(email)}`;
         const urlBit =
           `${base}/api/registrobitacoras?filters[usuario_email][$eq]=${encodeURIComponent(
             email
-          )}&filters[registrojardinero][$eq]=true&filters[tipo][$eq]=fotoplanta&sort=createdAt:desc&populate=media`;
+          )}&filters[registrojardinero][$eq]=true&filters[tipo][$eq]=fotoplanta&sort=createdAt:desc&populate=galeria`;
 
         if (!didDumpOnceRef.current) {
           console.log("URLs construidas:");
@@ -163,7 +166,7 @@ const MisPlantas = ({ user }) => {
           if (!didDumpOnceRef.current) console.log("resPlantas.value.data (raw):", resPlantas.value.data);
           plantasData = entries.map((e) => {
             const attrs = e.attributes ?? {};
-            const media = attrs.media ?? null;
+            const media = attrs.galeria ?? null;
             const imagenUrl = firstImageFromMedia(media);
             return {
               id: e.id,
@@ -197,7 +200,7 @@ const MisPlantas = ({ user }) => {
           if (!didDumpOnceRef.current) console.log("resBit.value.data (raw):", resBit.value.data);
           bitData = bentries.map((b) => {
             const attrs = b.attributes ?? {};
-            const media = attrs.media ?? null;
+            const media = attrs.galeria ?? null;
             const imagenUrl = firstImageFromMedia(media);
             return {
               id: b.id,
@@ -244,7 +247,6 @@ const MisPlantas = ({ user }) => {
     if (user?.email) {
       loadAll(user.email);
     } else {
-      // si no hay email, limpiamos y no bloqueamos la UI
       setPlantas([]);
       setUserStrapi(null);
       setBitacoras([]);
@@ -254,12 +256,10 @@ const MisPlantas = ({ user }) => {
     }
 
     return () => {
-      // marcar cancelado
-      // (loadAll lee la var `cancelled` en scope y evita setState al desmontar)
-      // eslint-disable-next-line no-unused-vars
       cancelled = true;
     };
   }, [user?.email]);
+
 
   // Número de plantas vivas
   const numeroPlantasVivas = useMemo(() => {
