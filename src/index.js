@@ -46,6 +46,7 @@ const AppWrapper = () => {
   var siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
   if (siteSection === 'productos') siteSection = 'market';
   if (siteSection === 'contenido') siteSection = 'contenidos';
+  if (siteSection === 'club') siteSection = 'clubs';
   //...
 
   return (
