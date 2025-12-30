@@ -95,6 +95,7 @@ import PreguntasFrecuentes from '../Pages/Info/PreguntasFrecuentes.jsx';
 import Evento from '../Pages/Eventos/Evento.jsx';
 
 import RegistroBitacora from '../Pages/Clubs/RegistroBitacora.jsx';
+import EditarRegistroBitacora from '../Pages/Clubs/EditarRegistroBitacora.jsx';
 
 // 🧩 Wiki
 import WikiBar from '../components/WikiBar.jsx';
@@ -162,6 +163,7 @@ const Rutas = () => (
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
     
     <Route path="/club/bitacoras/:registro" element={<RegistroBitacora />} />
+    <Route path="/club/bitacora/editar/:registro" element={<EditarRegistroBitacora />} />
     <Route path="/clubs/bitacora/escribir" element={<EscribirBitacora />} />
     
     <Route path="/eventos" element={<EventosPage />} />
