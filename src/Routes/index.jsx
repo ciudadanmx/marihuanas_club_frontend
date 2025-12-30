@@ -13,6 +13,7 @@ import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
 import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import MiClub from '../Pages/Clubs/MiClub.jsx';
+import Sembrar from '../components/Clubs/Sembrar.jsx';
 //Membresías
 import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
@@ -54,6 +55,9 @@ import Maria from '../Pages/Herramientas/Maria.jsx';
 //Eventos
 import EventosPage from '../components/Eventos/index.jsx';
 import CrearEvento from '../Pages/Eventos/CrearEvento.jsx';
+
+import EscribirBitacora from '../Pages/Clubs/EscribirBitacora.jsx';
+
 //Gana
 import Gana from '../Pages/Gana/Gana.jsx';
 import PromueveMembresias from '../Pages/Gana/PromueveMembresias';
@@ -89,6 +93,9 @@ import Activismo from '../Pages/Legal/Activismo.jsx';
 import QuienesSomos from '../Pages/Info/QuienesSomos';
 import PreguntasFrecuentes from '../Pages/Info/PreguntasFrecuentes.jsx';
 import Evento from '../Pages/Eventos/Evento.jsx';
+
+import RegistroBitacora from '../Pages/Clubs/RegistroBitacora.jsx';
+
 // 🧩 Wiki
 import WikiBar from '../components/WikiBar.jsx';
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
@@ -153,6 +160,10 @@ const Rutas = () => (
     <Route path="/info/faq" element={<PreguntasFrecuentes />} />
     <Route path="/evento/:slug" element={<Evento />} />
     <Route path="/eventos/crear-evento" element={<CrearEvento />} />
+    
+    <Route path="/club/bitacoras/:registro" element={<RegistroBitacora />} />
+    <Route path="/clubs/bitacora/escribir" element={<EscribirBitacora />} />
+    
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/clubs" element={<Clubs />} />
     <Route path="/clubs/miclub/*" element={<MiClub />} />

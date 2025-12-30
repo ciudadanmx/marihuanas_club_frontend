@@ -1,6 +1,7 @@
 // src/pages/Club.jsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth0 } from '@auth0/auth0-react';
 import {
   Box,
   Grid,
@@ -108,12 +109,17 @@ const joinNonEmpty = (arr) => (arr.filter(Boolean).join(', ') || null);
 
 /* Componente */
 export default function Club({ miclub }) {
+  const { user, isAuthenticated } = useAuth0();
   const { nombre_club: nombreParam } = useParams();
   const navigate = useNavigate();
 
   const [club, setClub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userHasClub, setUserHasClub] = useState(null); // null = cargando
+  const [savingClub, setSavingClub] = useState(false);
+
+  const [userClubId, setUserClubId] = useState(null);
 
   const safeName = nombreParam ? decodeURIComponent(nombreParam) : null;
 
@@ -207,6 +213,84 @@ export default function Club({ miclub }) {
   }, [valorBusqueda]);
 
 
+  useEffect(() => {
+  if (!user?.email) return;
+  
+  let mounted = true;
+
+  const fetchUserClub = async () => {
+    try {
+      const q = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
+        user.email
+      )}&populate=club`;
+
+      const res = await fetch(q);
+      if (!res.ok) throw new Error('Error buscando user');
+
+      const data = await res.json();
+      const u = Array.isArray(data) ? data[0] : null;
+
+      if (!mounted) return;
+
+      if (u?.club?.id) {
+        setUserHasClub(true);
+      } else {
+        setUserHasClub(false);
+      }
+    } catch (e) {
+      console.error(e);
+      if (mounted) setUserHasClub(false);
+    }
+  };
+
+  fetchUserClub();
+  return () => { mounted = false; };
+}, [user?.email]);
+
+
+const handleJoinClub = async () => {
+  if (!user?.email || !club?.id) return;
+
+  try {
+    setSavingClub(true);
+
+    // 1. Buscar el user en Strapi
+    const q = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
+      user.email
+    )}`;
+
+    const resUser = await fetch(q);
+    const users = await resUser.json();
+    const userStrapi = users[0];
+
+    if (!userStrapi?.id) {
+      throw new Error('User no existe en Strapi');
+    }
+
+    // 2. Actualizar relación club
+    const resUpdate = await fetch(
+      `${STRAPI_URL}/api/users/${userStrapi.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          club: club.id,
+        }),
+      }
+    );
+
+    if (!resUpdate.ok) throw new Error('No se pudo guardar club');
+
+    setUserHasClub(true);
+  } catch (err) {
+    console.error(err);
+    alert('Error al afiliarte al club');
+  } finally {
+    setSavingClub(false);
+  }
+};
 
   if (loading) {
     return (
@@ -290,9 +374,16 @@ export default function Club({ miclub }) {
   return (
     <Box sx={{ maxWidth: 1100, mx: 'auto', p: 2 }}>
       {/* botón de afiliar solo si aplica */}
-      {canShowAdd && (
+      {canShowAdd && userHasClub === false && (
         <Box sx={{ mb: 2 }}>
-          <AddClubButton />
+          <Button
+            variant="contained"
+            color="success"
+            disabled={savingClub}
+            onClick={handleJoinClub}
+          >
+            {savingClub ? 'Afiliando…' : 'Afiliarme a este club'}
+          </Button>
         </Box>
       )}
 
