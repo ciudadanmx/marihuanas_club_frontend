@@ -5,7 +5,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 import InfoMiClub from '../../components/Clubs/InfoMiClub.jsx';
 import Bitacora from '../../components/Clubs/Bitacora.jsx';
 import Documentos from '../../components/Clubs/Documentos.jsx';
-import MisPlantas from '../../components/Clubs/MisPlantas/index.jsx';
+import MisPlantas from '../../components/Clubs/MisPlantas/MisPlantas.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
 
 const MiClub = () => {

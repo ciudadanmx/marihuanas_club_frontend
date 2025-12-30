@@ -89,7 +89,7 @@ const InfoMiClub = () => {
         </button>
 
         <button
-          onClick={() => navigate('/clubs/miclub/anotar')}
+          onClick={() => navigate('/club/bitacora/escribir')}
           style={btnStyle}
         >
           <FaBook size={28} />

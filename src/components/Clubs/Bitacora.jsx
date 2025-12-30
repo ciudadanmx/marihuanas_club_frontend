@@ -214,7 +214,7 @@ export default function Bitacora() {
         <Button
           variant="contained"
           component={Link}
-          to="/clubs/bitacora/escribir"
+          to="/club/bitacora/escribir"
           sx={{
             backgroundColor: '#91ff49',
             color: '#1a1a1a',

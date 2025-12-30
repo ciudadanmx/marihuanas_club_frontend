@@ -164,7 +164,7 @@ const Rutas = () => (
     
     <Route path="/club/bitacoras/:registro" element={<RegistroBitacora />} />
     <Route path="/club/bitacora/editar/:registro" element={<EditarRegistroBitacora />} />
-    <Route path="/clubs/bitacora/escribir" element={<EscribirBitacora />} />
+    <Route path="/club/bitacora/escribir" element={<EscribirBitacora />} />
     
     <Route path="/eventos" element={<EventosPage />} />
     <Route path="/clubs" element={<Clubs />} />
