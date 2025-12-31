@@ -14,14 +14,16 @@ const WikiViewer = () => {
 
         const path = window.location.pathname;
 
-        if (path === "/documentacion-transparencia") {
-          notionUrl = "http://localhost:33034/wiki/28dccd6ede7b80199481fca15c1c3fe5";
-        } else if (path === "/ayuda") {
-          notionUrl = "http://localhost:33034/wiki/28dccd6ede7b80cfa079f9d15648f3f8";
-        } else if (path === "/quienes-somos") {
-          notionUrl = "http://localhost:33034/wiki/28cccd6ede7b80f59daec2f530992ef1";
+        if (path === "/wiki/faq") {
+          notionUrl = "http://localhost:3033/wiki/2da8ae85d119808198fdfa1c2270ad59";
+        } else if (path === "/wiki/ayuda") {
+          notionUrl = "http://localhost:3033/wiki/2da8ae85d119804788d6dd577113c59a";
+        } else if (path === "/wiki/legal") {
+          notionUrl = "http://localhost:3033/wiki/2da8ae85d119804bbab2eccd3b57e174";
+        } else if (path === "/wiki/mapa420") {
+          notionUrl = "http://localhost:3033/wiki/2da8ae85d11980a98227eb5d8d7ed1b9";
         } else {
-          notionUrl = "http://localhost:33034/wiki/286ccd6ede7b8088993dc99af29e0b2f";
+          notionUrl = "http://localhost:3033/wiki/2da8ae85d1198035990ecd7eb74a5701";
         }
 
         setLoading(true);
