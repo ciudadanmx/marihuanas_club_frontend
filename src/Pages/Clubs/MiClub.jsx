@@ -1,7 +1,8 @@
 import Pestanas from '../../components/Pestanas';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useRoles } from '../../Contexts/RolesContext.jsx';
 
 import InfoMiClub from '../../components/Clubs/InfoMiClub.jsx';
 import Bitacora from '../../components/Clubs/Bitacora.jsx';
@@ -11,9 +12,11 @@ import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
 
 const MiClub = () => {
-  const jardinero = false;
   const location = useLocation();
   const { user, isLoading } = useAuth0();
+  const { isJardinero, userData } = useRoles();
+
+  const jardinero = isJardinero();
 
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(
@@ -22,22 +25,25 @@ const MiClub = () => {
 
   const basePrueba = '/clubs/miclub';
 
-  let tabs = [];
-  if (!jardinero) {
-    tabs = [
-      { label: 'Info tu Club', path: 'info' },
+  // Tabs dependen SOLO del rol jardinero
+  const tabs = useMemo(() => {
+    if (!jardinero) {
+      return [
+        { label: 'Info tu Club', path: 'info' },
+        { label: 'Mi Bitácora', path: 'bitacora' },
+        { label: 'Documentación Legal', path: 'documentos' },
+        { label: 'Mis Plantas', path: 'misplantas' },
+      ];
+    }
+
+    return [
       { label: 'Mi Bitácora', path: 'bitacora' },
       { label: 'Documentación Legal', path: 'documentos' },
       { label: 'Mis Plantas', path: 'misplantas' },
-    ];
-  } else {
-    tabs = [
-      { label: 'Mi Bitácora', path: 'bitacora' },
-      { label: 'Documentación Legal', path: 'documentos' },
-      { label: 'Mis Plantas', path: 'misplantas' },
       { label: 'Info tu Club', path: 'info' },
+      { label: 'Gestionar Club', path: 'admin' },
     ];
-  }
+  }, [jardinero]);
 
   // responsive listener
   useEffect(() => {
@@ -50,20 +56,19 @@ const MiClub = () => {
   useEffect(() => {
     const path = (location.pathname || '').toLowerCase();
 
-    if (path.includes(`${basePrueba}/info`)) setTabIndex(0);
-    else if (path.includes(`${basePrueba}/bitacora`)) setTabIndex(1);
-    else if (path.includes(`${basePrueba}/documentos`)) setTabIndex(2);
-    else if (path.includes(`${basePrueba}/misplantas`)) setTabIndex(3);
+    if (path.includes(`${basePrueba}/info`)) setTabIndex(jardinero ? 3 : 0);
+    else if (path.includes(`${basePrueba}/bitacora`)) setTabIndex(jardinero ? 0 : 1);
+    else if (path.includes(`${basePrueba}/documentos`)) setTabIndex(jardinero ? 1 : 2);
+    else if (path.includes(`${basePrueba}/misplantas`)) setTabIndex(jardinero ? 2 : 3);
     else setTabIndex(0);
-  }, [location.pathname]);
+  }, [location.pathname, jardinero]);
 
-  if (isLoading) return <p>Cargando...</p>;
+  // Esperar Auth0 + Strapi
+  if (isLoading || !userData) return <p>Cargando...</p>;
 
   const path = location.pathname || '';
-
   const isSembrar = path.includes(`${basePrueba}/misplantas/sembrar`);
 
-  // Detecta /clubs/miclub/misplantas/:codigo
   const misPlantasDetalleMatch = path.match(
     new RegExp(`^${basePrueba}/misplantas/([^/]+)$`)
   );
@@ -88,20 +93,19 @@ const MiClub = () => {
         marginBottom: '0px',
       }}
     >
-      {/* Columna principal */}
       <div style={{ flex: '1 1 100%', maxWidth: '100%' }}>
         <Pestanas
           tabs={tabs}
           basePath={basePrueba}
-          onTabChange={(index) => setTabIndex(index)}
+          onTabChange={setTabIndex}
           collapseAt={640}
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>
-          {tabIndex === 0 && <InfoMiClub />}
-          {tabIndex === 1 && <Bitacora />}
-          {tabIndex === 2 && <Documentos />}
-          {tabIndex === 3 && (
+          {tabs[tabIndex]?.path === 'info' && <InfoMiClub />}
+          {tabs[tabIndex]?.path === 'bitacora' && <Bitacora />}
+          {tabs[tabIndex]?.path === 'documentos' && <Documentos />}
+          {tabs[tabIndex]?.path === 'misplantas' && (
             isSembrar ? (
               <Sembrar user={user} />
             ) : codigoPlanta ? (

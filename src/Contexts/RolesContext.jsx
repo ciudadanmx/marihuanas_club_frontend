@@ -197,6 +197,17 @@ const isRoot = () => {
     console.groupEnd();
   };
 
+  const isJardinero = () => {
+    if (!isAuthenticated || !userData) {
+      console.log('🌱 isJardinero: esperando datos de usuario...');
+      return false;
+    }
+
+    const res = userData.isJardinero === true;
+    console.log('🌱 isJardinero:', res, 'valor:', userData.isjardinero);
+    return res;
+  };
+
   const setEditor = enabled => updateExtraRole('editor', enabled);
   const setAdmin = enabled => updateExtraRole('admin', enabled);
   const setRoot = enabled => updateExtraRole('root', enabled);
@@ -228,6 +239,7 @@ const isRoot = () => {
         isEditor,
         isAdmin,
         isRoot,
+        isJardinero,
         isActivaMembresia,
         setEditor,
         setAdmin,
