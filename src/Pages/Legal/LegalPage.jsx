@@ -2,10 +2,14 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Grid, Card, Box } from '@mui/material';
 import { keyframes } from '@emotion/react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import Pestanas from '../../components/Pestanas';
 import { useRoles } from '../../Contexts/RolesContext';
+
+// 👉 NUEVOS COMPONENTES
+import Documentos from '../../components/Clubs/Documentos.jsx';
+import RutaLegal from '../../components/Clubs/RutaLegal.jsx';
 
 // Imágenes
 import derechos from '../../assets/derechos_consumidores_marihuanas_club.png';
@@ -84,13 +88,12 @@ function AnimatedImage({ src, alt, animConfig }) {
 }
 
 export default function LegalPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // se mantiene intacto
   const location = useLocation();
   const { isActivaMembresia } = useRoles();
 
   const basePath = '/legal';
 
-  // 👇 ORDEN IMPORTANTE
   const tabs = useMemo(
     () => [
       { label: 'Herramientas', path: '' },
@@ -102,7 +105,7 @@ export default function LegalPage() {
 
   const [tabIndex, setTabIndex] = useState(0);
 
-  // sincroniza pestaña activa
+  // sincroniza pestaña activa (se mantiene)
   useEffect(() => {
     const path = location.pathname || '';
     if (path.includes('/rutalegal')) setTabIndex(1);
@@ -110,17 +113,9 @@ export default function LegalPage() {
     else setTabIndex(0);
   }, [location.pathname]);
 
-  // 🚀 navegación EXACTA como pediste
-  const handleTabChange = (index, tab) => {
+  // 👉 YA NO NAVEGA, SOLO CAMBIA TAB
+  const handleTabChange = (index) => {
     setTabIndex(index);
-
-    if (tab.path === 'rutalegal') {
-      navigate('/clubs/miclub/rutalegal');
-    }
-
-    if (tab.path === 'documentos') {
-      navigate('/clubs/miclub/documentos');
-    }
   };
 
   const handleCardClick = (cfg) => () => {
@@ -152,7 +147,7 @@ export default function LegalPage() {
         />
       )}
 
-      {/* ===== CONTENIDO SOLO PARA "HERRAMIENTAS" ===== */}
+      {/* ===== HERRAMIENTAS ===== */}
       {tabIndex === 0 && (
         <Box sx={{ pt: 1, px: 2, mt: -1 }}>
           <Grid container spacing={3} justifyContent="center">
@@ -169,7 +164,10 @@ export default function LegalPage() {
                       cursor: 'pointer',
                       borderRadius: 3,
                       boxShadow: 3,
-                      '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 },
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: 6,
+                      },
                     }}
                   >
                     <AnimatedImage
@@ -182,6 +180,20 @@ export default function LegalPage() {
               );
             })}
           </Grid>
+        </Box>
+      )}
+
+      {/* ===== RUTA LEGAL ===== */}
+      {tabIndex === 1 && (
+        <Box sx={{ pt: 1, px: 2 }}>
+          <RutaLegal />
+        </Box>
+      )}
+
+      {/* ===== MIS DOCUMENTOS ===== */}
+      {tabIndex === 2 && (
+        <Box sx={{ pt: 1, px: 2 }}>
+          <Documentos />
         </Box>
       )}
     </div>

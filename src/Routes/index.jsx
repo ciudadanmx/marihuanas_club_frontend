@@ -186,6 +186,8 @@ const Rutas = () => (
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
     <Route path="/legal" element={<LegalPage />} />
+    <Route path="/legal/rutalegal" element={<LegalPage />} />
+    <Route path="/legal/documentos" element={<LegalPage />} />
     <Route path="/legal/activismo" element={<Activismo />} />
     <Route path="/legal/tuabogado" element={<TuAbogado />} />
     <Route path="/legal/instrucciones-acta" element={<InstruccionesActa />} />
