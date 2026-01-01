@@ -1,10 +1,13 @@
 // src/pages/LegalPage.jsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Grid, Card, Box } from '@mui/material';
 import { keyframes } from '@emotion/react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-// Importar imágenes
+import Pestanas from '../../components/Pestanas';
+import { useRoles } from '../../Contexts/RolesContext';
+
+// Imágenes
 import derechos from '../../assets/derechos_consumidores_marihuanas_club.png';
 import cofepris from '../../assets/generador_automatico_escrito_permiso_cofepris.png';
 import amparo from '../../assets/amparo.png';
@@ -12,7 +15,7 @@ import activismo from '../../assets/activismo.png';
 import tuabogado from '../../assets/tuabogado.png';
 import club from '../../assets/club.png';
 
-// === Animaciones (una sola vez cada una) ===
+// === Animaciones ===
 const spin = keyframes`
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -29,31 +32,22 @@ const swing = keyframes`
   100% { transform: rotate(0deg); }
 `;
 
-// Lista de animaciones alternadas (una por imagen)
 const animationList = [
   { animation: spin, duration: '2s', timing: 'linear', count: 1 },
   { animation: pulse, duration: '1.5s', timing: 'ease-in-out', count: 1 },
   { animation: swing, duration: '2s', timing: 'ease-in-out', count: 1 },
 ];
 
-const wikip = process.env.REACT_APP_WIKI_URL || '/wiki/legal';
-const wiki = (typeof process !== 'undefined' &&
-  process.env &&
-  String(process.env.REACT_APP_WIKI_URL || '').trim() !== '')
-  ? 'external'
-  : 'route';
-
-// Configuración de las cards (imagen + destino)
+// Cards = Herramientas
 const cardConfigs = [
-  { src: derechos, alt: 'Derechos Consumidores', type: wiki, path: wikip },
-  { src: cofepris, alt: 'Generador Cofepris', type: 'route', path: '/legal/generadorlibre' },
-  { src: amparo, alt: 'Amparo', type: 'route', path: '/legal/amparo' },
-  { src: activismo, alt: 'Activismo', type: 'route', path: '/legal/activismo' },
-  { src: tuabogado, alt: 'Tu Abogado', type: 'route', path: '/legal/tuabogado' },
-  { src: club, alt: 'Club', type: 'route', path: '/legal/instrucciones-acta' },
+  { src: derechos, alt: 'Derechos Consumidores', path: '/wiki/legal', external: true },
+  { src: cofepris, alt: 'Generador Cofepris', path: '/legal/generadorlibre' },
+  { src: amparo, alt: 'Amparo', path: '/legal/amparo' },
+  { src: activismo, alt: 'Activismo', path: '/legal/activismo' },
+  { src: tuabogado, alt: 'Tu Abogado', path: '/legal/tuabogado' },
+  { src: club, alt: 'Club', path: '/legal/instrucciones-acta' },
 ];
 
-// Componente de imagen animada (con IntersectionObserver)
 function AnimatedImage({ src, alt, animConfig }) {
   const ref = useRef();
   const [inView, setInView] = useState(false);
@@ -81,86 +75,115 @@ function AnimatedImage({ src, alt, animConfig }) {
       sx={{
         width: '100%',
         height: 'auto',
-        display: 'block',
-        margin: '0 auto',
         animation: inView
           ? `${animConfig.animation} ${animConfig.duration} ${animConfig.timing} ${animConfig.count}`
           : 'none',
-        animationFillMode: 'forwards',
-        transition: 'transform 0.3s ease',
-        '&:hover': {
-          transform: 'scale(1.05)',
-        },
       }}
     />
   );
 }
 
-// === Componente principal ===
 export default function LegalPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { isActivaMembresia } = useRoles();
 
-  const handleClick = (config) => () => {
-    if (config.type === 'external') {
-      window.open(config.path, '_blank');
-    } else {
-      navigate(config.path);
+  const basePath = '/legal';
+
+  // 👇 ORDEN IMPORTANTE
+  const tabs = useMemo(
+    () => [
+      { label: 'Herramientas', path: '' },
+      { label: 'Ruta Legal', path: 'rutalegal' },
+      { label: 'Mis Documentos', path: 'documentos' },
+    ],
+    []
+  );
+
+  const [tabIndex, setTabIndex] = useState(0);
+
+  // sincroniza pestaña activa
+  useEffect(() => {
+    const path = location.pathname || '';
+    if (path.includes('/rutalegal')) setTabIndex(1);
+    else if (path.includes('/documentos')) setTabIndex(2);
+    else setTabIndex(0);
+  }, [location.pathname]);
+
+  // 🚀 navegación EXACTA como pediste
+  const handleTabChange = (index, tab) => {
+    setTabIndex(index);
+
+    if (tab.path === 'rutalegal') {
+      navigate('/clubs/miclub/rutalegal');
+    }
+
+    if (tab.path === 'documentos') {
+      navigate('/clubs/miclub/documentos');
     }
   };
 
+  const handleCardClick = (cfg) => () => {
+    if (cfg.external) window.open(cfg.path, '_blank');
+    else navigate(cfg.path);
+  };
+
   return (
-    <Box sx={{ p: 4 }}>
-      <Grid container spacing={4} justifyContent="center">
-        {cardConfigs.map((config, idx) => {
-          const animConfig = animationList[idx % animationList.length];
-          return (
-            <Grid item xs={12} sm={6} md={4} key={idx}>
-              <Card
-                onClick={handleClick(config)}
-                sx={{
-                  position: 'relative',
-                  maxWidth: 300,
-                  margin: '0 auto',
-                  overflow: 'visible',
-                  p: 2,
-                  cursor: 'pointer',
-                  borderRadius: 3,
-                  boxShadow: 3,
-                  transition: 'transform 0.2s ease',
-                  '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 },
-                }}
-              >
-                <AnimatedImage
-                  src={config.src}
-                  alt={config.alt}
-                  animConfig={animConfig}
-                />
-                <Box
-                  component="span"
-                  onClick={(e) => { e.stopPropagation(); handleClick(config)(); }}
-                  sx={{
-                    position: 'absolute',
-                    bottom: 8,
-                    right: 8,
-                    backgroundColor: '#d4f5e1', // verde menta clarito
-                    borderRadius: '4px',
-                    px: 1.2,
-                    py: '2px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    boxShadow: 1,
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  abrir&nbsp;
-                  <span className="material-icons" style={{ fontSize: '16px' }}>open_in_new</span>
-                </Box>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-    </Box>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '24px',
+        gap: '32px',
+        width: '100%',
+        maxWidth: '100%',
+        overflowX: 'hidden',
+        boxSizing: 'border-box',
+        paddingBottom: '0px',
+        marginBottom: '0px',
+      }}
+    >
+      {isActivaMembresia() && (
+        <Pestanas
+          tabs={tabs}
+          basePath={basePath}
+          onTabChange={handleTabChange}
+          collapseAt={640}
+        />
+      )}
+
+      {/* ===== CONTENIDO SOLO PARA "HERRAMIENTAS" ===== */}
+      {tabIndex === 0 && (
+        <Box sx={{ p: 4 }}>
+          <Grid container spacing={4} justifyContent="center">
+            {cardConfigs.map((config, idx) => {
+              const animConfig = animationList[idx % animationList.length];
+              return (
+                <Grid item xs={12} sm={6} md={4} key={idx}>
+                  <Card
+                    onClick={handleCardClick(config)}
+                    sx={{
+                      maxWidth: 300,
+                      margin: '0 auto',
+                      p: 2,
+                      cursor: 'pointer',
+                      borderRadius: 3,
+                      boxShadow: 3,
+                      '&:hover': { transform: 'translateY(-4px)', boxShadow: 6 },
+                    }}
+                  >
+                    <AnimatedImage
+                      src={config.src}
+                      alt={config.alt}
+                      animConfig={animConfig}
+                    />
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+      )}
+    </div>
   );
 }
