@@ -134,7 +134,7 @@ export default function LegalPage() {
         display: 'flex',
         flexDirection: 'column',
         padding: '24px',
-        gap: '32px',
+        gap: '8px',
         width: '100%',
         maxWidth: '100%',
         overflowX: 'hidden',
@@ -154,8 +154,8 @@ export default function LegalPage() {
 
       {/* ===== CONTENIDO SOLO PARA "HERRAMIENTAS" ===== */}
       {tabIndex === 0 && (
-        <Box sx={{ p: 4 }}>
-          <Grid container spacing={4} justifyContent="center">
+        <Box sx={{ pt: 1, px: 2, mt: -1 }}>
+          <Grid container spacing={3} justifyContent="center">
             {cardConfigs.map((config, idx) => {
               const animConfig = animationList[idx % animationList.length];
               return (
