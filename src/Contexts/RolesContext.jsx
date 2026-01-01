@@ -208,6 +208,28 @@ const isRoot = () => {
     return res;
   };
 
+  const isClub = () => {
+  if (!isAuthenticated || !userData) {
+    console.log('🏟️ isClub: esperando datos de usuario...');
+    return false;
+  }
+
+  const res = userData.isclub === true;
+  console.log('🏟️ isClub:', res, 'valor:', userData.isclub);
+  return res;
+};
+
+const haveClub = () => {
+  if (!isAuthenticated || !userData) {
+    console.log('🏟️ haveClub: esperando datos de usuario...');
+    return false;
+  }
+
+  const res = userData.haveclub === true;
+  console.log('🏟️ haveClub:', res, 'valor:', userData.haveclub);
+  return res;
+};
+
   const setEditor = enabled => updateExtraRole('editor', enabled);
   const setAdmin = enabled => updateExtraRole('admin', enabled);
   const setRoot = enabled => updateExtraRole('root', enabled);
@@ -240,6 +262,8 @@ const isRoot = () => {
         isAdmin,
         isRoot,
         isJardinero,
+        isClub,
+        haveClub,
         isActivaMembresia,
         setEditor,
         setAdmin,

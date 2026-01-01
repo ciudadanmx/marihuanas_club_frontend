@@ -24,7 +24,16 @@ const Icon = ({ name }) => (
 const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, defaultProfileImage }) => {
   const { roles, membresia } = useRoles();
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
-  const { isAdmin, isEditor, isRoot, isActivaMembresia, userData } = useRoles();
+  const {
+    isAdmin,
+    isEditor,
+    isRoot,
+    isActivaMembresia,
+    userData,
+    isClub,
+    haveClub
+  } = useRoles();
+
   const [checking, setChecking] = useState(false);
   const { getStoreByEmail } = useStores();
   const navigate = useNavigate();
@@ -54,7 +63,18 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
   const membershipLabel = isActivaMembresia() ? 'Mi Membresía' : 'Membresías';
   const options = [
     { label: membershipLabel, icon: 'card_membership', onClick: () => navigate('/membresias'), show: true },
-    { label: 'Tu Club', icon: 'home', onClick: () => navigate('/clubs/miclub/info'), show: isAuthenticated },
+    {
+      label: 'Tu Club',
+      icon: 'home',
+      onClick: () => {
+        if (isClub() || haveClub()) {
+          navigate('/clubs/miclub/info');
+        } else {
+          navigate('/clubs');
+        }
+      },
+      show: isAuthenticated
+    },
     { label: 'Tus Anuncios', icon: 'campaign', onClick: () => navigate('/comunidad/mis-anuncios'), show: isAuthenticated },
     { label: 'Tus Compras', icon: 'shopping_bag', onClick: () => navigate('/market/compras/pedidos'), show: isAuthenticated },
     { label: 'Tu Tienda', icon: 'shopping_cart', onClick: () => handleVender(), show: isAuthenticated },
@@ -101,7 +121,7 @@ const UserMenu = ({ handleLogin, handleLogout, isOpen, onClose, containerRef, de
                 sx={{
                   '&:hover': {
                     backgroundColor: '#d5ee66ff',
-                    color: '#000814', // Contraste fuerte sobre el verde lima
+                    color: '#000814',
                     textShadow: '0 0 6px #00ff99',
                   },
                   transition: 'all 0.2s ease-in-out',
