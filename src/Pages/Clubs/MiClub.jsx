@@ -10,6 +10,7 @@ import Documentos from '../../components/Clubs/Documentos.jsx';
 import MisPlantas from '../../components/Clubs/MisPlantas/MisPlantas.jsx';
 import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
+import GestionClub from '../../components/Clubs/GestionClub.jsx';
 
 const MiClub = () => {
   const location = useLocation();
@@ -60,6 +61,7 @@ const MiClub = () => {
     else if (path.includes(`${basePrueba}/bitacora`)) setTabIndex(jardinero ? 0 : 1);
     else if (path.includes(`${basePrueba}/documentos`)) setTabIndex(jardinero ? 1 : 2);
     else if (path.includes(`${basePrueba}/misplantas`)) setTabIndex(jardinero ? 2 : 3);
+    else if (path.includes(`${basePrueba}/admin`)) setTabIndex(jardinero ? 3 : 4);
     else setTabIndex(0);
   }, [location.pathname, jardinero]);
 
@@ -105,6 +107,7 @@ const MiClub = () => {
           {tabs[tabIndex]?.path === 'info' && <InfoMiClub />}
           {tabs[tabIndex]?.path === 'bitacora' && <Bitacora />}
           {tabs[tabIndex]?.path === 'documentos' && <Documentos />}
+          {tabs[tabIndex]?.path === 'admin' && <GestionClub />}
           {tabs[tabIndex]?.path === 'misplantas' && (
             isSembrar ? (
               <Sembrar user={user} />

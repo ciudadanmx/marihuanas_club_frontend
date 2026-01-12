@@ -25,18 +25,24 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const token = await getAccessTokenSilently();
+        const token = await getAccessTokenSilently({
+          authorizationParams: {
+            audience: 'https://api.marihuanas.club',
+          },
+        });
         setAccessToken(token);
 
         // Nuevo: Login en Strapi usando el endpoint personalizado
-        const res = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/auth/auth0-login`, {
-          method: 'POST',
-          credentials: 'include', // Necesario para la cookie httpOnly
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ access_token: token }),
-        });
+        const res = await fetch(
+          `${process.env.REACT_APP_STRAPI_URL}/api/auth/auth0-login`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
         const data = await res.json();
 

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:1337'; // URL de tu instancia de Strapi
+const API_URL = 'http://localhost:30010'; // URL de tu instancia de Strapi
 
 // Registro de usuario en Strapi
 export const registerUserInStrapi = async (email, username) => {

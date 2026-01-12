@@ -8,8 +8,8 @@ import Pestanas from '../../components/Pestanas';
 import { useRoles } from '../../Contexts/RolesContext';
 
 // 👉 NUEVOS COMPONENTES
-import Documentos from '../../components/Clubs/Documentos.jsx';
-import RutaLegal from '../../components/Clubs/RutaLegal.jsx';
+import MisDocumentos from '../../components/Clubs/MisDocumentos.jsx';
+import RoadMapLegal from '../../components/Clubs/RoadMapLegal.jsx';
 
 // Imágenes
 import derechos from '../../assets/derechos_consumidores_marihuanas_club.png';
@@ -98,7 +98,7 @@ export default function LegalPage() {
     () => [
       { label: 'Herramientas', path: '' },
       { label: 'Ruta Legal', path: 'rutalegal' },
-      { label: 'Mis Documentos', path: 'documentos' },
+      { label: 'Mis Documentos', path: 'misdocumentos' },
     ],
     []
   );
@@ -109,7 +109,7 @@ export default function LegalPage() {
   useEffect(() => {
     const path = location.pathname || '';
     if (path.includes('/rutalegal')) setTabIndex(1);
-    else if (path.includes('/documentos')) setTabIndex(2);
+    else if (path.includes('/misdocumentos')) setTabIndex(2);
     else setTabIndex(0);
   }, [location.pathname]);
 
@@ -186,14 +186,14 @@ export default function LegalPage() {
       {/* ===== RUTA LEGAL ===== */}
       {tabIndex === 1 && (
         <Box sx={{ pt: 1, px: 2 }}>
-          <RutaLegal />
+          <RoadMapLegal />
         </Box>
       )}
 
       {/* ===== MIS DOCUMENTOS ===== */}
       {tabIndex === 2 && (
         <Box sx={{ pt: 1, px: 2 }}>
-          <Documentos />
+          <MisDocumentos />
         </Box>
       )}
     </div>

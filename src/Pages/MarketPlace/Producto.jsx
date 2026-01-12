@@ -189,6 +189,15 @@ const Producto = () => {
             <Resenas 
                 resenas={resenas}
             />
+        
+        
+        <Divider sx={{ mb: 2 }} />
+
+        {/* Reseñas */}
+         
+            <Resenas 
+                resenas={resenas}
+            />
 
       </Paper>
     </Container>

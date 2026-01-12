@@ -1,12 +1,13 @@
 import React from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 
+import Probador from '../components/Probador.jsx';
 // 🧠 Importaciones existentes
 import LmAi from '../components/Asistente/LmAi';
 import HomeRoute from '../Pages/HomeRoute';
 import Perfil from '../components/Usuarios/Perfil.jsx';
 import Favoritos from '../components/Usuarios/Favoritos.jsx';
-import CallbackPage from '../Pages/CallbackPage';
+//import CallbackPage from '../Pages/CallbackPage';
 //Clubs
 import Clubs from '../Pages/Clubs/Clubs.jsx';
 import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
@@ -14,6 +15,8 @@ import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import MiClub from '../Pages/Clubs/MiClub.jsx';
 import Sembrar from '../components/Clubs/Sembrar.jsx';
+import GestionClub from '../components/Clubs/GestionClub.jsx';
+
 //Membresías
 import Membresias from '../Pages/Membresias.jsx';
 import MiMembresia from '../Pages/MiMembresia.jsx';
@@ -140,7 +143,8 @@ const Rutas = () => (
   <Routes>
     {/* RUTAS NORMALES */}
     <Route path="/" element={<HomeRoute />} />
-    <Route path="/callback" element={<CallbackPage />} />
+    <Route path="/probador" element={<Probador />} />
+    
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />
     <Route path="/herramientas/maria" element={<Maria />} />
@@ -187,7 +191,7 @@ const Rutas = () => (
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/legal/rutalegal" element={<LegalPage />} />
-    <Route path="/legal/documentos" element={<LegalPage />} />
+    <Route path="/legal/misdocumentos" element={<LegalPage />} />
     <Route path="/legal/activismo" element={<Activismo />} />
     <Route path="/legal/tuabogado" element={<TuAbogado />} />
     <Route path="/legal/instrucciones-acta" element={<InstruccionesActa />} />

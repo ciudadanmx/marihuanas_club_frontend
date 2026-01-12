@@ -13,15 +13,15 @@ import Rutas from './Routes/index.jsx';
 import Asistente from './components/Asistente/Asistente';
 import { SnackbarProvider } from 'notistack';
 import { NotificationsProvider } from './Contexts/NotificationsContext';
-import './styles/index.css';
 import Footer from './components/Footer/Footer.jsx';
+import './styles/index.css';
 
 // IMPORTA ScrollToTop
 import ScrollToTop from './components/ScrollToTop.jsx';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
-const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;   // Si no usas API, quita este prop
+const audience  = 'https://api.marihuanas.club';
 
 const onRedirectCallback = (appState) => {
   const target = appState?.returnTo || '/';
