@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import EliminarCurso  from '../../Pages/Cursos/EliminarCurso.jsx';
 import {
   Box,
@@ -20,9 +20,21 @@ import { useCategorias } from '../../hooks/useCategorias';
 import { useCursos } from '../../hooks/useCursos';
 import CursoCard from '../Cursos/CursoCard';
 import CursoDetalle from '../../Pages/Cursos/Curso'; 
+import CursosImpartidos from '../../components/Cursos/CursosImpartidos.jsx';
 import '../../styles/Contenidos.css';
+import { useRoles } from '../../Contexts/RolesContext';
+import Pestanas from '../../components/Pestanas';
 
 const Cursos = ({ filtros, parametros }) => {
+
+    const barra = filtros === 'mis-cursos';
+
+    const tabs = [
+        { label: 'Cursos que Impartes', path: 'impartidos' },
+        { label: 'Cursos que Tomas', path: '' },
+      ];
+
+    const { isEditor } = useRoles(); // ✅ CONTEXTO REAL
 
     if (filtros === 'busqueda') {
         var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
@@ -34,6 +46,7 @@ const Cursos = ({ filtros, parametros }) => {
     else if (filtros === 'mis-cursos'){
         var titulo ="»» Tus Cursos ««:";
         var mostrarCategorias = false;
+        
     }
 
     else {
@@ -42,7 +55,7 @@ const Cursos = ({ filtros, parametros }) => {
     }
 
     //TODO  REEMPLAZAR POR CONTEXTO
-  const editor = true;
+  //const editor = true;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "cursos";
   const { getCategorias } = useCategorias('categorias-cursos');
@@ -65,6 +78,11 @@ const Cursos = ({ filtros, parametros }) => {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
 
+  const location = useLocation();
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const basePrueba = '/cursos/mis-cursos';
+
   // Handlers
   const handleAgregar = () => navigate('/cursos/agregar-curso');
   const handleBuscar = () => {
@@ -73,6 +91,24 @@ const Cursos = ({ filtros, parametros }) => {
     navigate(`/cursos/busqueda/${slug}`);
   };
   const handleMis = () => navigate('/cursos/mis-cursos');
+
+  // sincroniza tabIndex con la URL
+    useEffect(() => {
+      const path = (location.pathname || '').toLowerCase();
+      console.log('PATT iniciando');
+      if (path.endsWith('/mis-cursos')) {
+        console.log('PATT mis cursos');
+        setTabIndex(0); // default: Cursos que Impartes
+        console.log('PATT', tabIndex);
+      } else if (path.includes('/impartidos')) {
+        setTabIndex(0); // sigue siendo impartes
+        console.log('PATT elseif');
+      } else {
+        setTabIndex(1); // Cursos que Tomas (fallback)
+        console.log('PATT else');
+      }
+      console.log('PATT final', tabIndex);
+    }, [location.pathname]);
 
   // Fetch categories
   useEffect(() => {
@@ -94,7 +130,7 @@ const Cursos = ({ filtros, parametros }) => {
     if (filtros === 'mis-cursos') {
       const maestroId = (data.maestro_email ?? '').trim().toLowerCase();
       const usuarioLogueado = (parametros ?? '').trim().toLowerCase();
-      console.log('CURSOS:', cursos);
+      console.log('CURSOS:', cursos[0]);
       return maestroId === usuarioLogueado;
     }
    
@@ -168,7 +204,28 @@ const Cursos = ({ filtros, parametros }) => {
     //const paginar=true;
   return (
   <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+    
+    {/* Columna principal */}
+          <div style={{ flex: '1 1 100%' }}>
+            {isEditor() && barra === true && (
+              <>
+                <Pestanas
+                  tabs={tabs}
+                  basePath={basePrueba}
+                  onTabChange={(index) => setTabIndex(index)}
+                  collapseAt={640}
+                />
+        
+                <div>
+                  {tabIndex === 0 && <CursosImpartidos /> }
+                  {tabIndex === 1 && null }
+                </div>
+              </>
+            )}
+          </div>
+    
     {/* Search & Controls */}
+    {tabIndex === 1 &&(
     <Slide direction="down" in timeout={400}>
       <Box
         sx={{
@@ -222,7 +279,7 @@ const Cursos = ({ filtros, parametros }) => {
           </Button>
 
           {/* Botones de editor */}
-          {editor && (
+          
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
                 onClick={handleMis}
@@ -240,7 +297,8 @@ const Cursos = ({ filtros, parametros }) => {
               >
                 Mis cursos
               </Button>
-
+              
+              {isEditor() && (
               <Button
                 onClick={handleAgregar}
                 variant="contained"
@@ -255,13 +313,16 @@ const Cursos = ({ filtros, parametros }) => {
               >
                 Crear
               </Button>
-            </Stack>
+            
           )}
+          </Stack>
         </Stack>
       </Box>
     </Slide>
 
-    {/* Cursos */}
+    )}
+
+    {tabIndex === 1 && (
     <Box mt={5}>
       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
         <u className="cursos-titulo">{ titulo }</u>
@@ -403,6 +464,8 @@ const Cursos = ({ filtros, parametros }) => {
         </Grid>
       )}
     </Box>
+    )}
+
   </Container>
 );
 };

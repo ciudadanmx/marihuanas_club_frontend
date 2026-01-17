@@ -5,90 +5,61 @@ import { useAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
 
 // Panels
-import MisProductos from '../MarketPlace/MisProductos';
-import PedidosPendientes from '../MarketPlace/PedidosPendientes';
-import PedidosEntregados from '../MarketPlace/PedidosEntregados';
-import ConfiguracionTienda from '../MarketPlace/ConfiguracionTienda';
+import AnunciosPorDefecto from '../../components/Anuncios/AnunciosPorDefecto.jsx';
+import AnunciosProgramados from '../../components/Anuncios/AnunciosProgramados.jsx';
+import HistorialPublicaciones from '../../components/Anuncios/HistorialPublicaciones.jsx';
+import ConfiguracionAnuncios from '../../components/Anuncios/ConfiguracionAnuncios.jsx';
+import { useRoles } from '../../Contexts/RolesContext';
 
+import ActivaTuMembresia from '../../components/Membresias/ActivaTuMembresia.jsx';
 // Pestanas genérico (import según tu estructura)
 import Pestanas from '../../components/Pestanas';
 
 const Anuncios = () => {
+  const { isActivaMembresia } = useRoles();
   const { slug } = useParams();
   const location = useLocation();
   const { user, isLoading } = useAuth0();
 
   const [tabIndex, setTabIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
-  const [productos, setProductos] = useState([]);
-  const [storeImageURL, setStoreImageURL] = useState(null); // lo dejamos por si luego quieres mostrarla
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
 
-  // Rutas de prueba (ahorita TODO apunta a /comunidad/mis-anuncios + path)
+  // Rutas de prueba
   const basePrueba = '/comunidad/mis-anuncios';
   const tabs = [
-    { label: 'Por defecto', path: '' },                     // /comunidad/mis-anuncios
-    { label: 'Programados', path: 'programados' },         // /comunidad/mis-anuncios/programados
-    { label: 'Historial de Publicaciones', path: 'historial' }, // /comunidad/mis-anuncios/historial
-    { label: 'Configuración', path: 'configuracion' }      // /comunidad/mis-anuncios/configuracion
+    { label: 'Por defecto', path: '' },
+    { label: 'Programados', path: 'programados' },
+    { label: 'Historial de Publicaciones', path: 'historial' },
+    { label: 'Configuración', path: 'configuracion' }
   ];
 
-  // responsive listener (solo para la UI local)
+  // responsive listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // sincroniza tabIndex con la URL de prueba (usa includes para detectar subrutas)
+  // sincroniza tabIndex con la URL
   useEffect(() => {
     const path = (location.pathname || '').toLowerCase();
 
     if (path.includes(`${basePrueba}/programados`)) setTabIndex(1);
     else if (path.includes(`${basePrueba}/historial`)) setTabIndex(2);
     else if (path.includes(`${basePrueba}/configuracion`)) setTabIndex(3);
-    else setTabIndex(0); // por defecto
+    else setTabIndex(0);
   }, [location.pathname]);
-
-  // fetch productos (por email) — se mantiene para cuando uses MisProductos
-  useEffect(() => {
-    if (!user?.email) return;
-
-    const fetchProductos = async () => {
-      try {
-        const baseUrl = (process.env.REACT_APP_STRAPI_URL || '').replace(/\/$/, '');
-        if (!baseUrl) return;
-        const url = `${baseUrl}/api/productos?populate=*&filters[store_email][$eq]=${encodeURIComponent(user.email)}`;
-        const res = await axios.get(url);
-        setProductos(res.data?.data || []);
-      } catch (error) {
-        console.error('❌ Error al cargar productos:', error);
-      }
-    };
-
-    fetchProductos();
-  }, [user]);
-
-  // opcional: fetch datos de tienda si en algún momento quieres mostrar imagen o nombre real
-  useEffect(() => {
-    if (!slug) return;
-    const fetchStoreData = async () => {
-      try {
-        const baseUrl = (process.env.REACT_APP_STRAPI_URL || '').replace(/\/$/, '');
-        if (!baseUrl) return;
-        const res = await axios.get(`${baseUrl}/api/stores?filters[slug][$eq]=${slug}&populate=imagen`);
-        const tienda = res.data?.data?.[0];
-        const imagen = tienda?.attributes?.imagen?.data?.attributes?.url;
-        if (imagen) setStoreImageURL(`${baseUrl}${imagen}`);
-      } catch (error) {
-        console.error('❌ Error al traer datos de la tienda:', error);
-      }
-    };
-    fetchStoreData();
-  }, [slug]);
 
   if (isLoading) return <p>Cargando...</p>;
 
-  const filtros = 'mios'; // lo pasamos a MisProductos
+  // 🔴 USO CORRECTO: isActivaMembresia ES FUNCIÓN
+  if (!isActivaMembresia()) {
+    return <ActivaTuMembresia />;
+  }
+
+  const filtros = 'mios';
 
   return (
     <div
@@ -100,20 +71,22 @@ const Anuncios = () => {
         flexWrap: 'wrap'
       }}
     >
-      {/* Columna principal (pestañas + panel) */}
+      {/* Columna principal */}
       <div style={{ flex: '1 1 100%' }}>
         <Pestanas
           tabs={tabs}
-          basePath={basePrueba} // <-- todas las rutas de prueba parten de aquí
+          basePath={basePrueba}
           onTabChange={(index) => setTabIndex(index)}
           collapseAt={640}
         />
 
         <div>
-          {tabIndex === 0 && <PedidosPendientes />}
-          {tabIndex === 1 && <PedidosEntregados />}
-          {tabIndex === 2 && <MisProductos filtros={filtros} productos={productos} />}
-          {tabIndex === 3 && <ConfiguracionTienda />}
+          {tabIndex === 0 && <AnunciosPorDefecto />}
+          {tabIndex === 1 && <AnunciosProgramados />}
+          {tabIndex === 2 && (
+            <HistorialPublicaciones filtros={filtros} productos={'productos'} />
+          )}
+          {tabIndex === 3 && <ConfiguracionAnuncios />}
         </div>
       </div>
     </div>

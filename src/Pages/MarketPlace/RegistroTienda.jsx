@@ -15,8 +15,11 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { slugify } from "../../utils/slugify.jsx";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
-import RegisterStoreStepper from './RegisterStoreStepper.jsx';
+import RegisterStoreStepper from "./RegisterStoreStepper.jsx";
 
+// 🔐 Contexto de roles / membresía
+import { useRoles } from "../../Contexts/RolesContext";
+import ActivaTuMembresia from "../../components/Membresias/ActivaTuMembresia.jsx";
 
 const LIBRARIES = ["places"];
 const steps = ["Nombre de la tienda", "Conectar Stripe", "Agregar dirección", "Verificar datos"];
@@ -25,6 +28,7 @@ export default function RegistroTienda() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isActivaMembresia } = useRoles();
 
   const [activeStep, setActiveStep] = useState(0);
   const [storeName, setStoreName] = useState("");
@@ -109,7 +113,7 @@ export default function RegistroTienda() {
     }
   };
 
-  // 🔐 Si no está autenticado, muestra pantalla de inicio de sesión
+  // 🔐 Si no está autenticado, muestra login (IGUAL QUE ANTES)
   if (!isAuthenticated || !user) {
     return (
       <Box
@@ -139,22 +143,11 @@ export default function RegistroTienda() {
             width: "100%"
           }}
         >
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{ color: "#1b5e20", mb: 2 }}
-          >
+          <Typography variant="h4" fontWeight="bold" sx={{ color: "#1b5e20", mb: 2 }}>
             🌿 Bienvenido a Marihuanas Club
           </Typography>
 
-          <Typography
-            variant="body1"
-            sx={{
-              mb: 3,
-              color: "#2e7d32",
-              lineHeight: 1.6
-            }}
-          >
+          <Typography variant="body1" sx={{ mb: 3, color: "#2e7d32", lineHeight: 1.6 }}>
             Inicia sesión para registrar tu tienda y formar parte del mercado
             cannábico consciente. Comparte tus productos y crece junto a la
             comunidad.
@@ -181,7 +174,6 @@ export default function RegistroTienda() {
             Iniciar Sesión
           </Button>
 
-          {/* QR de Marihuanas Club */}
           <Box sx={{ mt: 4 }}>
             <Typography variant="body2" sx={{ color: "#388e3c", mb: 1 }}>
               ¿Necesitas ayuda para registrar tu tienda?
@@ -210,10 +202,7 @@ export default function RegistroTienda() {
               />
             </Box>
 
-            <Typography
-              variant="caption"
-              sx={{ display: "block", mt: 1, color: "#2e7d32" }}
-            >
+            <Typography variant="caption" sx={{ display: "block", mt: 1, color: "#2e7d32" }}>
               Escanéalo para ir a Marihuanas Club
             </Typography>
           </Box>
@@ -222,8 +211,11 @@ export default function RegistroTienda() {
     );
   }
 
-  // 🧭 Si está autenticado, continúa con el registro normal
-  return (
-   <RegisterStoreStepper />
-  );
+  // 🚫 Autenticado PERO sin membresía → SOLO ActivaTuMembresia
+  if (!isActivaMembresia()) {
+    return <ActivaTuMembresia />;
+  }
+
+  // ✅ Autenticado + membresía activa → flujo normal
+  return <RegisterStoreStepper />;
 }

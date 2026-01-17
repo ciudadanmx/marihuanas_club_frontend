@@ -46,7 +46,7 @@ export default function MembershipCheckout({
   openpayMerchantId = process.env.REACT_APP_OPENPAY_MERCHANT_ID,
   openpayPublicKey = process.env.REACT_APP_OPENPAY_PUBLIC_KEY,
   sandbox = true,
-  backendUrl = "http://localhost:33034/api/suscribir",
+  backendUrl = "http://localhost:3033/api/suscribir",
   strapiUrl = process.env.REACT_APP_STRAPI_URL,
   plan = null,
   subtype = null,

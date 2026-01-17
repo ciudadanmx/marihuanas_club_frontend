@@ -3,12 +3,9 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
-  Typography,
   CircularProgress,
   Alert,
   Button,
-  Card,
-  CardContent,
 } from "@mui/material";
 
 // IMPORTA el componente que recibirá las props

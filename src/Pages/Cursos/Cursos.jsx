@@ -59,7 +59,7 @@ const CursosPage = () => {
       {/* /Cursos */}
       <Route index element={<Cursos />} />
       {/* /cursos/mis-cursos */}
-      <Route path="mis-Cursos" element={<CursosUsuario />} />
+      <Route path="mis-cursos/*" element={<CursosUsuario />} />
       {/* /cursos/busqueda/:cadena */}
       <Route path="busqueda/:cadena" element={<CursosBusqueda />} />
       {/* /cursos/categoria/:slug */}

@@ -1,9 +1,12 @@
 import React from 'react';
 import { Box, Typography, Button, Grid, Container } from '@mui/material';
 import { useTheme, useMediaQuery } from '@mui/material';
+import Anuncios from './Anuncios/Anuncios';
+import { useRoles } from '../Contexts/RolesContext';
 import comunidadImg from '../assets/anunciate.png'; // asegúrate del path
 
 const ComunidadPage = () => {
+  const { isActivaMembresia } = useRoles();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
