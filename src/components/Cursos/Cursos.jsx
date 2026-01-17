@@ -209,6 +209,9 @@ const Cursos = ({ filtros, parametros }) => {
   };
 
 
+  const esVistaCursosTomados =
+  !isEditor() || tabIndex === 1 || tabIndex == null;
+
   return (
   <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
     
@@ -231,8 +234,9 @@ const Cursos = ({ filtros, parametros }) => {
             )}
           </div>
     
+
     {/* Search & Controls */}
-    {tabIndex === 1 &&(
+    {esVistaCursosTomados &&(
     <Slide direction="down" in timeout={400}>
       <Box
         sx={{
@@ -329,7 +333,7 @@ const Cursos = ({ filtros, parametros }) => {
 
     )}
 
-    {tabIndex === 1 && (
+    {esVistaCursosTomados && (
     <Box mt={5}>
       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
         <u className="cursos-titulo">{ titulo }</u>
