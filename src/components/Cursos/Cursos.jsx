@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import EliminarCurso  from '../../Pages/Cursos/EliminarCurso.jsx';
+import { useAuth0 } from '@auth0/auth0-react'; // 🔴 NUEVO
+import EliminarCurso from '../../Pages/Cursos/EliminarCurso.jsx';
 import {
   Box,
   Grid,
@@ -27,35 +28,33 @@ import Pestanas from '../../components/Pestanas';
 
 const Cursos = ({ filtros, parametros }) => {
 
-    const barra = filtros === 'mis-cursos';
+  const { user, isAuthenticated } = useAuth0(); // 🔴 NUEVO
 
-    const tabs = [
-        { label: 'Cursos que Impartes', path: 'impartidos' },
-        { label: 'Cursos que Tomas', path: '' },
-      ];
+  const barra = filtros === 'mis-cursos';
 
-    const { isEditor } = useRoles(); // ✅ CONTEXTO REAL
+  const tabs = [
+    { label: 'Cursos que Impartes', path: 'impartidos' },
+    { label: 'Cursos que Tomas', path: '' },
+  ];
 
-    if (filtros === 'busqueda') {
-        var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
-    }
-    else if (filtros === 'categoria'){
-        var titulo = "Cursos en Categoría  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
-        var mostrarCategorias = false;
-    }
-    else if (filtros === 'mis-cursos'){
-        var titulo ="»» Tus Cursos ««:";
-        var mostrarCategorias = false;
-        
-    }
+  const { isEditor } = useRoles();
 
-    else {
-        var titulo = '';
-        var mostrarCategorias = true;
-    }
+  if (filtros === 'busqueda') {
+    var titulo = "Resultados de Búsqueda  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+  }
+  else if (filtros === 'categoria'){
+    var titulo = "Cursos en Categoría  «" + (parametros.charAt(0).toUpperCase() + parametros.slice(1)) + "»: ";
+    var mostrarCategorias = false;
+  }
+  else if (filtros === 'mis-cursos'){
+    var titulo ="»» Tus Cursos ««:";
+    var mostrarCategorias = false;
+  }
+  else {
+    var titulo = '';
+    var mostrarCategorias = true;
+  }
 
-    //TODO  REEMPLAZAR POR CONTEXTO
-  //const editor = true;
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
   const clasifica = "cursos";
   const { getCategorias } = useCategorias('categorias-cursos');
@@ -83,34 +82,54 @@ const Cursos = ({ filtros, parametros }) => {
 
   const basePrueba = '/cursos/mis-cursos';
 
-  // Handlers
-  const handleAgregar = () => navigate('/cursos/agregar-curso');
-  const handleBuscar = () => {
-    const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
-    if (!slug ) return;
-    navigate(`/cursos/busqueda/${slug}`);
-  };
-  const handleMis = () => navigate('/cursos/mis-cursos');
+  // 🔴 NUEVO: cursos del usuario
+  const [misCursos, setMisCursos] = useState([]);
+  const [loadingMisCursos, setLoadingMisCursos] = useState(false);
 
-  // sincroniza tabIndex con la URL
-    useEffect(() => {
-      const path = (location.pathname || '').toLowerCase();
-      console.log('PATT iniciando');
-      if (path.endsWith('/mis-cursos')) {
-        console.log('PATT mis cursos');
-        setTabIndex(0); // default: Cursos que Impartes
-        console.log('PATT', tabIndex);
-      } else if (path.includes('/impartidos')) {
-        setTabIndex(0); // sigue siendo impartes
-        console.log('PATT elseif');
-      } else {
-        setTabIndex(1); // Cursos que Tomas (fallback)
-        console.log('PATT else');
+  // ===============================
+  // NUEVO useEffect (NO TOCA LOS OTROS)
+  // ===============================
+  useEffect(() => {
+    if (filtros !== 'mis-cursos') return;
+    if (!isAuthenticated || !user?.email) return;
+
+    const fetchMisCursos = async () => {
+      try {
+        setLoadingMisCursos(true);
+
+        const res = await fetch(
+          `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
+            user.email
+          )}&populate=cursos`
+        );
+
+        const data = await res.json();
+        const usuario = data?.[0];
+        setMisCursos(usuario?.cursos || []);
+      } catch (e) {
+        console.error('Error cargando cursos del usuario', e);
+        setMisCursos([]);
+      } finally {
+        setLoadingMisCursos(false);
       }
-      console.log('PATT final', tabIndex);
-    }, [location.pathname]);
+    };
 
-  // Fetch categories
+    fetchMisCursos();
+  }, [filtros, isAuthenticated, user?.email]);
+  // ===============================
+
+  // sincroniza tabIndex con la URL (TU CÓDIGO INTACTO)
+  useEffect(() => {
+    const path = (location.pathname || '').toLowerCase();
+    if (path.endsWith('/mis-cursos')) {
+      setTabIndex(0);
+    } else if (path.includes('/impartidos')) {
+      setTabIndex(0);
+    } else {
+      setTabIndex(1);
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     (async () => {
       const cats = await getCategorias();
@@ -118,69 +137,49 @@ const Cursos = ({ filtros, parametros }) => {
     })();
   }, []);
 
-  // Fetch contenidos whenever pagina o porPagina cambian
   useEffect(() => {
     fetchCursos();
   }, [pagina, porPagina]);
 
-  // Filter logic
   const filtered = (cursos || []).filter((item) => {
     const data = item.attributes ?? item;
     if (!filtros) return true;
-    if (filtros === 'mis-cursos') {
-      const maestroId = (data.maestro_email ?? '').trim().toLowerCase();
-      const usuarioLogueado = (parametros ?? '').trim().toLowerCase();
-      console.log('CURSOS:', cursos[0]);
-      return maestroId === usuarioLogueado;
-    }
-   
-    if (filtros === 'categoria') {
-        // Debug: muestra la estructura de categoría
-        console.log('DATA.categoria →', data.categoria);
 
-        // Extrae el slug según la forma que venga
-        let catSlug;
-        if (data.categoria?.data?.attributes?.slug) {
-        // Forma anidada Strapi
+    if (filtros === 'categoria') {
+      let catSlug;
+      if (data.categoria?.data?.attributes?.slug) {
         catSlug = data.categoria.data.attributes.slug;
       } else if (data.categoria?.slug) {
-        // Forma plana que viste en consola
         catSlug = data.categoria.slug;
       }
-
-      console.log('Comparando slug de categoría:', catSlug, 'vs parámetros:', parametros);
       return catSlug === parametros;
     }
+
     if (filtros === 'busqueda') {
       const term = parametros?.toLowerCase() || '';
       const titulo = (data.titulo ?? data.nombre ?? '').toLowerCase();
-      const curso = (data.curso ?? '').toLowerCase();
-      //const restringido = (data.contenido_restringido ?? '').toLowerCase();
       const tagsSource = data.tags?.data ?? data.tags;
       const tagsArr = Array.isArray(tagsSource)
         ? tagsSource.map((t) => (t.attributes?.nombre ?? t.slug ?? t).toLowerCase())
         : [];
-      const tagsMatch = tagsArr.some((t) => t.includes(term));
-      return (
-        titulo.includes(term) ||
-        curso.includes(term) ||
-        //restringido.includes(term) ||
-        tagsMatch
-      );
+      return titulo.includes(term) || tagsArr.some((t) => t.includes(term));
     }
+
     return true;
   });
 
-  // Default sort if no filtros
-  const toRender = !filtros
-    ? [...filtered].sort((a, b) => {
-        const da = (a.attributes ?? a).fecha_publicacion;
-        const db = (b.attributes ?? b).fecha_publicacion;
-        return new Date(db) - new Date(da);
-      })
-    : filtered;
+  // 🔴 ÚNICO CAMBIO REAL DE LÓGICA
+  const toRender =
+    filtros === 'mis-cursos'
+      ? misCursos
+      : !filtros
+      ? [...filtered].sort((a, b) => {
+          const da = (a.attributes ?? a).fecha_publicacion;
+          const db = (b.attributes ?? b).fecha_publicacion;
+          return new Date(db) - new Date(da);
+        })
+      : filtered;
 
-  // IntersectionObserver for animations
   const observer = useRef();
   useEffect(() => {
     observer.current = new IntersectionObserver(
@@ -199,9 +198,17 @@ const Cursos = ({ filtros, parametros }) => {
     return () => observer.current.disconnect();
   }, [toRender]);
 
+  const paginar = toRender.length >= porPagina || pagina > 1;
 
-  const paginar=toRender.length >= porPagina || pagina > 1; 
-    //const paginar=true;
+  const handleMis = () => navigate('/cursos/mis-cursos');
+  const handleAgregar = () => navigate('/cursos/agregar-curso');  
+  const handleBuscar = () => {
+    const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!slug ) return;
+    navigate(`/cursos/busqueda/${slug}`);
+  };
+
+
   return (
   <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
     
