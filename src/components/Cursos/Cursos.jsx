@@ -290,7 +290,7 @@ const Cursos = ({ filtros, parametros }) => {
           </Button>
 
           {/* Botones de editor */}
-          
+            {isAuthenticated &&(
             <Stack direction="row" spacing={1} alignItems="center">
               <Button
                 onClick={handleMis}
@@ -308,6 +308,7 @@ const Cursos = ({ filtros, parametros }) => {
               >
                 Mis cursos
               </Button>
+              
               
               {isEditor() && (
               <Button
@@ -327,6 +328,7 @@ const Cursos = ({ filtros, parametros }) => {
             
           )}
           </Stack>
+            )}
         </Stack>
       </Box>
     </Slide>
