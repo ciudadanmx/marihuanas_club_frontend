@@ -1,8 +1,7 @@
 // src/pages/Cursos/CursoDetalle.jsx
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useCursos } from '../../hooks/useCursos';
 import BotonEditar from '../../components/Cursos/BotonEditar.jsx';
-import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -27,12 +26,19 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from 'react';
 import FechaCdmx from '../../utils/FechaCdmx';
 import { motion } from 'framer-motion';
+import Inscripcion from './Inscripcion.jsx';
 
 const CursoDetalle = () => {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
   const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
   const navigate = useNavigate();
-  const { slug } = useParams();
+  const location = useLocation();
+  const params = useParams();
+  const cleanPath = location.pathname.replace(/\/$/, '');
+  const segments = cleanPath.split('/');
+
+  const slug = segments[segments.indexOf('curso') + 1];
+  const isInscripcion = segments.includes('inscripcion');
 
   console.warn('****************** entrando a CursoDetalle, slug:', slug);
 
@@ -52,6 +58,11 @@ const CursoDetalle = () => {
     navigate(`/cursos/editar/${slug}`);
   };
 
+  const handleInscripcion = () => {
+    navigate('inscripcion');
+  }
+
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 5 }}>
@@ -67,6 +78,18 @@ const CursoDetalle = () => {
       </Box>
     );
   }
+
+  // 👉 SI ESTAMOS EN /inscripcion, MOSTRAMOS SOLO EL COMPONENTE DE INSCRIPCIÓN
+  if (isInscripcion) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
+          <Inscripcion curso={curso} />
+        </Paper>
+      </Container>
+    );
+  }
+
 
   // Logs útiles para debugging
   console.log('[CursoDetalle] curso:', curso);
@@ -415,6 +438,27 @@ const CursoDetalle = () => {
           <Box sx={{ mt: 1 }}>{renderMapa(curso.ubicacion)}</Box>
         </motion.div>
       </Paper>
+
+      <Button
+            onClick={handleInscripcion}
+            variant="contained"
+            size="large"
+            sx={{
+              background: 'linear-gradient(135deg, #1b5e20, #43a047)',
+              color: '#fff',
+              fontWeight: 700,
+              px: 4,
+              borderRadius: 3,
+              textTransform: 'none',
+              boxShadow: '0 6px 20px rgba(67,160,71,0.45)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #2e7d32, #66bb6a)',
+                boxShadow: '0 8px 26px rgba(102,187,106,0.6)',
+              },
+            }}
+          >
+            Inscribirme a este Curso
+          </Button>
     </Container>
   );
 };

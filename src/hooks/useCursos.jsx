@@ -70,7 +70,9 @@ export function useCursos() {
           certificacion: a.certificacion,
           precio: a.precio,
           descripcion: DOMPurify.sanitize(a.descripcion || ''),
-          portada: a.portada?.data?.attributes?.url || null,
+          portada: a.portada?.data?.attributes?.url
+            ? `${STRAPI_URL}${a.portada.data.attributes.url}`
+            : null,
           temario: a.temario || null,
           calendario_actividades: a.calendario_actividades,
           archivos: Array.isArray(a.archivos?.data)

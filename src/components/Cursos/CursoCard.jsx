@@ -35,14 +35,27 @@ const CursoCard = ({
     fecha_publicacion,
   });
 
-  let imagenUrl = productoImg;
+  const resolveImage = (portada) => {
+    if (!portada) return productoImg;
 
-  if (portada) {
-    imagenUrl = `${STRAPI_URL}${portada}`;
-    console.log(`🖼️ Portada válida para "${titulo}":`, imagenUrl);
-  } else {
-    console.warn(`⚠️ Portada no válida para "${titulo}", usando imagen por defecto`);
-  }
+    // si viene como objeto Strapi
+    if (typeof portada === 'object') {
+      const url = portada?.data?.attributes?.url;
+      if (!url) return productoImg;
+      return `${STRAPI_URL}${url}`;
+    }
+
+    // si ya es URL absoluta
+    if (portada.startsWith('http://') || portada.startsWith('https://')) {
+      return portada;
+    }
+
+    // si es ruta relativa
+    return `${STRAPI_URL}/api/${portada}`;
+  };
+
+  const imagenUrl = resolveImage(portada);
+
 
   const handleClick = () => {
     navigate(`/curso/${slug}`);

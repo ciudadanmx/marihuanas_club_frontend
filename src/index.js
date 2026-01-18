@@ -48,6 +48,7 @@ const AppWrapper = () => {
   if (siteSection === 'contenido') siteSection = 'contenidos';
   if (siteSection === 'club') siteSection = 'clubs';
   if (siteSection === 'carrito') siteSection = 'market';
+  if (siteSection === 'curso') siteSection = 'cursos';
   //...
 
   return (

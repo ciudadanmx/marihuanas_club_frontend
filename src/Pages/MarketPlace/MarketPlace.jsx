@@ -356,7 +356,7 @@ useEffect(() => {
     });
     return () => observer.disconnect();
     // ahora dependemos de listaIdsKey para que solo re-ejecute cuando cambien los ids
-  }, [listaIdsKey, filtros]);
+  }, [listaIdsKey.length, filtros]);
 
   // Render
   const listToRender = filtros ? (productosFiltrados?.data || []) : (productos || []);

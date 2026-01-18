@@ -175,7 +175,7 @@ return authorId === usuarioLogueado;
     );
     document.querySelectorAll('.contenido-card').forEach((c) => observer.current.observe(c));
     return () => observer.current.disconnect();
-  }, [toRender]);
+  }, [toRender.length]);
 
 
   const paginar=toRender.length >= porPagina || pagina > 1; 

@@ -30,6 +30,7 @@ const CursosUsuario = () => {
 
   // Usuario ya cargado y autenticado: pasamos su email
   const usuario = user.email;
+  console.log('cursos cargando componente desde la página de mis-cursos');
   return <Cursos filtros="mis-cursos" parametros={usuario} />;
 };
 

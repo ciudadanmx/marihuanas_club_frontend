@@ -183,7 +183,7 @@ const Rutas = () => (
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
     <Route path="/cursos/eliminar/:slug" element={<EliminarCursoWrapper />} />
     <Route path="/cursos/*" element={<CursosPage />} />
-    <Route path="/curso/:slug" element={<Curso />} />
+    <Route path="/curso/:slug/*" element={<Curso />} />
     <Route path="/membresias" element={<Membresias />} />
     <Route path="/membresias/pagar/*" element={<ProbarMembresia />} />
     <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />

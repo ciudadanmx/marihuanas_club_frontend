@@ -100,11 +100,13 @@ const Cursos = ({ filtros, parametros }) => {
         const res = await fetch(
           `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
             user.email
-          )}&populate=cursos`
+          )}&populate[cursos][populate]=portada`
         );
 
         const data = await res.json();
         const usuario = data?.[0];
+        console.log('cursos miscursos set');
+        console.log('cursos miscursos set', data[0]);
         setMisCursos(usuario?.cursos || []);
       } catch (e) {
         console.error('Error cargando cursos del usuario', e);
@@ -113,6 +115,7 @@ const Cursos = ({ filtros, parametros }) => {
         setLoadingMisCursos(false);
       }
     };
+    console.log('cursos fetch de mis cursos');
 
     fetchMisCursos();
   }, [filtros, isAuthenticated, user?.email]);
@@ -130,6 +133,7 @@ const Cursos = ({ filtros, parametros }) => {
     }
   }, [location.pathname]);
 
+  //Trae las categorías
   useEffect(() => {
     (async () => {
       const cats = await getCategorias();
@@ -137,8 +141,11 @@ const Cursos = ({ filtros, parametros }) => {
     })();
   }, []);
 
+  //Trae los cursos
   useEffect(() => {
-    fetchCursos();
+    if(tabIndex !== 0){
+      fetchCursos();
+    }
   }, [pagina, porPagina]);
 
   const filtered = (cursos || []).filter((item) => {
@@ -165,13 +172,33 @@ const Cursos = ({ filtros, parametros }) => {
       return titulo.includes(term) || tagsArr.some((t) => t.includes(term));
     }
 
+    else {
+
+    }
+
     return true;
   });
+
+  console.log('cursos torender', misCursos);
+
+
+  const normalizarMisCursos = (cursos = []) =>
+  cursos.map((c) => ({
+    id: c.id,
+    attributes: {
+      ...c,
+      portada: c.portada ?? null,
+      categoria: c.categoria ?? null,
+    },
+  }));
+
+  const misCursosNormalizados = normalizarMisCursos(misCursos);
+
 
   // 🔴 ÚNICO CAMBIO REAL DE LÓGICA
   const toRender =
     filtros === 'mis-cursos'
-      ? misCursos
+      ? misCursosNormalizados
       : !filtros
       ? [...filtered].sort((a, b) => {
           const da = (a.attributes ?? a).fecha_publicacion;
@@ -196,7 +223,7 @@ const Cursos = ({ filtros, parametros }) => {
     );
     document.querySelectorAll('.curso-card').forEach((c) => observer.current.observe(c));
     return () => observer.current.disconnect();
-  }, [toRender]);
+  }, [toRender.length]);
 
   const paginar = toRender.length >= porPagina || pagina > 1;
 
@@ -427,32 +454,62 @@ const Cursos = ({ filtros, parametros }) => {
               <Typography align="center">No hay cursos aún.</Typography>
             </Grid>
           )}
-          {toRender.map((item, i) => {
-            const { categoria, ...restData } = item.attributes ?? item;
-            const data = restData;
-            const categoriaNombre = categoria?.nombre || null;
-            const isVis = visible[item.id];
-            return (
-              <Grid
-                key={item.id}
-                item
-                xs={12}
-                sm={6}
-                md={4}
-                data-id={item.id}
-                className="curso-card"
-                sx={{
-                  opacity: isVis ? 1 : 0,
-                  transform: isVis ? 'translateY(0)' : 'translateY(20px)',
-                  transition: `all 0.6s ease ${i * 0.1}s`,
-                }}
-              >
-                <CursoCard {...data} categoria={categoriaNombre} id={item.id} />
-              </Grid>
-            );
-          })}
-        </Grid>
+
+
+
+{toRender.map((item, i) => {
+  const source = item.attributes ?? item;
+
+  console.group('🟥 RENDER CURSO');
+  console.log('filtro:', filtros);
+  console.log('item completo:', item);
+  console.log('source:', source);
+  console.log('source.portada:', source.portada.url);
+  console.log('source.portada?.data:', source.portada?.data);
+  console.log(
+    'source.portada?.data?.attributes?.url:',
+    source.portada?.data?.attributes?.url
+  );
+  console.log('source.portada (string?):', typeof source.portada);
+  console.groupEnd();
+
+const rawPortada =
+  source.portada?.data?.attributes?.url ??
+  source.portada?.url ??
+  source.portada ??
+  null;
+
+const portada =
+  typeof rawPortada === 'string'
+    ? rawPortada.startsWith('http')
+      ? rawPortada
+      : `${STRAPI_URL}${rawPortada}`
+    : null;
+
+  const { categoria, ...rest } = source;
+  const data = { ...rest, portada };
+  const categoriaNombre = categoria?.nombre || null;
+  const isVis = visible[item.id];
+
+  return (
+    <Grid
+      key={item.id}
+      item
+      xs={12}
+      sm={6}
+      md={4}
+      data-id={item.id}
+      className="curso-card"
+    >
+      <CursoCard {...data} categoria={categoriaNombre} id={item.id} />
+    </Grid>
+  );
+})}
+</Grid>
       )}
+
+
+
 
       {/* Paginación */}
       {!loading && paginar === true && (
