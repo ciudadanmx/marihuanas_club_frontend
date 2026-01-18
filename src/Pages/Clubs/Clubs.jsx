@@ -32,12 +32,14 @@ const importMapaClubs = () => import('../../components/Clubs/MapaClubs.jsx');
 const importInfoClubs = () => import('../../components/Clubs/InfoClubs.jsx');
 const importSuscribete = () => import('../../components/Clubs/Suscribete.jsx');
 const importDirectorioClubs = () => import('../../components/Clubs/DirectorioClubs.jsx');
+const importActivaTuMembresia = () => import('../../components/Membresias/ActivaTuMembresia.jsx');
 const importMiClubBar = () => import('../../components/Clubs/MiClubBar.jsx');
 
 const MapaClubsLazy = lazy(importMapaClubs);
 const InfoClubsLazy = lazy(importInfoClubs);
 const SuscribeteLazy = lazy(importSuscribete);
 const DirectorioClubsLazy = lazy(importDirectorioClubs);
+const ActivaTuMembresiaLazy = lazy(importActivaTuMembresia);
 const MiClubBarLazy = lazy(importMiClubBar);
 
 /* Hook para detectar visibilidad on-screen */
@@ -388,8 +390,11 @@ const Clubs = () => {
                   </Stack>
                 </Box>
               }
-            >
+            > {membresia?.activa === true ? (
               <DirectorioClubsLazy />
+            ) : (
+              <ActivaTuMembresiaLazy />
+            )}
             </Suspense>
           )}
         </Box>

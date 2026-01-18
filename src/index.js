@@ -1,6 +1,8 @@
 // src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import PreLoader from './components/PreLoader.jsx';
+import { useNavigate } from 'react-router-dom'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { AuthProvider } from './Contexts/AuthContext';
 import { RolesProvider } from './Contexts/RolesContext';
@@ -21,12 +23,9 @@ import ScrollToTop from './components/ScrollToTop.jsx';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
-const audience  = 'https://api.marihuanas.club';
+const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;
 
-const onRedirectCallback = (appState) => {
-  const target = appState?.returnTo || '/';
-  window.history.replaceState({}, document.title, target);
-};
+
 
 // Componente wrapper que decide si mostrar NavBar u ocultarla según la ruta
 const AppWrapper = () => {
@@ -34,8 +33,11 @@ const AppWrapper = () => {
   const location = useLocation();
 
   if (isLoading) {
-    return <div>Cargando autenticación...</div>;
-  }
+  return (
+    <PreLoader />
+  );
+}
+
 
   // Ocultar NavBar para cualquier ruta que empiece con /wiki
   const isWikiRoute = location.pathname.startsWith('/wiki');
@@ -65,36 +67,55 @@ const AppWrapper = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
+
+const Auth0ProviderWithNavigate = ({ children }) => {
+  const navigate = useNavigate();
+
+  const onRedirectCallback = (appState) => {
+    navigate(appState?.returnTo || '/', { replace: true });
+  };
+
+  return (
     <Auth0Provider
       domain={domain}
       clientId={clientId}
-      redirectUri={window.location.origin}
-      cacheLocation="localstorage"
-      useRefreshTokens={true}
       authorizationParams={{
-        audience: audience,
+        audience,
         scope: 'openid profile email offline_access',
+        redirect_uri: window.location.origin,
       }}
+      cacheLocation="localstorage"
+      useRefreshTokens
       onRedirectCallback={onRedirectCallback}
+    >
+      {children}
+    </Auth0Provider>
+  );
+};
+
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Router>
+    <Auth0ProviderWithNavigate
     >
       <AuthProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
           <RolesProvider>
             <NotificationsProvider>
               <CartProvider>
-                <Router>
+                
                   <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
                     <AppWrapper />
                   </SnackbarProvider>
-                </Router>
+                
               </CartProvider>
             </NotificationsProvider>
           </RolesProvider>
         </LocalizationProvider>
       </AuthProvider>
-    </Auth0Provider>
+    </Auth0ProviderWithNavigate>
+    </Router>
   </React.StrictMode>
 );
