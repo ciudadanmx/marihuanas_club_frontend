@@ -187,10 +187,6 @@ const Cursos = ({ filtros, parametros }) => {
       return titulo.includes(term) || tagsArr.some((t) => t.includes(term));
     }
 
-    else {
-
-    }
-
     return true;
   });
 
@@ -283,7 +279,7 @@ const Cursos = ({ filtros, parametros }) => {
     
 
     {/* Search & Controls */}
-    {esVistaCursosTomados &&(
+    {esVistaCursosTomados && (!filtros || filtros !== 'mis-cursos') && (
     <Slide direction="down" in timeout={400}>
       <Box
         sx={{
