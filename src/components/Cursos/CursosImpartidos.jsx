@@ -1,9 +1,56 @@
-import React from 'react'
+import React from 'react';
+import { Grid, Typography, Box } from '@mui/material';
+import CursoCard from './CursoCard';
 
-const CursosImpartidos = () => {
+const CursosImpartidos = ({ cursos = [] }) => {
+  console.log('🎓 CursosImpartidos → cursos:', cursos);
+  console.log('🎓 CursosImpartidos → primer curso:', cursos?.[0]);
+
+  if (!Array.isArray(cursos) || cursos.length === 0) {
+    return (
+      <Box sx={{ mt: 4 }}>
+        <Typography align="center">
+          No tienes cursos impartidos aún.
+        </Typography>
+      </Box>
+    );
+  }
+
   return (
-    <div>CursosImpartidos</div>
-  )
-}
+    <Grid container spacing={2} sx={{ mt: 2 }}>
+      {cursos.map((curso) => {
+        console.group('🟩 RENDER CURSO IMPARTIDO');
+        console.log('curso:', curso);
+        console.log('curso.portada:', curso.portada);
+        console.groupEnd();
 
-export default CursosImpartidos
+        const {
+          id,
+          categoria,
+          portada,
+          ...rest
+        } = curso;
+
+        return (
+          <Grid
+            key={id}
+            item
+            xs={12}
+            sm={6}
+            md={4}
+            className="curso-card"
+          >
+            <CursoCard
+              {...rest}
+              id={id}
+              portada={portada ?? null}
+              categoria={categoria?.nombre ?? null}
+            />
+          </Grid>
+        );
+      })}
+    </Grid>
+  );
+};
+
+export default CursosImpartidos;

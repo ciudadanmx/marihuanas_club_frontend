@@ -15,6 +15,7 @@ import {
   useTheme,
   Stack,
   Pagination,
+  CircularProgress,
 } from '@mui/material';
 import CategoriasSlider from '../MarketPlace/CategoriasSlider';
 import { useCategorias } from '../../hooks/useCategorias';
@@ -152,6 +153,20 @@ const Cursos = ({ filtros, parametros }) => {
     const data = item.attributes ?? item;
     if (!filtros) return true;
 
+    if (filtros === 'mis-cursos' && tabIndex === 0) {
+      console.log('cursos impartidos entrando');
+      const usuarioSlug = (parametros ?? '')
+        .toLowerCase()
+        .split('@')[0];
+
+      const maestroUsername =
+        data.maestro?.data?.attributes?.username ??
+        data.maestro?.username ??
+        null;
+
+      return maestroUsername === usuarioSlug;
+    }
+
     if (filtros === 'categoria') {
       let catSlug;
       if (data.categoria?.data?.attributes?.slug) {
@@ -207,6 +222,11 @@ const Cursos = ({ filtros, parametros }) => {
         })
       : filtered;
 
+      console.log('cursos después de filtrado', cursos);
+      console.log('cursos después de filtrado individual', cursos[0]);
+      console.log('cursos después de filtrado', misCursosNormalizados);
+      console.log('cursos fin cursos despues de filtrados');
+
   const observer = useRef();
   useEffect(() => {
     observer.current = new IntersectionObserver(
@@ -254,7 +274,7 @@ const Cursos = ({ filtros, parametros }) => {
                 />
         
                 <div>
-                  {tabIndex === 0 && <CursosImpartidos /> }
+                  {tabIndex === 0 && <CursosImpartidos cursos={cursos} /> }
                   {tabIndex === 1 && null }
                 </div>
               </>
@@ -439,9 +459,59 @@ const Cursos = ({ filtros, parametros }) => {
         <Grid container spacing={2}>
           {loading && (
             <Grid item xs={12}>
-              <Typography align="center">Cargando cursos...</Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mt: 6,
+                  mb: 6,
+                  gap: 2,
+                }}
+              >
+                <Box
+                  sx={{
+                    animation: 'pulseGlow 1.8s ease-in-out infinite',
+                    '@keyframes pulseGlow': {
+                      '0%': {
+                        filter: 'drop-shadow(0 0 4px #39ff14)',
+                        transform: 'scale(1)',
+                      },
+                      '50%': {
+                        filter: 'drop-shadow(0 0 18px #39ff14)',
+                        transform: 'scale(1.08)',
+                      },
+                      '100%': {
+                        filter: 'drop-shadow(0 0 4px #39ff14)',
+                        transform: 'scale(1)',
+                      },
+                    },
+                  }}
+                >
+                  <CircularProgress
+                    size={64}
+                    thickness={4}
+                    sx={{
+                      color: '#39ff14', // verde neón weed 🌿
+                    }}
+                  />
+                </Box>
+
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: '#1faa00', // verde fuerte pero normal
+                    fontWeight: 600,
+                    letterSpacing: '0.5px',
+                  }}
+                >
+                  Cargando cursos...
+                </Typography>
+              </Box>
             </Grid>
           )}
+
           {error && (
             <Grid item xs={12}>
               <Typography color="error" align="center">
