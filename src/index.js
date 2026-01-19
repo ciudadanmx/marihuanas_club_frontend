@@ -21,6 +21,7 @@ import './styles/index.css';
 import { findUserInStrapi } from './utils/strapiUserService.jsx';
 // IMPORTA ScrollToTop
 import ScrollToTop from './components/ScrollToTop.jsx';
+import AuthGate from './components/AuthGate.jsx';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -28,93 +29,39 @@ const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;
 
 // Componente wrapper que decide si mostrar NavBar u ocultarla según la ruta
 const AppWrapper = () => {
-  const { user, isAuthenticated, isLoading } = useAuth0();
-  const navigate = useNavigate();
+  const { isLoading } = useAuth0();
   const location = useLocation();
 
-  const [checkingUser, setCheckingUser ] = useState(true);
+  if (isLoading) {
+    return <PreLoader />;
+  }
 
-  useEffect(() => {
-    const checkUserInStrapi = async () => {
-      //No hacer nada si
-      if (!isAuthenticated || !user?.email) {
-        setCheckingUser(false);
-        return;
-      }
-
-      //Evitar loop infinito si ya estamos en registro
-      if(location.pathname.startsWith('/registrar')) {
-        setCheckingUser(false);
-        return;
-      }
-
-      try {
-        const data = await findUserInStrapi(user.email);
-        const strapiUser = data?.[0];
-
-        console.log('strapeando', strapiUser);
-        console.log('strapeando', strapiUser.registrado);
-        console.log('strapeando');
-
-        //No existe usuario
-        if (!strapiUser) {
-          console.log('strapeando, no existe strapiUser');
-          navigate('/registrar', { replace: true});
-          return;
-        }
-
-        //Existe pero no está registrado
-        if (strapiUser.registrado !== true) {
-          console.log('strapeando no registrado ');
-          navigate('/registrar', { replace: true });
-          return;
-        }
-
-        //usuario válido
-        setCheckingUser(false);
-    } catch (err) {
-      console.error('Error verificando usuario en strapi');
-      setCheckingUser(false);
-    }
-    };
-
-    checkUserInStrapi();
-  }, [isAuthenticated, user])
-
-  if (isLoading || checkingUser) {
-  return (
-    <PreLoader />
-  );
-}
-
-
-  // Ocultar NavBar para cualquier ruta que empiece con /wiki
   const isWikiRoute = location.pathname.startsWith('/wiki');
 
-  // Extraer la primera sección de la URL: lo que está entre la primera y la segunda "/"
-  // Ejemplo: /market/comprar -> "market"
-  // Si la ruta es "/" o no tiene segmento, queda cadena vacía ''
-  var siteSection = (location.pathname.split('/').filter(Boolean)[0]) || '';
-  if (siteSection === 'productos') siteSection = 'market';
-  if (siteSection === 'contenido') siteSection = 'contenidos';
-  if (siteSection === 'club') siteSection = 'clubs';
-  if (siteSection === 'carrito') siteSection = 'market';
-  if (siteSection === 'curso') siteSection = 'cursos';
-  //...
+  const sectionMap = {
+    productos: 'market',
+    contenido: 'contenidos',
+    club: 'clubs',
+    carrito: 'market',
+    curso: 'cursos',
+  };
+
+  const pathSection = location.pathname.split('/').filter(Boolean)[0];
+  const siteSection = sectionMap[pathSection] ?? pathSection ?? '';
 
   return (
     <>
-      {/* Este componente obliga a hacer scroll arriba en cada navegación */}
       <ScrollToTop behavior="auto" />
-
-      {/* Pasamos siteSection a NavBar solo si no es ruta wiki */}
       {!isWikiRoute && <NavBar siteSection={siteSection} />}
       <Rutas />
-      <Asistente />
+      <AuthGate>
+        <Asistente />
+      </AuthGate>
       <Footer />
     </>
   );
 };
+
 
 
 const Auth0ProviderWithNavigate = ({ children }) => {
@@ -156,7 +103,9 @@ root.render(
               <CartProvider>
                 
                   <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
-                    <AppWrapper />
+                   
+                      <AppWrapper />
+                   
                   </SnackbarProvider>
                 
               </CartProvider>
