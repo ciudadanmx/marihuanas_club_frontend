@@ -52,14 +52,20 @@ const AppWrapper = () => {
         const data = await findUserInStrapi(user.email);
         const strapiUser = data?.[0];
 
+        console.log('strapeando', strapiUser);
+        console.log('strapeando', strapiUser.registrado);
+        console.log('strapeando');
+
         //No existe usuario
         if (!strapiUser) {
+          console.log('strapeando, no existe strapiUser');
           navigate('/registrar', { replace: true});
           return;
         }
 
         //Existe pero no está registrado
         if (strapiUser.registrado !== true) {
+          console.log('strapeando no registrado ');
           navigate('/registrar', { replace: true });
           return;
         }

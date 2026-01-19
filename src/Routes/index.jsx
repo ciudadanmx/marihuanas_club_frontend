@@ -109,6 +109,8 @@ import NotificationTester from '../components/NotificationTester.jsx';
 import ActivaTuMembresia from '../components/Membresias/ActivaTuMembresia.jsx';
 import Humo from '../components/Membresias/Humo/Humo.jsx';
 
+import Registrar from './components/Registrar.jsx';
+
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
@@ -144,6 +146,7 @@ const Rutas = () => (
     {/* RUTAS NORMALES */}
     <Route path="/" element={<HomeRoute />} />
     <Route path="/probador" element={<Probador />} />
+    <Route path="/registrar" element={<Registrar />} />
     
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />

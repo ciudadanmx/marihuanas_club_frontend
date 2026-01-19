@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:30010'; // URL de tu instancia de Strapi
+const API_URL = process.env.REACT_APP_STRAPI_URL; // URL de tu instancia de Strapi
 
 // Registro de usuario en Strapi
 export const registerUserInStrapi = async (email, username) => {
@@ -36,7 +36,7 @@ export const findUserInStrapi = async (email) => {
     }
 
     const data = await response.json();
-    return data.data; // Asegúrate de ajustar esto según la estructura de la respuesta de Strapi
+    return data; // Asegúrate de ajustar esto según la estructura de la respuesta de Strapi
   } catch (error) {
     console.error('Error al buscar el usuario en Strapi:', error);
     return [];
