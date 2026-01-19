@@ -87,6 +87,12 @@ const Cursos = ({ filtros, parametros }) => {
   const [misCursos, setMisCursos] = useState([]);
   const [loadingMisCursos, setLoadingMisCursos] = useState(false);
 
+  
+  useEffect(() => {
+    window.scrollTo({ top: 80, behavior: 'smooth' });
+  }, [pagina, porPagina]);
+
+  
   // ===============================
   // NUEVO useEffect (NO TOCA LOS OTROS)
   // ===============================
@@ -132,6 +138,7 @@ const Cursos = ({ filtros, parametros }) => {
     } else {
       setTabIndex(1);
     }
+    setPagina(1);
   }, [location.pathname]);
 
   //Trae las categorías
@@ -147,7 +154,7 @@ const Cursos = ({ filtros, parametros }) => {
     if(tabIndex !== 0){
       fetchCursos();
     }
-  }, [pagina, porPagina]);
+  }, [pagina, porPagina, filtros, parametros, tabIndex]);
 
   const filtered = (cursos || []).filter((item) => {
     const data = item.attributes ?? item;
@@ -205,6 +212,13 @@ const Cursos = ({ filtros, parametros }) => {
 
   const misCursosNormalizados = normalizarMisCursos(misCursos);
 
+  // totalItems final según la vista: si es mis-cursos usamos los cursos del usuario
+  const totalItemsFinal = filtros === 'mis-cursos' && tabIndex === 0
+    ? misCursosNormalizados.length
+    : totalItems || 0;
+
+  
+
 
   // 🔴 ÚNICO CAMBIO REAL DE LÓGICA
   const toRender =
@@ -223,6 +237,10 @@ const Cursos = ({ filtros, parametros }) => {
       console.log('cursos después de filtrado', misCursosNormalizados);
       console.log('cursos fin cursos despues de filtrados');
 
+  useEffect(() => {
+    setVisible({});
+  }, [pagina]);
+      
   const observer = useRef();
   useEffect(() => {
     observer.current = new IntersectionObserver(
@@ -239,9 +257,12 @@ const Cursos = ({ filtros, parametros }) => {
     );
     document.querySelectorAll('.curso-card').forEach((c) => observer.current.observe(c));
     return () => observer.current.disconnect();
-  }, [toRender.length]);
+  }, [toRender.length, pagina]);
 
-  const paginar = toRender.length >= porPagina || pagina > 1;
+  const paginar =
+  filtros === 'mis-cursos' && tabIndex === 0
+    ? totalItemsFinal > porPagina || pagina > 1
+    : totalItemsFinal > porPagina || pagina > 1;
 
   const handleMis = () => navigate('/cursos/mis-cursos');
   const handleAgregar = () => navigate('/cursos/agregar-curso');  
@@ -269,10 +290,7 @@ const Cursos = ({ filtros, parametros }) => {
                   collapseAt={640}
                 />
         
-                <div>
-                  {tabIndex === 0 && <CursosImpartidos cursos={cursos} /> }
-                  {tabIndex === 1 && null }
-                </div>
+                
               </>
             )}
           </div>
@@ -378,73 +396,81 @@ const Cursos = ({ filtros, parametros }) => {
 
     )}
 
-    {esVistaCursosTomados && (
+    
+                  {tabIndex === 0 && <CursosImpartidos cursos={cursos} /> }
+    
+                
+
+    {esVistaCursosTomados  && (
+      <>
     <Box mt={5}>
       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
         <u className="cursos-titulo">{ titulo }</u>
       </Typography>
       {categorias.length > 0 && (
-      <Fade in timeout={400}>
-        <Box>
-          {mostrarCategorias === true && (
-          <>
-            <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
-              <u className="cursos-titulo">Categorías</u>
-            </Typography>
-
-            <CategoriasSlider
-              forma={'cuadrado'}
-              categorias={Array.isArray(categorias)
-                ? categorias.map((c) => ({
-                    nombre: c.attributes.nombre,
-                    slug: c.attributes.slug,
-                    imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
-                  }))
-                : []}
-              clasifica={'cursos'}
-            />
-            <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
-              <u className="cursos-titulo">Cursos Recientes:...</u>
-            </Typography>
-          </>
-        )}
-
-        {mostrarCategorias !== true && (
         <Fade in timeout={400}>
-          <Box
-            onClick={() => navigate('/cursos')}
-             sx={{
-                backgroundColor: '#e6f4ea',
-                borderRadius: 1,
-                px: 1.5,
-                py: 0.5,
-                mb: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                color: 'green',
-                fontSize: '0.875rem',
-                boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
-                marginTop: '-20px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                backgroundColor: '#d0ebdc',
-                textDecoration: 'underline',
-                transform: 'scale(1.02)',
-                },
-            }}
-          >
-            « Volver a Directorio de Cursos
+          <Box>
+            {mostrarCategorias === true && (
+              <>
+                <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+                  <u className="cursos-titulo">Categorías</u>
+                </Typography>
+
+                <CategoriasSlider
+                  forma={'cuadrado'}
+                  categorias={Array.isArray(categorias)
+                    ? categorias.map((c) => ({
+                        nombre: c.attributes.nombre,
+                        slug: c.attributes.slug,
+                        imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
+                      }))
+                    : []}
+                  clasifica={'cursos'}
+                />
+                <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+                  <u className="cursos-titulo">Cursos Recientes:...</u>
+                </Typography>
+              </>
+            )}
+
+            {mostrarCategorias !== true && (
+              <Fade in timeout={400}>
+                <Box
+                  onClick={() => navigate('/cursos')}
+                  sx={{
+                    backgroundColor: '#e6f4ea',
+                    borderRadius: 1,
+                    px: 1.5,
+                    py: 0.5,
+                    mb: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    color: 'green',
+                    fontSize: '0.875rem',
+                    boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
+                    marginTop: '-20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: '#d0ebdc',
+                      textDecoration: 'underline',
+                      transform: 'scale(1.02)',
+                    },
+                  }}
+                >
+                  « Volver a Directorio de Cursos
+                </Box>
+              </Fade>
+            )}
+
           </Box>
         </Fade>
       )}
-
-
-    </Box>
-  </Fade>
-)}
+      </Box>
+      </>
+    )}
 
 
       {filtros === 'editar' ? (
@@ -574,14 +600,11 @@ const portada =
 </Grid>
       )}
 
-
-
-
       {/* Paginación */}
-      {!loading && paginar === true && (
+      {!loading  && (
         <Grid container spacing={2} sx={{ mt: 3, justifyContent: 'center', alignItems: 'center' }}>
           <Pagination
-            count={Math.ceil(totalItems / porPagina)}
+            count={Math.ceil(totalItemsFinal / porPagina)}
             page={pagina}
             onChange={(_, v) => setPagina(v)}
           />
@@ -599,8 +622,7 @@ const portada =
           </TextField>
         </Grid>
       )}
-    </Box>
-    )}
+    
 
   </Container>
 );

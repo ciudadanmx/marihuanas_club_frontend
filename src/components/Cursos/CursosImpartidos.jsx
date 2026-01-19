@@ -4,7 +4,6 @@ import CursoCard from './CursoCard';
 
 const CursosImpartidos = ({ cursos = [] }) => {
   console.log('🎓 CursosImpartidos → cursos:', cursos);
-  console.log('🎓 CursosImpartidos → primer curso:', cursos?.[0]);
 
   if (!Array.isArray(cursos) || cursos.length === 0) {
     return (
@@ -19,17 +18,7 @@ const CursosImpartidos = ({ cursos = [] }) => {
   return (
     <Grid container spacing={2} sx={{ mt: 2 }}>
       {cursos.map((curso) => {
-        console.group('🟩 RENDER CURSO IMPARTIDO');
-        console.log('curso:', curso);
-        console.log('curso.portada:', curso.portada);
-        console.groupEnd();
-
-        const {
-          id,
-          categoria,
-          portada,
-          ...rest
-        } = curso;
+        const { id, categoria, portada, ...rest } = curso;
 
         return (
           <Grid
