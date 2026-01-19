@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -24,6 +24,9 @@ import ContenidoDetalle from '../../Pages/Blog/Contenido';
 import '../../styles/Contenidos.css';
 
 const Contenidos = ({ filtros, parametros }) => {
+
+  const filtrosNorm = filtros ?? null;
+  const parametrosNorm = parametros ?? null;
 
   // Llamada correcta al hook de roles (no cambiar el provider)
   const { isEditor } = useRoles();
@@ -98,68 +101,51 @@ const Contenidos = ({ filtros, parametros }) => {
   
   // Fetch contenidos whenever pagina o porPagina cambian
   useEffect(() => {
-    fetchContenidos();
-  }, [pagina, porPagina]);
+    console.log('🚀 kontenidos fetchContenidos REAL');
+    console.log({
+      pagina,
+      porPagina,
+      filtros: filtrosNorm,
+      parametros: parametrosNorm,
+    });
+
+    fetchContenidos({
+      pagina,
+      porPagina,
+      filtros: filtrosNorm,
+      parametros: parametrosNorm,
+    });
+  }, [pagina, porPagina, filtrosNorm, parametrosNorm]);
 
   // Filter logic
-  const filtered = (contenidos || []).filter((item) => {
-    const data = item.attributes ?? item;
-    if (!filtros) return true;
-    if (filtros === 'mis-contenidos') {
-  const authorId = (data.autor_email ?? '').trim().toLowerCase();
-  const usuarioLogueado = (parametros ?? '').trim().toLowerCase();
-console.log('CONTENIDOS:', contenidos);
-return authorId === usuarioLogueado;
-}
-   
-    if (filtros === 'categoria') {
-  // Debug: muestra la estructura de categoría
-  console.log('DATA.categoria →', data.categoria);
+  const toRender = useMemo(() => {
+  const data = Array.isArray(contenidos) ? contenidos : [];
 
-  // Extrae el slug según la forma que venga
-  let catSlug;
-  if (data.categoria?.data?.attributes?.slug) {
-    // Forma anidada Strapi
-    catSlug = data.categoria.data.attributes.slug;
-  } else if (data.categoria?.slug) {
-    // Forma plana que viste en consola
-    catSlug = data.categoria.slug;
-  }
-
-  console.log('Comparando slug de categoría:', catSlug, 'vs parámetros:', parametros);
-  return catSlug === parametros;
-}
-    if (filtros === 'busqueda') {
-      const term = parametros?.toLowerCase() || '';
-      const titulo = (data.titulo ?? data.nombre ?? '').toLowerCase();
-      const libre = (data.contenido_libre ?? '').toLowerCase();
-      const restringido = (data.contenido_restringido ?? '').toLowerCase();
-      const tagsSource = data.tags?.data ?? data.tags;
-      const tagsArr = Array.isArray(tagsSource)
-        ? tagsSource.map((t) => (t.attributes?.nombre ?? t.slug ?? t).toLowerCase())
-        : [];
-      const tagsMatch = tagsArr.some((t) => t.includes(term));
-      return (
-        titulo.includes(term) ||
-        libre.includes(term) ||
-        restringido.includes(term) ||
-        tagsMatch
-      );
-    }
-    return true;
+  console.log('kontenidos [useMemo toRender]', {
+    pagina,
+    ids: data.map(i => i?.id),
+    length: data.length,
   });
 
-  // Default sort if no filtros
-  const toRender = !filtros
-    ? [...filtered].sort((a, b) => {
-        const da = (a.attributes ?? a).fecha_publicacion;
-        const db = (b.attributes ?? b).fecha_publicacion;
-        return new Date(db) - new Date(da);
-      })
-    : filtered;
+  return data;
+}, [contenidos, pagina]);
+
+useEffect(() => {
+  window.scrollTo({ top: 80, behavior: 'smooth' });
+}, [pagina, porPagina]);
 
   // IntersectionObserver for animations
   const observer = useRef();
+  
+  useEffect(() => {
+  console.log('kontenidos [visible RESET]', {
+    pagina,
+    ids: toRender.map(i => i.id),
+  });
+
+  setVisible({});
+}, [pagina]);
+  
   useEffect(() => {
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -175,12 +161,33 @@ return authorId === usuarioLogueado;
     );
     document.querySelectorAll('.contenido-card').forEach((c) => observer.current.observe(c));
     return () => observer.current.disconnect();
-  }, [toRender.length]);
+  }, [toRender.length, pagina]);
 
+  //const paginar=toRender.length >= porPagina || pagina > 1; 
+  const totalPages = Math.ceil(totalItems / porPagina);
 
-  const paginar=toRender.length >= porPagina || pagina > 1; 
+  const paginar = totalPages > 1;
     //const paginar=true;
   
+  console.log('kontenidos [pagination]', {
+    totalItems,
+    porPagina,
+    totalPages,
+    pagina,
+  });
+
+  console.log('kontenidos [render]', {
+    pagina,
+    porPagina,
+    totalItems,
+    toRenderLength: toRender.length,
+    pageCount: Math.ceil(totalItems / porPagina),
+  });
+
+  console.log('kontenidos [RENDER FINAL]', {
+  pagina,
+  mostrando: toRender.map(i => i?.id),
+});
 
   return (
   <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
@@ -277,83 +284,72 @@ return authorId === usuarioLogueado;
       </Box>
     </Slide>
 
-
-
-    
-
-
     {/* Contenidos */}
     <Box mt={5}>
       <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
         <u className="contenidos-titulo">{ titulo }</u>
       </Typography>
 
-
       {categorias.length > 0 && (
-  <Fade in timeout={400}>
-    <Box>
-      
-
-      {mostrarCategorias === true && (
-        <>
-          <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
-            <u className="contenidos-titulo">Categorías</u>
-          </Typography>
-
-          <CategoriasSlider
-            forma={'hexagono'}
-            categorias={Array.isArray(categorias)
-              ? categorias.map((c) => ({
-                  nombre: c.attributes.nombre,
-                  slug: c.attributes.slug,
-                  imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
-                }))
-              : []}
-            clasifica={'contenidos'}
-          />
-          <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
-            <u className="contenidos-titulo">Contenidos Recientes:...</u>
-          </Typography>
-        </>
-      )}
-
-      {mostrarCategorias !== true && (
         <Fade in timeout={400}>
-          <Box
-            onClick={() => navigate('/contenidos')}
-             sx={{
-                backgroundColor: '#e6f4ea',
-                borderRadius: 1,
-                px: 1.5,
-                py: 0.5,
-                mb: 2,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                color: 'green',
-                fontSize: '0.875rem',
-                boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
-                marginTop: '-20px',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                backgroundColor: '#d0ebdc',
-                textDecoration: 'underline',
-                transform: 'scale(1.02)',
-                },
-            }}
-          >
-            « Volver a Directorio de Contenidos
+          <Box>
+            {mostrarCategorias === true && (
+              <>
+                <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+                  <u className="contenidos-titulo">Categorías</u>
+                </Typography>
+
+                <CategoriasSlider
+                  forma={'hexagono'}
+                  categorias={Array.isArray(categorias)
+                    ? categorias.map((c) => ({
+                        nombre: c.attributes.nombre,
+                        slug: c.attributes.slug,
+                        imagen: `${STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}`,
+                      }))
+                    : []}
+                  clasifica={'contenidos'}
+                />
+                <Typography variant="h6" align="center" fontWeight={700} sx={{ mb: 2 }}>
+                  <u className="contenidos-titulo">Contenidos Recientes:...</u>
+                </Typography>
+              </>
+            )}
+
+            {mostrarCategorias !== true && (
+              <Fade in timeout={400}>
+                <Box
+                  onClick={() => navigate('/contenidos')}
+                  sx={{
+                    backgroundColor: '#e6f4ea',
+                    borderRadius: 1,
+                    px: 1.5,
+                    py: 0.5,
+                    mb: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    color: 'green',
+                    fontSize: '0.875rem',
+                    boxShadow: '0px 2px 6px rgba(0,0,0,0.08)',
+                    marginTop: '-20px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      backgroundColor: '#d0ebdc',
+                      textDecoration: 'underline',
+                      transform: 'scale(1.02)',
+                    },
+                  }}
+                >
+                  « Volver a Directorio de Contenidos
+                </Box>
+              </Fade>
+            )}
           </Box>
         </Fade>
       )}
-
-
-    </Box>
-  </Fade>
-)}
-
 
       {filtros === 'editar' ? (
         <ContenidoDetalle slug={parametros} />
@@ -393,7 +389,7 @@ return authorId === usuarioLogueado;
                 data-id={item.id}
                 className="contenido-card"
                 sx={{
-                  opacity: isVis ? 1 : 0,
+                  opacity: isVis === false ? 0 : 1,
                   transform: isVis ? 'translateY(0)' : 'translateY(20px)',
                   transition: `all 0.6s ease ${i * 0.1}s`,
                 }}

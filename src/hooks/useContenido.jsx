@@ -25,25 +25,36 @@ const [autoresMap, setAutoresMap] = useState({});
   const [porPagina, setPorPagina] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
 
-  useEffect(() => {
-  fetchContenidos();
-  fetchCategorias();
-  fetchAutores();           // <— añade esta llamada
-}, [pagina, porPagina, user]);
 
 
-  async function fetchContenidos(filtros, parametros) {
+
+  async function fetchContenidos({ filtros = null, parametros = null } = {}) {
     try {
       setLoading(true);
-      let urlFiltrada = `${STRAPI_URL}/api/contenidos?populate=portada,autor,autor_nombre,autor_email,galeria_libre,galeria_restringida,videos_libres,videos_restringidos,categoria`;
-      
-      if (filtros === 'mis-contenidos') {
-        urlFiltrada += ``;
-      }
+      let urlFiltrada =
+  `${STRAPI_URL}/api/contenidos` +
+  `?populate=portada,autor,autor_nombre,autor_email,galeria_libre,galeria_restringida,` +
+  `videos_libres,videos_restringidos,categoria` +
+  `&pagination[page]=${pagina}` +
+  `&pagination[pageSize]=${porPagina}` +
+  `&sort[0]=fecha_publicacion:desc`;
 
-      else {
-        urlFiltrada += `&pagination[page]=${pagina}&pagination[pageSize]=${porPagina}&sort[0]=fecha_publicacion:desc`;
-      }
+// 🔎 FILTROS
+if (filtros === 'categoria' && parametros) {
+  urlFiltrada += `&filters[categoria][slug][$eq]=${parametros}`;
+    }
+
+    if (filtros === 'busqueda' && parametros) {
+      urlFiltrada +=
+        `&filters[$or][0][titulo][$containsi]=${parametros}` +
+        `&filters[$or][1][contenido_libre][$containsi]=${parametros}` +
+        `&filters[$or][2][contenido_restringido][$containsi]=${parametros}`;
+    }
+
+    if (filtros === 'mis-contenidos' && parametros) {
+      urlFiltrada += `&filters[autor_email][$eq]=${encodeURIComponent(parametros)}`;
+    }
+
       
       console.warn(`* * * * - * - * / * - */ / * / * /* / * /* / * /* / * /*  `, urlFiltrada);
       const res = await fetch(
@@ -51,6 +62,15 @@ const [autoresMap, setAutoresMap] = useState({});
       );
       
       const data = await res.json();
+
+      console.log('kontenidos [fetchContenidos] RESPUESTA STRAPI:', {
+  page: pagina,
+  pageSize: porPagina,
+  received: data?.data?.length,
+  total: data?.meta?.pagination?.total,
+  pageCount: data?.meta?.pagination?.pageCount,
+  currentPage: data?.meta?.pagination?.page,
+});
 
       const items = Array.isArray(data.data) ? data.data : [];
       //setTotal(res.data.meta.pagination.total);
@@ -93,6 +113,12 @@ const [autoresMap, setAutoresMap] = useState({});
             : null,
         };
       });
+
+      console.log('kontenidos [fetchContenidos] SETEANDO CONTENIDOS:', {
+  page: pagina,
+  items: parsed.length,
+  ids: parsed.map(i => i.id),
+});
 
       setContenidos(parsed);
     } catch (err) {

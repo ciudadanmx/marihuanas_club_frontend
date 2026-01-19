@@ -1,5 +1,5 @@
 // src/index.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import PreLoader from './components/PreLoader.jsx';
 import { useNavigate } from 'react-router-dom'
@@ -18,6 +18,7 @@ import { NotificationsProvider } from './Contexts/NotificationsContext';
 import Footer from './components/Footer/Footer.jsx';
 import './styles/index.css';
 
+import { findUserInStrapi } from './utils/strapiUserService.jsx';
 // IMPORTA ScrollToTop
 import ScrollToTop from './components/ScrollToTop.jsx';
 
@@ -25,14 +26,56 @@ const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
 const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;
 
-
-
 // Componente wrapper que decide si mostrar NavBar u ocultarla según la ruta
 const AppWrapper = () => {
-  const { isLoading } = useAuth0();
+  const { user, isAuthenticated, isLoading } = useAuth0();
+  const navigate = useNavigate();
   const location = useLocation();
 
-  if (isLoading) {
+  const [checkingUser, setCheckingUser ] = useState(true);
+
+  useEffect(() => {
+    const checkUserInStrapi = async () => {
+      //No hacer nada si
+      if (!isAuthenticated || !user?.email) {
+        setCheckingUser(false);
+        return;
+      }
+
+      //Evitar loop infinito si ya estamos en registro
+      if(location.pathname.startsWith('/registrar')) {
+        setCheckingUser(false);
+        return;
+      }
+
+      try {
+        const data = await findUserInStrapi(user.email);
+        const strapiUser = data?.[0];
+
+        //No existe usuario
+        if (!strapiUser) {
+          navigate('/registrar', { replace: true});
+          return;
+        }
+
+        //Existe pero no está registrado
+        if (strapiUser.registrado !== true) {
+          navigate('/registrar', { replace: true });
+          return;
+        }
+
+        //usuario válido
+        setCheckingUser(false);
+    } catch (err) {
+      console.error('Error verificando usuario en strapi');
+      setCheckingUser(false);
+    }
+    };
+
+    checkUserInStrapi();
+  }, [isAuthenticated, user])
+
+  if (isLoading || checkingUser) {
   return (
     <PreLoader />
   );
