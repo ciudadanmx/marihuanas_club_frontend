@@ -193,6 +193,7 @@ const Rutas = () => (
     <Route path="/membresias/cultivo/order" element={<NumeroPlantas />} />
     <Route path="/membresias/jardinero/order" element={<RequisitosJardinero />} />
     <Route path="/membresias/pagar/*" element={<ProbarMembresia />} />
+    <Route path="/membresias/pago/plan/:planId" element={<ProbarMembresia />} />
     <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/admin/dashboard" element={<AdminDashboard />} />

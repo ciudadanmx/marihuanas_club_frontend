@@ -181,7 +181,7 @@ export default function RequisitosJardinero() {
 
                     <Button
                       variant="outlined"
-                      onClick={() => navigate("/membresias/pagar/order/2")}
+                      onClick={() => navigate("/membresias/pago/plan/3")}
                       sx={{ textTransform: 'none', borderColor: 'rgba(255,255,255,0.16)', color: '#fff' }}
                     >
                       Continuar pago
