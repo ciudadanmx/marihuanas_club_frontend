@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Input, Grid } from "@mui/material";
+import { Box, Button, Divider, Typography, Input, Grid } from "@mui/material";
 
 export default function Archivos({ form, setForm }) {
   const handleFileChange = (e) => {
@@ -25,16 +25,33 @@ export default function Archivos({ form, setForm }) {
   return (
     <Box>
       <Typography variant="h6" mb={2}>
-        Foto de perfil
+        <u>Foto de Portada del Club:</u>
       </Typography>
 
       <Input
+        id="foto_perfil"
         type="file"
         name="foto_perfil"
         accept="image/*"
         onChange={handleFileChange}
         fullWidth
+        sx={{ display: "none" }}
       />
+
+      <label htmlFor="foto_perfil">
+        <Button
+          variant="contained"
+          component="span"
+          sx={{
+            backgroundColor: "#9c27b0", // púrpura
+            "&:hover": {
+              backgroundColor: "#7b1fa2",
+            },
+          }}
+        >
+          Subir Foto de Portada:
+        </Button>
+      </label>
 
       {form.foto_perfil && (
         <Box mt={2}>
@@ -47,18 +64,37 @@ export default function Archivos({ form, setForm }) {
         </Box>
       )}
 
+      <Divider sx={{ my: 3, borderColor: 'rgba(104, 64, 92, 0.57)' }} />
+
       <Typography variant="h6" mt={4} mb={2}>
-        Fotos del club
+        <u>Fotos del Club:</u>
       </Typography>
 
       <Input
+        id="fotos_club"
         type="file"
         name="fotos_club"
         accept="image/*"
         multiple
         onChange={handleFileChange}
         fullWidth
+        sx={{ display: "none" }}
       />
+
+      <label htmlFor="fotos_club">
+        <Button
+          variant="contained"
+          component="span"
+          sx={{
+            backgroundColor: "#9c27b0", // púrpura
+            "&:hover": {
+              backgroundColor: "#7b1fa2",
+            },
+          }}
+        >
+          Subir Fotos del Club
+        </Button>
+      </label>
 
       {form.fotos_club.length > 0 && (
         <Grid container spacing={2} mt={2}>
@@ -83,7 +119,7 @@ export default function Archivos({ form, setForm }) {
                 }}
               >
                 <span className="material-icons-outlined" style={{ color: "#d32f2f" }}>
-                  delete
+                  ❌ Borrar
                 </span>
               </button>
             </Grid>

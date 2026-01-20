@@ -171,6 +171,16 @@ export default function StepperForm({
       }
     }
 
+    if (stepLabel === "Archivos") {
+       if (!Array.isArray(form.fotos_club) || form.fotos_club.length < 2) {
+        enqueueSnackbar(
+          "😍  De la vista nace el amor mazter -- Agrega al menos 2 Fotos de tu Club",
+          { variant: "warning" }
+        );
+        return;
+      }
+    }
+
     // ✅ todo bien → avanzamos
     setActiveStep((prev) => prev + 1);
   };
