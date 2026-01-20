@@ -67,7 +67,7 @@ export default function RequisitosJardinero() {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        pt: 3,
+        pt: 1,
         mt: 0,
       }}
     >

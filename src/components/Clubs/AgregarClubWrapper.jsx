@@ -14,5 +14,7 @@ export default function AgregarClubWrapper(tipo) {
   if (loadError) return <div>Error cargando el mapa</div>;
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
+  console.log('klub si', tipo?.tipo);
+
   return <AgregarClub tipo={tipo} />;
 }

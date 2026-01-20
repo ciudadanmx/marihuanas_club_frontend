@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Stepper,
   Step,
@@ -25,40 +25,64 @@ export default function StepperForm({
   userId,
   loginWithRedirect,
 }) {
-  const steps = [
-    { label: "Instrucciones", component: <Instrucciones tipo={tipo}/> },
-    { label: "Datos Generales", component: <DatosGenerales form={form} setForm={setForm} tipo={tipo} /> },
-    { label: "Dirección", component: <Direccion form={form} setForm={setForm} /> },
-    { label: "Archivos", component: <Archivos form={form} setForm={setForm} /> },
-    { label: "Horarios y Contacto", component: <Contacto form={form} setForm={setForm} /> },
-    { label: "Confirmación", component: <Confirmacion form={form} /> },
-  ];
+
+  // 🔹 STEPS DINÁMICOS SEGÚN TIPO
+  const steps = useMemo(() => {
+    const baseSteps = [];
+
+    console.log('klub si steper', tipo?.tipo.tipo);
+    if (tipo.tipo.tipo === "consumo") {
+      console.log('klub si stepper consumo', tipo)
+      baseSteps.push({
+        label: "Instrucciones",
+        component: <Instrucciones tipo={tipo} />,
+      });
+    }
+
+    baseSteps.push(
+      {
+        label: "Datos Generales",
+        component: <DatosGenerales form={form} setForm={setForm} tipo={tipo} />,
+      },
+      {
+        label: "Dirección",
+        component: <Direccion form={form} setForm={setForm} />,
+      },
+      {
+        label: "Archivos",
+        component: <Archivos form={form} setForm={setForm} />,
+      },
+      {
+        label: "Horarios y Contacto",
+        component: <Contacto form={form} setForm={setForm} />,
+      },
+      {
+        label: "Confirmación",
+        component: <Confirmacion form={form} />,
+      }
+    );
+
+    return baseSteps;
+  }, [tipo, form, setForm]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const handleNext = () => {
-    console.log("🔜 Avanzando al paso", activeStep + 1);
     setActiveStep((prev) => prev + 1);
   };
+
   const handleBack = () => {
-    console.log("🔙 Volviendo al paso", activeStep - 1);
     setActiveStep((prev) => prev - 1);
   };
 
   const handleSubmit = async () => {
-    console.log("🚀 handleSubmit iniciado");
-    console.log("Form state:", form);
-    console.log("User authenticated:", isAuthenticated, "UserId:", userId);
-
-    // 💥 Quitamos la redirección para que no se pierda el log en consola
     if (!isAuthenticated || !userId) {
-      console.warn("❗ Usuario no autenticado o sin userId — no se envía nada, revisa tu sesión");
+      console.warn("❗ Usuario no autenticado o sin userId");
       return;
     }
 
     setLoading(true);
-    console.warn("📡 Enviando club a Strapi en", STRAPI_URL);
 
     try {
       const dataToSend = new FormData();
@@ -78,65 +102,31 @@ export default function StepperForm({
         whatsapp: form.whatsapp,
       };
 
-      console.log("📦 Payload JSON:", payload);
       dataToSend.append("data", JSON.stringify(payload));
 
       if (form.foto_perfil) {
-        console.log("🖼️ Adjuntando foto_perfil:", form.foto_perfil.name);
         dataToSend.append("files.foto_perfil", form.foto_perfil);
       }
 
-      form.fotos_club.forEach((foto, idx) => {
-        console.log(`🖼️ Adjuntando fotos_club[${idx}]:`, foto.name);
+      form.fotos_club.forEach((foto) => {
         dataToSend.append("files.fotos_club", foto);
       });
-
-      console.log("🔍 Revisando FormData:");
-      for (let [key, value] of dataToSend.entries()) {
-        console.log(" ", key, value);
-      }
 
       const res = await fetch(`${STRAPI_URL}/api/clubs`, {
         method: "POST",
         body: dataToSend,
       });
 
-      console.log("📨 Respuesta HTTP:", res.status, res.statusText);
-
       if (res.ok) {
-        const respuesta = await res.json();
-        console.log("✅ Club creado:", respuesta);
         alert("🎉 Club creado con éxito");
       } else {
         const error = await res.json();
-        console.error("❌ Error creando club:", error);
         alert("❌ Error: " + JSON.stringify(error));
       }
     } catch (err) {
-      console.error("🌐 Error de red:", err);
       alert("❌ Error de red: " + err.message);
     } finally {
       setLoading(false);
-      console.log("🏁 handleSubmit terminado");
-    }
-  };
-
-  const handleStepContent = (step) => {
-    switch (step) {
-      case 0:
-        return <Instrucciones tipo={tipo} />;
-      case 1:
-        return <DatosGenerales form={form} setForm={setForm} tipo={tipo}/>;
-      case 2:
-        return <Direccion form={form} setForm={setForm} />;
-      case 3:
-        return <Archivos form={form} setForm={setForm} />;
-      case 4:
-        return <Contacto form={form} setForm={setForm} />;
-      case 5:
-        return <Confirmacion form={form} />;
-      default:
-        return <Typography>Formulario no encontrado.</Typography>;
     }
   };
 
@@ -148,18 +138,12 @@ export default function StepperForm({
         activeStep={activeStep}
         alternativeLabel
         sx={{
-          "& .MuiStepIcon-root": {
-            color: "lightgreen", // color default pasos no activos
-          },
-          "& .MuiStepIcon-root.Mui-active": {
-            color: "green", // color paso activo
-          },
-          "& .MuiStepIcon-root.Mui-completed": {
-            color: "green", // color pasos completados
-          },
+          "& .MuiStepIcon-root": { color: "lightgreen" },
+          "& .MuiStepIcon-root.Mui-active": { color: "green" },
+          "& .MuiStepIcon-root.Mui-completed": { color: "green" },
           "& .MuiStepLabel-label.Mui-active": {
             fontWeight: "bold",
-            color: "green", // texto activo
+            color: "green",
           },
         }}
       >
@@ -170,10 +154,18 @@ export default function StepperForm({
         ))}
       </Stepper>
 
-      <Box sx={{ my: 4 }}>{handleStepContent(activeStep)}</Box>
+      <Box sx={{ my: 4 }}>
+        {steps[activeStep]?.component || (
+          <Typography>Formulario no encontrado.</Typography>
+        )}
+      </Box>
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Button disabled={activeStep === 0 || loading} onClick={handleBack} color="success">
+        <Button
+          disabled={activeStep === 0 || loading}
+          onClick={handleBack}
+          color="success"
+        >
           Atrás
         </Button>
 
