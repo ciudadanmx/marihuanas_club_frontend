@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  FormHelperText,
 } from "@mui/material";
 
 const TIPOS = ["cultivo", "consumo", "tienda", "cursos", "comida", "eventos"];
@@ -67,7 +68,6 @@ export default function DatosGenerales({ form, setForm, tipo }) {
       return;
     }
     
-
     if (t === "cultivo") {
       
       if (tipoValue.tipo === "cultivo") {
@@ -121,20 +121,20 @@ export default function DatosGenerales({ form, setForm, tipo }) {
       {/* ==================== CAMPOS AGREGADOS ==================== */}
 
       <TextField
-  fullWidth
-  margin="normal"
-  label="Nombre del club"
-  name="nombre_club"
-  value={form.nombre_club || ""}
-  onChange={handleChange}
-  onFocus={() => setFocusedField("nombre_club")}
-  onBlur={() => setFocusedField(null)}
-  helperText={
-    focusedField === "nombre_club"
-      ? "Este es el nombre público con el que se mostrará tu club."
-      : " "
-  }
-/>
+        fullWidth
+        margin="normal"
+        label="Nombre del club"
+        name="nombre_club"
+        value={form.nombre_club || ""}
+        onChange={handleChange}
+        onFocus={() => setFocusedField("nombre_club")}
+        onBlur={() => setFocusedField(null)}
+        helperText={
+          focusedField === "nombre_club"
+            ? "👉 Éste es el nombre público con el que se mostrará tu club."
+            : " "
+        }
+      />
 
       <Typography variant="subtitle1" sx={{ mt: 3 }}>
         Nombre completo del titular
@@ -146,8 +146,15 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             fullWidth
             label="Nombre(s)"
             name="nombre"
+            onFocus={() => setFocusedField("nombre")}
+            onBlur={() => setFocusedField(null)}
             value={form.nombre || ""}
             onChange={handleChange}
+            helperText={
+              focusedField === "nombre"
+                ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
+                : " "
+            }
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -157,6 +164,13 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             name="apellido_paterno"
             value={form.apellido_paterno || ""}
             onChange={handleChange}
+            onFocus={() => setFocusedField("apellido_paterno")}
+            onBlur={() => setFocusedField(null)}
+            helperText={
+              focusedField === "apellido_paterno"
+                ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
+                : " "
+            }
           />
         </Grid>
         <Grid item xs={12} md={4}>
@@ -166,6 +180,13 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             name="apellido_materno"
             value={form.apellido_materno || ""}
             onChange={handleChange}
+            onFocus={() => setFocusedField("apellido_materno")}
+            onBlur={() => setFocusedField(null)}
+            helperText={
+              focusedField === "apellido_materno"
+                ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
+                : " "
+            }
           />
         </Grid>
       </Grid>
@@ -179,10 +200,17 @@ export default function DatosGenerales({ form, setForm, tipo }) {
         minRows={3}
         value={form.descripcion || ""}
         onChange={handleChange}
+        onFocus={() => setFocusedField("descripcion")}
+        onBlur={() => setFocusedField(null)}
+        helperText={
+          focusedField === "descripcion"
+            ? "👉 Ingresa una descripción pública para tu Club."
+            : " "
+        }
       />
 
-      <FormControl color="succes" component="fieldset">
-        <FormLabel color="succes">Tipo de club</FormLabel>
+      <FormControl color="succes" component="fieldset" >
+        <FormLabel color="succes" >Tipo de club</FormLabel>
         <FormGroup row color="succes">
           {TIPOS.map((t) => {
             const checked = form.tipo_club?.includes(t);
@@ -210,6 +238,9 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             );
           })}
         </FormGroup>
+        <FormHelperText>
+        👉 Puedes seleccionar más de un tipo de club
+      </FormHelperText>
       </FormControl>
 
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
@@ -217,11 +248,11 @@ export default function DatosGenerales({ form, setForm, tipo }) {
         <DialogContent>
           <Typography>
             Para clubs de cultivo es necesario un pago de{" "}
-            <strong>$10,000 MXN</strong>.
+            <strong>$10,000 MXN que incluye un kit de cultivo con 3 armarios y otros accesorios de jardinero.</strong>.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button variant="contained" onClick={aceptarPago}>
+          <Button color="success" variant="contained" onClick={aceptarPago}>
             Aceptar
           </Button>
           <Button onClick={() => setOpenModal(false)}>Cerrar</Button>

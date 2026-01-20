@@ -17,6 +17,34 @@ import { useSnackbar } from "notistack";
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
+const TEXTO_REGEX = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/;
+
+const validarCampo = ({
+  valor,
+  min,
+  emptyMsg,
+  minMsg,
+  regexMsg,
+  enqueueSnackbar,
+}) => {
+  if (!valor) {
+    enqueueSnackbar(emptyMsg, { variant: "warning" });
+    return false;
+  }
+
+  if (min && valor.length < min) {
+    enqueueSnackbar(minMsg, { variant: "warning" });
+    return false;
+  }
+
+  if (!TEXTO_REGEX.test(valor)) {
+    enqueueSnackbar(regexMsg, { variant: "error" });
+    return false;
+  }
+
+  return true;
+};
+
 export default function StepperForm({
   tipo,
   form,
@@ -64,48 +92,78 @@ export default function StepperForm({
         component: <Confirmacion form={form} />,
       }
     );
-
     return baseSteps;
   }, [tipo, form, setForm]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-const handleNext = () => {
-  // 🔒 Validación SOLO en el step "Datos Generales"
-  const stepLabel = steps[activeStep]?.label;
+  const handleNext = () => {
+    // 🔒 Validación SOLO en el step "Datos Generales"
+    const stepLabel = steps[activeStep]?.label;
 
-  if (stepLabel === "Datos Generales") {
-    const nombre = form.nombre_club?.trim();
+    if (stepLabel === "Datos Generales") {
+      const data = {
+        nombre_club: form.nombre_club?.trim(),
+        nombre: form.nombre?.trim(),
+        apellido_paterno: form.apellido_paterno?.trim(),
+        apellido_materno: form.apellido_materno?.trim(),
+        descripcion: form.descripcion?.trim(),
+      };
 
-    if (!nombre) {
-      enqueueSnackbar(
-        "😶‍🌫️ No puedes avanzar sin nombre de club",
-        { variant: "warning" }
-      );
-      return;
+      if (
+        !validarCampo({
+          valor: data.nombre_club,
+          min: 5,
+          emptyMsg:
+            "👽 Saca para Andar Iwal !!… Tu Club necesita un nombre, si no no existe",
+          minMsg:
+            "👻 Quítate la máscara Anonymous… tu club necesita un nombre de al menos 5 caracteres",
+          regexMsg:
+            "🌀 Nombre cósmico detectado… pero relax: solo letras, espacios y números terrenales",
+          enqueueSnackbar,
+        }) ||
+        !validarCampo({
+          valor: data.nombre,
+          min: 3,
+          emptyMsg:
+            "👀 Quítate la máscara Anonymous, introduce tu nombre completo",
+          minMsg:
+            "🌀 Nombre cósmico detectado… tu nombre debe de tener al menos 3 letras",
+          regexMsg:
+            "🌀 Nombre cósmico detectado… pero relax: solo letras, espacios y números terrenales",
+          enqueueSnackbar,
+        }) ||
+        !validarCampo({
+          valor: data.apellido_paterno,
+          min: 3,
+          emptyMsg:
+            "👀 Quítate la máscara Anonymous, introduce tu nombre completo con ambos apellidos",
+          minMsg:
+            "🌀 Nombre cósmico detectado… tu apellido debe de tener al menos 3 letras",
+          regexMsg:
+            "🌀 Apellido cósmico detectado… pero relax: solo letras, espacios y números terrenales",
+          enqueueSnackbar,
+        }) ||
+        !validarCampo({
+          valor: data.apellido_materno,
+          min: 3,
+          emptyMsg:
+            "👀 Quítate la máscara Anonymous, introduce tu nombre completo con ambos apellidos",
+          minMsg:
+            "🌀 Nombre cósmico detectado… tu apellido debe de tener al menos 3 letras",
+          regexMsg:
+            "🌀 Apellido cósmico detectado… pero relax: solo letras, espacios y números terrenales",
+          enqueueSnackbar,
+        })
+      ) {
+        return;
+      }
     }
 
-    if (nombre.length < 5) {
-      enqueueSnackbar(
-        "🚨 El nombre del club debe tener al menos 5 caracteres",
-        { variant: "warning" }
-      );
-      return;
-    }
-
-    if (!/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
-      enqueueSnackbar(
-        "🌀 El nombre solo puede contener letras, números y espacios",
-        { variant: "error" }
-      );
-      return;
-    }
-  }
-
-  // ✅ todo bien → avanzamos
-  setActiveStep((prev) => prev + 1);
-};
+    // ✅ todo bien → avanzamos
+    setActiveStep((prev) => prev + 1);
+  };
 
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);
