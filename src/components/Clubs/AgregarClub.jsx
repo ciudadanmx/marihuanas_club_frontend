@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth0 } from '@auth0/auth0-react';
 import StepperForm from "./StepperForm";
 
-export default function AgregarClub() {
+export default function AgregarClub(tipo) {
   const { user, isAuthenticated, loginWithRedirect } = useAuth0();
   const [userId, setUserId] = useState(null);
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL ;
@@ -52,6 +52,7 @@ export default function AgregarClub() {
 
   return (
     <StepperForm
+      tipo={tipo}
       form={form}
       setForm={setForm}
       user={user}

@@ -26,6 +26,7 @@ import Anuncios from '../Pages/Anuncios/Anuncios.jsx';
 import Club from '../Pages/Clubs/Club.jsx';
 import QrScanner from '../components/Clubs/QrScanner.jsx';
 import ComunidadPage from '../Pages/ComunidadPage';
+import NumeroPlantas from '../components/Membresias/NumeroPlantas.jsx';
 //Stripe y Ubicación
 import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
 import MiUbicacion from '../components/MiUbicacion';
@@ -178,7 +179,8 @@ const Rutas = () => (
     <Route path="/clubs/miclub/*" element={<MiClub />} />
     <Route path="/clubs/:nombre_club" element={<Club />} />
     <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
-    <Route path="/clubs/agregar-club" element={<AgregarClubWrapper />} />
+    <Route path="/clubs/agregar-club" element={<AgregarClubWrapper tipo='consumo' />} />
+    <Route path="/clubs/agregar-club/cultivo" element={<AgregarClubWrapper tipo='cultivo' />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
     <Route path="/clubs/qrscanner" element={<QrScanner />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
@@ -188,6 +190,8 @@ const Rutas = () => (
     <Route path="/cursos/*" element={<CursosPage />} />
     <Route path="/curso/:slug/*" element={<Curso />} />
     <Route path="/membresias" element={<Membresias />} />
+    <Route path="/membresias/cultivo/order" element={<NumeroPlantas />} />
+    <Route path="/membresias/jardinero/order" element={<RequisitosJardinero />} />
     <Route path="/membresias/pagar/*" element={<ProbarMembresia />} />
     <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />

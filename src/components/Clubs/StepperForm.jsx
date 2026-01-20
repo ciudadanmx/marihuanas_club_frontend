@@ -7,6 +7,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
+import Instrucciones from "./steps/Instrucciones.jsx";
 import DatosGenerales from "./steps/DatosGenerales";
 import Direccion from "./steps/Direccion";
 import Confirmacion from "./steps/Confirmacion";
@@ -16,6 +17,7 @@ import Contacto from "./steps/Contacto.jsx";
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
 export default function StepperForm({
+  tipo,
   form,
   setForm,
   user,
@@ -24,7 +26,8 @@ export default function StepperForm({
   loginWithRedirect,
 }) {
   const steps = [
-    { label: "Datos Generales", component: <DatosGenerales form={form} setForm={setForm} /> },
+    { label: "Instrucciones", component: <Instrucciones tipo={tipo}/> },
+    { label: "Datos Generales", component: <DatosGenerales form={form} setForm={setForm} tipo={tipo} /> },
     { label: "Dirección", component: <Direccion form={form} setForm={setForm} /> },
     { label: "Archivos", component: <Archivos form={form} setForm={setForm} /> },
     { label: "Horarios y Contacto", component: <Contacto form={form} setForm={setForm} /> },
@@ -121,14 +124,16 @@ export default function StepperForm({
   const handleStepContent = (step) => {
     switch (step) {
       case 0:
-        return <DatosGenerales form={form} setForm={setForm} />;
+        return <Instrucciones tipo={tipo} />;
       case 1:
-        return <Direccion form={form} setForm={setForm} />;
+        return <DatosGenerales form={form} setForm={setForm} tipo={tipo}/>;
       case 2:
-        return <Archivos form={form} setForm={setForm} />;
+        return <Direccion form={form} setForm={setForm} />;
       case 3:
-        return <Contacto form={form} setForm={setForm} />;
+        return <Archivos form={form} setForm={setForm} />;
       case 4:
+        return <Contacto form={form} setForm={setForm} />;
+      case 5:
         return <Confirmacion form={form} />;
       default:
         return <Typography>Formulario no encontrado.</Typography>;
@@ -140,39 +145,40 @@ export default function StepperForm({
   return (
     <Box sx={{ width: "100%", maxWidth: 800, mx: "auto" }}>
       <Stepper
-  activeStep={activeStep}
-  alternativeLabel
-  sx={{
-    "& .MuiStepIcon-root": {
-      color: "lightgreen", // color default pasos no activos
-    },
-    "& .MuiStepIcon-root.Mui-active": {
-      color: "green", // color paso activo
-    },
-    "& .MuiStepIcon-root.Mui-completed": {
-      color: "green", // color pasos completados
-    },
-    "& .MuiStepLabel-label.Mui-active": {
-      fontWeight: "bold",
-      color: "green", // texto activo
-    },
-  }}
->
-  {steps.map((step, i) => (
-    <Step key={i}>
-      <StepLabel>{step.label}</StepLabel>
-    </Step>
-  ))}
-</Stepper>
+        activeStep={activeStep}
+        alternativeLabel
+        sx={{
+          "& .MuiStepIcon-root": {
+            color: "lightgreen", // color default pasos no activos
+          },
+          "& .MuiStepIcon-root.Mui-active": {
+            color: "green", // color paso activo
+          },
+          "& .MuiStepIcon-root.Mui-completed": {
+            color: "green", // color pasos completados
+          },
+          "& .MuiStepLabel-label.Mui-active": {
+            fontWeight: "bold",
+            color: "green", // texto activo
+          },
+        }}
+      >
+        {steps.map((step, i) => (
+          <Step key={i}>
+            <StepLabel>{step.label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
       <Box sx={{ my: 4 }}>{handleStepContent(activeStep)}</Box>
 
       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Button disabled={activeStep === 0 || loading} onClick={handleBack}>
+        <Button disabled={activeStep === 0 || loading} onClick={handleBack} color="success">
           Atrás
         </Button>
 
         <Button
+          color="success"
           variant="contained"
           onClick={isLastStep ? handleSubmit : handleNext}
           disabled={loading}

@@ -22,16 +22,31 @@ const Membresias = () => {
 
   const navigate = useNavigate();
 
-  // Handler para navegar a /membresias/:order (fallback a id)
-  const handleMembresiaClick = (plan) => (e) => {
-    e.preventDefault();
-    const order = (plan && (plan.order !== undefined && plan.order !== null))
-      ? plan.order
-      : (plan && (plan.id !== undefined && plan.id !== null) ? plan.id : 'unknown');
+// Handler para navegar a membresías según order
+const handleMembresiaClick = (plan) => (e) => {
+  e.preventDefault();
 
-    console.log('[Membresias] Navegando a:', `/membresias/${order}`, 'plan:', plan);
-    navigate(`/membresias/pagar/order/${order}`);
-  };
+  const order = (plan && plan.order !== undefined && plan.order !== null)
+    ? plan.order
+    : (plan && plan.id !== undefined && plan.id !== null
+        ? plan.id
+        : 'unknown'
+      );
+
+  let path;
+
+  if (order === 1 || order === '1') {
+    path = '/membresias/cultivo/order';
+  } else if (order === 2 || order === '2') {
+    path = '/membresias/jardinero/order';
+  } else {
+    // fallback original
+    path = `/membresias/pagar/order/${order}`;
+  }
+
+  console.log('[Membresias] Navegando a:', path, 'plan:', plan);
+  navigate(path);
+};
 
   useEffect(() => {
     let mounted = true;

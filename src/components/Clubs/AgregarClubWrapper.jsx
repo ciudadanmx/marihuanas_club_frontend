@@ -5,7 +5,7 @@ import AgregarClub from "./AgregarClub";
 
 const libraries = ["places"];
 
-export default function AgregarClubWrapper() {
+export default function AgregarClubWrapper(tipo) {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
     libraries,
@@ -14,5 +14,5 @@ export default function AgregarClubWrapper() {
   if (loadError) return <div>Error cargando el mapa</div>;
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
-  return <AgregarClub />;
+  return <AgregarClub tipo={tipo} />;
 }

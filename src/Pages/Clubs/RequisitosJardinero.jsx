@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -42,7 +43,9 @@ const GradientBox = ({ children, sx }) => (
   </Box>
 );
 
-export default function RequisitosJardinero({ onCompletarDocs, onContinuarPago }) {
+export default function RequisitosJardinero() {
+  const navigate = useNavigate();
+
   const downloadChecklist = () => {
     const text = `CHECKLIST REQUISITOS JARDINERO\n\n1. Ver el video informativo (obligatorio).\n2. Pagar Kit de Jardinero.\n3. Subir Constancia de Situaci\u00f3n Fiscal (SAT).\n4. Subir INE anverso y reverso.\n5. Subir Carta de No Pertenencia (formato en panel).\n6. Registrar cuenta OpenPay para cobros.\n7. Fotos y videos del espacio de cultivo (mín. 9 m2 por 7 miembros).\n8. Completar datos: domicilio, CURP, RFC y tel.\n\nRecuerda: mientras tu club siga afiliado y cumpla las normas, la membres\u00eda no tiene costo adicional.`;
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -80,7 +83,7 @@ export default function RequisitosJardinero({ onCompletarDocs, onContinuarPago }
                 <Button
                   variant="contained"
                   startIcon={<UploadFileIcon />}
-                  onClick={() => onCompletarDocs && onCompletarDocs()}
+                  onClick={() => navigate("/clubs/agregar-club/cultivo")}
                   sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: '#fff', textTransform: 'none' }}
                 >
                   Completar documentos
@@ -170,7 +173,7 @@ export default function RequisitosJardinero({ onCompletarDocs, onContinuarPago }
                   <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
                     <Button
                       variant="contained"
-                      onClick={() => onCompletarDocs && onCompletarDocs()}
+                      onClick={() => navigate("/clubs/agregar-club/cultivo")}
                       sx={{ textTransform: 'none', bgcolor: '#fff', color: '#1b3b20', fontWeight: 700 }}
                     >
                       Completar documentos
@@ -178,7 +181,7 @@ export default function RequisitosJardinero({ onCompletarDocs, onContinuarPago }
 
                     <Button
                       variant="outlined"
-                      onClick={() => onContinuarPago && onContinuarPago()}
+                      onClick={() => navigate("/membresias/pagar/order/2")}
                       sx={{ textTransform: 'none', borderColor: 'rgba(255,255,255,0.16)', color: '#fff' }}
                     >
                       Continuar pago
