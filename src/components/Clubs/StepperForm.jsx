@@ -81,7 +81,7 @@ export default function StepperForm({
       },
       {
         label: "Archivos",
-        component: <Archivos form={form} setForm={setForm} />,
+        component: <Archivos form={form} setForm={setForm} tipo={tipo} />,
       },
       {
         label: "Horarios y Contacto",
