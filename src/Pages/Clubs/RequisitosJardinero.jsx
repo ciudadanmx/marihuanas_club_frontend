@@ -5,7 +5,6 @@ import {
   Box,
   Typography,
   Button,
-  Paper,
   Grid,
   Divider,
   List,
@@ -16,16 +15,16 @@ import {
   Tooltip,
 } from "@mui/material";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HistoryEduIcon from '@mui/icons-material/HistoryEdu';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import InfoIcon from '@mui/icons-material/Info';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
 
 // importar video (asegúrate que el archivo existe en la ruta indicada)
 import requisitosVideo from "../../assets/requisitosjardinero.mp4";
+
+import { useRoles } from '../../Contexts/RolesContext';
 
 const GradientBox = ({ children, sx }) => (
   <Box
@@ -46,8 +45,12 @@ const GradientBox = ({ children, sx }) => (
 export default function RequisitosJardinero() {
   const navigate = useNavigate();
 
+  // ✅ USO CORRECTO DEL CONTEXT
+  const { verificado } = useRoles();
+  const verificated = typeof verificado === 'function' ? verificado() : Boolean(verificado);
+
   const downloadChecklist = () => {
-    const text = `CHECKLIST REQUISITOS JARDINERO\n\n1. Ver el video informativo (obligatorio).\n2. Pagar Kit de Jardinero.\n3. Subir Constancia de Situaci\u00f3n Fiscal (SAT).\n4. Subir INE anverso y reverso.\n5. Subir Carta de No Pertenencia (formato en panel).\n6. Registrar cuenta OpenPay para cobros.\n7. Fotos y videos del espacio de cultivo (mín. 9 m2 por 7 miembros).\n8. Completar datos: domicilio, CURP, RFC y tel.\n\nRecuerda: mientras tu club siga afiliado y cumpla las normas, la membres\u00eda no tiene costo adicional.`;
+    const text = `CHECKLIST REQUISITOS JARDINERO\n\n1. Ver el video informativo (obligatorio).\n2. Pagar Kit de Jardinero.\n3. Subir Constancia de Situación Fiscal (SAT).\n4. Subir INE anverso y reverso.\n5. Subir Carta de No Pertenencia (formato en panel).\n6. Registrar cuenta OpenPay para cobros.\n7. Fotos y videos del espacio de cultivo (mín. 9 m2 por 7 miembros).\n8. Completar datos: domicilio, CURP, RFC y tel.\n\nRecuerda: mientras tu club siga afiliado y cumpla las normas, la membresía no tiene costo adicional.`;
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -60,7 +63,14 @@ export default function RequisitosJardinero() {
   };
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        pt: 3,
+        mt: 0,
+      }}
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -113,7 +123,7 @@ export default function RequisitosJardinero() {
 
                   <Typography sx={{ mt: 1, mb: 1.5, opacity: 0.95 }}>
                     Antes de finalizar, <strong>es obligatorio ver el video</strong> (arriba). Allí explicamos con claridad tus responsabilidades,
-                    beneficios y el proceso completo de activación del Club. Después del pago tendrás que subir documentos y validar tu espacio.
+                    beneficios y el proceso completo de activación del Club. Antes del pago y durante el proceso tendrás que subir documentos y validar tu espacio.
                   </Typography>
 
                   <Divider sx={{ my: 1, borderColor: 'rgba(255,255,255,0.12)' }} />
@@ -168,6 +178,13 @@ export default function RequisitosJardinero() {
                     <Typography sx={{ fontSize: 13, opacity: 0.95 }}>
                       <strong>Requisitos de evidencia:</strong> fotos detalladas del espacio, videos cortos mostrando ventilación, mediciones, iluminación y tablero eléctrico.
                     </Typography>
+                    
+                    <Divider sx={{ my: 1 }} />
+
+                    <Typography sx={{ fontSize: 13, opacity: 0.95 }}>
+                      <strong>Requisitos de documentación / trámites:</strong> 
+                      Para poder iniciar el trámite es nececario que inicies tu trámite en COFEPRIS e ingreses tu número de folio.
+                    </Typography>
                   </Box>
 
                   <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
@@ -182,7 +199,8 @@ export default function RequisitosJardinero() {
                     <Button
                       variant="outlined"
                       onClick={() => navigate("/membresias/pago/plan/3")}
-                      sx={{ textTransform: 'none', borderColor: 'rgba(255,255,255,0.16)', color: '#fff' }}
+                      disabled={verificated !== true}
+                      sx={{ color: '#fff', borderColor: 'rgba(255,255,255,0.16)' }}
                     >
                       Continuar pago
                     </Button>

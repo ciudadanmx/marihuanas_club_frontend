@@ -228,27 +228,27 @@ const handleMembresiaClick = (plan) => (e) => {
                         />
                       )}
                       <Box>
-  <Typography variant="h5" gutterBottom className="membresia-nombre">
-    {plan.nombre || "(sin nombre)"}
-  </Typography>
-  {!plan.subtypes && (
-    <Typography variant="h4" className="membresia-precio">
-      {plan.precio
-        ? (
-          <>
-            $
-            {new Intl.NumberFormat("es-MX", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(plan.precio)}{" "}
-            <span style={{ fontSize: "0.6em", verticalAlign: "super" }}>MXN</span>
-          </>
-        )
-        : "(sin precio)"
-      }
-    </Typography>
-  )}
-</Box>
+                        <Typography variant="h5" gutterBottom className="membresia-nombre">
+                          {plan.nombre || "(sin nombre)"}
+                        </Typography>
+                        {!plan.subtypes && (
+                          <Typography variant="h4" className="membresia-precio">
+                            {plan.precio
+                              ? (
+                                <>
+                                  $
+                                  {new Intl.NumberFormat("es-MX", {
+                                    minimumFractionDigits: 0,
+                                    maximumFractionDigits: 0,
+                                  }).format(plan.precio)}{" "}
+                                  <span style={{ fontSize: "0.6em", verticalAlign: "super" }}>MXN</span>
+                                </>
+                              )
+                              : "(sin precio)"
+                            }
+                          </Typography>
+                        )}
+                      </Box>
 
                     </Box>
 

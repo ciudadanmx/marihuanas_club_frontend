@@ -230,6 +230,17 @@ const haveClub = () => {
   return res;
 };
 
+const verificado = () => {
+  if (!isAuthenticated || !userData) {
+    console.log('🏟️ verificado: esperando datos de usuario...');
+    return false;
+  }
+
+  const res = userData.verificado === true;
+  console.log('🏟️ verificado:', res, 'valor:', userData.verificado);
+  return res;
+};
+
   const setEditor = enabled => updateExtraRole('editor', enabled);
   const setAdmin = enabled => updateExtraRole('admin', enabled);
   const setRoot = enabled => updateExtraRole('root', enabled);
@@ -267,7 +278,8 @@ const haveClub = () => {
         isActivaMembresia,
         setEditor,
         setAdmin,
-        setRoot
+        setRoot,
+        verificado
       }}>
       {children}
     </RolesContext.Provider>
