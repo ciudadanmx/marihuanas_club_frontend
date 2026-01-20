@@ -228,26 +228,49 @@ const handleMembresiaClick = (plan) => (e) => {
                         />
                       )}
                       <Box>
-                        <Typography variant="h5" gutterBottom className="membresia-nombre">
-                          {plan.nombre || "(sin nombre)"}
-                        </Typography>
-                        {!plan.subtypes && (
-                          <Typography variant="h4" className="membresia-precio">
-                            {plan.precio || "(sin precio)"}
-                          </Typography>
-                        )}
-                      </Box>
+  <Typography variant="h5" gutterBottom className="membresia-nombre">
+    {plan.nombre || "(sin nombre)"}
+  </Typography>
+  {!plan.subtypes && (
+    <Typography variant="h4" className="membresia-precio">
+      {plan.precio
+        ? (
+          <>
+            $
+            {new Intl.NumberFormat("es-MX", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(plan.precio)}{" "}
+            <span style={{ fontSize: "0.6em", verticalAlign: "super" }}>MXN</span>
+          </>
+        )
+        : "(sin precio)"
+      }
+    </Typography>
+  )}
+</Box>
+
                     </Box>
 
-                    {Array.isArray(plan.subtypes_data) && plan.subtypes_data.length > 0 && (
-                      <Typography variant="h4" className="membresia-precio">
-                        {plan.subtypes_data.map((subtype, index) => (
-                          <span key={index} style={{ display: "block" }}>
-                            <font color="purple">{subtype.ambiente} – {subtype.numplantas} plantas</font> ${subtype.precio} /mensual
-                          </span>
-                        ))}
-                      </Typography>
-                    )}
+                  {Array.isArray(plan.subtypes_data) && plan.subtypes_data.length > 0 && (
+                    <Typography variant="h4" className="membresia-precio">
+                      {plan.subtypes_data.map((subtype, index) => (
+                        <span key={index} style={{ display: "block" }}>
+                          <font color="purple">
+                            {subtype.ambiente} – {subtype.numplantas} plantas
+                          </font>{" "}
+                          $
+                          {new Intl.NumberFormat("es-MX", {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 0,
+                          }).format(subtype.precio)}{" "}
+                          <span style={{ fontSize: "0.6em", verticalAlign: "super" }}>MXN</span>{" "}
+                          /mensual
+                        </span>
+                      ))}
+                    </Typography>
+                  )}
+
 
                     <ul className="membresia-beneficios" style={{ textAlign: 'left', margin: '12px 0' }}>
                       {plan.beneficios?.length > 0 ? (
