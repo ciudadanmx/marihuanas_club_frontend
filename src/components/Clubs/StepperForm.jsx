@@ -13,6 +13,7 @@ import Direccion from "./steps/Direccion";
 import Confirmacion from "./steps/Confirmacion";
 import Archivos from "./steps/Archivos";
 import Contacto from "./steps/Contacto.jsx";
+import { useSnackbar } from "notistack";
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
@@ -25,6 +26,8 @@ export default function StepperForm({
   userId,
   loginWithRedirect,
 }) {
+
+  const { enqueueSnackbar } = useSnackbar();
 
   // 🔹 STEPS DINÁMICOS SEGÚN TIPO
   const steps = useMemo(() => {
@@ -68,9 +71,41 @@ export default function StepperForm({
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const handleNext = () => {
-    setActiveStep((prev) => prev + 1);
-  };
+const handleNext = () => {
+  // 🔒 Validación SOLO en el step "Datos Generales"
+  const stepLabel = steps[activeStep]?.label;
+
+  if (stepLabel === "Datos Generales") {
+    const nombre = form.nombre_club?.trim();
+
+    if (!nombre) {
+      enqueueSnackbar(
+        "😶‍🌫️ No puedes avanzar sin nombre de club",
+        { variant: "warning" }
+      );
+      return;
+    }
+
+    if (nombre.length < 5) {
+      enqueueSnackbar(
+        "🚨 El nombre del club debe tener al menos 5 caracteres",
+        { variant: "warning" }
+      );
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/.test(nombre)) {
+      enqueueSnackbar(
+        "🌀 El nombre solo puede contener letras, números y espacios",
+        { variant: "error" }
+      );
+      return;
+    }
+  }
+
+  // ✅ todo bien → avanzamos
+  setActiveStep((prev) => prev + 1);
+};
 
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);

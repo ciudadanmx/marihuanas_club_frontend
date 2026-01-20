@@ -121,20 +121,20 @@ export default function DatosGenerales({ form, setForm, tipo }) {
       {/* ==================== CAMPOS AGREGADOS ==================== */}
 
       <TextField
-        fullWidth
-        margin="normal"
-        label="Nombre del club"
-        name="nombre_club"
-        value={form.nombre_club || ""}
-        onChange={handleChange}
-        onFocus={() => setFocusedField("nombre_club")}
-        onBlur={() => setFocusedField(null)}
-        helperText={
-          focusedField === "nombre_club"
-            ? "Este es el nombre público con el que se mostrará tu club."
-            : " "
-        }
-      />
+  fullWidth
+  margin="normal"
+  label="Nombre del club"
+  name="nombre_club"
+  value={form.nombre_club || ""}
+  onChange={handleChange}
+  onFocus={() => setFocusedField("nombre_club")}
+  onBlur={() => setFocusedField(null)}
+  helperText={
+    focusedField === "nombre_club"
+      ? "Este es el nombre público con el que se mostrará tu club."
+      : " "
+  }
+/>
 
       <Typography variant="subtitle1" sx={{ mt: 3 }}>
         Nombre completo del titular
