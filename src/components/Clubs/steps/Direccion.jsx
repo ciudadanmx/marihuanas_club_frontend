@@ -67,6 +67,7 @@ export default function Direccion({ form, setForm }) {
       </Typography>
 
       <TextField
+        name="direccion"
         label="Dirección"
         value={value}
         onChange={(e) => setValue(e.target.value)}

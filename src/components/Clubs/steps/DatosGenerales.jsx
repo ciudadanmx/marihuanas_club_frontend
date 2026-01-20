@@ -118,8 +118,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
       <Typography variant="h6">Datos generales del club</Typography>
       <Divider sx={{ mb: 3 }} />
 
-      {/* ==================== CAMPOS AGREGADOS ==================== */}
-
+      {/* ==================== CAMPOS NOMBRES Y DESCRIPCIÓN ==================== */}
       <TextField
         fullWidth
         margin="normal"
@@ -247,7 +246,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
         <DialogTitle>Club de cultivo</DialogTitle>
         <DialogContent>
           <Typography>
-            Para clubs de cultivo es necesario un pago de{" "}
+            Para clubs de cultivo es necesario cubrir un pago de{" "}
             <strong>$10,000 MXN que incluye un kit de cultivo con 3 armarios y otros accesorios de jardinero.</strong>.
           </Typography>
         </DialogContent>
@@ -255,7 +254,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
           <Button color="success" variant="contained" onClick={aceptarPago}>
             Aceptar
           </Button>
-          <Button onClick={() => setOpenModal(false)}>Cerrar</Button>
+          <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -161,6 +161,16 @@ export default function StepperForm({
       }
     }
 
+    if (stepLabel === "Dirección") {
+      if (!form.direccion || !form.lat || !form.lng) {
+        enqueueSnackbar(
+          "📍 Ey… selecciona una dirección válida del mapa... en esta dimensión",
+          { variant: "warning" }
+        );
+        return;
+      }
+    }
+
     // ✅ todo bien → avanzamos
     setActiveStep((prev) => prev + 1);
   };
