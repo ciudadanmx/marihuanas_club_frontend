@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import Ingresa from '../Usuarios/Ingresa';
 
 import {
   Box,
@@ -361,20 +362,6 @@ export default function MembershipCheckout({
     //setIsMenuOpen(false);
   };
 
-  // ---------- UI (igual que antes) ----------
-  const LoginPrompt = () => (
-    
-    <Card sx={{ maxWidth: 760, mx: "auto", mt: 4 }}>
-      <CardContent sx={{ textAlign: "center" }}>
-        <Typography variant="h6">Inicia sesión para continuar</Typography>
-        <Typography sx={{ color: "text.secondary", mb: 2 }}>
-          Debes iniciar sesión o registrarte para comprar una membresía.
-        </Typography>
-        <Button variant="contained" onClick={() => handleLogin()}>Ir a iniciar sesión</Button>
-      </CardContent>
-    </Card>
-  );
-
   const NoPlan = () => (
     <Card sx={{ maxWidth: 760, mx: "auto", mt: 4 }}>
       <CardContent sx={{ textAlign: "center" }}>
@@ -384,7 +371,7 @@ export default function MembershipCheckout({
     </Card>
   );
 
-  if (!isAuthenticated || !user) return <LoginPrompt />;
+  if (!isAuthenticated || !user) return <Ingresa />;
   if (!planidx ) return <NoPlan />;
   //if (isActivaMembresia ) return <NoPlan />;
 

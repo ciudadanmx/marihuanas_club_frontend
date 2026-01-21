@@ -16,6 +16,7 @@ import Contacto from "./steps/Contacto.jsx";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { useRoles } from '../../Contexts/RolesContext'; 
+import Ingresa from "../Usuarios/Ingresa.jsx";
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
@@ -57,7 +58,7 @@ export default function StepperForm({
   loginWithRedirect,
 }) {
 
-  const { isClub } = useRoles();
+  const { isClub, roles } = useRoles();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -251,14 +252,18 @@ export default function StepperForm({
   const isLastStep = activeStep === steps.length - 1;
 
   useEffect(() => {
-    if (isClub) {
+    if (isClub === true) {
       navigate("/clubs/miclub/info", { replace: true });
     }
   }, [isClub, navigate]);
 
-  if (isClub) {
+  if (isClub === true) {
   return <Typography>Redirigiendo a tu club...</Typography>;
 }
+
+  if (2 > 1) {
+    return <Ingresa />
+  }
 
   return (
     <Box sx={{ width: "100%", maxWidth: 800, mx: "auto" }}>
