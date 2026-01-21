@@ -83,14 +83,14 @@ export default function StepperForm({
       {
         label: "Dirección",
         component: <Direccion form={form} setForm={setForm} />,
+      },      
+      {
+        label: "Horarios y Contacto",
+        component: <Contacto form={form} setForm={setForm} />,
       },
       {
         label: "Archivos",
         component: <Archivos form={form} setForm={setForm} tipo={tipo} />,
-      },
-      {
-        label: "Horarios y Contacto",
-        component: <Contacto form={form} setForm={setForm} />,
       },
       {
         label: "Confirmación",
