@@ -132,6 +132,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
         onChange={handleChange}
         onFocus={() => setFocusedField("nombre_club")}
         onBlur={() => setFocusedField(null)}
+        color="success"
         helperText={
           focusedField === "nombre_club"
             ? "👉 Éste es el nombre público con el que se mostrará tu club."
@@ -153,6 +154,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             onBlur={() => setFocusedField(null)}
             value={form.nombre || ""}
             onChange={handleChange}
+            color="success"
             helperText={
               focusedField === "nombre"
                 ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
@@ -169,6 +171,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             onChange={handleChange}
             onFocus={() => setFocusedField("apellido_paterno")}
             onBlur={() => setFocusedField(null)}
+            color="success"
             helperText={
               focusedField === "apellido_paterno"
                 ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
@@ -185,6 +188,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
             onChange={handleChange}
             onFocus={() => setFocusedField("apellido_materno")}
             onBlur={() => setFocusedField(null)}
+            color="success"
             helperText={
               focusedField === "apellido_materno"
                 ? "👉 Ingresa tu nombre completo tal cual como aparece en tu identificación."
@@ -212,6 +216,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
         onChange={handleChange}
         onFocus={() => setFocusedField("descripcion")}
         onBlur={() => setFocusedField(null)}
+        color="success"
         helperText={
           focusedField === "descripcion"
             ? "👉 Ingresa una descripción pública para tu Club."
