@@ -140,6 +140,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
         value={whatsappWithoutPrefix}
         onChange={handleWhatsappChange}
         error={!!whatsappError}
+        color="success"
         helperText={
           whatsappError || "Número en formato mexicano, sólo números, sin +52"
         }
@@ -249,6 +250,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
           value={productoInput}
           onChange={(e) => setProductoInput(e.target.value)}
           fullWidth
+          color="success"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -256,7 +258,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
             }
           }}
         />
-        <Button variant="contained" onClick={addProducto}>
+        <Button variant="contained" onClick={addProducto} color="success">
           Añadir
         </Button>
       </Box>
@@ -281,6 +283,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
           value={servicioInput}
           onChange={(e) => setServicioInput(e.target.value)}
           fullWidth
+          color="success"
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -288,7 +291,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
             }
           }}
         />
-        <Button variant="contained" onClick={addServicio}>
+        <Button variant="contained" onClick={addServicio} color="success">
           Añadir
         </Button>
       </Box>
