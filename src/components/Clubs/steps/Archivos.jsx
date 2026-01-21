@@ -37,7 +37,7 @@ export default function Archivos({ form, setForm, tipo }) {
       </Typography>
         
       <Typography variant="body1" mb={2}>
-        Selecciona la imagen de portada para el perfil público de tu Club. {tipo.tipo.tipo}
+        Selecciona la imagen de portada para el perfil público de tu Club.
       </Typography>
 
       <Button
@@ -109,36 +109,36 @@ export default function Archivos({ form, setForm, tipo }) {
         <Grid container spacing={2} mt={2}>
           {form.fotos_club.map((file, index) => (
             <>
-            <Grid item xs={6} sm={4} md={3} key={index} position="relative">
-              <img
-                src={URL.createObjectURL(file)}
-                alt={`foto-${index}`}
-                style={{
-                  width: "100%",
-                  borderRadius: 8,
-                  objectFit: "cover",
-                  height: "150px",
-                }}
-              />
-              <button
-                onClick={() => removeFotoClub(index)}
-                style={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  background: "rgba(255,255,255,0.8)",
-                  border: "none",
-                  borderRadius: "50%",
-                  padding: 4,
-                  cursor: "pointer",
-                }}
-              >
-                <span className="material-icons-outlined" style={{ color: "#d32f2f" }}>
-                  ❌ Borrar
-                </span>
-              </button>
-            </Grid>
-            <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
+              <Grid item xs={6} sm={4} md={3} key={index} position="relative">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`foto-${index}`}
+                  style={{
+                    width: "100%",
+                    borderRadius: 8,
+                    objectFit: "cover",
+                    height: "150px",
+                  }}
+                />
+                <button
+                  onClick={() => removeFotoClub(index)}
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    background: "rgba(255,255,255,0.8)",
+                    border: "none",
+                    borderRadius: "50%",
+                    padding: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span className="material-icons-outlined" style={{ color: "#d32f2f" }}>
+                    ❌ Borrar
+                  </span>
+                </button>
+              </Grid>
+              <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
             </>
           ))}
         </Grid>
