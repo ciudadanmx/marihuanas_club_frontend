@@ -261,7 +261,7 @@ export default function StepperForm({
   return <Typography>Redirigiendo a tu club...</Typography>;
 }
 
-  if (2 > 1) {
+  if (!user) {
     return <Ingresa />
   }
 
