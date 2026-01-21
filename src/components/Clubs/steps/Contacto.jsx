@@ -241,71 +241,94 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
         label="Requiere reservación"
       />
 
-      <Typography variant="h6" mt={4} mb={2}>
-        🛍️ Productos
-      </Typography>
-      <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
-        <TextField
-          label="Agregar producto"
-          value={productoInput}
-          onChange={(e) => setProductoInput(e.target.value)}
-          fullWidth
-          color="success"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addProducto();
-            }
-          }}
-        />
-        <Button variant="contained" onClick={addProducto} color="success">
-          Añadir
-        </Button>
-      </Box>
-      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-        {form.productos.map((prod, i) => (
-          <Chip
-            key={i}
-            label={prod}
-            onDelete={() => removeProducto(i)}
-            deleteIcon={<Icon fontSize="small" color="error">delete</Icon>}
+      {form.tipo_club?.includes('consumo') && (
+        <>
+        <Typography variant="h6" mt={4} mb={2}>
+          🛍️ Productos
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
+          <TextField
+            label="Agregar producto"
+            value={productoInput}
+            onChange={(e) => setProductoInput(e.target.value)}
+            fullWidth
             color="success"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addProducto();
+              }
+            }}
           />
-        ))}
-      </Box>
+          <Button 
+            variant="contained" 
+            onClick={addProducto} 
+            color="success"
+            sx={{
+              backgroundColor: "#6a1b9a",
+              "&:hover": { backgroundColor: "#4a148c" },
+              color: "#fff",
+            }}
+          >
+            Añadir
+          </Button>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {form.productos.map((prod, i) => (
+            <Chip
+              key={i}
+              label={prod}
+              onDelete={() => removeProducto(i)}
+              deleteIcon={<Icon fontSize="small" color="error">delete</Icon>}
+              color="success"
+            />
+          ))}
+        </Box>
 
-      <Typography variant="h6" mt={4} mb={2}>
-        🛠️ Servicios
-      </Typography>
-      <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
-        <TextField
-          label="Agregar servicio"
-          value={servicioInput}
-          onChange={(e) => setServicioInput(e.target.value)}
-          fullWidth
-          color="success"
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              addServicio();
-            }
-          }}
-        />
-        <Button variant="contained" onClick={addServicio} color="success">
-          Añadir
-        </Button>
-      </Box>
-      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-        {form.servicios.map((serv, i) => (
-          <Chip
-            key={i}
-            label={serv}
-            onDelete={() => removeServicio(i)}
-            deleteIcon={<Icon fontSize="small" color="error">delete</Icon>}
-            color="primary"
+        <Typography variant="h6" mt={4} mb={2}>
+          🛠️ Servicios
+        </Typography>
+        <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
+          <TextField
+            label="Agregar servicio"
+            value={servicioInput}
+            onChange={(e) => setServicioInput(e.target.value)}
+            fullWidth
+            color="success"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addServicio();
+              }
+            }}
           />
-        ))}
-      </Box>
+          <Button 
+            variant="contained" 
+            onClick={addServicio} 
+            color="success"
+            sx={{
+              backgroundColor: "#6a1b9a",
+              "&:hover": { backgroundColor: "#4a148c" },
+              color: "#fff",
+            }}
+          >
+            Añadir
+          </Button>
+        </Box>
+        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {form.servicios.map((serv, i) => (
+            <Chip
+              key={i}
+              label={serv}
+              onDelete={() => removeServicio(i)}
+              deleteIcon={<Icon fontSize="small" color="error">delete</Icon>}
+              color="primary"
+            />
+          ))}
+        </Box>
+        </>
+      )}
+
     </Box>
   );
 }

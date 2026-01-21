@@ -225,6 +225,7 @@ export default function Archivos({ form, setForm, tipo }) {
                   name="opcFolio"
                   checked={consumoOption === "folio"}
                   onChange={() => selectConsumoOption("folio")}
+                  color="success"
                 />
               }
               label="✅ Ya cuento con un folio"
@@ -256,6 +257,7 @@ export default function Archivos({ form, setForm, tipo }) {
                       name="opcGestion"
                       checked={consumoOption === "gestion"}
                       onChange={() => selectConsumoOption("gestion")}
+                      color="success"
                     />
                   }
                   label="📝 Solicitar la gestión de mi trámite"
@@ -301,10 +303,12 @@ export default function Archivos({ form, setForm, tipo }) {
                                 name="usarDireccionExistente"
                                 checked={form.usarDireccionExistente ?? !!form?.direccion}
                                 onChange={handleFormChange}
+                                color="success"
                               />
                             }
                             label={form?.direccion ? "Usar domicilio que ya tenemos" : "No hay domicilio guardado"}
                           />
+                          {(form.direccion && form.usarDireccionExistente) ? `${form.direccion}` : '' }
                         </FormGroup>
 
                         {!(form.usarDireccionExistente ?? !!form?.direccion) && (
@@ -390,6 +394,7 @@ export default function Archivos({ form, setForm, tipo }) {
                                 name="usarWhatsappExistente"
                                 checked={form.usarWhatsappExistente ?? !!form?.whatsapp}
                                 onChange={handleFormChange}
+                                color="success"
                               />
                             }
                             label={form?.whatsapp ? `Usar whatsapp: ${form.whatsapp}` : "No hay whatsapp guardado"}
@@ -417,6 +422,7 @@ export default function Archivos({ form, setForm, tipo }) {
                                 name="usarEmailExistente"
                                 checked={form.usarEmailExistente ?? !!user?.email}
                                 onChange={handleFormChange}
+                                color="success"
                               />
                             }
                             label={user?.email ? `Usar email: ${user.email}` : "No hay email de usuario"}
@@ -449,6 +455,7 @@ export default function Archivos({ form, setForm, tipo }) {
                   name="opcPorMi"
                   checked={consumoOption === "pormi"}
                   onChange={() => selectConsumoOption("pormi")}
+                  color="success"
                 />
               }
               label="🔧 Realizar el trámite por mí mismo con las herramientas del sitio"
@@ -498,6 +505,7 @@ export default function Archivos({ form, setForm, tipo }) {
               control={
                 <Checkbox
                   checked={cultivoFolioPropio}
+                  color="success"
                   onChange={(e) => {
                     setCultivoFolioPropio(e.target.checked);
                     // también lo guardamos en form si quieres centralizar
