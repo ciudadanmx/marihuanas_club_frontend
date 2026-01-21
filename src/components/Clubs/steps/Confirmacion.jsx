@@ -266,6 +266,25 @@ const renderHorarios = (horarios) => {
             </Card>
           </motion.div>
         </Grid>
+        
+        {/* Horarios */}
+        <Grid item xs={12} sm={6}>
+          <motion.div {...motionProps}>
+            <Card sx={cardStyle}>
+              <CardContent>
+                <Box display="flex" alignItems="center" mb={1}>
+                  <HomeIcon color="primary" sx={{ mr: 1 }} />
+                  <Typography variant="subtitle2" color="text.secondary">
+                    Se requiere reservar para asistir
+                  </Typography>
+                </Box>
+                <Typography variant="body1">
+                  {form.reservacion === true ? "SÍ" : "NO"}
+                </Typography>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </Grid>
       </Grid>
 
       <Divider sx={{ my: 3, borderColor: "rgba(156, 39, 176, 0.3)" }} />
