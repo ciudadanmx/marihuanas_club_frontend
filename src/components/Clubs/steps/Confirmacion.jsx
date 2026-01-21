@@ -88,7 +88,7 @@ const renderHorarios = (horarios) => {
                     Nombre completo del titular
                   </Typography>
                 </Box>
-                <Typography variant="h6">{form.nombre_completo || "-"}</Typography>
+                <Typography variant="h6">{form.nombre_titular || "-"}</Typography>
               </CardContent>
             </Card>
           </motion.div>
@@ -105,7 +105,7 @@ const renderHorarios = (horarios) => {
                     Tipo de club
                   </Typography>
                 </Box>
-                <Typography variant="body1">{form.tipo?.tipo || "-"}</Typography>
+                <Typography variant="body1">{form.tipo_club || "-"}</Typography>
               </CardContent>
             </Card>
           </motion.div>
@@ -128,7 +128,7 @@ const renderHorarios = (horarios) => {
           </motion.div>
         </Grid>
 
-        {/* Foto de perfil */}
+        {/* Foto de perfil / portada */}
         <Grid item xs={12}>
           <motion.div {...motionProps}>
             <Card sx={cardStyle}>
@@ -266,43 +266,6 @@ const renderHorarios = (horarios) => {
             </Card>
           </motion.div>
         </Grid>
-
-        {/* Otros datos dinámicos */}
-        {Object.entries(form)
-          .filter(
-            ([key]) =>
-              ![
-                "nombre_club",
-                "nombre_completo",
-                "nombre",
-                "apellido_paterno",
-                "apellido_materno",
-                "direccion",
-                "tipo",
-                "foto_perfil",
-                "fotos_club",
-                "descripcion",
-                "productos",
-                "servicios",
-                "horarios",
-              ].includes(key)
-          )
-          .map(([key, value]) => (
-            <Grid item xs={12} sm={6} key={key}>
-              <motion.div {...motionProps}>
-                <Card sx={cardStyle}>
-                  <CardContent>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      {key}
-                    </Typography>
-                    <Typography variant="body1">
-                      {typeof value === "object" ? JSON.stringify(value) : value || "-"}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </Grid>
-          ))}
       </Grid>
 
       <Divider sx={{ my: 3, borderColor: "rgba(156, 39, 176, 0.3)" }} />
