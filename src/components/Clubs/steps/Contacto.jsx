@@ -133,7 +133,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
   return (
     <Box>
       <Typography variant="h6" mb={2}>
-        WhatsApp de contacto
+        💬 WhatsApp de contacto
       </Typography>
       <TextField
         label="Número WhatsApp"
@@ -162,7 +162,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
       />
 
       <Typography variant="h6" mt={4} mb={2}>
-        Horarios de atención
+        ⏰ Horarios de atención
       </Typography>
       {daysOfWeek.map((day) => {
         const horario =
@@ -242,7 +242,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
       />
 
       <Typography variant="h6" mt={4} mb={2}>
-        Productos
+        🛍️ Productos
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
         <TextField
@@ -275,7 +275,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
       </Box>
 
       <Typography variant="h6" mt={4} mb={2}>
-        Servicios
+        🛠️ Servicios
       </Typography>
       <Box sx={{ display: "flex", gap: 2, mb: 1 }}>
         <TextField

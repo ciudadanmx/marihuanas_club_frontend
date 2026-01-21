@@ -22,13 +22,11 @@ const TIPOS = ["cultivo", "consumo", "tienda", "cursos", "comida", "eventos"];
 export default function DatosGenerales({ form, setForm, tipo }) {
   // 🔥 NORMALIZACIÓN CLAVE
   const tipoValue = typeof tipo === "string" ? tipo : tipo?.tipo;
-  console.log('klubs tipo', tipoValue.tipo);
   const [openModal, setOpenModal] = useState(false);
   const [cultivoHabilitado, setCultivoHabilitado] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
 
   useEffect(() => {
-    console.log("🔥 klubs INIT tipoValue:", tipoValue);
 
     setForm((prev) => {
       const tiposPrevios = prev.tipo_club || [];
@@ -59,42 +57,36 @@ export default function DatosGenerales({ form, setForm, tipo }) {
   }, [tipoValue, setForm]);
 
   const handleTipoClick = (t) => {
-    console.log("👉 klubs CLICK:", t, "| tipoValue:", tipoValue);
+    //Dependiendo de si es cultivo o consumo muestra condicionalmente el modal de pago, así como la selección de los checkbox
     if (
       (t === "cultivo" && tipoValue.tipo === "cultivo") ||
       (t === "consumo" && tipoValue.tipo === "consumo")
     ) {
-      console.log("🔒 klubs tipo bloqueado:", t);
       return;
     }
     
     if (t === "cultivo") {
       
       if (tipoValue.tipo === "cultivo") {
-        console.log("🔒 klubs cultivo bloqueado por tipo");
         return;
       }
 
       if (tipoValue.tipo === "consumo" && !cultivoHabilitado) {
-        console.log("💥 klubs ABRIENDO MODAL");
         setOpenModal(true);
         return;
       }
     }
-
     setForm((prev) => {
       const tiposPrevios = prev.tipo_club || [];
       const nuevos = tiposPrevios.includes(t)
         ? tiposPrevios.filter((x) => x !== t)
         : [...tiposPrevios, t];
-
-      console.log("✅ klubs tipo_club actualizado:", nuevos);
       return { ...prev, tipo_club: nuevos };
     });
   };
 
+  //Acepta el modal y se selecciona el checkbox
   const aceptarPago = () => {
-    console.log("💰 klubs Pago aceptado");
     setCultivoHabilitado(true);
 
     setForm((prev) => ({
@@ -119,7 +111,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
 
   return (
     <>
-      <Typography variant="h6">Datos generales del club</Typography>
+      <Typography variant="h6">📝 Datos generales del club</Typography>
       <Divider sx={{ mb: 3 }} />
 
       {/* ==================== CAMPOS NOMBRES Y DESCRIPCIÓN ==================== */}
@@ -243,7 +235,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
                     checked={checked}
                     disabled={disabled}
                     onClick={(e) => {
-                      e.preventDefault(); // 🔥 CLAVE
+                      e.preventDefault(); // 🔥 CLAVE para la lógica de modal y bloquedo
                       handleTipoClick(t);
                     }}
                     color="success"
@@ -254,7 +246,7 @@ export default function DatosGenerales({ form, setForm, tipo }) {
           })}
         </FormGroup>
         <FormHelperText>
-        👉 Puedes seleccionar más de un tipo de club
+        👉 Puedes seleccionar más de un tipo de club*
       </FormHelperText>
       </FormControl>
 

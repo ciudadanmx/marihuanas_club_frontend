@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Stepper,
   Step,
@@ -13,7 +13,9 @@ import Direccion from "./steps/Direccion";
 import Confirmacion from "./steps/Confirmacion";
 import Archivos from "./steps/Archivos";
 import Contacto from "./steps/Contacto.jsx";
+import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
+import { useRoles } from '../../Contexts/RolesContext'; 
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
@@ -55,7 +57,9 @@ export default function StepperForm({
   loginWithRedirect,
 }) {
 
+  const { isClub } = useRoles();
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
 
   // 🔹 STEPS DINÁMICOS SEGÚN TIPO
   const steps = useMemo(() => {
@@ -245,6 +249,16 @@ export default function StepperForm({
   };
 
   const isLastStep = activeStep === steps.length - 1;
+
+  useEffect(() => {
+    if (isClub) {
+      navigate("/clubs/miclub/info", { replace: true });
+    }
+  }, [isClub, navigate]);
+
+  if (isClub) {
+  return <Typography>Redirigiendo a tu club...</Typography>;
+}
 
   return (
     <Box sx={{ width: "100%", maxWidth: 800, mx: "auto" }}>

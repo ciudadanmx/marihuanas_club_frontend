@@ -25,7 +25,7 @@ export default function Archivos({ form, setForm, tipo }) {
   return (
     <Box>
       <Typography variant="h6" mb={2}>
-        <u>Foto de Portada del Club:</u>
+        <u>🖼️ Foto de Portada del Club:</u>
       </Typography>
         
       <Typography variant="body1" mb={2}>
@@ -74,7 +74,7 @@ export default function Archivos({ form, setForm, tipo }) {
       <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
 
       <Typography variant="h6" mt={4} mb={2}>
-        <u>Fotos del Club:</u>
+        <u>📸 Fotos del Club:</u>
       </Typography>
 
       <Button
@@ -85,7 +85,7 @@ export default function Archivos({ form, setForm, tipo }) {
           "&:hover": { backgroundColor: "#7b1fa2" },
         }}
       >
-        ⬆️ Subir Fotos del Club
+        ⬆️ Subir Fotos del Club 
         <Input
           type="file"
           name="fotos_club"
@@ -95,6 +95,7 @@ export default function Archivos({ form, setForm, tipo }) {
           sx={{ display: "none" }}
         />
       </Button>
+      {/* ✅ */}
 
       {form.fotos_club.length > 0 && (
         <Grid container spacing={2} mt={2}>
