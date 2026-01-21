@@ -213,6 +213,7 @@ export default function StepperForm({
         auth_name: user?.name || "desconocido",
         horarios: form.horarios,
         whatsapp: form.whatsapp,
+        reservacion: form.reservacion,
       };
 
       dataToSend.append("data", JSON.stringify(payload));

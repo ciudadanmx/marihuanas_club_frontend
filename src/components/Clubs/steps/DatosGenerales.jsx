@@ -110,7 +110,11 @@ export default function DatosGenerales({ form, setForm, tipo }) {
   // 🧠 HANDLERS CAMPOS TEXTO (AGREGADOS)
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value }
+      updated.nombre_titular = `${updated.nombre || "" } ${updated.apellido_paterno || "" } ${updated.apellido_materno || "" }`
+      return updated;
+    })
   };
 
   return (
@@ -189,6 +193,13 @@ export default function DatosGenerales({ form, setForm, tipo }) {
           />
         </Grid>
       </Grid>
+
+      {/* Campo oculto para enviar o usar en otros pasos */}
+      <input
+        type="hidden"
+        name="nombre_titular"
+        value={form.nombre_titular || ""}
+      />
 
       <TextField
         fullWidth

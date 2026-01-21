@@ -9,6 +9,7 @@ import {
   Chip,
   Icon,
   InputAdornment,
+  Checkbox,
 } from "@mui/material";
 
 const phoneRegex = /^\+52\d{7,14}$/; // regex ajustado a +52
@@ -180,6 +181,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
               mb: 1,
               flexWrap: "wrap",
             }}
+            color="success"
           >
             <FormControlLabel
               control={
@@ -188,6 +190,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
                   onChange={(e) =>
                     handleHorarioChange(day, "abierto", e.target.checked)
                   }
+                  color="success"
                 />
               }
               label={day.charAt(0).toUpperCase() + day.slice(1)}
@@ -204,6 +207,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
                   }
                   InputLabelProps={{ shrink: true }}
                   sx={{ width: 120 }}
+                  color="success"
                 />
                 <TextField
                   type="time"
@@ -214,12 +218,27 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
                   }
                   InputLabelProps={{ shrink: true }}
                   sx={{ width: 120 }}
+                  color="success"
                 />
               </>
             )}
           </Box>
         );
       })}
+
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={form.reservacion || false}
+            onChange={(e) =>
+              setForm((f) => ({ ...f, reservacion: e.target.checked }))
+            }
+            color="success"
+          />
+        }
+        label="Requiere reservación"
+      />
 
       <Typography variant="h6" mt={4} mb={2}>
         Productos
