@@ -61,17 +61,14 @@ export default function Archivos({ form, setForm, tipo }) {
     }));
   };
 
-  const handleFileChange = (e) => {
-    const { name, files } = e.target;
-
-    if (name === "foto_perfil") {
-      setForm((f) => ({ ...f, foto_perfil: files[0] }));
-    } else if (name === "fotos_club") {
-      setForm((f) => ({
-        ...f,
-        fotos_club: [...(f.fotos_club || []), ...Array.from(files)],
-      }));
-    }
+  const handleFileChange = ({ target: { name, files } }) => {
+    setForm((f) => ({
+      ...f,
+      [name]:
+        name === "foto_perfil"
+          ? files[0]
+          : [...(f[name] || []), ...Array.from(files)],
+    }));
   };
 
   const removeFotoClub = (index) => {
@@ -157,7 +154,7 @@ export default function Archivos({ form, setForm, tipo }) {
           "&:hover": { backgroundColor: "#7b1fa2" },
         }}
       >
-        ⬆️ Subir Fotos del Club
+        ⬆️ Subir Fotos.
         <Input
           type="file"
           name="fotos_club"
@@ -167,6 +164,27 @@ export default function Archivos({ form, setForm, tipo }) {
           sx={{ display: "none" }}
         />
       </Button>
+
+            {form?.foto_perfil && (
+        <Box mt={2}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontStyle: "italic", color: "#9c27b0", fontSize: "0.85rem" }}
+          >
+            Vista previa:
+          </Typography>
+          <img
+            src={URL.createObjectURL(form.foto_perfil)}
+            alt="Vista previa perfil"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "200px",
+              marginTop: "8px",
+              borderRadius: 8,
+            }}
+          />
+        </Box>
+      )}
 
       {form?.fotos_club?.length > 0 && (
         <Grid container spacing={2} mt={2}>
@@ -203,6 +221,107 @@ export default function Archivos({ form, setForm, tipo }) {
           ))}
         </Grid>
       )}
+
+
+
+
+
+
+      <Typography variant="h6" mt={4} mb={2}>
+        <u>📸 Fotos de Verificación de las áreas de cultivo:</u>
+      </Typography>
+
+      <Typography
+        variant="body1"
+        mb={2}
+        sx={{ fontStyle: "italic", color: "#59c054ff", fontSize: "0.85rem" }}
+      >
+        <strong>Sube al menos 5 fotos</strong>
+      </Typography>
+
+      <Button
+        variant="contained"
+        component="label"
+        sx={{
+          backgroundColor: "#9c27b0",
+          "&:hover": { backgroundColor: "#7b1fa2" },
+        }}
+      >
+        ⬆️ Subir Fotos.
+        <Input
+          type="file"
+          name="documentales"
+          accept="image/*"
+          multiple
+          onChange={handleFileChange}
+          sx={{ display: "none" }}
+        />
+      </Button>
+
+            {form?.documentalesl && (
+        <Box mt={2}>
+          <Typography
+            variant="subtitle2"
+            sx={{ fontStyle: "italic", color: "#9c27b0", fontSize: "0.85rem" }}
+          >
+            Vista previa:
+          </Typography>
+          <img
+            src={URL.createObjectURL(form.documentales)}
+            alt="Vista previa fotos de verificación"
+            style={{
+              maxWidth: "100%",
+              maxHeight: "200px",
+              marginTop: "8px",
+              borderRadius: 8,
+            }}
+          />
+        </Box>
+      )}
+
+      {form?.documentales?.length > 0 && (
+        <Grid container spacing={2} mt={2}>
+          {form.documentales.map((file, index) => (
+            <React.Fragment key={index}>
+              <Grid item xs={6} sm={4} md={3} position="relative">
+                <img
+                  src={URL.createObjectURL(file)}
+                  alt={`foto-${index}`}
+                  style={{
+                    width: "100%",
+                    borderRadius: 8,
+                    objectFit: "cover",
+                    height: "150px",
+                  }}
+                />
+                <button
+                  onClick={() => removeFotoClub(index)}
+                  style={{
+                    position: "absolute",
+                    top: 4,
+                    right: 4,
+                    background: "rgba(255,255,255,0.8)",
+                    border: "none",
+                    borderRadius: "50%",
+                    padding: 4,
+                    cursor: "pointer",
+                  }}
+                >
+                  <span style={{ color: "#d32f2f" }}>❌ Borrar</span>
+                </button>
+              </Grid>
+            </React.Fragment>
+          ))}
+        </Grid>
+      )}
+
+
+
+
+
+
+
+
 
       {/* --- Sección COFEPRIS para consumo --- */}
       {(tipo.tipo.tipo === "consumo") && (
@@ -442,7 +561,6 @@ export default function Archivos({ form, setForm, tipo }) {
                       </Grid>
                     </Grid>
 
-                    {/* NOTA: No hay botón de "Solicitar gestión". Los datos quedan en `form` y el Stepper valida al avanzar. */}
                   </Box>
                 )}
               </>
