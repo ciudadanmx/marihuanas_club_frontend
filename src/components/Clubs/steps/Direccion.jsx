@@ -1,5 +1,6 @@
 import React from "react";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import { deffaultLat, deffaultLng } from '../../../utils/constants';
 import usePlacesAutocomplete, {
   getGeocode,
   getLatLng,
@@ -37,8 +38,8 @@ export default function Direccion({ form, setForm }) {
   if (!isLoaded) return <div>Cargando mapa...</div>;
 
   const center = {
-    lat: form.lat || 19.4326,
-    lng: form.lng || -99.1332,
+    lat: form.lat || deffaultLat,
+    lng: form.lng || deffaultLng,
   };
 
   const handleSelect = async (address) => {

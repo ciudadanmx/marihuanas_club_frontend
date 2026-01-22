@@ -29,29 +29,29 @@ export default function Confirmacion({ form }) {
 
   const renderArray = (arr) => (arr && arr.length > 0 ? arr.join(", ") : "-");
 
-const renderHorarios = (horarios) => {
-  if (!horarios || Object.keys(horarios).length === 0) return "-";
+  const renderHorarios = (horarios) => {
+    if (!horarios || Object.keys(horarios).length === 0) return "-";
 
-  return Object.entries(horarios).map(([dia, horas]) => {
-    if (typeof horas === "object" && horas !== null) {
-      const abierto = horas.abierto ? "Abierto" : "Cerrado";
-      const apertura = horas.apertura || "-";
-      const cierre = horas.cierre || "-";
+    return Object.entries(horarios).map(([dia, horas]) => {
+      if (typeof horas === "object" && horas !== null) {
+        const abierto = horas.abierto ? "Abierto" : "Cerrado";
+        const apertura = horas.apertura || "-";
+        const cierre = horas.cierre || "-";
+        return (
+          <Typography key={dia} variant="body2" sx={{ ml: 2 }}>
+            <strong>{dia}:</strong> {abierto} ({apertura} - {cierre})
+          </Typography>
+        );
+      }
+
+      // por si acaso viene como string
       return (
         <Typography key={dia} variant="body2" sx={{ ml: 2 }}>
-          <strong>{dia}:</strong> {abierto} ({apertura} - {cierre})
+          <strong>{dia}:</strong> {horas}
         </Typography>
       );
-    }
-
-    // por si acaso viene como string
-    return (
-      <Typography key={dia} variant="body2" sx={{ ml: 2 }}>
-        <strong>{dia}:</strong> {horas}
-      </Typography>
-    );
-  });
-};
+    });
+  };
 
   return (
     <Box>

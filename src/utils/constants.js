@@ -7,3 +7,6 @@ export const WIKI_ROUTES = {
   "/wiki/mapa420": "2da8ae85d11980a98227eb5d8d7ed1b9",
   default: "2da8ae85d1198035990ecd7eb74a5701",
 };
+
+export const deffaultLat = 19.4326;
+export const deffaultLng = -99.1332;

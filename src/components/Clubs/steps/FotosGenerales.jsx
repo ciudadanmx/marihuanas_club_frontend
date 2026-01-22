@@ -164,8 +164,10 @@ const FotosGenerales = ({
             </Grid>
         )}
 
-        {form.tipo_club?.includes("consumo") && (
+        {form.tipo_club?.includes("cultivo") && (
             <>
+                <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
+                
                 <Typography variant="h6" mt={4} mb={2}>
                   <u>📸 Fotos de Verificación de las áreas de cultivo:</u>
                 </Typography>
