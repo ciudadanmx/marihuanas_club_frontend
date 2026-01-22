@@ -22,7 +22,9 @@ const Layout = () => {
   return (
     <>
       <NavBar />
-      <Outlet />
+      <div id="marihuanasclub-app" className="page-wrapper">
+        <Outlet />
+      </div>
       <Footer />
     </>
   );

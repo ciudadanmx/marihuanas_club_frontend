@@ -257,6 +257,34 @@ export default function StepperForm({
     }
   }, [isClub, navigate]);
 
+  useEffect(() => {
+    console.log('posicionando');
+    const el = document.getElementById("marihuanasclub-app");
+    el?.scrollTo({ top: 0, behavior: "auto" });
+  }, [activeStep]);
+
+   useEffect(() => {
+      const behavior = 'auto';
+      const targetId = 'marihuahasclub-app';
+        const el = document.getElementById(targetId);
+        if (el) {
+          if (typeof el.scrollTo === 'function') {
+            el.scrollTo({ top: 0, left: 0, behavior });
+          } else {
+            el.scrollTop = 0;
+          }
+          return;
+        }
+        // si targetId no existe, fallback a window
+      
+  
+      if (typeof window.scrollTo === 'function') {
+        window.scrollTo({ top: 0, left: 0, behavior });
+      } else {
+        window.scroll(0, 0);
+      }
+    }, [activeStep]); 
+
   if (isClub === true) {
   return <Typography>Redirigiendo a tu club...</Typography>;
 }

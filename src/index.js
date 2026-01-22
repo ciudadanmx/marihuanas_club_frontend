@@ -38,6 +38,7 @@ const AppWrapper = () => {
 
   const isWikiRoute = location.pathname.startsWith('/wiki');
 
+  //normalizador de rutas para seleccionar sección
   const sectionMap = {
     productos: 'market',
     contenido: 'contenidos',
@@ -45,13 +46,12 @@ const AppWrapper = () => {
     carrito: 'market',
     curso: 'cursos',
   };
-
   const pathSection = location.pathname.split('/').filter(Boolean)[0];
   const siteSection = sectionMap[pathSection] ?? pathSection ?? '';
 
   return (
     <>
-      <ScrollToTop behavior="auto" />
+      <ScrollToTop behavior="auto" targetId="marihuanasclub-app" />
       {!isWikiRoute && <NavBar siteSection={siteSection} />}
       <Rutas />
       <AuthGate>
@@ -63,7 +63,7 @@ const AppWrapper = () => {
 };
 
 
-
+//Auth0
 const Auth0ProviderWithNavigate = ({ children }) => {
   const navigate = useNavigate();
 
@@ -90,6 +90,7 @@ const Auth0ProviderWithNavigate = ({ children }) => {
 };
 
 
+//RENDER
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

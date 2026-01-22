@@ -6,7 +6,7 @@ import { Outlet } from 'react-router-dom';
 
 const App = () => {  
   return (    
-    <div className='page-wrapper'>
+    <div className='page-wrapper' id='marihuanasclub-app'>
       {/* Aquí no incluimos NavBar para evitar duplicarla */}
       <Outlet />
     </div>   
