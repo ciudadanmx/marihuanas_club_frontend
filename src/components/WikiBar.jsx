@@ -137,7 +137,7 @@ const WikiBar = ({ SetIsMenuOpen }) => {
                   fontWeight: 900,
                   letterSpacing: -0.3,
                   fontSize: { xs: 16, sm: 18, md: 20 },
-                  color: "#0a0a0a",
+                  color: "#581046ff",
                   textShadow: "0 2px 18px rgba(0,0,0,0.12)",
                 }}
               >
