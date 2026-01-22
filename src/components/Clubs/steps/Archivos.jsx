@@ -22,6 +22,7 @@ export default function Archivos({ form, setForm, tipo }) {
   const [focusedField, setFocusedField] = useState(null);
   const [cultivoFolioPropio, setCultivoFolioPropio] = useState(false); // único useState extra permitido
   const [consumoOption, setConsumoOption] = useState("folio");
+  const [certificados, setCertificados] = useState(false);
   // valores: "folio" | "gestion" | "pormi"
 
   // Auth y roles
@@ -376,6 +377,24 @@ export default function Archivos({ form, setForm, tipo }) {
               : " "
           }
         />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              name="opcFolio"
+              checked={consumoOption === "folio"}
+              onChange={() => setCertificados(!certificados)}
+              color="success"
+            />
+          }
+          label="✅ Agregar Imágenes o Documentos PDF de Certificación"
+        />
+
+        {certificados && (
+          <>
+            <h1>Ingresa tus certificados</h1>
+          </>
+        )}
 
         </>
       )}
