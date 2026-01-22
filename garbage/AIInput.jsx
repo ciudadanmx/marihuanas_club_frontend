@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
-import BotonCircular from "./../Usuarios/BotonCircular";
+import BotonCircular from "./BotonCircular";
 
 const AIInput = () => {
   const [searchText, setSearchText] = useState("");

@@ -13,7 +13,7 @@ import { FiShare2, FiCopy, FiX } from "react-icons/fi";
 
 export default function ShareButton({
   url, // opcional; si no se pasa usa window.location.href
-  mensaje = "Mira esto en Ciudadan 👇",
+  mensaje = "Mira esto en Marihuanas.club 👇",
 }) {
   // ruta local del archivo que subiste (nos la solicitaste usar)
   const uploadedFileUrl = "/mnt/data/86268b5f-48ab-4aa4-b66a-85bb6f4f58d1.png";

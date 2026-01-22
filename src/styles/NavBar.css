@@ -60,11 +60,11 @@
   border: 2px solid #ddd; /* Añade un borde opcional alrededor de la imagen */
 }
 
-.ciudadan-text {
+.marihuanasclub-text {
   display: none;
 }
 
-.ciudadan-svg {
+.marihuanasclub-svg {
   display: none;
 }
 
@@ -367,10 +367,10 @@
     }
     
 
-    .ciudadan-text {
+    .marihuanasclub-text {
       display: block
     }
-    .ciudadan-svg {
+    .marihuanasclub-svg {
       display: block
     }
     

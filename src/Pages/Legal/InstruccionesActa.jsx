@@ -107,7 +107,7 @@ export default function InstruccionesActa() {
                   <Typography variant="subtitle1">📝 Razón social / Nombre</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography>Qué poner: el nombre legal de la sociedad (ej.: "Asociación Civil Ciudadan A.C.") 💡</Typography>
+                  <Typography>Qué poner: el nombre legal de la sociedad (ej.: "Marihuanas Club A.C.") 💡</Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>Cómo conseguirlo: propongan 2–3 nombres y busquen disponibilidad en el Registro Público de Comercio o con el notario. Eviten nombres genéricos que ya existan.</Typography>
                   <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>Tip pro: tener alternativas y añadir el tipo social (A.C., S. de R.L., S.A.S.).</Typography>
                 </AccordionDetails>

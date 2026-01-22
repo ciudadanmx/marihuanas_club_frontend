@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 
 export const useLmAiChat = () => {
   const [conversation, setConversation] = useState([
-    { role: 'system', content: 'Eres Pandora, la asistente virtual de ciudadan.org. Contesta siempre en español.' }
+    { role: 'system', content: 'Eres MariaBot, la asistente virtual de marihuanas.club. Contesta siempre en español.' }
   ]);
   const [response, setResponse] = useState('');
   const [isLoading, setIsLoading] = useState(false);

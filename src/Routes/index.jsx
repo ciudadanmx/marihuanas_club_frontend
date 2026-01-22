@@ -1,7 +1,7 @@
 import React from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 
-import Probador from '../components/Probador.jsx';
+import Probador from '../components/Testers/Probador.jsx';
 // 🧠 Importaciones existentes
 import LmAi from '../components/Asistente/LmAi';
 import HomeRoute from '../Pages/HomeRoute';
@@ -28,7 +28,7 @@ import QrScanner from '../components/Clubs/QrScanner.jsx';
 import ComunidadPage from '../Pages/ComunidadPage';
 import NumeroPlantas from '../components/Membresias/NumeroPlantas.jsx';
 //Stripe y Ubicación
-import StripeSuccessRedirect from '../components/StripeSuccessRedirect.jsx';
+//import StripeSuccessRedirect from '../../garbage/StripeSuccessRedirect.jsx';
 import MiUbicacion from '../components/MiUbicacion';
 //MarketPlace
 import RegistroTienda from '../Pages/MarketPlace/RegistroTienda.jsx';
@@ -106,7 +106,7 @@ import WikiBar from '../components/WikiBar.jsx';
 import WikiViewer from '../components/Wiki/WikiViewer.jsx';
 import WikiHome from '../Pages/Wiki/WikiHome.jsx'; // si planeas tener una página principal para la wiki
 
-import NotificationTester from '../components/NotificationTester.jsx';
+import NotificationTester from '../components/Testers/NotificationTester.jsx';
 import ActivaTuMembresia from '../components/Membresias/ActivaTuMembresia.jsx';
 import Humo from '../components/Membresias/Humo/Humo.jsx';
 
@@ -243,7 +243,7 @@ const Rutas = () => (
 
     <Route path="/registro-vendedor" element={<RegistroTienda />} />
     <Route path="/agregar-producto" element={<AgregarProducto />} />
-    <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} />
+    { /* <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} /> */ }
     <Route path="/market" element={<MarketPlace />} />
     <Route path="/carrito" element={<Carrito />} />
     <Route path="/market/compras/*" element={<Compras />} />

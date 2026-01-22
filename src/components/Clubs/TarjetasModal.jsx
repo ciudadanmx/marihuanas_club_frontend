@@ -18,7 +18,7 @@ import {
   FaCcDiscover,
   FaCcDinersClub,
 } from "react-icons/fa";
-import ModalWrapper from "../../components/ModalWrapper"; // ajusta ruta si la colocaste en otra carpeta
+import ModalWrapper from "../ModalWrapper"; // ajusta ruta si la colocaste en otra carpeta
 
 export default function TarjetasModal({ open, onClose }) {
   const total = 15000;

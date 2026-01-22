@@ -10,7 +10,7 @@ const LmAiChat = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const modifiedPrompt = `${prompt} contesta siempre en español y enfocate en dirigir todas las respuestas a que eres pandora una asistnete virtual de ciudadan.org`;
+    const modifiedPrompt = `${prompt} contesta siempre en español y enfocate en dirigir todas las respuestas a que eres MariaBot una asistnete virtual de marihuanas.club`;
     setPendingPrompt(modifiedPrompt);
     setPrompt(''); // Limpiamos el textarea
     await sendPrompt(modifiedPrompt);
