@@ -1,4 +1,5 @@
 import React from 'react'
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import {
   Box,
   Button,
@@ -7,6 +8,8 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 
 const Skills = ({
@@ -60,51 +63,64 @@ const Skills = ({
     
         {certificados && (
             <>
-            {/* IMÁGENES + PDF */}
-            <Button
-                variant="contained"
-                component="label"
-                sx={{
-                backgroundColor: "#9c27b0",
-                "&:hover": { backgroundColor: "#7b1fa2" },
-                }}
-            >
-                ⬆️ Subir Archivos.
-                <Input
-                type="file"
-                name="archivos_certificados"
-                accept=".jpg,.jpeg,.png,.webp,.pdf"
-                multiple
-                id="archivos-input"
-                onChange={handleDocsAdd}
-                sx={{ display: "none" }}
-                />
-                
-            </Button>
-
-
-            {form.archivos_club?.map((file, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <span style={{ fontSize: 20 }}>
-                    {getDocExt(file.name) === 'pdf' ? '📄' : '🖼️'}
-                </span>
-
-                    <Typography sx={{ ml: 1, flex: 1 }}>
-                        {file.name}
-                    </Typography>
-
+                {/* IMÁGENES + PDF */}
+                <br />
+                <Tooltip title="Subir Certificaciones de Cultivador@">
                     <Button
-                        size="small"
-                        onClick={() => handleDocRemove(index)}
-                        sx={{ color: '#751460' }}
+                        variant="contained"
+                        component="label"
+                        sx={{
+                        backgroundColor: "#9c27b0",
+                        "&:hover": { backgroundColor: "#7b1fa2" },
+                        }}
                     >
-                        ✕
+                        ⬆️ Subir Archivos.
+                        <Input
+                        type="file"
+                        name="archivos_certificados"
+                        accept=".jpg,.jpeg,.png,.webp,.pdf"
+                        multiple
+                        id="archivos-input"
+                        onChange={handleDocsAdd}
+                        sx={{ display: "none" }}
+                        />
+                        
                     </Button>
+                </Tooltip>
+
+
+                {form.archivos_club?.map((file, index) => (
+                    <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <span style={{ fontSize: 20 }}>
+                            {getDocExt(file.name) === 'pdf' ? '📄' : '🖼️'}
+                        </span>
+
+                        <Typography sx={{ ml: 1, flex: 1 }}>
+                            {file.name}
+                        </Typography>
+
+                        <Tooltip title="Eliminar archivo">
+                            <IconButton
+                                size="small"
+                                onClick={() => handleDocRemove(index)}
+                                sx={{
+                                color: '#fff',
+                                backgroundColor: '#9c27b0',
+                                '&:hover': {
+                                    backgroundColor: '#7b1fa2',
+                                    transform: 'scale(1.1)',
+                                },
+                                boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                                }}
+                            >
+                                <DeleteForeverIcon fontSize="small" />
+                            </IconButton>
+                            </Tooltip>
                     </Box>
                 ))}
-                </>
-            )}
-        </>
+            </>
+        )}
+    </>
     
   )
 }

@@ -8,6 +8,7 @@ import {
   Grid,
   MenuItem,
   TextField,
+  Tooltip,
 } from "@mui/material";
 
 const FotosGenerales = ({
@@ -27,23 +28,25 @@ const FotosGenerales = ({
         Selecciona la imagen de portada para el perfil público de tu Club.
         </Typography>
 
-        <Button
-        variant="contained"
-        component="label"
-        sx={{
-            backgroundColor: "#9c27b0",
-            "&:hover": { backgroundColor: "#7b1fa2" },
-        }}
-        >
-        ⬆️ Subir Foto de Portada:
-        <Input
-            type="file"
-            name="foto_perfil"
-            accept="image/*"
-            onChange={handleFileChange}
-            sx={{ display: "none" }}
-        />
-        </Button>
+        <Tooltip title="Sube una imagen de portada desde tu dispositivo" >
+            <Button
+            variant="contained"
+            component="label"
+            sx={{
+                backgroundColor: "#9c27b0",
+                "&:hover": { backgroundColor: "#7b1fa2" },
+            }}
+            >
+            ⬆️ Subir Foto de Portada:
+            <Input
+                type="file"
+                name="foto_perfil"
+                ac1pt="image/*"
+                onChange={handleFileChange}
+                sx={{ display: "none" }}
+            />
+            </Button>
+        </Tooltip>
 
         {form?.foto_perfil && (
         <Box mt={2}>
@@ -80,24 +83,29 @@ const FotosGenerales = ({
         <strong>Éstas son las imágenes que se mostrarán en la ficha de perfil público de tu club...</strong>
         </Typography>
 
-        <Button
-            variant="contained"
-            component="label"
-            sx={{
-                backgroundColor: "#9c27b0",
-                "&:hover": { backgroundColor: "#7b1fa2" },
-            }}
-        >
-        ⬆️ Subir Fotos.
-        <Input
-            type="file"
-            name="fotos_club"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            sx={{ display: "none" }}
-        />
-        </Button>
+        <Tooltip title="Sube mínimo 2 Fotos para la Galería Pública de tu Club" >
+            <Button
+                variant="contained"
+                component="label"
+                sx={{
+                    backgroundColor: "#9c27b0",
+                    "&:hover": { backgroundColor: "#7b1fa2" },
+                }}
+            >
+            
+            ⬆️ Subir Fotos.
+            
+            <Input
+                type="file"
+                name="fotos_club"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                sx={{ display: "none" }}
+            />
+            
+            </Button>
+        </Tooltip>
 
         {form?.foto_perfil && (
         <Box mt={2}>
@@ -278,7 +286,7 @@ const FotosGenerales = ({
                   </Grid>
                 )}
             </>
-        )};
+        )}
         <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
     </>
   )

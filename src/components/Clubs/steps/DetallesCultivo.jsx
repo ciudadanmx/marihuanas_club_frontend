@@ -9,7 +9,6 @@ import {
   FormGroup,
 } from "@mui/material";
 
-
 const DetallesCultivo = ({
     tipo,
     cultivoFolioPropio,
