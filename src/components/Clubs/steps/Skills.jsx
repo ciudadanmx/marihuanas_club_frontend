@@ -19,6 +19,7 @@ const Skills = ({
     handleDocsAdd,
     getDocExt,
     handleDocRemove,
+    setForm,
 }) => {
   return (
     <>

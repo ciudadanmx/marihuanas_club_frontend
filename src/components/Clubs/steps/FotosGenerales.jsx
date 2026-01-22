@@ -14,7 +14,8 @@ const FotosGenerales = ({
     handleFileChange,
     form,
     removeFotoClub,
-    handleFormChange
+    handleFormChange,
+    setForm,
 }) => {
   return (
     <>

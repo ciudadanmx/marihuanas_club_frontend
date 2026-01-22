@@ -1,16 +1,6 @@
 import React, { useState } from "react";
 import { useSnackbar } from 'notistack';
-import {
-  Box,
-  Button,
-  Divider,
-  Typography,
-  Input,
-  TextField,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-} from "@mui/material";
+import { Box } from "@mui/material";
 import { useRoles } from "../../../Contexts/RolesContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +8,7 @@ import { createFileHandlers } from '../../../utils/FileHelpers';
 import CofeprisSection from './CofeprisSection.jsx';
 import FotosGenerales from './FotosGenerales.jsx';
 import Skills from './Skills.jsx';
+import DetallesCultivo from './DetallesCultivo.jsx';
 
 export default function Archivos({ form, setForm, tipo }) {
   const [focusedField, setFocusedField] = useState(null);
@@ -43,9 +34,9 @@ export default function Archivos({ form, setForm, tipo }) {
   // Auth y roles
   const { user } = useAuth0();
   const { isActivaMembresia } = useRoles();
-
   const navigate = useNavigate();
 
+  //Opción de trámite de cofepris, cuenta con folio, generar por sí mismo o solicitar gestión
   const selectConsumoOption = (option) => {
     setConsumoOption(option);
   };
@@ -107,8 +98,10 @@ export default function Archivos({ form, setForm, tipo }) {
         form = {form}
         removeFotoClub = {removeFotoClub}
         handleFormChange = {handleFormChange}
+        setForm={setForm}
       />
       
+      {/* --- Skills de Jardinero --- */}
       <Skills
         form = {form}
         handleFormChange = {handleFormChange}
@@ -119,6 +112,7 @@ export default function Archivos({ form, setForm, tipo }) {
         handleDocsAdd={handleDocsAdd}
         getDocExt={getDocExt}
         handleDocRemove={handleDocRemove}
+        setForm={setForm}
       />
 
       {/* --- Sección COFEPRIS para consumo --- */}
@@ -133,50 +127,20 @@ export default function Archivos({ form, setForm, tipo }) {
           handleNestedChange = {handleNestedChange}
           user = {user}
           goGeneradorLibre = {goGeneradorLibre}
+          setForm={setForm}
         />
       )}
 
-      {/* --- Sección simple para clubs de cultivo --- */}
-      {tipo.tipo.tipo === "cultivo" && (
-        <>
-          <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
+      {/* --- Sección Cofepris Opcional para clubs de cultivo --- */}
+      <DetallesCultivo 
+        tipo = {tipo}
+        cultivoFolioPropio={cultivoFolioPropio}
+        setCultivoFolioPropio={setCultivoFolioPropio}
+        form={form}
+        setForm={setForm}
+        handleFormChange={handleFormChange}
+      />
 
-          <Typography variant="h6" mb={2}>
-            <u>Permiso COFEPRIS (cultivo)</u>
-          </Typography>
-
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={cultivoFolioPropio}
-                  color="success"
-                  onChange={(e) => {
-                    setCultivoFolioPropio(e.target.checked);
-                    // también lo guardamos en form si quieres centralizar
-                    setForm(prev => ({ ...prev, cultivoFolioPropio: e.target.checked }));
-                  }}
-                />
-              }
-              label="✅ Ya cuento con un folio"
-            />
-
-            {cultivoFolioPropio && (
-              <Box sx={{ pl: 4, pr: 2, pb: 1 }}>
-                <TextField
-                  fullWidth
-                  margin="normal"
-                  label="Ingresa el folio de tu trámite"
-                  name="cofepris"
-                  value={form.cofepris || ""}
-                  onChange={handleFormChange}
-                  color="success"
-                />
-              </Box>
-            )}
-          </FormGroup>
-        </>
-      )}
     </Box>
   );
 }
