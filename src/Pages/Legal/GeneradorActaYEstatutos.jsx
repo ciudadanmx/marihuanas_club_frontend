@@ -99,7 +99,7 @@ const ActaPdf = ({ data }) => {
             {s.paragraphs && s.paragraphs.map((p, i) => <Text key={i} style={pdfStyles.paragraph}>{p}</Text>)}
           </View>
         ))}
-        <Text style={pdfStyles.footer}>Acta y estatutos generados — Ciudadan.org</Text>
+        <Text style={pdfStyles.footer}>Acta y estatutos generados — Marihuanas.club</Text>
       </Page>
     </Document>
   );

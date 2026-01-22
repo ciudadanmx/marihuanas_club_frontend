@@ -460,13 +460,13 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
           <div className='nav-links columnas'>
             <div
               className="logo-container"
-              alt="Ciudadan Logo"
+              alt="Marihuanas.club Logo"
               onClick={() => navigate('/')}
               style={{ cursor: 'pointer' }}
             >
               <img
                 src={logoSrc}
-                alt="Ciudadan Logo"
+                alt="Marihuanas.club Logo"
                 className={'logo-img en-home'}
               />
             </div>

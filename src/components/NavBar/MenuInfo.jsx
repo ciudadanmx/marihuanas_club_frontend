@@ -15,7 +15,7 @@ const MenuInfo = ({ handleLogout, isOpen, onClose, onLogout, containerRef, setIs
   const items = [
     { href: "/", img: logoImage, alt: "Presentación", label: "Presentación" },
     { href: "/info/quienes", img: quienesImage, alt: "¿Quiénes Somos?", label: "¿Quiénes Somos?" },
-    { href: "/wiki", img: wikiImage, alt: "Wiki Ciudadan", label: "Wiki", target: "_blank" },
+    { href: "/wiki", img: wikiImage, alt: "Wiki Marihuanas.Club", label: "Wiki", target: "_blank" },
     { href: "/wiki/faq", img: contactImage, alt: "Preguntas Frecuentes", label: "Preguntas Frecuentes" },
     { href: "/wiki/ayuda", img: helpImage, alt: "Ayuda", label: "Ayuda" },
     { href: "https://www.youtube.com/@marihuanasclub", img: VideosImage, alt: "Canal YT", label: "Canal YT", target: "_blank" },

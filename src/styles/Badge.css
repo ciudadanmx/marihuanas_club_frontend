@@ -1,4 +1,4 @@
-.ciudadan-text {
+.marihuanasclub-text {
     font-size: 24px;
     font-family: "Poppins", sans-serif;
     font-weight: 900;
@@ -12,7 +12,7 @@
 }
 
 /* Ajuste del contenedor del texto */
-.ciudadan-svg {
+.marihuanasclub-svg {
     position: absolute;
     top: 8vw;
     left: 6.5vw;
@@ -25,7 +25,7 @@
 }
 
 /* Ajuste del logo */
-.ciudadan-container {
+.marihuanasclub-container {
     position: absolute;
     display: inline-block;
     width: 60px;

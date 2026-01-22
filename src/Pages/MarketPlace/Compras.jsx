@@ -327,7 +327,7 @@ const Compras = () => {
                               variant="contained"
                               onClick={() => {
                                 // acción de contacto/soporte (ejemplo)
-                                window.open(`mailto:soporte@ciudadan.org?subject=Pedido%20${id}`, "_blank");
+                                window.open(`mailto:soporte@marihuanas.club?subject=Pedido%20${id}`, "_blank");
                               }}
                             >
                               Contactar soporte

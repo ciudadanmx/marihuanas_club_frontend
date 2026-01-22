@@ -13,7 +13,7 @@ export default function Footer() {
   const waNumber =
     digits.length === 10 ? `52${digits}` : digits.startsWith("52") ? digits : digits;
   const waLink = `https://wa.me/${waNumber}?text=${encodeURIComponent(
-    "Hola, tengo una pregunta sobre Ciudadan"
+    "Hola, tengo una pregunta sobre Marihuanas.Club"
   )}`;
 
   return (

@@ -27,7 +27,7 @@ import { useNotifications } from '../../Contexts/NotificationsContext';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
-const LOCALSTORAGE_KEY = 'ciudadan_notifications_v1';
+const LOCALSTORAGE_KEY = 'marihuanasclub_notifications_v1';
 
 const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
@@ -525,13 +525,13 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
           <div className='nav-links columnas'>
             <div
               className="logo-container"
-              alt="Ciudadan Logo"
+              alt="Marihuanas.club Logo"
               onClick={() => navigate('/')}
               style={{ cursor: 'pointer' }}
             >
               <img
                 src={logoSrc}
-                alt="Ciudadan Logo"
+                alt="Marihuanas.club Logo"
                 className={'logo-img en-home'}
               />
             </div>

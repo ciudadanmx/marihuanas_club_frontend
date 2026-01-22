@@ -8,7 +8,7 @@ export default function Humo() {
   return (
     <div className="app-root">
       <header className="topbar">
-        <div className="brand">ciudadan • smoke demo</div>
+        <div className="brand">marihuanas.club • smoke demo</div>
         <div style={{ marginLeft: "auto" }}>
           <button onClick={() => setMode("shader")} className={mode === "shader" ? "active" : ""}>ShaderMaterial</button>
           <button onClick={() => setMode("points")} className={mode === "points" ? "active" : ""}>Points (liviano)</button>

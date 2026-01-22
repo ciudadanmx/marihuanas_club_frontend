@@ -7,7 +7,7 @@ import { Button, CircularProgress } from '@mui/material';
 // - uploadRes: object returned by /api/upload (must include fileId and raw)
 // - userEmail: email to find the Strapi user by (optional if userId provided)
 // - userId: optional Strapi user id to skip lookup
-// - strapiUrl: base URL of Strapi (e.g. https://back.ciudadan.org)
+// - strapiUrl: base URL of Strapi (e.g. https://back.dominio.org)
 // - token: optional Strapi bearer token
 // - onStart, onProgress, onSuccess, onError: callbacks
 // - children: button label (default: 'Guardar en Strapi')

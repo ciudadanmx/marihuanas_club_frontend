@@ -126,7 +126,7 @@ export default function TarjetasModal({ open, onClose }) {
           <ListItem>
             <ListItemText
               primary="Promoción 12 MSI"
-              secondary="Aplica únicamente en comercios y bancos participantes. Ciudadan no garantiza que todas las tarjetas admitan la promoción."
+              secondary="Aplica únicamente en comercios y bancos participantes. Laboratorio 420 no garantiza que todas las tarjetas admitan la promoción."
             />
           </ListItem>
 
@@ -154,7 +154,7 @@ export default function TarjetasModal({ open, onClose }) {
           <ListItem>
             <ListItemText
               primary="Contacto"
-              secondary="Para dudas o aclaraciones, contacta soporte: soporte@ciudadan.org"
+              secondary="Para dudas o aclaraciones, contacta soporte: soporte@marihuanas.club"
             />
           </ListItem>
         </List>

@@ -548,7 +548,7 @@ export default function MembershipCheckout({
             <Card variant="outlined">
               <CardContent>
                 <Typography variant="caption" color="text.secondary">
-                  Al completar el pago aceptas los términos y condiciones de Ciudadan. Si tienes problemas con tu pago, contáctanos a soporte.
+                  Al completar el pago aceptas los términos y condiciones de Marihuanas.Club, Si tienes problemas con tu pago, contáctanos a soporte.
                 </Typography>
               </CardContent>
             </Card>
