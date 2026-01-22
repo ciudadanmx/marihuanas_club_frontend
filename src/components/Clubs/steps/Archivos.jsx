@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useSnackbar } from 'notistack';
 import {
   Box,
   Button,
@@ -17,6 +18,7 @@ import {
 import { useRoles } from "../../../Contexts/RolesContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
+import { createFileHandlers } from '../../../utils/FileHelpers';
 
 export default function Archivos({ form, setForm, tipo }) {
   const [focusedField, setFocusedField] = useState(null);
@@ -24,6 +26,19 @@ export default function Archivos({ form, setForm, tipo }) {
   const [consumoOption, setConsumoOption] = useState("folio");
   const [certificados, setCertificados] = useState(false);
   // valores: "folio" | "gestion" | "pormi"
+  const { enqueueSnackbar } = useSnackbar();
+  // 📎 IMÁGENES + PDF
+  const {
+    handleFilesAdd: handleDocsAdd,
+    handleRemoveFile: handleDocRemove,
+    getExtension: getDocExt,
+  } = createFileHandlers({
+    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+    setForm,
+    fieldName: 'archivos_club',
+    enqueueSnackbar,
+    errorMessage: '⚠️ Solo se permiten imágenes o archivos PDF',
+  });
 
   // Auth y roles
   const { user } = useAuth0();
@@ -381,18 +396,60 @@ export default function Archivos({ form, setForm, tipo }) {
         <FormControlLabel
           control={
             <Checkbox
-              name="opcFolio"
-              checked={consumoOption === "folio"}
+              name="certificados"
+              checked={certificados}
               onChange={() => setCertificados(!certificados)}
               color="success"
             />
           }
-          label="✅ Agregar Imágenes o Documentos PDF de Certificación"
+          label="🏅 Agregar Imágenes o Documentos PDF de Certificación"
         />
 
         {certificados && (
           <>
-            <h1>Ingresa tus certificados</h1>
+            <h1>Certificados </h1>
+            {/* IMÁGENES + PDF */}
+            <Button
+              variant="contained"
+              component="label"
+              sx={{
+                backgroundColor: "#9c27b0",
+                "&:hover": { backgroundColor: "#7b1fa2" },
+              }}
+            >
+              ⬆️ Subir Archivos.
+              <Input
+                type="file"
+                name="archivos_certificados"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                multiple
+                id="archivos-input"
+                onChange={handleDocsAdd}
+                sx={{ display: "none" }}
+              />
+              
+            </Button>
+
+
+            {form.archivos_club?.map((file, index) => (
+              <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <span style={{ fontSize: 20 }}>
+                  {getDocExt(file.name) === 'pdf' ? '📄' : '🖼️'}
+                </span>
+
+                <Typography sx={{ ml: 1, flex: 1 }}>
+                  {file.name}
+                </Typography>
+
+                <Button
+                  size="small"
+                  onClick={() => handleDocRemove(index)}
+                  sx={{ color: '#751460' }}
+                >
+                  ✕
+                </Button>
+              </Box>
+            ))}
           </>
         )}
 
