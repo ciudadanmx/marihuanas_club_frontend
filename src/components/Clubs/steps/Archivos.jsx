@@ -103,7 +103,11 @@ export default function Archivos({ form, setForm, tipo }) {
   return (
     <Box>
       {/* --- Fotos Generales --- */}
-      <FotosGenerales />
+      <FotosGenerales
+        handleFileChange = {handleFileChange}
+        form = {form}
+        removeFotoClub = {removeFotoClub}
+      />
 
 
       {form.tipo_club?.includes("consumo") && (
