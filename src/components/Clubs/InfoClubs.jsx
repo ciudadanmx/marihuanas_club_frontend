@@ -30,11 +30,11 @@ import VolumeOffIcon from "@mui/icons-material/VolumeOff";
 import { motion } from "framer-motion";
 
 // IMPORT DEL VIDEO LOCAL (coloca clubs.mp4 en src/assets/)
-import clubsVideo from "../../assets/clubs.mp4";
+import clubsVideo from "../../assets/videos/clubs.mp4";
 // IMPORTS ADICIONALES SOLICITADOS (importando desde assets, no con URL)
 import esLegalImage from "../../assets/eslegalcannabismexico.png";
-import consumoVideo from "../../assets/clubsconsumo.mp4";
-import cultivoVideo from "../../assets/clubscultivo.mp4";
+import consumoVideo from "../../assets/videos/clubsconsumo.mp4";
+import cultivoVideo from "../../assets/videos/clubscultivo.mp4";
 
 /**
  * InfoClubs (VERSIÓN MORADA + VIDEO CON CONTROLES PERSONALIZADOS)

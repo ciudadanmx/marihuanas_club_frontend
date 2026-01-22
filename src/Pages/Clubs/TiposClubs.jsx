@@ -13,7 +13,7 @@ import headerImage from "../../assets/tiposclubs.png";
 import kitImage from "../../assets/kitjardinero.png";
 import ClubConsumo from '../../components/Clubs/ClubConsumo.jsx';
 import ClubConsumoTitulo from '../../components/Clubs/ClubConsumoTitulo.jsx';
-import afiliaconsumo from "../../assets/afiliaconsumo.mp4";
+import afiliaconsumo from "../../assets/videos/afiliaconsumo.mp4";
 import KitJardinero from '../../components/KitJardinero.jsx';
 import ClubConsumoCard from '../../components/Clubs/ClubConsumoCard.jsx';
 import ClubCultivoCard from '../../components/Clubs/ClubCultivoCard.jsx';

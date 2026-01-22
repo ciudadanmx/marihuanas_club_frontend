@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Stack } from '@mui/material';
-import productoImg from '../../assets/producto.png';
+import productoImg from '../../assets/placeholders/producto.png';
 import '../../styles/Producto.css';
 
 const GaleriaImagenesProducto = ({ imagenes, nombre, imagenIndex, setImagenIndex }) => {

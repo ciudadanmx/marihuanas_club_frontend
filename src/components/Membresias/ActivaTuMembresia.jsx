@@ -3,7 +3,7 @@ import { Box } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import activGif from "../../assets/activatumembresia.gif";
+import activGif from "../../assets/membresias/activatumembresia.gif";
 
 /*
   ActivaTuMembresia - Humo realista avanzado (CSS + SVG filter)

@@ -149,7 +149,7 @@ body {
   
   @media (max-width: 768px) {
     .home {
-      background-image: url('../assets/ciudadanMobile.jpg'); /* Imagen para pantallas pequeñas */
+      background-image: url('../assets/check/ciudadanMobile.jpg'); /* Imagen para pantallas pequeñas */
       object-fit:cover  ; 
     }
   

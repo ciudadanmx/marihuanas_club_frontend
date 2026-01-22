@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 import kitGif from "../../assets/kitautocultivo.gif";
 import afiliatuGif from "../../assets/afiliatuclub.gif";
-import suscribeGif from "../../assets/suscribete.gif";
+import suscribeGif from "../../assets/logo_bailarin.gif";
 
 const BRAND_PURPLE = "#a073c4"; // color títulos y efectos
 const BG_GREEN = "rgba(199,224,106,0.95)"; // fondo general

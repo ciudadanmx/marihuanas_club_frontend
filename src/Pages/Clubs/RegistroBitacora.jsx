@@ -21,7 +21,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import RoomIcon from '@mui/icons-material/Room';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import placeholder from '../../assets/bitacoraplaceholder.jpg';
+import placeholder from '../../assets/placeholders/bitacoraplaceholder.jpg';
 
 const StyledCard = styled(Card)(() => ({
   position: 'relative',

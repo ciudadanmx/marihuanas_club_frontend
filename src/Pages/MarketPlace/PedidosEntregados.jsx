@@ -10,7 +10,7 @@ import {
   Divider,
   Chip,
 } from '@mui/material';
-import productoImg from '../../assets/producto.png';
+import productoImg from '../../assets/placeholders/producto.png';
 
 // Configuración de estados con iconos de Material Icons vía CDN
 const statusConfig = {

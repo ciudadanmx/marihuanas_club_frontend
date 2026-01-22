@@ -15,7 +15,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import PrecioKitJardinero from "../components/Clubs/PrecioKitJardinero.jsx";
 import KitItem from "./KitItem.jsx";
-import jardinero from "../assets/jardineros.mp4";
+import jardinero from "../assets/videos/jardineros.mp4";
 
 /**
  * getMediaUrl: extrae URL desde campo media de Strapi v4

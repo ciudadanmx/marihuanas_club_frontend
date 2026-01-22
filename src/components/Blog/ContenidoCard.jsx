@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import BotonEditar from './BotonEditar';
-import productoImg from '../../assets/producto.png';
+import productoImg from '../../assets/placeholders/contenido.png';
 
 const ContenidoCard = ({
   titulo,

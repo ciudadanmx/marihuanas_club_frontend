@@ -5,7 +5,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { motion } from 'framer-motion';
 import LocalPlayer from '../../components/utils/LocalPlayer.jsx';
-import influencers from '../../assets/influencers.mp4';
+import influencers from '../../assets/videos/influencers.mp4';
 import influencerGif from '../../assets/influencer.gif';
 
 const MotionBox = motion(Box);

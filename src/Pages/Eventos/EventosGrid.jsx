@@ -16,7 +16,7 @@ import {
 } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { styled } from '@mui/system';
-import placeholder from '../../assets/placeholder.jpg';
+import placeholder from '../../assets/placeholders/placeholder.jpg';
 import { useRoles } from '../../Contexts/RolesContext';
 
 const CardAnimada = styled(Card)(() => ({

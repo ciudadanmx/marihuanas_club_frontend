@@ -13,7 +13,7 @@ import {
 import useProductos from '../../hooks/useProductos.jsx';
 import Resenas from '../../components/MarketPlace/Resenas.jsx'
 import GaleriaImagenesProducto from '../../components/MarketPlace/GaleriaImagenesProducto.jsx';
-import productoImg from '../../assets/producto.png';
+import productoImg from '../../assets/placeholders/producto.png';
 import '../../styles/Producto.css';
 import '../../styles/DetalleProducto.css';
 import DetallesProducto from '../../components/MarketPlace/DetalleProducto.jsx';

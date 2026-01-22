@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, CardMedia, Box, Button } from '@mui/material';
 import { Link, useNavigate } from 'react-router-dom';
-import productoImg from '../../assets/producto.png';
+import productoImg from '../../assets/placeholders/producto.png';
 
 const Star = ({ filled }) => (
   <span className={`estrella ${filled ? 'llena' : 'vacia'}`}>
