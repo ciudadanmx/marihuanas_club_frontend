@@ -5,7 +5,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
 
-import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
+import { registerUserInStrapi, findUserInStrapi } from '../src/utils/strapiUserService.jsx';
 import { FaUniversity, FaDollarSign, FaBalanceScale, FaTools } from 'react-icons/fa';
 import { RiHomeSmileFill, RiVipCrownFill, RiUserCommunityFill } from 'react-icons/ri';
 import { BiStore } from 'react-icons/bi';
@@ -13,17 +13,17 @@ import { MdOndemandVideo } from 'react-icons/md';
 import { IoCalendarNumberOutline } from 'react-icons/io5';
 
 import guestImage from '../../assets/guest.png';
-import MenuIcon from './MenuIcon';
-import UserIcon from './UserIcon.jsx';
-import CartIcon from './CartIcon';
-import NavButton from './NavButton.jsx';
-import HearthButton from './HearthButton.jsx';
+import MenuIcon from '../src/components/NavBar/MenuIcon.jsx';
+import UserIcon from '../src/components/NavBar/UserIcon.jsx';
+import CartIcon from '../src/components/NavBar/CartIcon.jsx';
+import NavButton from '../src/components/NavBar/NavButton.jsx';
+import HearthButton from '../src/components/NavBar/HearthButton.jsx';
 
 import '../../styles/NavBar.css';
 import '../../styles/CuentaIcon.css';
 import '../../styles/AccountMenu.css';
 
-import { useNotifications } from '../../Contexts/NotificationsContext';
+import { useNotifications } from '../src/Contexts/NotificationsContext.jsx';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
