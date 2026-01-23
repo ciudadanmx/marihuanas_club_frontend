@@ -12,7 +12,7 @@ import {
   Checkbox,
 } from "@mui/material";
 
-const phoneRegex = /^\+52\d{7,14}$/; // regex ajustado a +52
+const phoneRegex = /^\+52\d{10}$/; // regex ajustado a +52
 
 const daysOfWeek = [
   "lunes",
@@ -136,6 +136,7 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
         💬 WhatsApp de contacto
       </Typography>
       <TextField
+        name="whatsapp"
         label="Número WhatsApp"
         value={whatsappWithoutPrefix}
         onChange={handleWhatsappChange}
@@ -155,7 +156,8 @@ export default function Contacto({ form: externalForm, setForm: externalSetForm 
           ),
         }}
         inputProps={{
-          maxLength: 14, // longitud típica sin prefijo
+          minLength: 10,
+          maxLength: 10, // longitud típica sin prefijo
           inputMode: "numeric",
           pattern: "[0-9]*",
         }}
