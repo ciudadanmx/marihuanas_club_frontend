@@ -47,6 +47,7 @@ export default function AgregarClub(tipo) {
       sabado: { abierto: false, desde: "", hasta: "" },
     },
     whatsapp: "",
+    certificados: false,
     tipo_club: [], // cultivo, tienda, cursos, comida, eventos
   });
 

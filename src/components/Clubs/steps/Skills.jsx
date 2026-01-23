@@ -53,15 +53,20 @@ const Skills = ({
             control={
             <Checkbox
                 name="certificados"
-                checked={certificados}
-                onChange={() => setCertificados(!certificados)}
+                checked={!!form.certificados}
+                onChange={(e) =>
+                    setForm((prev) => ({
+                    ...prev,
+                    certificados: e.target.checked,
+                    }))
+                }
                 color="success"
             />
             }
             label="🏅 Agregar Imágenes o Documentos PDF de Certificación"
         />
     
-        {certificados && (
+        {form.certificados && (
             <>
                 {/* IMÁGENES + PDF */}
                 <br />
