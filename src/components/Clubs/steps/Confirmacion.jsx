@@ -39,7 +39,9 @@ import {
   WorkspacePremium as WorkspacePremiumIcon,
   Yard as YardIcon,
   Forest as ForestIcon,
+  Gavel as MedicalServicesIcon,
 } from "@mui/icons-material";
+
 
 /* =========================
    UTILIDADES
@@ -426,13 +428,24 @@ export default function Confirmacion({ form }) {
         </Grid>
 
         {/* =================== RESERVACIÓN =================== */}
-        <Grid item xs={12} sm={6}>
+        <Grid item xs={6} sm={6}>
           <CardInfo icon={HomeIcon} title="Se requiere reservar para asistir">
             <Typography>
               {form.reservacion ? "SÍ" : "NO"}
             </Typography>
           </CardInfo>
         </Grid>
+      
+        
+        {/* =================== STATUS LEGAL =================== */}
+        <Grid item xs={6} sm={6}>
+          <CardInfo icon={MedicalServicesIcon} title="Trámite COFEPRIS">
+            <Typography>
+              {form.reservacion ? "Yes" : "No"}
+            </Typography>
+          </CardInfo>
+        </Grid>
+
       </Grid>
 
       {/* =================== FOOTER =================== */}
