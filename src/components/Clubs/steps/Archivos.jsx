@@ -92,6 +92,7 @@ export default function Archivos({ form, setForm, tipo }) {
 
   return (
     <Box>
+      <><h1>{form.direccion_formateada}</h1></>
       {/* --- Fotos Generales --- */}
       <FotosGenerales
         handleFileChange = {handleFileChange}

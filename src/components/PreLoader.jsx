@@ -4,7 +4,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-const PreLoader = () => {
+const PreLoader = ({texto = 'Cargando'}) => {
   return (
         <Box
           sx={{
@@ -53,7 +53,7 @@ const PreLoader = () => {
               textTransform: 'uppercase',
             }}
           >
-            Cargando
+            {texto}
           </Typography>
         </Box>
   )
