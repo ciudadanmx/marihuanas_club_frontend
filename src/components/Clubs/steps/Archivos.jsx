@@ -18,6 +18,8 @@ export default function Archivos({ form, setForm, tipo }) {
   // valores: "folio" | "gestion" | "pormi"
   const { enqueueSnackbar } = useSnackbar();
   
+
+
   // 📎 IMÁGENES + PDF
   const {
     handleFilesAdd: handleDocsAdd,
@@ -92,7 +94,7 @@ export default function Archivos({ form, setForm, tipo }) {
 
   return (
     <Box>
-      <><h1>{form.direccion_formateada}</h1></>
+      
       {/* --- Fotos Generales --- */}
       <FotosGenerales
         handleFileChange = {handleFileChange}

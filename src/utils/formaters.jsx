@@ -14,5 +14,25 @@ const formatPrice = (price, type) => {
   return priceFormatted;
 };
 
-const formaters = { formatTime, formatPrice };
+
+  const formatearDireccionConInterior = (direccion, numeroInterior) => {
+  if (!direccion || typeof direccion !== "string") return "";
+
+  // Si no hay número interior, regresamos tal cual
+  if (!numeroInterior) return direccion;
+
+  // Insertar "Interior X" justo antes de "Colonia"
+  if (direccion.includes("Colonia")) {
+    return direccion.replace(
+      ", Colonia",
+      `, Interior ${numeroInterior}, Colonia`
+    );
+  }
+
+  // Fallback por si alguna dirección no trae colonia
+  return `${direccion}, Interior ${numeroInterior}`;
+};
+
+
+const formaters = { formatTime, formatPrice, formatearDireccionConInterior };
 export default formaters;

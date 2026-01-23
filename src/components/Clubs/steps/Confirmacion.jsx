@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   Photo as PhotoIcon,
 } from "@mui/icons-material";
+import formaters from '../../../utils/formaters';
 
 export default function Confirmacion({ form }) {
   const motionProps = {
@@ -122,7 +123,11 @@ export default function Confirmacion({ form }) {
                     Dirección
                   </Typography>
                 </Box>
-                <Typography variant="body1">{form.direccion || "-"}</Typography>
+                <Typography variant="body1">{ formaters.formatearDireccionConInterior(
+                    form.direccion_formateada,
+                    form.numero_interior,
+                  ) || form.direccion || "-"}
+                </Typography>
               </CardContent>
             </Card>
           </motion.div>
