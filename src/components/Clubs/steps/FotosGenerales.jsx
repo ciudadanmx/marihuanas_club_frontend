@@ -107,26 +107,6 @@ const FotosGenerales = ({
             </Button>
         </Tooltip>
 
-        {form?.foto_perfil && (
-        <Box mt={2}>
-            <Typography
-            variant="subtitle2"
-            sx={{ fontStyle: "italic", color: "#9c27b0", fontSize: "0.85rem" }}
-            >
-            Vista previa:
-            </Typography>
-            <img
-            src={URL.createObjectURL(form.foto_perfil)}
-            alt="Vista previa perfil"
-            style={{
-                maxWidth: "100%",
-                maxHeight: "200px",
-                marginTop: "8px",
-                borderRadius: 8,
-            }}
-            />
-        </Box>
-        )}
 
         {form?.fotos_club?.length > 0 && (
             <Grid container spacing={2} mt={2}>
@@ -239,16 +219,7 @@ const FotosGenerales = ({
                     >
                       Vista previa:
                     </Typography>
-                    <img
-                      src={URL.createObjectURL(form.documentales)}
-                      alt="Vista previa fotos de verificación"
-                      style={{
-                        maxWidth: "100%",
-                        maxHeight: "200px",
-                        marginTop: "8px",
-                        borderRadius: 8,
-                      }}
-                    />
+                    
                   </Box>
                 )}
         

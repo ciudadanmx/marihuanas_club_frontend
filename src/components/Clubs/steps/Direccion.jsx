@@ -244,11 +244,6 @@ export default function Direccion({ form, setForm }) {
         </List>
       )}
 
-      {/* Indicaciones para ajustar la ubicación */}
-      <Typography variant="h6" mt={3} mb={2}>
-        🗺️ Ajusta la ubicación exacta (arrastra el pin)
-      </Typography>
-
       {/* Mapa */}
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "420px", borderRadius: 8 }}
