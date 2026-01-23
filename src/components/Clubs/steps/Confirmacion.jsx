@@ -399,17 +399,24 @@ export default function Confirmacion({ form }) {
         )}
 
         {/* =================== PRODUCTOS / SERVICIOS =================== */}
-        <Grid item xs={12} sm={6}>
-          <CardInfo icon={ShoppingCartIcon} title="Productos">
-            <Typography>{renderArray(form.productos)}</Typography>
-          </CardInfo>
-        </Grid>
+        {Array.isArray(form.tipo_club) && form.tipo_club.includes("consumo") && (
+          <>
+            {/* =================== PRODUCTOS =================== */}
+            <Grid item xs={12} sm={6}>
+              <CardInfo icon={ShoppingCartIcon} title="Productos">
+                <Typography>{renderArray(form.productos)}</Typography>
+              </CardInfo>
+            </Grid>
 
-        <Grid item xs={12} sm={6}>
-          <CardInfo icon={BuildIcon} title="Servicios">
-            <Typography>{renderArray(form.servicios)}</Typography>
-          </CardInfo>
-        </Grid>
+            {/* =================== SERVICIOS =================== */}
+            <Grid item xs={12} sm={6}>
+              <CardInfo icon={BuildIcon} title="Servicios">
+                <Typography>{renderArray(form.servicios)}</Typography>
+              </CardInfo>
+            </Grid>
+          </>
+        )}
+
 
         {/* =================== HORARIOS =================== */}
         <Grid item xs={12}>
