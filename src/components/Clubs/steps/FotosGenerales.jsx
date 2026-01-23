@@ -93,7 +93,7 @@ const FotosGenerales = ({
                 }}
             >
             
-            ⬆️ Subir Fotos.
+            ⬆️ Subir Fotos
             
             <Input
                 type="file"
@@ -102,6 +102,9 @@ const FotosGenerales = ({
                 multiple
                 onChange={handleFileChange}
                 sx={{ display: "none" }}
+                inputProps={{
+                    multiple: true,
+                }}
             />
             
             </Button>
@@ -208,6 +211,9 @@ const FotosGenerales = ({
                     multiple
                     onChange={handleFileChange}
                     sx={{ display: "none" }}
+                    inputProps={{
+                        multiple: true,
+                    }}
                   />
                 </Button>
         

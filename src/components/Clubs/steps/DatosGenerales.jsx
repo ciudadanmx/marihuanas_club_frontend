@@ -56,6 +56,12 @@ export default function DatosGenerales({ form, setForm, tipo }) {
     });
   }, [tipoValue, setForm]);
 
+  useEffect(() => {
+    if (form.tipo_club?.includes("cultivo")) {
+      setCultivoHabilitado(true);
+    }
+  }, [form?.tipo_club, setForm]);
+
   const handleTipoClick = (t) => {
     //Dependiendo de si es cultivo o consumo muestra condicionalmente el modal de pago, así como la selección de los checkbox
     if (

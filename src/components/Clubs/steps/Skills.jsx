@@ -79,7 +79,7 @@ const Skills = ({
                         "&:hover": { backgroundColor: "#7b1fa2" },
                         }}
                     >
-                        ⬆️ Subir Archivos.
+                        ⬆️ Subir Archivos
                         <Input
                         type="file"
                         name="archivos_certificados"
@@ -88,6 +88,9 @@ const Skills = ({
                         id="archivos-input"
                         onChange={handleDocsAdd}
                         sx={{ display: "none" }}
+                        inputProps={{
+                            multiple: true,
+                        }}
                         />
                         
                     </Button>
