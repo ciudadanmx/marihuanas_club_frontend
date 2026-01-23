@@ -71,6 +71,19 @@ const capitalizeWords = (text) => {
 };
 
 /**
+ * Capitaliza SOLO la primera letra de la frase
+ * Ej: "club cannábico oaxaca" → "Club cannábico oaxaca"
+ */
+const capitalizePhrase = (text) => {
+  if (!text || typeof text !== "string") return text;
+
+  const normalized = text.trim().toLowerCase();
+  if (!normalized) return normalized;
+
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+};
+
+/**
  * Exportamos todo en un solo objeto
  * para mantener el mismo patrón que ya usas
  */
@@ -79,6 +92,7 @@ const formaters = {
   formatPrice,
   formatearDireccionConInterior,
   capitalizeWords,
+  capitalizePhrase,
 };
 
 export default formaters;

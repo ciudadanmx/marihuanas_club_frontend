@@ -230,7 +230,15 @@ export default function Confirmacion({ form }) {
 
         <Grid item xs={12} sm={6}>
           <CardInfo icon={CategoryIcon} title="Tipo de club">
-            <Typography>{form.tipo_club || "-"}</Typography>
+          <Typography>
+            {Array.isArray(form.tipo_club) &&
+            form.tipo_club.includes("cultivo") &&
+            form.tipo_club.includes("consumo")
+              ? "Híbrido"
+              : Array.isArray(form.tipo_club)
+                ? formaters.capitalizeWords(form.tipo_club.join(", "))
+                : "-"}
+          </Typography>
           </CardInfo>
         </Grid>
 
@@ -244,10 +252,10 @@ export default function Confirmacion({ form }) {
         <Grid item xs={12}>
           <CardInfo icon={HomeIcon} title="Dirección">
             <Typography>
-              {formaters.formatearDireccionConInterior(
+              {formaters.capitalizeWords(formaters.formatearDireccionConInterior(
                 form.direccion_formateada,
                 form.numero_interior
-              ) || form.direccion || "-"}
+              )) || formaters.capitalizeWords(form.direccion) || "-"}
             </Typography>
           </CardInfo>
         </Grid>
@@ -286,7 +294,7 @@ export default function Confirmacion({ form }) {
         <Grid item xs={12}>
           <CardInfo icon={InfoIcon} title="Descripción">
             <Typography sx={{ whiteSpace: "pre-line" }}>
-              {form.descripcion || "-"}
+              {formaters.capitalizePhrase(form.descripcion) || "-"}
             </Typography>
           </CardInfo>
         </Grid>
@@ -307,8 +315,8 @@ export default function Confirmacion({ form }) {
         {form.armarios && (
           <Grid item xs={12}>
             <CardInfo icon={YardIcon} title="Habilidades del Jardinero">
-              <Typography>
-                {form.skills || "No especificadas."}
+              <Typography sx={{ whiteSpace: "pre-line" }}>
+                {formaters.capitalizePhrase(form.skills) || "No especificadas."}
               </Typography>
 
               <Divider sx={{ my: 2 }} />
