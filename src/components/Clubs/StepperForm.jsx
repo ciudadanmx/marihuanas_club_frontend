@@ -100,6 +100,11 @@ export default function StepperForm({
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
+  let hola = "";
+  const validarCofepris = () => {
+      form.whatsapp && ( hola = 'si' );
+   }
+
   // 🔹 STEPS DINÁMICOS SEGÚN TIPO
   const steps = useMemo(() => {
     const baseSteps = [];
@@ -312,8 +317,10 @@ export default function StepperForm({
         auth_name: user?.name || "desconocido",
         horarios: form.horarios,
         whatsapp: form.whatsapp,
-        reservacion: form.reservacion,
-        form: "cultivo",
+        reservacion: form.reservacion || false,
+        activo: false,
+        fecha_alta: new Date().toISOString(),
+        en_revision: true,
       };
 
       dataToSend.append("data", JSON.stringify(payload));
@@ -333,12 +340,25 @@ export default function StepperForm({
 
       if (res.ok) {
         alert("🎉 Club creado con éxito");
+        enqueueSnackbar(
+          "🎉 Club creado con éxito ",
+          { variant: "success" }
+        );
+        navigate('/clubs');
       } else {
         const error = await res.json();
-        alert("❌ Error: " + JSON.stringify(error));
+        enqueueSnackbar(
+          "❌ Error al crear el club: " +
+            (error?.error?.message || "Error desconocido"),
+          { variant: "error" }
+        );
       }
     } catch (err) {
-      alert("❌ Error de red: " + err.message);
+      enqueueSnackbar(
+        "❌ Error de red: " +
+          (err?.message || "Error desconocido"),
+        { variant: "error" }
+      );
     } finally {
       setLoading(false);
     }

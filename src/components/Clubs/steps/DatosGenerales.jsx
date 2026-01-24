@@ -16,7 +16,7 @@ import {
   Button,
   FormHelperText,
 } from "@mui/material";
-
+import ModalWrapper from '../../../components/ModalWrapper';
 const TIPOS = ["cultivo", "consumo", "tienda", "cursos", "comida", "eventos"];
 
 export default function DatosGenerales({ form, setForm, tipo }) {
@@ -250,21 +250,36 @@ useEffect(() => {
       </FormHelperText>
       </FormControl>
 
-      <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-        <DialogTitle>Club de cultivo</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Para clubs de cultivo es necesario cubrir un pago de{" "}
-            <strong>$10,000 MXN que incluye un kit de cultivo con 3 armarios y otros accesorios de jardinero.</strong>.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button color="success" variant="contained" onClick={aceptarPago}>
-            Aceptar
-          </Button>
-          <Button onClick={() => setOpenModal(false)}>Cancelar</Button>
-        </DialogActions>
-      </Dialog>
+     <ModalWrapper
+  open={openModal}
+  onClose={() => setOpenModal(false)}
+  title="Club de cultivo"
+  actions={
+    <>
+      <Button
+        color="success"
+        variant="contained"
+        onClick={aceptarPago}
+        sx={{ mr: 2 }}
+      >
+        Aceptar
+      </Button>
+
+      <Button onClick={() => setOpenModal(false)}>
+        Cancelar
+      </Button>
+    </>
+  }
+>
+  <Typography>
+    Para clubs de cultivo es necesario cubrir un pago de{" "}
+    <strong>
+      $10,000 MXN que incluye un kit de cultivo con 3 armarios y otros
+      accesorios de jardinero.
+    </strong>
+  </Typography>
+</ModalWrapper>
+
     </>
   );
 }
