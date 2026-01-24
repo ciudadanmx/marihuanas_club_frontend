@@ -4,6 +4,9 @@ import {
   Typography,
   TextField,
   Grid,
+  Tooltip,
+  Button,
+  Input,
 } from "@mui/material";
 
 /**
@@ -87,23 +90,43 @@ const CofeprisFolioSection = ({
         </Typography>
 
         <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <input
-              type="file"
-              accept="application/pdf"
-              name="pdfCofepris"
-              onChange={(e) =>
-                handleFormChange({
-                  target: {
-                    name: "pdfCofepris",
-                    value: e.target.files[0],
-                    type: "file",
-                  },
-                })
-              }
-            />
-          </Grid>
+            <Grid item xs={12}>
+                <Tooltip title="Sube el PDF emitido por COFEPRIS">
+                <Button
+                    variant="contained"
+                    component="label"
+                    sx={{
+                    backgroundColor: "#2e7d32",
+                    "&:hover": { backgroundColor: "#1b5e20" },
+                    }}
+                >
+                    ⬆️ Subir PDF COFEPRIS
+                    <Input
+                    type="file"
+                    accept="application/pdf"
+                    name="pdfCofepris"
+                    sx={{ display: "none" }}
+                    onChange={(e) =>
+                        handleFormChange({
+                        target: {
+                            name: "pdfCofepris",
+                            value: e.target.files[0],
+                            type: "file",
+                        },
+                        })
+                    }
+                    />
+                </Button>
+                </Tooltip>
+
+                {form.pdfCofepris && (
+                <Typography variant="body2" sx={{ mt: 1, color: "success.main" }}>
+                    📄 Archivo seleccionado: <b>{form.pdfCofepris.name}</b>
+                </Typography>
+                )}
+            </Grid>
         </Grid>
+
 
         {form.pdfCofepris && (
           <Typography variant="body2" sx={{ mt: 1, color: "green" }}>

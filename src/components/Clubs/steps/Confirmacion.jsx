@@ -98,6 +98,7 @@ const DIAS_SEMANA = [
  *
  * Se usa para evitar repetir el mismo Card 20 veces
  */
+
 const CardInfo = ({ icon: Icon, title, children }) => (
   <motion.div {...motionProps}>
     <Card sx={cardStyle}>
@@ -207,6 +208,18 @@ export default function Confirmacion({ form, isActivaMembresia }) {
     fieldName: "archivos_club",
   });
 
+    const serviciosArray = [
+    // servicios explícitos
+    ...(Array.isArray(form.servicios) ? form.servicios : []),
+
+    // servicios inferidos desde tipo_club
+    ...(Array.isArray(form.tipo_club)
+      ? form.tipo_club.filter(
+          t => !["cultivo", "consumo"].includes(t)
+        )
+      : []),
+  ];
+
   return (
     <Box>
       {/* =================== TÍTULO =================== */}
@@ -236,9 +249,9 @@ export default function Confirmacion({ form, isActivaMembresia }) {
             form.tipo_club.includes("cultivo") &&
             form.tipo_club.includes("consumo")
               ? "Híbrido"
-              : Array.isArray(form.tipo_club)
-                ? formaters.capitalizeWords(form.tipo_club.join(", "))
-                : "-"}
+              : form.tipo_club.includes("cultivo")
+                ? "cultivo"
+                : "consumo"}
           </Typography>
           </CardInfo>
         </Grid>
@@ -412,7 +425,7 @@ export default function Confirmacion({ form, isActivaMembresia }) {
             {/* =================== SERVICIOS =================== */}
             <Grid item xs={12} sm={6}>
               <CardInfo icon={BuildIcon} title="Servicios">
-                <Typography>{renderArray(form.servicios)}</Typography>
+                <Typography>{renderArray(serviciosArray)}</Typography>
               </CardInfo>
             </Grid>
           </>

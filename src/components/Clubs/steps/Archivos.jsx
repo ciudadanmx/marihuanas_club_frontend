@@ -54,6 +54,14 @@ export default function Archivos({ form, setForm, tipo }) {
   // ======================================================
   const selectConsumoOption = (option) => {
     setConsumoOption(option);
+
+    if (option === "folio") {
+      window.scrollBy({
+        top: -250, // 👈 sube ~4 líneas del formulario
+        left: 0,
+        behavior: "smooth",
+      });
+    }
   };
 
   // ======================================================

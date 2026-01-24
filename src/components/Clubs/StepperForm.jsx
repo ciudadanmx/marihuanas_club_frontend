@@ -202,6 +202,57 @@ export default function StepperForm({
 
     setLoading(true);
 
+  // ================== LIMPIEZA DE DATOS ==================
+
+  // ---- PRODUCTOS: siempre string
+  const productos =
+    Array.isArray(form.productos)
+      ? form.productos
+          .map(p => String(p).trim())
+          .filter(Boolean)
+          .join(", ")
+      : form.productos
+        ? String(form.productos)
+        : "";
+
+  // ---- SERVICIOS: combinación de form.servicios + tipo_club (excepto cultivo/consumo)
+  const serviciosArray = [
+    // servicios explícitos del formulario
+    ...(Array.isArray(form.servicios) ? form.servicios : []),
+
+    // servicios inferidos desde tipo_club
+    ...(Array.isArray(form.tipo_club)
+      ? form.tipo_club.filter(
+          t => !["cultivo", "consumo"].includes(t)
+        )
+      : []),
+  ];
+
+  const servicios = serviciosArray
+    .map(s => String(s).trim())
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i) // elimina duplicados
+    .join(", ");
+
+  // ---- TIPO: ENUM ESTRICTO PARA STRAPI
+  // posibles valores: "cultivo" | "consumo" | "ambos"
+  let tipo = "consumo"; // default seguro
+
+  if (Array.isArray(form.tipo_club)) {
+    const tieneCultivo = form.tipo_club.includes("cultivo");
+    const tieneConsumo = form.tipo_club.includes("consumo");
+
+    if (tieneCultivo && tieneConsumo) {
+      tipo = "ambos";
+    } else if (tieneCultivo) {
+      tipo = "cultivo";
+    } else {
+      tipo = "consumo";
+    }
+  }
+
+  // ================== FIN LIMPIEZA ==================
+
     try {
       const dataToSend = new FormData();
       const payload = {
@@ -209,16 +260,17 @@ export default function StepperForm({
         direccion: form.direccion,
         nombre_titular: form.nombre_titular,
         descripcion: form.descripcion,
-        status_legal: form.status_legal,
         lat: form.lat,
         lng: form.lng,
-        productos: form.productos,
-        servicios: form.servicios,
+        productos: productos,
+        servicios: servicios,
+        tipo: tipo,
         users_permissions_user: userId,
         auth_name: user?.name || "desconocido",
         horarios: form.horarios,
         whatsapp: form.whatsapp,
         reservacion: form.reservacion,
+        form: "cultivo",
       };
 
       dataToSend.append("data", JSON.stringify(payload));
