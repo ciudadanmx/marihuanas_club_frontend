@@ -48,6 +48,44 @@ const validarCampo = ({
   return true;
 };
 
+const validarNombre = async ({
+  nombre,
+  enqueueSnackbar,
+  msgError,
+}) => {
+  if (!nombre) return false;
+
+  try {
+    const res = await fetch(
+      `${STRAPI_URL}/api/clubs?filters[nombre_club][$eqi]=${encodeURIComponent(nombre)}`
+    );
+
+    if (!res.ok) {
+      throw new Error("Error al consultar Strapi");
+    }
+
+    const data = await res.json();
+
+    // Si existe al menos un club con ese nombre → inválido
+    if (data?.data?.length > 0) {
+      enqueueSnackbar(
+        msgError,
+        { variant: "error" }
+      );
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    enqueueSnackbar(
+      "🔥 Error al validar el nombre del club, intenta de nuevo",
+      { variant: "error" }
+    );
+    return false;
+  }
+};
+
+
 export default function StepperForm({
   tipo,
   form,
@@ -103,7 +141,7 @@ export default function StepperForm({
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const handleNext = () => {
+  const handleNext = async () => {
     // 🔒 Validación SOLO en el step "Datos Generales"
     const stepLabel = steps[activeStep]?.label;
 
@@ -117,6 +155,11 @@ export default function StepperForm({
       };
 
       if (
+        !(await validarNombre({
+          nombre: data.nombre_club,
+          enqueueSnackbar,
+          msgError:  "🚫 Ese nombre de club ya existe en esta dimensión… elige otro",
+        })) ||
         !validarCampo({
           valor: data.nombre_club,
           min: 5,
@@ -202,56 +245,56 @@ export default function StepperForm({
 
     setLoading(true);
 
-  // ================== LIMPIEZA DE DATOS ==================
+    // ================== LIMPIEZA DE DATOS ==================
 
-  // ---- PRODUCTOS: siempre string
-  const productos =
-    Array.isArray(form.productos)
-      ? form.productos
-          .map(p => String(p).trim())
-          .filter(Boolean)
-          .join(", ")
-      : form.productos
-        ? String(form.productos)
-        : "";
+    // ---- PRODUCTOS: siempre string
+    const productos =
+      Array.isArray(form.productos)
+        ? form.productos
+            .map(p => String(p).trim())
+            .filter(Boolean)
+            .join(", ")
+        : form.productos
+          ? String(form.productos)
+          : "";
 
-  // ---- SERVICIOS: combinación de form.servicios + tipo_club (excepto cultivo/consumo)
-  const serviciosArray = [
-    // servicios explícitos del formulario
-    ...(Array.isArray(form.servicios) ? form.servicios : []),
+    // ---- SERVICIOS: combinación de form.servicios + tipo_club (excepto cultivo/consumo)
+    const serviciosArray = [
+      // servicios explícitos del formulario
+      ...(Array.isArray(form.servicios) ? form.servicios : []),
 
-    // servicios inferidos desde tipo_club
-    ...(Array.isArray(form.tipo_club)
-      ? form.tipo_club.filter(
-          t => !["cultivo", "consumo"].includes(t)
-        )
-      : []),
-  ];
+      // servicios inferidos desde tipo_club
+      ...(Array.isArray(form.tipo_club)
+        ? form.tipo_club.filter(
+            t => !["cultivo", "consumo"].includes(t)
+          )
+        : []),
+    ];
 
-  const servicios = serviciosArray
-    .map(s => String(s).trim())
-    .filter(Boolean)
-    .filter((v, i, arr) => arr.indexOf(v) === i) // elimina duplicados
-    .join(", ");
+    const servicios = serviciosArray
+      .map(s => String(s).trim())
+      .filter(Boolean)
+      .filter((v, i, arr) => arr.indexOf(v) === i) // elimina duplicados
+      .join(", ");
 
-  // ---- TIPO: ENUM ESTRICTO PARA STRAPI
-  // posibles valores: "cultivo" | "consumo" | "ambos"
-  let tipo = "consumo"; // default seguro
+    // ---- TIPO: ENUM ESTRICTO PARA STRAPI
+    // posibles valores: "cultivo" | "consumo" | "ambos"
+    let tipo = "consumo"; // default seguro
 
-  if (Array.isArray(form.tipo_club)) {
-    const tieneCultivo = form.tipo_club.includes("cultivo");
-    const tieneConsumo = form.tipo_club.includes("consumo");
+    if (Array.isArray(form.tipo_club)) {
+      const tieneCultivo = form.tipo_club.includes("cultivo");
+      const tieneConsumo = form.tipo_club.includes("consumo");
 
-    if (tieneCultivo && tieneConsumo) {
-      tipo = "ambos";
-    } else if (tieneCultivo) {
-      tipo = "cultivo";
-    } else {
-      tipo = "consumo";
+      if (tieneCultivo && tieneConsumo) {
+        tipo = "ambos";
+      } else if (tieneCultivo) {
+        tipo = "cultivo";
+      } else {
+        tipo = "consumo";
+      }
     }
-  }
 
-  // ================== FIN LIMPIEZA ==================
+    // ================== FIN LIMPIEZA ==================
 
     try {
       const dataToSend = new FormData();
