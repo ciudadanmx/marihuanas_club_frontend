@@ -58,7 +58,7 @@ export default function StepperForm({
   loginWithRedirect,
 }) {
 
-  const { isClub, roles } = useRoles();
+  const { isClub, roles, isActivaMembresia } = useRoles();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -90,11 +90,11 @@ export default function StepperForm({
       },
       {
         label: "Archivos",
-        component: <Archivos form={form} setForm={setForm} tipo={tipo} />,
+        component: <Archivos form={form} setForm={setForm} tipo={tipo} user={user}/>,
       },
       {
         label: "Confirmación",
-        component: <Confirmacion form={form} />,
+        component: <Confirmacion form={form} isActivaMembresia={isActivaMembresia}/>,
       }
     );
     return baseSteps;

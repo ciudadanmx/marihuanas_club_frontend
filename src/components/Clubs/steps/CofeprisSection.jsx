@@ -21,8 +21,7 @@ const CofeprisSection = ({
     form,
     handleNestedChange,
     user,
-    goGeneradorLibre
-}) => {
+    goGeneradorLibre}) => {
   return (
     
         <>

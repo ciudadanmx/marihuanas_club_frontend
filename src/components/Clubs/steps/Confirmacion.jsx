@@ -36,7 +36,6 @@ import {
   Photo as PhotoIcon,
   Chat as ChatIcon,
   Visibility as VisibilityIcon,
-  WorkspacePremium as WorkspacePremiumIcon,
   Yard as YardIcon,
   Forest as ForestIcon,
   Gavel as MedicalServicesIcon,
@@ -199,7 +198,7 @@ const renderHorarios = (horarios) => {
    COMPONENTE PRINCIPAL
 ========================================================= */
 
-export default function Confirmacion({ form }) {
+export default function Confirmacion({ form, isActivaMembresia }) {
   /**
    * Handler para archivos (PDF / imágenes)
    */
@@ -441,7 +440,15 @@ export default function Confirmacion({ form }) {
         <Grid item xs={6} sm={6}>
           <CardInfo icon={MedicalServicesIcon} title="Trámite COFEPRIS">
             <Typography>
-              {form.reservacion ? "Yes" : "No"}
+              {form.cofepris ? (
+                <>
+                  Ya tienes el trámite iniciado
+                  {form.cofepris}
+                </>
+              ) : (
+                 !isActivaMembresia() ? "Activa" : "inactiva"
+                )
+              }
             </Typography>
           </CardInfo>
         </Grid>
