@@ -9,10 +9,6 @@ import {
   Typography,
   Grid,
   Divider,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
   FormHelperText,
 } from "@mui/material";
@@ -251,34 +247,34 @@ useEffect(() => {
       </FormControl>
 
      <ModalWrapper
-  open={openModal}
-  onClose={() => setOpenModal(false)}
-  title="Club de cultivo"
-  actions={
-    <>
-      <Button
-        color="success"
-        variant="contained"
-        onClick={aceptarPago}
-        sx={{ mr: 2 }}
-      >
-        Aceptar
-      </Button>
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        title="Club de cultivo"
+        actions={
+          <>
+            <Button
+              color="success"
+              variant="contained"
+              onClick={aceptarPago}
+              sx={{ mr: 2 }}
+            >
+              Aceptar
+            </Button>
 
-      <Button onClick={() => setOpenModal(false)}>
-        Cancelar
-      </Button>
-    </>
-  }
->
-  <Typography>
-    Para clubs de cultivo es necesario cubrir un pago de{" "}
-    <strong>
-      $10,000 MXN que incluye un kit de cultivo con 3 armarios y otros
-      accesorios de jardinero.
-    </strong>
-  </Typography>
-</ModalWrapper>
+            <Button onClick={() => setOpenModal(false)}>
+              Cancelar
+            </Button>
+          </>
+        }
+      >
+        <Typography>
+          Para clubs de cultivo es necesario cubrir un pago de{" "}
+          <strong style={{ color: "#2e7d32" }}>
+            $10,000 MXN que incluye un kit de cultivo con 3 armarios y otros
+            accesorios de jardinero.
+          </strong>
+        </Typography>
+      </ModalWrapper>
 
     </>
   );
