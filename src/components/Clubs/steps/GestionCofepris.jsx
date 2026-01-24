@@ -8,8 +8,8 @@ import {
   FormControlLabel,
   FormGroup,
   Divider,
-  MenuItem,
 } from "@mui/material";
+import CofeprisFolioSection from './CofeprisFolioSection';
 
 /**
  * ============================================================
@@ -284,50 +284,11 @@ const GestionCofepris = ({
         />
 
         {consumoOption === "folio" && (
-          <Box sx={{ pl: 4, pr: 2, pb: 1 }}>
-
-            {/* Folio / expediente */}
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Folio o número de expediente COFEPRIS"
-              name="cofepris"
-              value={form.cofepris || ""}
-              onChange={handleFormChange}
-              onFocus={() => setFocusedField("cofepris")}
-              onBlur={() => setFocusedField(null)}
-              helperText="Puede ser el folio de autorización, expediente o resolución."
-              color="success"
+            <CofeprisFolioSection 
+                form={form}
+                handleFormChange={handleFormChange}
+                setFocusedField={setFocusedField}
             />
-
-            {/* Tipo de resolución */}
-            <TextField
-              select
-              fullWidth
-              margin="normal"
-              label="Tipo de resolución"
-              name="tipoResolucion"
-              value={form.tipoResolucion || ""}
-              onChange={handleFormChange}
-              color="success"
-            >
-              <MenuItem value="amparo">Amparo para uso personal</MenuItem>
-              <MenuItem value="cofepris">Autorización directa COFEPRIS</MenuItem>
-              <MenuItem value="desconozco">No estoy seguro</MenuItem>
-            </TextField>
-
-            {/* Año aproximado */}
-            <TextField
-              fullWidth
-              margin="normal"
-              label="Año aproximado del trámite"
-              name="anioResolucion"
-              value={form.anioResolucion || ""}
-              onChange={handleFormChange}
-              helperText="Ejemplo: 2022"
-              color="success"
-            />
-          </Box>
         )}
 
       </FormGroup>

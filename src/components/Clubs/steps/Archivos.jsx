@@ -22,7 +22,7 @@ export default function Archivos({ form, setForm, tipo }) {
 
   // Opción seleccionada para COFEPRIS:
   // "folio" | "gestion" | "pormi"
-  const [consumoOption, setConsumoOption] = useState("folio");
+  const [consumoOption, setConsumoOption] = useState(Array.isArray(form.tipo_club) && form.tipo_club.includes("cultivo") ? "gestion" : "folio");
 
   // Control de certificados dentro de Skills
   const [certificados, setCertificados] = useState(false);
