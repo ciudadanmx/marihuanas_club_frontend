@@ -17,9 +17,6 @@ export default function Archivos({ form, setForm, tipo }) {
   // Campo actualmente enfocado (para ayudas visuales)
   const [focusedField, setFocusedField] = useState(null);
 
-  // Flag específico para manejo de folio propio (no tocar, depende de negocio)
-  const [cultivoFolioPropio, setCultivoFolioPropio] = useState(false);
-
   // Opción seleccionada para COFEPRIS:
   // "folio" | "gestion" | "pormi"
   const [consumoOption, setConsumoOption] = useState(Array.isArray(form.tipo_club) && form.tipo_club.includes("cultivo") ? "gestion" : "folio");

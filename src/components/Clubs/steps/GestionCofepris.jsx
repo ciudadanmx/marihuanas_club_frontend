@@ -10,6 +10,7 @@ import {
   Divider,
 } from "@mui/material";
 import CofeprisFolioSection from './CofeprisFolioSection';
+import CofeprisGestionDatosForm from './CofeprisGestionDatosForm';
 
 /**
  * ============================================================
@@ -30,6 +31,7 @@ const GestionCofepris = ({
   user,
   setFocusedField,
   goGeneradorLibre,
+  setForm,
 }) => {
 
   /**
@@ -71,7 +73,6 @@ const GestionCofepris = ({
             - Visible solo con membresía activa
             - Opción por defecto
         ===================================================== */}
-        {membresiaActiva && (
           <FormControlLabel
             control={
               <Checkbox
@@ -83,187 +84,18 @@ const GestionCofepris = ({
             }
             label="📝 Solicitar la gestión de mi trámite"
           />
-        )}
 
         {/* =====================================================
             CONTENIDO DE LA OPCIÓN: GESTIÓN
         ===================================================== */}
-        {consumoOption === "gestion" && membresiaActiva && (
-          <Box
-            sx={{
-              pl: 4,
-              pr: 2,
-              pb: 2,
-              mt: 1,
-              borderLeft: "3px solid rgba(156,39,176,0.12)"
-            }}
-          >
-            <Typography variant="subtitle2" sx={{ mb: 1 }}>
-              Completa los datos para que generemos y gestionemos tu trámite.
-            </Typography>
-
-            <Grid container spacing={2}>
-
-              {/* CURP */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="CURP"
-                  fullWidth
-                  name="curp"
-                  value={form.curp || ""}
-                  onChange={handleFormChange}
-                  margin="normal"
-                  color="success"
-                />
-              </Grid>
-
-              {/* RFC */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  label="RFC"
-                  fullWidth
-                  name="rfc"
-                  value={form.rfc || ""}
-                  onChange={handleFormChange}
-                  margin="normal"
-                  color="success"
-                />
-              </Grid>
-
-              {/* ================= DOMICILIO ================= */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2">
-                  Domicilio para el trámite:
-                </Typography>
-
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="usarDireccionExistente"
-                        checked={form.usarDireccionExistente ?? !!form?.direccion}
-                        onChange={handleFormChange}
-                        color="success"
-                      />
-                    }
-                    label={
-                      form?.direccion
-                        ? "Usar domicilio que ya tenemos"
-                        : "No hay domicilio guardado"
-                    }
-                  />
-                </FormGroup>
-
-                {/* Mostrar domicilio existente */}
-                {(form.direccion && form.usarDireccionExistente) && (
-                  <Typography variant="body2" sx={{ ml: 4 }}>
-                    {form.direccion}
-                  </Typography>
-                )}
-
-                {/* Captura manual del domicilio */}
-                {!(form.usarDireccionExistente ?? !!form?.direccion) && (
-                  <Box sx={{ mt: 1 }}>
-                    <Grid container spacing={1}>
-                      {["calle", "numero", "colonia", "municipio", "estado", "cp"].map((campo) => (
-                        <Grid
-                          item
-                          xs={12}
-                          sm={campo === "calle" ? 8 : campo === "numero" ? 4 : 6}
-                          key={campo}
-                        >
-                          <TextField
-                            label={campo.charAt(0).toUpperCase() + campo.slice(1)}
-                            fullWidth
-                            margin="dense"
-                            name={campo}
-                            value={form.direccionGestion?.[campo] || ""}
-                            onChange={handleNestedChange("direccionGestion")}
-                            color="success"
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Box>
-                )}
-              </Grid>
-
-              {/* ================= TELÉFONO ================= */}
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">
-                  Teléfono de contacto:
-                </Typography>
-
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="usarWhatsappExistente"
-                        checked={form.usarWhatsappExistente ?? !!form?.whatsapp}
-                        onChange={handleFormChange}
-                        color="success"
-                      />
-                    }
-                    label={
-                      form?.whatsapp
-                        ? `Usar whatsapp: ${form.whatsapp}`
-                        : "No hay whatsapp guardado"
-                    }
-                  />
-                </FormGroup>
-
-                {!(form.usarWhatsappExistente ?? !!form?.whatsapp) && (
-                  <TextField
-                    label="Teléfono (ej. 55xxxxxxxx)"
-                    fullWidth
-                    margin="dense"
-                    name="telefonoGestion"
-                    value={form.telefonoGestion || ""}
-                    onChange={handleFormChange}
-                    color="success"
-                  />
-                )}
-              </Grid>
-
-              {/* ================= EMAIL ================= */}
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2">
-                  Correo electrónico:
-                </Typography>
-
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        name="usarEmailExistente"
-                        checked={form.usarEmailExistente ?? !!user?.email}
-                        onChange={handleFormChange}
-                        color="success"
-                      />
-                    }
-                    label={
-                      user?.email
-                        ? `Usar email: ${user.email}`
-                        : "No hay email de usuario"
-                    }
-                  />
-                </FormGroup>
-
-                {!(form.usarEmailExistente ?? !!user?.email) && (
-                  <TextField
-                    label="Email de contacto"
-                    fullWidth
-                    margin="dense"
-                    name="emailGestion"
-                    value={form.emailGestion || ""}
-                    onChange={handleFormChange}
-                    color="success"
-                  />
-                )}
-              </Grid>
-
-            </Grid>
-          </Box>
+        {consumoOption === "gestion"  && (
+             <CofeprisGestionDatosForm
+                form={form}
+                setForm={setForm}
+                handleFormChange={handleFormChange}
+                handleNestedChange={handleNestedChange}
+                user={user}
+            />
         )}
 
         {/* =====================================================

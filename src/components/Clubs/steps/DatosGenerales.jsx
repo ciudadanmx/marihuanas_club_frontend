@@ -26,35 +26,29 @@ export default function DatosGenerales({ form, setForm, tipo }) {
   const [cultivoHabilitado, setCultivoHabilitado] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
 
-  useEffect(() => {
+useEffect(() => {
+  if (form.tipo_club?.length) return; // 👈 CLAVE
 
-    setForm((prev) => {
-      const tiposPrevios = prev.tipo_club || [];
+  setForm((prev) => {
+    const tiposPrevios = prev.tipo_club || [];
 
-      if (tipoValue.tipo === "cultivo") {
-        return {
-          ...prev,
-          tipo_club: tiposPrevios.includes("cultivo")
-            ? tiposPrevios
-            : [...tiposPrevios, "cultivo"],
-        };
-      }
+    if (tipoValue.tipo === "cultivo") {
+      return {
+        ...prev,
+        tipo_club: ["cultivo"],
+      };
+    }
 
-      if (tipoValue.tipo === "consumo") {
-        return {
-          ...prev,
-          tipo_club: [
-            // quitamos cultivo si existía
-            ...tiposPrevios.filter((t) => t !== "cultivo" && t !== "consumo"),
-            // forzamos consumo
-            "consumo",
-          ],
-        };
-      }
+    if (tipoValue.tipo === "consumo") {
+      return {
+        ...prev,
+        tipo_club: ["consumo"],
+      };
+    }
 
-      return prev;
-    });
-  }, [tipoValue, setForm]);
+    return prev;
+  });
+}, [tipoValue, setForm, form.tipo_club]);
 
   useEffect(() => {
     if (form.tipo_club?.includes("cultivo")) {
