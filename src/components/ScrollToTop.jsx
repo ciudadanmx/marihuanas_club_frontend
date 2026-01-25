@@ -72,7 +72,7 @@ export default function ScrollToTop({
           style={{
             position: 'fixed',
             bottom: '42px',
-            right: '180px',
+            right: '280px',
             zIndex: 1000,
             cursor: 'pointer',
             backgroundColor: '#751460e3',

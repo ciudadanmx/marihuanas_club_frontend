@@ -22,6 +22,7 @@ import { findUserInStrapi } from './utils/strapiUserService.jsx';
 // IMPORTA ScrollToTop
 import ScrollToTop from './components/ScrollToTop.jsx';
 import AuthGate from './components/AuthGate.jsx';
+import ShareButton from './components/ShareButton.jsx';
 
 const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
 const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
@@ -57,6 +58,7 @@ const AppWrapper = () => {
       <AuthGate>
         <Asistente />
       </AuthGate>
+      <ShareButton />
       <Footer />
     </>
   );
