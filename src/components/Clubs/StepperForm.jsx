@@ -96,22 +96,15 @@ export default function StepperForm({
   loginWithRedirect,
 }) {
 
-  const { isClub, roles, isActivaMembresia } = useRoles();
+  const { isClub, isActivaMembresia } = useRoles();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-
-  let hola = "";
-  const validarCofepris = () => {
-      form.whatsapp && ( hola = 'si' );
-   }
 
   // 🔹 STEPS DINÁMICOS SEGÚN TIPO
   const steps = useMemo(() => {
     const baseSteps = [];
 
-    console.log('klub si steper', tipo?.tipo.tipo);
     if (tipo.tipo.tipo === "consumo") {
-      console.log('klub si stepper consumo', tipo)
       baseSteps.push({
         label: "Instrucciones",
         component: <Instrucciones tipo={tipo} />,
@@ -223,11 +216,30 @@ export default function StepperForm({
         return;
       }
     }
+    
+    if (stepLabel === "Horarios y Contacto") {
+      if (!form.whatsapp || form.whatsapp.length < 10) {
+        enqueueSnackbar(
+          "💬 Te tiramos señales de humo para las citas... de todos modos pásanos tu Whatsapp para más arre jajaja 😅",
+          { variant: "warning" }
+        );
+        return;
+      }
+    }
 
     if (stepLabel === "Archivos") {
        if (!Array.isArray(form.fotos_club) || form.fotos_club.length < 2) {
         enqueueSnackbar(
           "😍  De la vista nace el amor mazter -- Agrega al menos 2 Fotos de tu Club",
+          { variant: "warning" }
+        );
+        return;
+      }
+
+      
+      if ( form.tipo_club.includes('cultivo') && (!Array.isArray(form.documentales) || form.documentales < 5) ) {
+        enqueueSnackbar(
+          `❓  ¿ Y cómo sabemos que tienes espacio para las flores ? -- Agrega al menos 5 Fotos de tu Verificación según las indicaciones`,
           { variant: "warning" }
         );
         return;

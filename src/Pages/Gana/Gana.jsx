@@ -124,7 +124,7 @@ export default function Gana() {
     const imgName = visibleIds.includes(count)
       ? `hexagono${count}.png`
       : `hexagono.png`;
-    const src = require(`../../assets/${imgName}`);
+    const src = require(`../../assets/hexagonales/${imgName}`);
     topHalves.push(
       <Hexagon
         key={`t1-${col}`}
@@ -145,7 +145,7 @@ export default function Gana() {
     const imgName = visibleIds.includes(count)
       ? `hexagono${count}.png`
       : `hexagono.png`;
-    const src = require(`../../assets/${imgName}`);
+    const src = require(`../../assets/hexagonales/${imgName}`);
     topHalves.push(
       <Hexagon
         key={`t2-${col}`}
@@ -167,7 +167,7 @@ export default function Gana() {
       const imgName = visibleIds.includes(count)
         ? `hexagono${count}.png`
         : `hexagono.png`;
-      const src = require(`../../assets/${imgName}`);
+      const src = require(`../../assets/hexagonales/${imgName}`);
       const left = count >= 11 && count <= 15
         ? col * W - HALF_H
         : row * col * W - HALF_H - 100;
@@ -197,7 +197,7 @@ export default function Gana() {
     const imgName = visibleIds.includes(count)
       ? `hexagono${count}.png`
       : `hexagono.png`;
-    const src = require(`../../assets/${imgName}`);
+    const src = require(`../../assets/hexagonales/${imgName}`);
     bottomHalves.push(
       <Hexagon
         key={`b-${col}`}
