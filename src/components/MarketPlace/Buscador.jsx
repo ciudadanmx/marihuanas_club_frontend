@@ -157,41 +157,50 @@ const Buscador = () => {
         alignItems="center"
         sx={{ gap: 1, maxWidth: '100%', mx: 'auto', px: 2 }}
       >
-        <Box sx={{ display: 'flex', flex: '0 1 520px' }}>
-          <TextField
-            onChange={(e) => setBusqueda(e.target.value)}
-            value={busqueda}
-            variant="outlined"
-            placeholder="Buscar productos en MarketPlace 4:20..."
-            fullWidth
-            sx={{
-              boxShadow: 3,
-              borderRadius: 2,
-              height: '100%',
-              '& .MuiOutlinedInput-root': { height: '56px' }
-            }}
-          />
-          <Button
-            onClick={handleBuscar}
-            variant="contained"
-            sx={{
-              backgroundColor: '#000',
-              color: '#fff200',
-              borderRadius: 2,
-              fontWeight: 'bold',
-              textTransform: 'none',
-              height: '56px',
-              minWidth: '56px',
-              ml: 1,
-              '&:hover': {
-                backgroundColor: '#222',
-                transform: 'scale(1.05)'
-              }
-            }}
-          >
-            <span className="material-icons">search</span>
-          </Button>
-        </Box>
+      <Box
+  component="form"
+  onSubmit={(e) => {
+    e.preventDefault(); // evita recargar página
+    handleBuscar();     // misma lógica de siempre
+  }}
+  sx={{ display: 'flex', flex: '0 1 520px' }}
+>
+  <TextField
+    onChange={(e) => setBusqueda(e.target.value)}
+    value={busqueda}
+    variant="outlined"
+    placeholder="Buscar productos en MarketPlace 4:20..."
+    fullWidth
+    sx={{
+      boxShadow: 3,
+      borderRadius: 2,
+      height: '100%',
+      '& .MuiOutlinedInput-root': { height: '56px' }
+    }}
+  />
+
+  <Button
+    type="submit"   // 👈 clave
+    variant="contained"
+    sx={{
+      backgroundColor: '#000',
+      color: '#fff200',
+      borderRadius: 2,
+      fontWeight: 'bold',
+      textTransform: 'none',
+      height: '56px',
+      minWidth: '56px',
+      ml: 1,
+      '&:hover': {
+        backgroundColor: '#222',
+        transform: 'scale(1.05)'
+      }
+    }}
+  >
+    <span className="material-icons">search</span>
+  </Button>
+</Box>
+
 
         {/* Espacio de al menos 100px entre botón buscar y vender */}
         <Box sx={{ ml: '100px' }}>
