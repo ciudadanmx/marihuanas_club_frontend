@@ -472,7 +472,7 @@ export default function Confirmacion({ form, isActivaMembresia }) {
       <Divider sx={{ my: 3 }} />
       <Typography color="text.secondary" fontStyle="italic">
         Revisa que toda la información sea correcta antes de presionar{" "}
-        <strong>Enviar</strong>.
+        <strong>Enviar</strong>.{form.opcGestion}
       </Typography>
     </Box>
   );

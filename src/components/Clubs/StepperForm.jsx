@@ -97,6 +97,7 @@ export default function StepperForm({
 }) {
 
   const { isClub, isActivaMembresia } = useRoles();
+  const { cofeprisOption, setCofeprisOption } = useState();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -126,7 +127,7 @@ export default function StepperForm({
       },
       {
         label: "Archivos",
-        component: <Archivos form={form} setForm={setForm} tipo={tipo} user={user}/>,
+        component: <Archivos form={form} setForm={setForm} tipo={tipo} user={user} setCofeprisOption={setCofeprisOption}/>,
       },
       {
         label: "Confirmación",
@@ -216,6 +217,7 @@ export default function StepperForm({
         return;
       }
     }
+
     
     if (stepLabel === "Horarios y Contacto") {
       if (!form.whatsapp || form.whatsapp.length < 10) {
@@ -235,11 +237,20 @@ export default function StepperForm({
         );
         return;
       }
-
       
       if ( form.tipo_club.includes('cultivo') && (!Array.isArray(form.documentales) || form.documentales < 5) ) {
         enqueueSnackbar(
           `❓  ¿ Y cómo sabemos que tienes espacio para las flores ? -- Agrega al menos 5 Fotos de tu Verificación según las indicaciones`,
+          { variant: "warning" }
+        );
+        return;
+      }
+
+      console.log('cofepris option', form.cofeprisOption);
+
+      if (cofeprisOption === "folio" ) {
+        enqueueSnackbar(
+          "📍 Ey… ",
           { variant: "warning" }
         );
         return;

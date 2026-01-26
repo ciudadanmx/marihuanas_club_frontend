@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react'; // 🔴 NUEVO
 import EliminarCurso from '../../Pages/Cursos/EliminarCurso.jsx';
+import PreCargador from '../../components/PreCargador.jsx';
 import {
   Box,
   Grid,
@@ -481,56 +482,10 @@ const Cursos = ({ filtros, parametros }) => {
         <Grid container spacing={2}>
           {loading && (
             <Grid item xs={12}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mt: 6,
-                  mb: 6,
-                  gap: 2,
-                }}
-              >
-                <Box
-                  sx={{
-                    animation: 'pulseGlow 1.8s ease-in-out infinite',
-                    '@keyframes pulseGlow': {
-                      '0%': {
-                        filter: 'drop-shadow(0 0 4px #39ff14)',
-                        transform: 'scale(1)',
-                      },
-                      '50%': {
-                        filter: 'drop-shadow(0 0 18px #39ff14)',
-                        transform: 'scale(1.08)',
-                      },
-                      '100%': {
-                        filter: 'drop-shadow(0 0 4px #39ff14)',
-                        transform: 'scale(1)',
-                      },
-                    },
-                  }}
-                >
-                  <CircularProgress
-                    size={64}
-                    thickness={4}
-                    sx={{
-                      color: '#39ff14', // verde neón weed 🌿
-                    }}
-                  />
-                </Box>
-
-                <Typography
-                  variant="body1"
-                  sx={{
-                    color: '#1faa00', // verde fuerte pero normal
-                    fontWeight: 600,
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  Cargando cursos...
-                </Typography>
-              </Box>
+              
+                
+                  <PreCargador text='Cargando cursos...' />
+               
             </Grid>
           )}
 

@@ -111,6 +111,7 @@ import ActivaTuMembresia from '../components/Membresias/ActivaTuMembresia.jsx';
 import Humo from '../components/Membresias/Humo/Humo.jsx';
 
 import Registrar from './components/Registrar.jsx';
+import PreCargador from '../components/PreCargador.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -217,6 +218,8 @@ const Rutas = () => (
     <Route path="/contenidos/eliminar/:slug" element={<EliminarContenidoWrapper />} />
     <Route path="/contenidos/*" element={<ContenidosPage />} />
     <Route path="/contenido/:slug" element={<Contenido />} />
+    
+    <Route path="/precargador" element={<PreCargador />} />
 
 
     <Route path="/notificationtester" element={<NotificationTester />} />

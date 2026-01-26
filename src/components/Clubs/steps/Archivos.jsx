@@ -12,7 +12,7 @@ import FotosGenerales from './FotosGenerales.jsx';
 import Skills from './Skills.jsx';
 import GestionCofepris from './GestionCofepris.jsx';
 
-export default function Archivos({ form, setForm, tipo }) {
+export default function Archivos({ form, setForm, tipo, setCofeprisOption }) {
 
   // Campo actualmente enfocado (para ayudas visuales)
   const [focusedField, setFocusedField] = useState(null);
@@ -53,6 +53,8 @@ export default function Archivos({ form, setForm, tipo }) {
   // LÓGICA DE OPCIÓN COFEPRIS
   // ======================================================
   const selectConsumoOption = (option) => {
+    setCofeprisOption(option);
+    
     setConsumoOption(option);
 
     if (option === "folio") {

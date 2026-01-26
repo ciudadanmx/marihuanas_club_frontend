@@ -1,0 +1,112 @@
+/* Overlay */
+.precargador-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Grinder container */
+.grinder {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  margin-bottom: 28px;
+}
+
+/* Hex base */
+.hex {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    50% 0%,
+    93% 25%,
+    93% 75%,
+    50% 100%,
+    7% 75%,
+    7% 25%
+  );
+}
+
+/* Top grinder (amarillo) */
+.hex-top {
+  background: rgba(255, 242, 0, 0.55);
+  box-shadow:
+    0 0 18px #fff200,
+    0 0 36px #fff200;
+  animation: grindCW 7s ease-in-out infinite;
+}
+
+/* Bottom grinder (morado) */
+.hex-bottom {
+  background: rgba(168, 85, 247, 0.5);
+  box-shadow:
+    0 0 18px #a855f7,
+    0 0 36px #a855f7;
+  animation: grindCCW 7s ease-in-out infinite;
+}
+
+/* Centro */
+.core {
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: #111;
+  box-shadow:
+    0 0 12px #39ff14,
+    inset 0 0 8px #39ff14;
+}
+
+/* Animaciones tipo lavadora */
+@keyframes grindCW {
+  0%   { transform: rotate(0deg); }
+  40%  { transform: rotate(22deg); }
+  70%  { transform: rotate(-16deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes grindCCW {
+  0%   { transform: rotate(0deg); }
+  40%  { transform: rotate(-24deg); }
+  70%  { transform: rotate(18deg); }
+  100% { transform: rotate(0deg); }
+}
+
+/* Texto */
+.loader-text {
+  display: flex;
+  gap: 2px;
+  font-family: "Orbitron", "Poppins", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #39ff14;
+  text-transform: uppercase;
+}
+
+.loader-text span {
+  opacity: 0.25;
+  animation: glowText 1.6s ease-in-out infinite;
+}
+
+@keyframes glowText {
+  0% {
+    opacity: 0.25;
+    text-shadow: 0 0 4px #39ff14;
+  }
+  50% {
+    opacity: 1;
+    text-shadow:
+      0 0 8px #39ff14,
+      0 0 16px #39ff14;
+  }
+  100% {
+    opacity: 0.25;
+    text-shadow: 0 0 4px #39ff14;
+  }
+}

@@ -1,14 +1,19 @@
-import { useEffect, useState, useRef } from 'react';
+// src/Pages/MarketPlace/MarketPlace.jsx
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Buscador from '../../components/MarketPlace/Buscador';
 import ProductoCard from '../../components/MarketPlace/ProductoCard';
-//mport BotonVender from '../../components/MarketPlace/BotonVender';
-import { CircularProgress } from '@mui/material';
 import CategoriasSlider from '../../components/MarketPlace/CategoriasSlider';
+import PreCargador from '../../components/PreCargador.jsx';
+
+// <-- IMPORTS DE HOOKS: los importo COMO DEFAULT para evitar "no-undef".
+// Si tus hooks son named exports cámbialos a:
+// import { useCategorias } from '../../hooks/useCategorias';
 import { useCategorias } from '../../hooks/useCategorias';
 import { useUbicacion } from '../../hooks/useUbicacion';
 import useProductos from '../../hooks/useProductos';
-import { 
+
+import {
   Box,
   Grid,
   Container,
@@ -17,23 +22,25 @@ import {
   useMediaQuery,
   useTheme,
   Pagination,
+  Skeleton,
+  Button,
 } from '@mui/material';
 
 const MarketPlace = ({ filtros = '', parametros = '' }) => {
-
-    const observerRef = useRef(null);
-
-
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const navigate = useNavigate();
 
-  // Shared state
+  // ---------------------------
+  // hooks (llamados siempre, en orden) - NO CONDICIONALES
+  // ---------------------------
   const { getCategorias, loading: loadingCategorias } = useCategorias();
   const { ubicacion } = useUbicacion();
 
-  // No-filters logic
+  // TWO instances of useProductos (one for streaming, one for paginated filters)
   const prodHook = useProductos();
+  const pagHook = useProductos({ paginado: true });
+
   const {
     getProductos,
     precotizarMienvio,
@@ -41,13 +48,8 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
     calificacionPromedio,
     obtenerNumeroCalificaciones,
     obtenerImagenProducto,
-  } = prodHook;
-  const [productos, setProductos] = useState([]);
+  } = prodHook || {};
 
-  // Filters logic
-  const pagHook = useProductos({ paginado: true });
-  console.log('buscar pagHook keys:', Object.keys(pagHook));
-  console.log('buscar pagHook full:', pagHook);
   const {
     productos: productosFiltrados = { data: [] },
     loading: loadingFiltros,
@@ -58,308 +60,301 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
     setPorPagina,
     buscarProductos,
     totalItems,
-  } = pagHook;
-  console.log('filtrando búsqueda', productosFiltrados);
+  } = pagHook || {};
 
-  // UI state
+  // ---------------------------
+  // estado UI
+  // ---------------------------
+  const [productos, setProductos] = useState([]); // productos enriquecidos (modo sin filtros)
   const [categorias, setCategorias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [visible, setVisible] = useState({});
+  const [visible, setVisible] = useState({}); // para animaciones de entrada
+  const [loadingProductos, setLoadingProductos] = useState(false);
+  const [errorProductos, setErrorProductos] = useState(null);
 
-  // Handlers
-// Handler de búsqueda — reemplaza el existente
-const handleBuscar = async () => {
-  console.log('🔥🔎🔥🔎🔥🔎 preiniciando búsqueda');
+  // refs y control de peticiones
+  const itemRefs = useRef(new Map()); // id -> element
+  const observerRef = useRef(null);
+  const requestIdRef = useRef(0);
+  const debounceRef = useRef(null);
+  const fetchTimeoutRef = useRef(null);
 
-  
-    // calculamos una clave simple basada en los ids para usar en las dependencias
-  const lista = filtros ? productosFiltrados?.data || [] : productos || [];
-  const listaIdsKey = lista.map(p => p.id).join('|'); // cadena estable si los ids no cambian
-  const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
-  if (!slug) return;
-
-  // navegamos como antes
-  console.log('botón búsqueda');
-  navigate(`/productos/busqueda/${slug}`);
-
-  // forzamos la paginación a 1 y pedimos resultados filtrados inmediatamente
-  try {
-    console.clear();
-    console.log('🔥🔥🔥🔎🔎🔎🔎🔎 Iniciando búsqueda');
-    setPagina(1);
-    await buscarProductos({
-      filtros: 'busqueda',
-      parametros: slug,
-      pagina: 1,
-      porPagina,
-    });
-  } catch (err) {
-    console.error('[handleBuscar] fetchProductosFiltros error:', err);
-  }
-};
-
-// Handler de "mis productos" — reemplaza el existente (solo si quieres que cargue al navegar)
-const handleMis = async () => {
-  navigate('/productos/mis-productos');
-
-  try {
-    setPagina(1);
-    await buscarProductos({
-      filtros: 'mis-productos',
-      parametros: '',
-      pagina: 1,
-      porPagina,
-    });
-  } catch (err) {
-    console.error('[handleMis] fetchProductosFiltros error:', err);
-  }
-};
-
-// Handler para click en categoría — reemplaza el existente
-const handleCategoriaClick = async (slug) => {
-  // navegamos como antes
-  navigate(`/productos/categoria/${slug}`);
-
-  // pedimos la lista filtrada por categoria inmediatamente
-  try {
-    setPagina(1);
-    await buscarProductos({
-      filtros: 'categoria',
-      parametros: slug,
-      pagina: 1,
-      porPagina,
-    });
-  } catch (err) {
-    console.error('[handleCategoriaClick] fetchProductosFiltros error:', err);
-  }
-};
-
-
-  // Title logic
+  // ---------------------------
+  // títulos / mostrar categorias
+  // ---------------------------
   let titulo = '';
   let mostrarCategorias = true;
   if (filtros === 'busqueda') {
-    titulo = `Resultados de Búsqueda «${parametros.charAt(0).toUpperCase() + parametros.slice(1)}»`;
+    titulo = `Resultados de Búsqueda «${(parametros || '').charAt(0).toUpperCase() + (parametros || '').slice(1)}»`;
     mostrarCategorias = false;
   } else if (filtros === 'categoria') {
-    titulo = `Productos en Categoría «${parametros.charAt(0).toUpperCase() + parametros.slice(1)}»`;
+    titulo = `Productos en Categoría «${(parametros || '').charAt(0).toUpperCase() + (parametros || '').slice(1)}»`;
     mostrarCategorias = false;
   } else if (filtros === 'mis-productos') {
     titulo = '»» Tus Productos ««';
     mostrarCategorias = false;
   }
 
-  // Fetch categories
+  // ---------------------------
+  // cargar categorías (una vez)
+  // ---------------------------
   useEffect(() => {
+    let mounted = true;
     (async () => {
-      const cats = await getCategorias();
-      setCategorias(cats || []);
+      try {
+        const cats = typeof getCategorias === 'function' ? await getCategorias() : [];
+        if (mounted) setCategorias(cats || []);
+      } catch (err) {
+        console.error('[MarketPlace] getCategorias error', err);
+        if (mounted) setCategorias([]);
+      }
     })();
+    return () => { mounted = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ---------------------------
+  // helper: lista a renderizar y clave estable
+  // ---------------------------
+  const listToRender = useMemo(() => (filtros ? (productosFiltrados?.data || []) : (productos || [])), [filtros, productosFiltrados, productos]);
+  const listIdsKey = useMemo(() => listToRender.map(p => p?.id).join('|'), [listToRender]);
 
-/* --- Preparar lista y clave estable para observer --- */
-// calculamos lista arriba para reutilizar en observer y en otros efectos
-const lista = filtros ? (productosFiltrados?.data || []) : (productos || []);
-const listaIdsKey = (lista && lista.map(p => p?.id).join('|')) || '';
-
-// Debounce + requestId para evitar respuestas fuera de orden
-const debounceRef = useRef(null);
-const requestIdRef = useRef(0);
-
-// Fetch no-filter products (versión incremental)
-useEffect(() => {
-  console.log('búsqueda buscando', filtros);
-  if (filtros) return;
-  if (!ubicacion?.codigoPostal) return;
-
-  const fetchAll = async () => {
-    setProductos([]); // limpiar antes de empezar
-
-    await getProductos({
-      onChunk: async (p) => {
-        // --- Enriquecimiento por producto ---
-        const attr = p.attributes;
-        if (!attr || !attr.nombre || !attr.precio) return;
-
-        const cpDestino = ubicacion?.codigoPostal || '11560';
-        const cpOrigen = attr.cp || '11590';
-
-        let envio = null, total = null, img = null;
-        try {
-          envio = await precotizarMienvio(
-            cpOrigen,
-            cpDestino,
-            attr.largo,
-            attr.ancho,
-            attr.alto,
-            attr.peso
-          );
-
-          total = await precotizacionTotal(p, cpDestino);
-          img = await obtenerImagenProducto(p.id);
-        } catch (err) {
-          console.error('[fetchAll chunk] error:', err);
-        }
-
-        const precioNum = Number(attr.precio) || 0;
-
-        const enriched = {
-          ...p,
-          envio,
-          total,
-          imagen: img,
-          calificacion: calificacionPromedio(p),
-          numCalificaciones: obtenerNumeroCalificaciones(p),
-          precio: precioNum,
-        };
-
-        // se agrega de inmediato a la UI
-        setProductos(prev => [...prev, enriched]);
-      },
-
-      batchSize: 1,   // entrega 1 por 1 para render inmediato
-      chunkDelay: 0,  // puedes subirlo a 20–50ms si quieres efecto "goteo"
-    });
-  };
-
-  fetchAll();
-}, [ubicacion, filtros]);
-
-// Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
-// Fetch filtered products — ahora con debounce + requestId para evitar out-of-order
-useEffect(() => {
-  if (typeof buscarProductos !== 'function') {
-    console.warn('buscarProductos no es función en pagHook');
-    return;
-  }
-
-  if (debounceRef.current) clearTimeout(debounceRef.current);
-
-  debounceRef.current = setTimeout(async () => {
-    const currentRequestId = ++requestIdRef.current;
-
+  // ---------------------------
+  // navegación y handlers
+  // ---------------------------
+  const handleBuscar = useCallback(async () => {
+    const slug = busqueda.trim().toLowerCase().replace(/\s+/g, '-');
+    if (!slug) return;
+    navigate(`/productos/busqueda/${slug}`);
     try {
-      const requestParams = { pagina, porPagina };
-
-      if (filtros) {
-        requestParams.filtros = filtros;
-        if (parametros) requestParams.parametros = parametros;
-
-        // Intentamos leer precio_min y precio_max del DOM (varios selectores comunes)
-        try {
-          const minSelectors = [
-            'input[name="precio_min"]',
-            '#precio_min',
-            'input[data-field="precio_min"]',
-            '.rango-precio-min input',
-            '#rangoPrecioMin'
-          ];
-          const maxSelectors = [
-            'input[name="precio_max"]',
-            '#precio_max',
-            'input[data-field="precio_max"]',
-            '.rango-precio-max input',
-            '#rangoPrecioMax'
-          ];
-
-          let minVal = null;
-          let maxVal = null;
-
-          for (const sel of minSelectors) {
-            const el = document.querySelector(sel);
-            if (el) { minVal = el.value ?? el.getAttribute('value') ?? null; break; }
-          }
-          for (const sel of maxSelectors) {
-            const el = document.querySelector(sel);
-            if (el) { maxVal = el.value ?? el.getAttribute('value') ?? null; break; }
-          }
-
-          // Normalizamos y parseamos a número
-          const minNum = (minVal !== null && minVal !== '') ? Number(String(minVal).replace(/[^0-9.-]+/g, '')) : NaN;
-          const maxNum = (maxVal !== null && maxVal !== '') ? Number(String(maxVal).replace(/[^0-9.-]+/g, '')) : NaN;
-
-          // Solo incluir si ambos son números válidos
-          if (!Number.isNaN(minNum) && !Number.isNaN(maxNum)) {
-            // adicional: evita enviar rangos vacíos o iguales a 0/0 (si tu backend tiene defaults, ajusta aquí)
-            requestParams.precio_min = minNum;
-            requestParams.precio_max = maxNum;
-            console.log('[buscarProductos] enviando precio_min/precio_max:', minNum, maxNum);
-          } else {
-            console.log('[buscarProductos] no se envía rango de precios (min/max inválidos o no encontrados)', { minVal, maxVal });
-          }
-        } catch (err) {
-          console.warn('[buscarProductos] error leyendo precio_min/max del DOM:', err);
-        }
-      } else {
-        // Si NO está desplegada la sección de filtros: limpiamos controles de precio del DOM
-        try {
-          const clearSelectors = [
-            'input[name="precio_min"]',
-            'input[name="precio_max"]',
-            '#precio_min',
-            '#precio_max',
-            'input[data-field="precio_min"]',
-            'input[data-field="precio_max"]',
-            '.rango-precio input',
-            'input[type="range"]'
-          ];
-          clearSelectors.forEach(sel => {
-            document.querySelectorAll(sel).forEach(el => {
-              try {
-                if ('value' in el) el.value = '';
-                el.dispatchEvent(new Event('input', { bubbles: true }));
-                el.dispatchEvent(new Event('change', { bubbles: true }));
-              } catch (e) { /* ignore */ }
-            });
-          });
-          console.log('[buscarProductos] filtros ocultos: limpiados controles de precio en DOM');
-        } catch (err) {
-          console.warn('[buscarProductos] error limpiando controles de precio en DOM:', err);
-        }
-      }
-
-      await buscarProductos(requestParams);
-
-      if (currentRequestId !== requestIdRef.current) {
-        console.log('Respuesta de buscarProductos ignorada por ser antigua', currentRequestId);
-        return;
+      setLoadingProductos(true);
+      setErrorProductos(null);
+      if (typeof setPagina === 'function') setPagina(1);
+      if (typeof buscarProductos === 'function') {
+        await buscarProductos({ filtros: 'busqueda', parametros: slug, pagina: 1, porPagina });
       }
     } catch (err) {
-      console.error('[buscarProductos debounce] error:', err);
+      console.error('[handleBuscar]', err);
+      setErrorProductos('Error al buscar productos.');
+    } finally {
+      setLoadingProductos(false);
+    }
+  }, [busqueda, buscarProductos, navigate, porPagina, setPagina]);
+
+  const handleMis = useCallback(async () => {
+    navigate('/productos/mis-productos');
+    try {
+      setLoadingProductos(true);
+      setErrorProductos(null);
+      if (typeof setPagina === 'function') setPagina(1);
+      if (typeof buscarProductos === 'function') {
+        await buscarProductos({ filtros: 'mis-productos', parametros: '', pagina: 1, porPagina });
+      }
+    } catch (err) {
+      console.error('[handleMis]', err);
+      setErrorProductos('Error al cargar tus productos.');
+    } finally {
+      setLoadingProductos(false);
+    }
+  }, [buscarProductos, navigate, porPagina, setPagina]);
+
+  const handleCategoriaClick = useCallback(async (slug) => {
+    navigate(`/productos/categoria/${slug}`);
+    try {
+      setLoadingProductos(true);
+      setErrorProductos(null);
+      if (typeof setPagina === 'function') setPagina(1);
+      if (typeof buscarProductos === 'function') {
+        await buscarProductos({ filtros: 'categoria', parametros: slug, pagina: 1, porPagina });
+      }
+    } catch (err) {
+      console.error('[handleCategoriaClick]', err);
+      setErrorProductos('Error al filtrar por categoría.');
+    } finally {
+      setLoadingProductos(false);
+    }
+  }, [buscarProductos, navigate, porPagina, setPagina]);
+
+  // ---------------------------
+  // Fetch productos (modo SIN filtros) - streaming/chunks
+  // ---------------------------
+  useEffect(() => {
+    // solo en modo sin filtros ejecutamos getProductos
+    if (filtros) return;
+    if (typeof getProductos !== 'function') {
+      setProductos([]);
+      return;
+    }
+    // necesitamos cp
+    if (!ubicacion?.codigoPostal) {
+      // no hay cp: dejamos vacio y no intentamos fetch
+      setProductos([]);
+      setLoadingProductos(false);
+      return;
+    }
+
+    let mounted = true;
+    const currentRequestId = ++requestIdRef.current;
+    setLoadingProductos(true);
+    setErrorProductos(null);
+    setProductos([]); // limpiamos
+
+    // timeout por si queda colgado
+    if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+    fetchTimeoutRef.current = setTimeout(() => {
+      if (requestIdRef.current === currentRequestId) {
+        setLoadingProductos(false);
+        setErrorProductos('Tiempo de espera agotado al cargar productos.');
+      }
+    }, 20000); // 20s
+
+    (async () => {
+      try {
+        const seen = new Set();
+        await getProductos({
+          onChunk: async (p) => {
+            if (!mounted) return;
+            if (!p || !p.id) return;
+            if (seen.has(p.id)) return;
+            seen.add(p.id);
+
+            const attr = p.attributes || {};
+            const cpDestino = ubicacion?.codigoPostal || '11560';
+            const cpOrigen = attr.cp || '11590';
+
+            // enriquecimiento paralelo no bloqueante (capturamos errores)
+            let envio = null, total = null, img = null;
+            try { envio = await precotizarMienvio(cpOrigen, cpDestino, attr.largo, attr.ancho, attr.alto, attr.peso); } catch(e) {/* ignore */}
+            try { total = await precotizacionTotal(p, cpDestino); } catch(e) {/* ignore */}
+            try { img = await obtenerImagenProducto(p.id); } catch(e) {/* ignore */}
+
+            const precioNum = Number(attr.precio) || 0;
+            const enriched = {
+              ...p,
+              envio,
+              total,
+              imagen: img,
+              calificacion: typeof calificacionPromedio === 'function' ? calificacionPromedio(p) : null,
+              numCalificaciones: typeof obtenerNumeroCalificaciones === 'function' ? obtenerNumeroCalificaciones(p) : 0,
+              precio: precioNum,
+            };
+
+            setProductos(prev => {
+              if (prev.some(x => x.id === enriched.id)) return prev;
+              return [...prev, enriched];
+            });
+          },
+          batchSize: 2,
+          chunkDelay: 10,
+        });
+
+        if (requestIdRef.current === currentRequestId && mounted) {
+          setLoadingProductos(false);
+        }
+      } catch (err) {
+        console.error('[MarketPlace] getProductos error', err);
+        if (requestIdRef.current === currentRequestId && mounted) {
+          setErrorProductos('Error cargando productos.');
+          setLoadingProductos(false);
+        }
+      } finally {
+        if (fetchTimeoutRef.current) {
+          clearTimeout(fetchTimeoutRef.current);
+          fetchTimeoutRef.current = null;
+        }
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ubicacion?.codigoPostal, filtros, getProductos, precotizarMienvio, precotizacionTotal, obtenerImagenProducto, calificacionPromedio, obtenerNumeroCalificaciones]);
+
+  // ---------------------------
+  // Fetch productos filtrados (modo CON filtros) - debounce y control de requestId
+  // ---------------------------
+useEffect(() => {
+  if (!filtros) return;
+  if (typeof buscarProductos !== 'function') return;
+
+  if (debounceRef.current) clearTimeout(debounceRef.current);
+  const currentRequestId = ++requestIdRef.current;
+
+  debounceRef.current = setTimeout(async () => {
+    setLoadingProductos(true);
+    setErrorProductos(null);
+
+    try {
+      const requestParams = { pagina, porPagina, filtros };
+      if (parametros) requestParams.parametros = parametros;
+
+      // ✅ PRECIOS DESDE URL
+      const searchParams = new URLSearchParams(location.search);
+      const precioMin = searchParams.get('precio_min');
+      const precioMax = searchParams.get('precio_max');
+
+      if (precioMin !== null) requestParams.precio_min = Number(precioMin);
+      if (precioMax !== null) requestParams.precio_max = Number(precioMax);
+
+      await buscarProductos(requestParams);
+    } catch (err) {
+      console.error('[MarketPlace] buscarProductos error', err);
+      if (requestIdRef.current === currentRequestId) {
+        setErrorProductos('Error al filtrar productos.');
+      }
+    } finally {
+      if (requestIdRef.current === currentRequestId) {
+        setLoadingProductos(false);
+      }
     }
   }, 250);
 
   return () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
   };
-// eslint-disable-next-line react-hooks/exhaustive-deps
-}, [filtros, parametros, pagina, porPagina, buscarProductos]);
+}, [filtros, parametros, pagina, porPagina, buscarProductos, location.search]);
 
-  // Observer
+
+  // ---------------------------
+  // Observer para animar cuando entran en viewport
+  // ---------------------------
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            const id = e.target.getAttribute('data-id');
+    // desconectar observer previo
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+      observerRef.current = null;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const id = e.target.getAttribute('data-id');
+          if (id) {
             setVisible(v => ({ ...v, [id]: true }));
-            try { observer.unobserve(e.target); } catch(_) {}
+            try { observer.unobserve(e.target); } catch (_) {}
           }
-        });
-      }, { threshold: 0.2 }
-    );
-    // usamos la lista ya calculada arriba y la clave estable listaIdsKey
-    lista.forEach(prod => {
-      const el = document.querySelector(`[data-id='${prod.id}']`);
+        }
+      });
+    }, { threshold: 0.2 });
+
+    observerRef.current = observer;
+    // observar los elementos actuales en itemRefs
+    itemRefs.current.forEach(el => {
       if (el) observer.observe(el);
     });
-    return () => observer.disconnect();
-    // ahora dependemos de listaIdsKey para que solo re-ejecute cuando cambien los ids
-  }, [listaIdsKey.length, filtros]);
 
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+        observerRef.current = null;
+      }
+    };
+  }, [listIdsKey]);
+
+  // ---------------------------
   // Render
-  const listToRender = filtros ? (productosFiltrados?.data || []) : (productos || []);
+  // ---------------------------
   const shouldShowCategorias = mostrarCategorias && categorias.length > 0 && !loadingCategorias;
 
   return (
@@ -368,17 +363,20 @@ useEffect(() => {
         <Box sx={{ flex: 1, mr: 1 }}>
           <Buscador value={busqueda} onChange={e => setBusqueda(e.target.value)} onSearch={handleBuscar} />
         </Box>
+        <Box>
+          <Button variant="text" onClick={handleMis}>Mis productos</Button>
+        </Box>
       </Box>
 
       {shouldShowCategorias && (
         <Box mt={4}>
-          <CategoriasSlider 
-            categorias={categorias.map(c => ({ 
-              nombre: c.attributes.nombre, 
-              slug: c.attributes.slug, 
-              imagen: `${process.env.REACT_APP_STRAPI_URL}${c.attributes.imagen?.data?.attributes?.url}` 
-            }))} 
-            onClick={handleCategoriaClick} 
+          <CategoriasSlider
+            categorias={categorias.map(c => ({
+              nombre: c.attributes?.nombre || c.nombre || '—',
+              slug: c.attributes?.slug || c.slug || '—',
+              imagen: c.attributes?.imagen?.data?.attributes?.url ? `${process.env.REACT_APP_STRAPI_URL}${c.attributes.imagen.data.attributes.url}` : null,
+            }))}
+            onClick={handleCategoriaClick}
           />
         </Box>
       )}
@@ -389,65 +387,97 @@ useEffect(() => {
         </Typography>
       )}
 
+      {(!ubicacion?.codigoPostal && !filtros) && (
+        <Box my={3} textAlign="center">
+          <Typography>📍 No hemos detectado tu ubicación. Por favor configura tu ubicación para mostrar productos cercanos.</Typography>
+        </Box>
+      )}
+
+      {errorProductos && (
+        <Box my={2}>
+          <Typography color="error">{errorProductos}</Typography>
+        </Box>
+      )}
+
       <Grid container spacing={3} mt={4}>
-        {listToRender.length === 0 && (
+        {/* Skeletons mientras carga (y no hay resultados) */}
+        { (loadingProductos && listToRender.length === 0) && Array.from({ length: isDesktop ? 8 : 4 }).map((_, i) => (
+          <Grid key={`skel-${i}`} item xs={12} sm={6} md={3}>
+            <Skeleton variant="rectangular" height={220} />
+            <Skeleton width="60%" sx={{ mt: 1 }} />
+            <Skeleton width="40%" />
+          </Grid>
+        )) }
+
+        {/* Empty state */}
+        {(!loadingProductos && listToRender.length === 0) && (
           <Grid item xs={12}>
-            <Typography textAlign="center">
-              {filtros ? (
-    loadingFiltros ? (
-        'Cargando productos...'
-    ) : (
-        'No hay productos.'
-    )
-) : (
-    <div
-        style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-            width: '100%',
-        }}
-    >
-        <CircularProgress size={28} />
-        <span style={{ marginTop: '10px' }}>Cargando Productos</span>
-    </div>
-)}
-            </Typography>
+            <Box display="flex" flexDirection="column" alignItems="center" py={6}>
+              <Typography variant="h6">{filtros ? (loadingFiltros ? '' : 'No hay productos.') : 'No se encontraron productos.'}</Typography>
+              {loadingFiltros && <PreCargador text="Buscando productos..." />}
+            </Box>
           </Grid>
         )}
 
-        {listToRender.map(prod => (
-          <Grid key={prod.id} item xs={12} sm={6} md={3} data-id={prod.id} className="producto-card"
-            sx={{ opacity: visible[prod.id] ? 1 : 0, transform: visible[prod.id] ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.6s ease'}}
-          >
-            <ProductoCard
-              titulo={prod.attributes.nombre}
-              slug={prod.attributes.slug}
-              imagenes={prod.attributes.imagenes}
-              descripcion={prod.attributes.descripcion}
-              imagen={prod.imagen}
-              precio={prod.precio}
-              envioAprox={prod.envio?.costo ? `$${prod.envio.costo} aprox.` : null}
-              localidad={prod.attributes.localidad}
-              estado={prod.attributes.estado}
-              calificacion={prod.calificacion}
-              numeroCalificaciones={prod.numCalificaciones}
-              vendidos={prod.attributes.vendidos}
-              total={prod.total && `$${prod.total}`}
-            />
-          </Grid>
-        ))}
+        {/* Lista */}
+        {listToRender.map(prod => {
+          const id = prod.id ?? prod.attributes?.id ?? Math.random().toString(36).slice(2,9);
+          const tituloProd = prod.attributes?.nombre ?? prod.nombre ?? 'Sin título';
+          const slug = prod.attributes?.slug ?? prod.slug ?? '';
+          const imagen = prod.imagen ?? (prod.attributes?.imagenes?.data?.[0]?.attributes?.url ? `${process.env.REACT_APP_STRAPI_URL}${prod.attributes.imagenes.data[0].attributes.url}` : null);
+          const descripcion = prod.attributes?.descripcion ?? prod.descripcion ?? '';
+          const precio = prod.precio ?? Number(prod.attributes?.precio) ?? null;
+          const envioAprox = prod.envio?.costo ? `$${prod.envio.costo} aprox.` : null;
+          const localidad = prod.attributes?.localidad ?? '';
+
+          return (
+            <Grid
+              key={id}
+              item
+              xs={12}
+              sm={6}
+              md={3}
+              data-id={id}
+              ref={(el) => {
+                if (el) itemRefs.current.set(id, el);
+                else itemRefs.current.delete(id);
+              }}
+              className="producto-card"
+              sx={{
+                opacity: visible[id] ? 1 : 0,
+                transform: visible[id] ? 'translateY(0)' : 'translateY(20px)',
+                transition: 'all 0.6s ease'
+              }}
+            >
+              <ProductoCard
+                titulo={tituloProd}
+                slug={slug}
+                imagenes={prod.attributes?.imagenes}
+                descripcion={descripcion}
+                imagen={imagen}
+                precio={precio}
+                envioAprox={envioAprox}
+                localidad={localidad}
+                estado={prod.attributes?.estado}
+                calificacion={prod.calificacion}
+                numeroCalificaciones={prod.numCalificaciones}
+                vendidos={prod.attributes?.vendidos}
+                total={prod.total && `$${prod.total}`}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
 
-      {filtros && listToRender.length > porPagina && (
+      {/* Paginación (modo filtros) */}
+      {filtros && listToRender.length > 0 && (
         <Box mt={3} display="flex" justifyContent="center" alignItems="center">
-          <Pagination count={Math.ceil(totalItems / porPagina)} page={pagina} onChange={(_, v) => setPagina(v)} />
-          <TextField select value={porPagina} onChange={e => setPorPagina(Number(e.target.value))} SelectProps={{ native: true }} size="small" sx={{ width: 80, ml: 2 }}>
+          <Pagination count={Math.ceil((totalItems || listToRender.length) / (porPagina || 1))} page={pagina} onChange={(_, v) => setPagina(v)} />
+          <TextField select value={porPagina} onChange={e => setPorPagina(Number(e.target.value))} SelectProps={{ native: true }} size="small" sx={{ width: 100, ml: 2 }}>
             <option value={5}>5</option>
             <option value={10}>10</option>
             <option value={25}>25</option>
+            <option value={50}>50</option>
           </TextField>
         </Box>
       )}

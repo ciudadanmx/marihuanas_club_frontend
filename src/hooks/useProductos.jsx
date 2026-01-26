@@ -356,60 +356,97 @@ const useProductos = ({ paginado } = {}) => {
   }, [API_URL_PRODUCTOS]);
 
   // buscarProductos: acepta string o un objeto { filtros, parametros, pagina, porPagina, ... }
-  const buscarProductos = useCallback(async (busqueda) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const endpoint = API_URL_PRODUCTOS;
-      let params = { populate: '*' };
+const buscarProductos = useCallback(async (busqueda) => {
+  setLoading(true);
+  setError(null);
 
-      if (typeof busqueda === 'string') {
-        const q = busqueda;
+  try {
+    const endpoint = API_URL_PRODUCTOS;
+    let params = { populate: '*' };
+
+    // ----------------------------------
+    // 1️⃣ Búsqueda simple (string)
+    // ----------------------------------
+    if (typeof busqueda === 'string') {
+      const q = busqueda;
+      params = {
+        ...params,
+        'filters[$or][0][descripcion][$containsi]': q,
+        'filters[$or][1][nombre][$containsi]': q,
+        'filters[$or][2][marca][$containsi]': q,
+      };
+    }
+
+    // ----------------------------------
+    // 2️⃣ Búsqueda estructurada (objeto)
+    // ----------------------------------
+    else if (busqueda && typeof busqueda === 'object') {
+      const {
+        filtros,
+        parametros,
+        pagina,
+        porPagina,
+        precio_min,
+        precio_max,
+        marca,
+        tienda,
+      } = busqueda;
+
+      // ---- filtros principales
+      if (filtros === 'busqueda' && parametros) {
         params = {
           ...params,
-          'filters[$or][0][descripcion][$containsi]': q,
-          'filters[$or][1][nombre][$containsi]': q,
-          'filters[$or][2][marca][$containsi]': q,
+          'filters[$or][0][descripcion][$containsi]': parametros,
+          'filters[$or][1][nombre][$containsi]': parametros,
+          'filters[$or][2][marca][$containsi]': parametros,
         };
-      } else if (busqueda && typeof busqueda === 'object') {
-        const { filtros, parametros, pagina, porPagina, ...rest } = busqueda;
-
-        if (filtros === 'busqueda' && parametros) {
-          params = {
-            ...params,
-            'filters[$or][0][descripcion][$containsi]': parametros,
-            'filters[$or][1][nombre][$containsi]': parametros,
-            'filters[$or][2][marca][$containsi]': parametros,
-          };
-        } else if (filtros === 'categoria' && parametros) {
-          // Ajusta según tu modelo de categoría en Strapi (slug vs id)
-          params = {
-            ...params,
-            'filters[categoria][slug][$eq]': parametros,
-          };
-        } else if (filtros === 'mis-productos') {
-          // agregar filtro por owner si es necesario
-        }
-
-        if (pagina) params['pagination[page]'] = pagina;
-        if (porPagina) params['pagination[pageSize]'] = porPagina;
-
-        Object.assign(params, rest);
       }
 
-      const res = await axios.get(endpoint, { params });
-      const items = res?.data?.data || [];
-      const meta = res?.data?.meta || {};
-      setProductosNormalized(items, meta);
-      return items;
-    } catch (err) {
-      setError(err);
-      console.error('buscarProductos error', err);
-      return [];
-    } finally {
-      setLoading(false);
+      if (filtros === 'categoria' && parametros) {
+        params = {
+          ...params,
+          'filters[categoria][slug][$eq]': parametros,
+        };
+      }
+
+      // ---- filtros numéricos
+      if (precio_min != null) {
+        params['filters[precio][$gte]'] = precio_min;
+      }
+
+      if (precio_max != null) {
+        params['filters[precio][$lte]'] = precio_max;
+      }
+
+      // ---- filtros exactos
+      if (marca) {
+        params['filters[marca][$eq]'] = marca;
+      }
+
+      if (tienda) {
+        params['filters[tienda][$eq]'] = tienda;
+      }
+
+      // ---- paginación
+      if (pagina) params['pagination[page]'] = pagina;
+      if (porPagina) params['pagination[pageSize]'] = porPagina;
     }
-  }, [API_URL_PRODUCTOS, setProductosNormalized]);
+
+    const res = await axios.get(endpoint, { params });
+    const items = res?.data?.data || [];
+    const meta = res?.data?.meta || {};
+
+    setProductosNormalized(items, meta);
+    return items;
+
+  } catch (err) {
+    setError(err);
+    console.error('buscarProductos error', err);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+}, [API_URL_PRODUCTOS, setProductosNormalized]);
 
   const getProductosPorCategoria = useCallback(async (categoriaId) => {
     setLoading(true);
