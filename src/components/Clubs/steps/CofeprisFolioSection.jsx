@@ -62,8 +62,9 @@ const CofeprisFolioSection = ({
         SelectProps={{ native: true }}
       >
         <option value=""></option>
+        <option value="enproceso">Autorización en trámite ante COFEPRIS</option>
+        <option value="cofepris">Autorización directa emitida por COFEPRIS</option>
         <option value="amparo">Amparo para uso personal</option>
-        <option value="cofepris">Autorización directa COFEPRIS</option>
         <option value="desconozco">No estoy seguro</option>
       </TextField>
 

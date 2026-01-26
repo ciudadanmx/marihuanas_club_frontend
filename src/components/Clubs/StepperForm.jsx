@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
+
+import RequisitosJardinero from '../../Pages/Clubs/RequisitosJardinero';
+
 import {
   Stepper,
   Step,
@@ -108,7 +111,7 @@ export default function StepperForm({
     if (tipo.tipo.tipo === "consumo") {
       baseSteps.push({
         label: "Instrucciones",
-        component: <Instrucciones tipo={tipo} />,
+        component: <RequisitosJardinero tipo={tipo} />,
       });
     }
 
@@ -131,7 +134,7 @@ export default function StepperForm({
       },
       {
         label: "Confirmación",
-        component: <Confirmacion form={form} isActivaMembresia={isActivaMembresia}/>,
+        component: <Confirmacion form={form} isActivaMembresia={isActivaMembresia} user={user} />,
       }
     );
     return baseSteps;
@@ -248,7 +251,7 @@ export default function StepperForm({
 
       //console.log('cofepris option', form.cofeprisOption);
 
-      if (form.cofeprismode === "folio" ) {
+      if (form.cofeprismode === "folio" && 2 < 1) {
         enqueueSnackbar(
           "📍 Ey… ",
           { variant: "warning" }

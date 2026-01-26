@@ -199,7 +199,7 @@ const renderHorarios = (horarios) => {
    COMPONENTE PRINCIPAL
 ========================================================= */
 
-export default function Confirmacion({ form, isActivaMembresia }) {
+export default function Confirmacion({ form, isActivaMembresia, user }) {
   /**
    * Handler para archivos (PDF / imágenes)
    */
@@ -453,13 +453,34 @@ export default function Confirmacion({ form, isActivaMembresia }) {
         <Grid item xs={6} sm={6}>
           <CardInfo icon={MedicalServicesIcon} title="Trámite COFEPRIS">
             <Typography>
-              {form.cofepris ? (
+              {form.cofeprismode === 'folio' ? (
                 <>
-                  Ya tienes el trámite iniciado
-                  {form.cofepris}
+                  Ya tienes el trámite {(form.tipoResolucion === 'enproceso' || form.tipoResolucion === 'desconozco') ? 'iniciado, con el status de: ' : 'realizado en la modalidad:'}, <b>{form.tipoResolucion}</b> con el folio:
+                  <i>{form.cofepris}</i>
+                  <br />
                 </>
               ) : (
-                 !isActivaMembresia() ? "Activa" : "inactiva"
+                 <>
+                    Gestionaremos tu trámite con los siguientes datos:
+                    {form.usarDireccionExistente ? 'Misma dirección que en los datos anteriores.' : (
+                      <>
+                        <>
+                          {`${form.direccionGestion?.calle} no. ${form.direccionGestion?.numero}, Colonia ${form.direccionGestion?.colonia} Municipio de ${form.direccionGestion?.municipio}, ${form.direccionGestion?.estado}, CP. ${form.direccionGestion?.cp}`}
+                        </>
+                      </>
+                    )}
+
+                    {form.usarWhatsappExistente === true 
+                      ? `Mismo teléfono que el Whatsapp registrado. [${form.whatsapp}]` 
+                      : `Teléfono de Contacto para trámite: [${form.telefonoGestion}]`
+                    }
+
+                    {form.usarEmailExistente 
+                      ? `Mismo e-mail que el asociado a tu cuenta. [${user.email}]` 
+                      : `E-Mail: [${form.emailGestion}]`
+                    }
+
+                 </>
                 )
               }
             </Typography>
@@ -471,8 +492,8 @@ export default function Confirmacion({ form, isActivaMembresia }) {
       {/* =================== FOOTER =================== */}
       <Divider sx={{ my: 3 }} />
       <Typography color="text.secondary" fontStyle="italic">
-        Revisa que toda la información sea correcta antes de presionar{`${form.whatsapp} -- ${form.cofeprismode}`}
-        <strong>Enviar</strong>.{form.opcGestion}
+        Revisa que toda la información sea correcta antes de presionar{`${form.cofepris} -- ${form.tipoResolucion} -- ${form.anioResolucion} -- ${form.cofeprismode}`}
+        <strong>Enviar</strong>.{`Gestion ${form.curp} -- ${form.rfc} --Whatsapp, usare existente? ${form.usarWhatsappExistente} -- Email existente? ${form.usarEmailExistente}`}
       </Typography>
     </Box>
   );
