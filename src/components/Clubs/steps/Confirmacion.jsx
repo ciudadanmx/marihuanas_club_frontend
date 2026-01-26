@@ -208,6 +208,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
     fieldName: "archivos_club",
   });
 
+    //se inyectan los servicios del paso 1 (cursos, eventos, cocina...) a los ingresados en el campo servicios
     const serviciosArray = [
     // servicios explícitos
     ...(Array.isArray(form.servicios) ? form.servicios : []),

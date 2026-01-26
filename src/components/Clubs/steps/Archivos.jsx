@@ -5,6 +5,7 @@ import { useRoles } from "../../../Contexts/RolesContext";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useNavigate } from "react-router-dom";
 import { createFileHandlers } from '../../../utils/FileHelpers';
+import IneSection from './IneSection.jsx';
 
 // Componentes hijos
 import CofeprisSection from './CofeprisSection.jsx';
@@ -30,17 +31,57 @@ export default function Archivos({ form, setForm, tipo }) {
   // ======================================================
   // 📎 MANEJO DE ARCHIVOS (IMÁGENES + PDF)
   // ======================================================
-  const {
+// Para archivos del club (ya existente)
+const {
     handleFilesAdd: handleDocsAdd,
     handleRemoveFile: handleDocRemove,
     getExtension: getDocExt,
-  } = createFileHandlers({
-    allowedExtensions: ['jpg', 'jpeg', 'png', 'webp', 'pdf'],
+} = createFileHandlers({
+    allowedExtensions: ['jpg','jpeg','png','webp','pdf'],
     setForm,
-    fieldName: 'archivos_club',
+    fieldName: 'archivos_club', // mantiene el array original
     enqueueSnackbar,
     errorMessage: '⚠️ Solo se permiten imágenes o archivos PDF',
-  });
+});
+
+// Para certificaciones (Skills)
+const {
+    handleFilesAdd: handleCertificadosAdd,
+    handleRemoveFile: handleCertificadosRemove,
+    getExtension: getCertExt,
+} = createFileHandlers({
+    allowedExtensions: ['jpg','jpeg','png','webp','pdf'],
+    setForm,
+    fieldName: 'certificados_archivos', // nuevo array separado
+    enqueueSnackbar,
+    errorMessage: '⚠️ Solo se permiten imágenes o archivos PDF',
+});
+
+// Para INE frente
+const {
+    handleFilesAdd: handleIneFrenteAdd,
+    handleRemoveFile: handleIneFrenteRemove,
+    getExtension: getIneExt,
+} = createFileHandlers({
+    allowedExtensions: ['jpg','jpeg','png','webp','pdf'],
+    setForm,
+    fieldName: 'ine_frente', // nuevo campo individual
+    enqueueSnackbar,
+    errorMessage: '⚠️ Solo se permiten imágenes o PDF',
+});
+
+// Para INE reverso
+const {
+    handleFilesAdd: handleIneReversoAdd,
+    handleRemoveFile: handleIneReversoRemove,
+    getExtension: getIneExt2,
+} = createFileHandlers({
+    allowedExtensions: ['jpg','jpeg','png','webp','pdf'],
+    setForm,
+    fieldName: 'ine_reverso', // nuevo campo individual
+    enqueueSnackbar,
+    errorMessage: '⚠️ Solo se permiten imágenes o PDF',
+});
 
   // ======================================================
   // AUTH, ROLES Y NAVEGACIÓN
@@ -157,9 +198,9 @@ export default function Archivos({ form, setForm, tipo }) {
         setFocusedField={setFocusedField}
         certificados={certificados}
         setCertificados={setCertificados}
-        handleDocsAdd={handleDocsAdd}
-        getDocExt={getDocExt}
-        handleDocRemove={handleDocRemove}
+        handleCertificadosAdd={handleCertificadosAdd}
+        getCertExt={getCertExt}
+        handleCertificadosRemove={handleCertificadosRemove}
         setForm={setForm}
       />
 
@@ -202,6 +243,21 @@ export default function Archivos({ form, setForm, tipo }) {
           setForm={setForm}
         />
       )}
+
+      <IneSection
+        form={form}
+        setForm={setForm}
+        // función proveniente de createFileHandlers en Archivos.jsx
+        handleIneFrenteAdd={handleIneFrenteAdd}
+        // función de eliminación proveniente de createFileHandlers
+        handleIneFrenteRemove={handleIneFrenteRemove}
+        // ayuda para detectar extensión si la tienes
+        handleIneReversoAdd={handleIneReversoAdd}
+        // función de eliminación proveniente de createFileHandlers
+        handleIneReversoRemove={handleIneReversoRemove}
+        // ayuda para detectar extensión si la tienes
+        getDocExt={getDocExt}
+      />
 
     </Box>
   );
