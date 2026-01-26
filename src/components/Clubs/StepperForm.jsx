@@ -246,9 +246,9 @@ export default function StepperForm({
         return;
       }
 
-      console.log('cofepris option', form.cofeprisOption);
+      //console.log('cofepris option', form.cofeprisOption);
 
-      if (cofeprisOption === "folio" ) {
+      if (form.cofeprismode === "folio" ) {
         enqueueSnackbar(
           "📍 Ey… ",
           { variant: "warning" }

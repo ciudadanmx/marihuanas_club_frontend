@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, List, ListItem, Divider, CircularProgress } from '@mui/material';
 import { useRoles } from '../../Contexts/RolesContext';
+import PreLoader from '../PreLoader';
 import BotonMembresia from './BotonMembresia'; // tu componente de Stripe
 
 const MiMembresia = () => {
@@ -146,7 +147,7 @@ const MiMembresia = () => {
     <Box p={3} maxWidth={800} margin="0 auto">
       <Box display="flex" alignItems="center" gap={2}>
         {loading ? (
-          <CircularProgress size={48} />
+          <PreLoader text=" " size={48} />
         ) : (
           <Box
             component="img"

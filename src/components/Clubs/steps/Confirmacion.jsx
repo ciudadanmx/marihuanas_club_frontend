@@ -471,7 +471,7 @@ export default function Confirmacion({ form, isActivaMembresia }) {
       {/* =================== FOOTER =================== */}
       <Divider sx={{ my: 3 }} />
       <Typography color="text.secondary" fontStyle="italic">
-        Revisa que toda la información sea correcta antes de presionar{" "}
+        Revisa que toda la información sea correcta antes de presionar{`${form.whatsapp} -- ${form.cofeprismode}`}
         <strong>Enviar</strong>.{form.opcGestion}
       </Typography>
     </Box>
