@@ -95,17 +95,17 @@ export default function Suscribete() {
               sx={{
                 fontWeight: 900,
                 letterSpacing: -0.3,
-                color: "#7CFF5A",
+                color: "#cc832fff",
                 mb: 0.5,
               }}
             >
-              Adquiere ya tu Membresía
+              Adquiere ya tu Membresía !!
             </Typography>
 
             <Typography
               variant="body1"
               sx={{
-                color: "rgba(255,255,255,0.92)",
+                color: "rgba(201, 163, 194, 0.94)92)",
                 fontWeight: 700,
                 mb: 1,
               }}

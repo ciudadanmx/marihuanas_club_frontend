@@ -8,10 +8,12 @@ import membresiasImg from '../assets/como.png';
 import { useRoles } from '../Contexts/RolesContext';
 import MiMembresia from '../components/Membresias/MiMembresia.jsx';
 import { useNavigate } from 'react-router-dom';
+import PreLoader from '../components/PreLoader.jsx';
 
 const COLLECTION_ENDPOINT = "membresias-tipos"; 
 
 const Membresias = () => {
+  const chargeText = 'Cargando Membresías';
   const { isActivaMembresia } = useRoles();
   const [planes, setPlanes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -194,7 +196,7 @@ const handleMembresiaClick = (plan) => (e) => {
       </Typography>
 
       {loading ? (
-        <Box display="flex" justifyContent="center" my={6}><CircularProgress /></Box>
+        <Box display="flex" justifyContent="center" my={6}><PreLoader text={chargeText} /></Box>
       ) : error ? (
         <Box display="flex" justifyContent="center" my={4}><Alert severity="error">Error cargando membresías: {error}</Alert></Box>
       ) : (

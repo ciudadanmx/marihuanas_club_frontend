@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, IconButton, useMediaQuery, TextField, Button, CircularProgress } from '@mui/material';
 import CategoriaCard from '../MarketPlace/CategoriaCard';
+import PreLoader from '../PreLoader.jsx';
 import '../../styles/CategoriasSlider.css';
 import { useContenido } from '../../hooks/useContenido';
 
@@ -51,7 +52,7 @@ export default function CategoriasSlider() {
     }
   }
 
-  if (loading) return <CircularProgress />;
+  if (loading) return <PreLoader>Cargando Categorías...</PreLoader>;
   if (error) return <p>Error cargando categorías.</p>;
 
   return (

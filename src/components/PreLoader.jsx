@@ -4,7 +4,7 @@ import {
   Typography,
   CircularProgress,
 } from '@mui/material';
-const PreLoader = ({texto = 'Cargando'}) => {
+const PreLoader = ({text = ''}) => {
   return (
         <Box
         sx={{
@@ -72,7 +72,7 @@ const PreLoader = ({texto = 'Cargando'}) => {
       },
     }}
   >
-    Cargando Ciudadan
+    {text || 'Cargando Marihuanas.club'}
   </Typography>
 </Box>
 

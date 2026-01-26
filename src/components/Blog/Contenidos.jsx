@@ -21,6 +21,7 @@ import { useRoles } from '../../Contexts/RolesContext';
 import EliminarContenido  from '../../Pages/Blog/EliminarContenido';
 import ContenidoCard from '../../components/Blog/ContenidoCard';
 import ContenidoDetalle from '../../Pages/Blog/Contenido'; 
+import PreCargador from '../PreCargador';
 import '../../styles/Contenidos.css';
 
 const Contenidos = ({ filtros, parametros }) => {
@@ -359,7 +360,7 @@ useEffect(() => {
         <Grid container spacing={2}>
           {loading && (
             <Grid item xs={12}>
-              <Typography align="center">Cargando contenidos...</Typography>
+              <PreCargador text="Cargando contenidos..." />
             </Grid>
           )}
           {error && (
