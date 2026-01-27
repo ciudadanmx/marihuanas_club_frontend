@@ -12,6 +12,8 @@ import {
   Tooltip,
 } from "@mui/material";
 
+import { useSnackbar } from "notistack";
+
 const Skills = ({
   form,
   handleFormChange,
@@ -33,6 +35,10 @@ const Skills = ({
         )
       )
     : [];
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const EXT_VALIDAS = ["jpg", "jpeg", "png", "webp", "pdf"];
 
   return (
     <>
@@ -93,9 +99,33 @@ const Skills = ({
               <Input
                 type="file"
                 name="certificados_archivos"
-                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                inputProps={{
+                    accept: ".jpg,.jpeg,.png,.webp,.pdf",
+                }}
                 multiple
-                onChange={handleCertificadosAdd}
+                onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const ext = file.name.split(".").pop().toLowerCase();
+
+                    if (!EXT_VALIDAS.includes(ext)) {
+                      enqueueSnackbar(
+                        "❌ Solo se permiten imágenes (JPG, PNG, WEBP) o PDF",
+                        { variant: "error" }
+                      );
+                      e.target.value = null;
+                      return;
+                    }
+
+                    handleFormChange({
+                      target: {
+                        name: "pdfCofepris",
+                        value: file,
+                        type: "file",
+                      },
+                    });
+                  }}
                 sx={{ display: "none" }}
               />
             </Button>
