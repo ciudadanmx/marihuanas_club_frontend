@@ -10,6 +10,7 @@ import {
   IconButton,
 } from "@mui/material";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import { useSnackbar } from "notistack";
 
 /**
  * ============================================================
@@ -21,6 +22,11 @@ const CofeprisFolioSection = ({
   handleFormChange,
   setFocusedField,
 }) => {
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const EXT_VALIDAS = ["jpg", "jpeg", "png", "webp", "pdf"];
+
   return (
     <Box sx={{ pl: 4, pr: 2, pb: 2 }}>
 
@@ -69,15 +75,15 @@ const CofeprisFolioSection = ({
         color="success"
       />
 
-      {/* PDF */}
+      {/* DOCUMENTO */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2" gutterBottom>
-          Documento oficial (PDF):
+          Documento oficial (imagen o PDF):
         </Typography>
 
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Tooltip title="Sube el PDF emitido por COFEPRIS">
+            <Tooltip title="Sube documento emitido por COFEPRIS (imagen o PDF)">
               <Button
                 variant="contained"
                 component="label"
@@ -86,21 +92,38 @@ const CofeprisFolioSection = ({
                   "&:hover": { backgroundColor: "#1b5e20" },
                 }}
               >
-                ⬆️ Subir PDF COFEPRIS
+                ⬆️ Subir documento COFEPRIS
                 <Input
                   type="file"
-                  accept="application/pdf"
+                  inputProps={{
+                    accept: ".jpg,.jpeg,.png,.webp,.pdf",
+                  }}
                   name="pdfCofepris"
                   sx={{ display: "none" }}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const ext = file.name.split(".").pop().toLowerCase();
+
+                    if (!EXT_VALIDAS.includes(ext)) {
+                      enqueueSnackbar(
+                        "❌ Solo se permiten imágenes (JPG, PNG, WEBP) o PDF",
+                        { variant: "error" }
+                      );
+                      e.target.value = null;
+                      return;
+                    }
+
                     handleFormChange({
                       target: {
                         name: "pdfCofepris",
-                        value: e.target.files[0],
+                        value: file,
                         type: "file",
                       },
-                    })
-                  }
+                    });
+                  }}
+                  
                 />
               </Button>
             </Tooltip>
@@ -115,7 +138,7 @@ const CofeprisFolioSection = ({
                 }}
               >
                 <Typography sx={{ flex: 1, color: "success.main" }}>
-                  📄 <b>{form.pdfCofepris.name}</b>
+                  📎 <b>{form.pdfCofepris.name}</b>
                 </Typography>
 
                 <Tooltip title="Eliminar archivo">
