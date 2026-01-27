@@ -99,16 +99,18 @@ const Skills = ({
               <Input
                 type="file"
                 name="certificados_archivos"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
                 inputProps={{
                     accept: ".jpg,.jpeg,.png,.webp,.pdf",
                 }}
                 multiple
+                sx={{ display: "none" }}
                 onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                  const files = Array.from(e.target.files || []);
+                  if (!files.length) return;
 
+                  for (const file of files) {
                     const ext = file.name.split(".").pop().toLowerCase();
-
                     if (!EXT_VALIDAS.includes(ext)) {
                       enqueueSnackbar(
                         "❌ Solo se permiten imágenes (JPG, PNG, WEBP) o PDF",
@@ -117,24 +119,23 @@ const Skills = ({
                       e.target.value = null;
                       return;
                     }
+                  }
 
-                    handleFormChange({
-                      target: {
-                        name: "pdfCofepris",
-                        value: file,
-                        type: "file",
-                      },
-                    });
-                  }}
-                sx={{ display: "none" }}
+                  // 🔥 ESTA ES LA CLAVE
+                  e.persist();
+                  handleCertificadosAdd(e);
+
+                  e.target.value = null;
+                }}
               />
             </Button>
           </Tooltip>
 
+          {/* ✅ LISTA VISIBLE DE ARCHIVOS */}
           {certificadosUnicos.map((file, index) => (
             <Box
               key={`${file.name}-${index}`}
-              sx={{ display: 'flex', alignItems: 'center', mb: 1 }}
+              sx={{ display: 'flex', alignItems: 'center', mb: 1, mt: 1 }}
             >
               <span style={{ fontSize: 20 }}>
                 {getCertExt(file.name) === 'pdf' ? '📄' : '🖼️'}

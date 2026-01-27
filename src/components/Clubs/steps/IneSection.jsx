@@ -118,6 +118,9 @@ const IneSection = ({ form = {}, setForm }) => {
                     type="file"
                     name={FIELD_FRENTE}
                     accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    inputProps={{
+                        accept: ".jpg,.jpeg,.png,.webp,.pdf",
+                    }}
                     sx={{ display: "none" }}
                     disabled={ineFrenteCargado}
                     onChange={onFileSelected(FIELD_FRENTE)}
@@ -151,6 +154,9 @@ const IneSection = ({ form = {}, setForm }) => {
                     type="file"
                     name={FIELD_REVERSO}
                     accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    inputProps={{
+                        accept: ".jpg,.jpeg,.png,.webp,.pdf",
+                    }}
                     sx={{ display: "none" }}
                     disabled={ineReversoCargado}
                     onChange={onFileSelected(FIELD_REVERSO)}
