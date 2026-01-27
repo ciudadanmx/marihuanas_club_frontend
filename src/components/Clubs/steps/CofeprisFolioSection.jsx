@@ -7,20 +7,13 @@ import {
   Tooltip,
   Button,
   Input,
+  IconButton,
 } from "@mui/material";
+import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
 /**
  * ============================================================
  * CofeprisFolioSection
- * ------------------------------------------------------------
- * Sección reutilizable para:
- *  - Trámites COFEPRIS ya concluidos
- *  - Amparos para uso personal
- *  - Autorizaciones directas
- *
- * Siempre existe:
- *  - Folio / expediente
- *  - PDF de resolución u oficio
  * ============================================================
  */
 const CofeprisFolioSection = ({
@@ -31,9 +24,7 @@ const CofeprisFolioSection = ({
   return (
     <Box sx={{ pl: 4, pr: 2, pb: 2 }}>
 
-      {/* ============================================
-          FOLIO / EXPEDIENTE
-      ============================================ */}
+      {/* FOLIO */}
       <TextField
         fullWidth
         margin="normal"
@@ -47,9 +38,7 @@ const CofeprisFolioSection = ({
         color="success"
       />
 
-      {/* ============================================
-          TIPO DE RESOLUCIÓN
-      ============================================ */}
+      {/* TIPO */}
       <TextField
         select
         fullWidth
@@ -68,9 +57,7 @@ const CofeprisFolioSection = ({
         <option value="desconozco">No estoy seguro</option>
       </TextField>
 
-      {/* ============================================
-          AÑO APROXIMADO
-      ============================================ */}
+      {/* AÑO */}
       <TextField
         fullWidth
         margin="normal"
@@ -82,58 +69,83 @@ const CofeprisFolioSection = ({
         color="success"
       />
 
-      {/* ============================================
-          SUBIDA DE PDF (RESOLUCIÓN / OFICIO)
-      ============================================ */}
+      {/* PDF */}
       <Box sx={{ mt: 2 }}>
         <Typography variant="subtitle2" gutterBottom>
           Documento oficial (PDF):
         </Typography>
 
         <Grid container spacing={2}>
-            <Grid item xs={12}>
-                <Tooltip title="Sube el PDF emitido por COFEPRIS">
-                <Button
-                    variant="contained"
-                    component="label"
-                    sx={{
-                    backgroundColor: "#2e7d32",
-                    "&:hover": { backgroundColor: "#1b5e20" },
-                    }}
-                >
-                    ⬆️ Subir PDF COFEPRIS
-                    <Input
-                    type="file"
-                    accept="application/pdf"
-                    name="pdfCofepris"
-                    sx={{ display: "none" }}
-                    onChange={(e) =>
-                        handleFormChange({
-                        target: {
-                            name: "pdfCofepris",
-                            value: e.target.files[0],
-                            type: "file",
-                        },
-                        })
-                    }
-                    />
-                </Button>
-                </Tooltip>
+          <Grid item xs={12}>
+            <Tooltip title="Sube el PDF emitido por COFEPRIS">
+              <Button
+                variant="contained"
+                component="label"
+                sx={{
+                  backgroundColor: "#2e7d32",
+                  "&:hover": { backgroundColor: "#1b5e20" },
+                }}
+              >
+                ⬆️ Subir PDF COFEPRIS
+                <Input
+                  type="file"
+                  accept="application/pdf"
+                  name="pdfCofepris"
+                  sx={{ display: "none" }}
+                  onChange={(e) =>
+                    handleFormChange({
+                      target: {
+                        name: "pdfCofepris",
+                        value: e.target.files[0],
+                        type: "file",
+                      },
+                    })
+                  }
+                />
+              </Button>
+            </Tooltip>
 
-                {form.pdfCofepris && (
-                <Typography variant="body2" sx={{ mt: 1, color: "success.main" }}>
-                    📄 Archivo seleccionado: <b>{form.pdfCofepris.name}</b>
+            {/* ✅ ÚNICO render del archivo */}
+            {form.pdfCofepris && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  mt: 1,
+                }}
+              >
+                <Typography sx={{ flex: 1, color: "success.main" }}>
+                  📄 <b>{form.pdfCofepris.name}</b>
                 </Typography>
-                )}
-            </Grid>
+
+                <Tooltip title="Eliminar archivo">
+                  <IconButton
+                    size="small"
+                    onClick={() =>
+                      handleFormChange({
+                        target: {
+                          name: "pdfCofepris",
+                          value: null,
+                        },
+                      })
+                    }
+                    sx={{
+                      color: "#fff",
+                      backgroundColor: "#9c27b0",
+                      "&:hover": {
+                        backgroundColor: "#7b1fa2",
+                        transform: "scale(1.1)",
+                      },
+                      boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    <DeleteForeverIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
+          </Grid>
         </Grid>
-
-
-        {form.pdfCofepris && (
-          <Typography variant="body2" sx={{ mt: 1, color: "green" }}>
-            📄 Archivo cargado: {form.pdfCofepris.name}
-          </Typography>
-        )}
       </Box>
     </Box>
   );

@@ -19,7 +19,7 @@ const IneSection = ({ form = {}, setForm }) => {
   const FIELD_FRENTE = "ine_frente";
   const FIELD_REVERSO = "ine_reverso";
 
-    const ineFrenteCargado = Boolean(form[FIELD_FRENTE]);
+  const ineFrenteCargado = Boolean(form[FIELD_FRENTE]);
   const ineReversoCargado = Boolean(form[FIELD_REVERSO]);
 
   const [objectUrls, setObjectUrls] = useState({});
@@ -93,70 +93,71 @@ const IneSection = ({ form = {}, setForm }) => {
 
       {/* Botones */}
       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 1 }}>
-<Tooltip
-  title={
-    ineFrenteCargado
-      ? "Ya cargaste el INE frente"
-      : "Sube el anverso (frente) de tu INE"
-  }
->
-  <span>
-    <Button
-      variant="contained"
-      component="label"
-      disabled={ineFrenteCargado}
-      sx={{
-        backgroundColor: "#9c27b0",
-        pointerEvents: ineFrenteCargado ? "none" : "auto",
-        opacity: ineFrenteCargado ? 0.6 : 1,
-        "&:hover": { backgroundColor: "#7b1fa2" }
-      }}
-    >
-      ⬆️ INE - Frente
-      <Input
-        type="file"
-        name={FIELD_FRENTE}
-        accept=".jpg,.jpeg,.png,.webp,.pdf"
-        sx={{ display: "none" }}
-        disabled={ineFrenteCargado}
-        onChange={onFileSelected(FIELD_FRENTE)}
-      />
-    </Button>
-  </span>
-</Tooltip>
 
-<Tooltip
-  title={
-    ineReversoCargado
-      ? "Ya cargaste el INE reverso"
-      : "Sube el reverso (dorso) de tu INE"
-  }
->
-  <span>
-    <Button
-      variant="outlined"
-      component="label"
-      disabled={ineReversoCargado}
-      sx={{
-        color: "#9c27b0",
-        borderColor: "#9c27b0",
-        pointerEvents: ineReversoCargado ? "none" : "auto",
-        opacity: ineReversoCargado ? 0.6 : 1,
-        "&:hover": { backgroundColor: "#f3e5f5" }
-      }}
-    >
-      ⬆️ INE - Reverso
-      <Input
-        type="file"
-        name={FIELD_REVERSO}
-        accept=".jpg,.jpeg,.png,.webp,.pdf"
-        sx={{ display: "none" }}
-        disabled={ineReversoCargado}
-        onChange={onFileSelected(FIELD_REVERSO)}
-      />
-    </Button>
-  </span>
-</Tooltip>
+        <Tooltip
+            title={
+                ineFrenteCargado
+                ? "Ya cargaste el INE frente"
+                : "Sube el anverso (frente) de tu INE"
+            }
+            >
+            <span>
+                <Button
+                variant="contained"
+                component="label"
+                disabled={ineFrenteCargado}
+                sx={{
+                    backgroundColor: "#9c27b0",
+                    pointerEvents: ineFrenteCargado ? "none" : "auto",
+                    opacity: ineFrenteCargado ? 0.6 : 1,
+                    "&:hover": { backgroundColor: "#7b1fa2" }
+                }}
+                >
+                ⬆️ INE - Frente
+                <Input
+                    type="file"
+                    name={FIELD_FRENTE}
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    sx={{ display: "none" }}
+                    disabled={ineFrenteCargado}
+                    onChange={onFileSelected(FIELD_FRENTE)}
+                />
+                </Button>
+            </span>
+        </Tooltip>
+
+        <Tooltip
+            title={
+                ineReversoCargado
+                ? "Ya cargaste el INE reverso"
+                : "Sube el reverso (dorso) de tu INE"
+            }
+            >
+            <span>
+                <Button
+                variant="outlined"
+                component="label"
+                disabled={ineReversoCargado}
+                sx={{
+                    color: "#9c27b0",
+                    borderColor: "#9c27b0",
+                    pointerEvents: ineReversoCargado ? "none" : "auto",
+                    opacity: ineReversoCargado ? 0.6 : 1,
+                    "&:hover": { backgroundColor: "#f3e5f5" }
+                }}
+                >
+                ⬆️ INE - Reverso
+                <Input
+                    type="file"
+                    name={FIELD_REVERSO}
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    sx={{ display: "none" }}
+                    disabled={ineReversoCargado}
+                    onChange={onFileSelected(FIELD_REVERSO)}
+                />
+                </Button>
+            </span>
+        </Tooltip>
 
       </Box>
 
