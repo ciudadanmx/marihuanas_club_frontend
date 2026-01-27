@@ -13,7 +13,7 @@
  * =========================================================
  */
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 /* =========================
    UI / ANIMACIONES
@@ -47,6 +47,55 @@ import {
 ========================= */
 import formaters from "../../../utils/formaters";
 import { createFileHandlers } from "../../../utils/FileHelpers";
+
+// Componente para manejar creación y revocación de objectURL de forma segura
+const FileLink = ({ file, children }) => {
+  const [url, setUrl] = useState(null);
+
+  useEffect(() => {
+    if (!file) {
+      setUrl(null);
+      return;
+    }
+
+    // Si file es un string (URL ya lista), úsala directamente
+    if (typeof file === "string") {
+      setUrl(file);
+      return;
+    }
+
+    // Si file es un objeto con .url o .filename (backend), intenta construir url
+    if (file?.url) {
+      setUrl(file.url);
+      return;
+    }
+    if (file?.filename && typeof file.filename === "string") {
+      setUrl(file.filename);
+      return;
+    }
+
+    // Si es un File/Blob (cliente) -> creamos objectURL y lo revocamos al desmontar
+    if (file instanceof Blob || file instanceof File) {
+      const u = URL.createObjectURL(file);
+      setUrl(u);
+      return () => {
+        try { URL.revokeObjectURL(u); } catch (e) {}
+      };
+    }
+
+    // fallback
+    setUrl(null);
+    return;
+  }, [file]);
+
+  if (!url) return <>{children}</>; // si no hay url, muestra solo el contenido sin link
+  return (
+    <a href={url} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "#1976d2" }}>
+      {children}
+    </a>
+  );
+};
+
 
 /* =========================================================
    CONSTANTES GLOBALES
@@ -195,6 +244,24 @@ const renderHorarios = (horarios) => {
   });
 };
 
+
+const getSafeFileData = (file, index, getExtension) => {
+  const name =
+    file?.name ||
+    file?.filename ||
+    (typeof file === "string"
+      ? file.split("/").pop()
+      : `archivo-${index + 1}`);
+
+  const ext = getExtension
+    ? getExtension(name)
+    : (name?.split(".").pop() || "").toLowerCase();
+
+  return { name, ext };
+};
+
+
+
 /* =========================================================
    COMPONENTE PRINCIPAL
 ========================================================= */
@@ -220,6 +287,24 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
         )
       : []),
   ];
+
+
+  
+  // Normalizamos los archivos de INE para que siempre tengamos arrays (aunque vengan como File único o bajo otro nombre)
+const ineFrenteFiles = (() => {
+  const v = form.ine_frente_archivos ?? form.ine_frente ?? form.ineFrente ?? null;
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+})();
+
+const ineTrasFiles = (() => {
+  const v = form.ine_tras_archivos ?? form.ine_reverso ?? form.ine_tras ?? form.ineTras ?? null;
+  if (!v) return [];
+  return Array.isArray(v) ? v : [v];
+})();
+
+
+
 
   return (
     <Box>
@@ -344,70 +429,65 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 plantas
               </Typography>
 
-              {form.archivos_club.map((file, index) => {
-                const url = URL.createObjectURL(file);
+              {Array.isArray(form.certificados_archivos) && form.certificados_archivos.length > 0 && (
+                <>
+                  {Array.isArray(form.certificados_archivos) &&
+                    form.certificados_archivos.length > 0 && (
+                      <>
+                        {form.certificados_archivos.map((file, index) => {
+                          const { name, ext } = getSafeFileData(file, index, getExtension);
 
-                return (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start", // 👈 permite crecer en altura
-                      mt: 1,
-                    }}
-                  >
-                    {/* Ícono según tipo */}
-                    <span style={{ fontSize: 20, marginTop: 2 }}>
-                      {getExtension(file.name) === "pdf" ? "📄" : "🖼️"}
-                    </span>
+                          return (
+                            <Box
+                              key={`certificado-${index}`}
+                              sx={{
+                                display: "flex",
+                                alignItems: "flex-start",
+                                mt: 1,
+                              }}
+                            >
+                              <span style={{ fontSize: 20, marginTop: 2 }}>
+                                {ext === "pdf" ? "📄" : "🖼️"}
+                              </span>
 
-                    {/* Nombre del archivo (wrap correcto) */}
-                    <Typography
-                      sx={{
-                        ml: 1,
-                        flex: 1,
-                        fontSize: 14,
-                        lineHeight: 1.3,
-                        whiteSpace: "normal",     // 👈 permite salto
-                        wordBreak: "break-word",  // 👈 corta nombres largos
-                        overflowWrap: "anywhere", // 👈 extra seguro
-                      }}
-                    >
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          textDecoration: "none",
-                          color: "#1976d2",
-                        }}
-                      >
-                        <u>{file.name}</u>
-                      </a>
-                    </Typography>
+                              <Typography
+                                sx={{
+                                  ml: 1,
+                                  flex: 1,
+                                  fontSize: 14,
+                                  lineHeight: 1.3,
+                                  whiteSpace: "normal",
+                                  wordBreak: "break-word",
+                                  overflowWrap: "anywhere",
+                                }}
+                              >
+                                <FileLink file={file}>
+                                  <u>{name}</u>
+                                </FileLink>
+                              </Typography>
 
-                    {/* Ver + ojo */}
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        textDecoration: "none",
-                        fontSize: 14,
-                        color: "#1976d2",
-                        marginLeft: 8,
-                        whiteSpace: "nowrap", // 👈 evita que "Ver" se rompa
-                      }}
-                    >
-                      <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
-                      Ver
-                    </a>
-                  </Box>
-                );
-              })}
-
+                              <FileLink file={file}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    fontSize: 14,
+                                    color: "#1976d2",
+                                    ml: 1,
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
+                                  Ver
+                                </Box>
+                              </FileLink>
+                            </Box>
+                          );
+                        })}
+                      </>
+                  )}
+                </>
+              )}
 
             </CardInfo>
           </Grid>
@@ -486,6 +566,137 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
               }
             </Typography>
           </CardInfo>
+
+          
+        </Grid>
+
+        {/* =================== INE =================== */}
+        <Grid item xs={12} sm={12}>
+          <CardInfo icon={MedicalServicesIcon} title="IDENTIFICACIÓN OFICIAL"> 
+            {ineFrenteFiles.length === 0 ? (
+              <Typography color="text.secondary">No hay INE  cargado.</Typography>
+            ) : (
+               
+                  <>
+                    {/* =================== INE - REVERSO =================== */}
+
+                    {ineFrenteFiles.map((file, index) => {
+                      const { name, ext } = getSafeFileData(file, index, getExtension);
+
+                      return (
+                        <Box
+                          key={`ine-frente-${index}`}
+                          sx={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            mt: 1,
+                          }}
+                        >
+                          <span style={{ fontSize: 20, marginTop: 2 }}>
+                            {ext === "pdf" ? "📄" : "🖼️"}
+                          </span>
+
+                          <Typography
+                            sx={{
+                              ml: 1,
+                              flex: 1,
+                              fontSize: 14,
+                              lineHeight: 1.3,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            <FileLink file={file}>
+                              <u>{name}</u>
+                            </FileLink>
+                          </Typography>
+
+                          <FileLink file={file}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: 14,
+                                color: "#1976d2",
+                                ml: 1,
+                                whiteSpace: "nowrap",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
+                              Ver
+                            </Box>
+                          </FileLink>
+                        </Box>
+                      );
+                    })}
+                  </>
+            )}
+
+              {/* =================== INE - REVERSO =================== */}
+                {ineTrasFiles.length === 0 ? (
+                  <Typography color="text.secondary">No hay INE (reverso) cargado.</Typography>
+                ) : (
+                  <>
+                    {ineTrasFiles.map((file, index) => {
+                      const { name, ext } = getSafeFileData(file, index, getExtension);
+
+                      return (
+                        <Box
+                          key={`ine-tras-${index}`}
+                          sx={{
+                            display: "flex",
+                            alignItems: "flex-start",
+                            mt: 1,
+                          }}
+                        >
+                          <span style={{ fontSize: 20, marginTop: 2 }}>
+                            {ext === "pdf" ? "📄" : "🖼️"}
+                          </span>
+
+                          <Typography
+                            sx={{
+                              ml: 1,
+                              flex: 1,
+                              fontSize: 14,
+                              lineHeight: 1.3,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            <FileLink file={file}>
+                              <u>{name}</u>
+                            </FileLink>
+                          </Typography>
+
+                          <FileLink file={file}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: 14,
+                                color: "#1976d2",
+                                ml: 1,
+                                whiteSpace: "nowrap",
+                                cursor: "pointer",
+                              }}
+                            >
+                              <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
+                              Ver
+                            </Box>
+                          </FileLink>
+                        </Box>
+                      );
+                    })}
+                  </>
+                )}
+
+              
+            
+ 
+          </CardInfo>
         </Grid>
 
       </Grid>
@@ -493,8 +704,8 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
       {/* =================== FOOTER =================== */}
       <Divider sx={{ my: 3 }} />
       <Typography color="text.secondary" fontStyle="italic">
-        Revisa que toda la información sea correcta antes de presionar{`${form.cofepris} -- ${form.tipoResolucion} -- ${form.anioResolucion} -- ${form.cofeprismode}`}
-        <strong>Enviar</strong>.{`Gestion ${form.curp} -- ${form.rfc} --Whatsapp, usare existente? ${form.usarWhatsappExistente} -- Email existente? ${form.usarEmailExistente}`}
+        Revisa que toda la información sea correcta antes de presionar
+        <strong>Enviar</strong>.
       </Typography>
     </Box>
   );

@@ -256,7 +256,7 @@ const {
         // función de eliminación proveniente de createFileHandlers
         handleIneReversoRemove={handleIneReversoRemove}
         // ayuda para detectar extensión si la tienes
-        getDocExt={getDocExt}
+        getDocExt={getIneExt}
       />
 
     </Box>
