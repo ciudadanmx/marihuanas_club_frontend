@@ -241,7 +241,7 @@ export default function StepperForm({
         return;
       }
       
-      if ( form.tipo_club.includes('cultivo') && (!Array.isArray(form.documentales) || form.documentales < 5) ) {
+      if ( form.tipo_club.includes('cultivo') && (!Array.isArray(form.documentales) || form.documentales.length < 5) ) {
         enqueueSnackbar(
           `❓  ¿ Y cómo sabemos que tienes espacio para las flores ? -- Agrega al menos 5 Fotos de tu Verificación según las indicaciones`,
           { variant: "warning" }
@@ -249,7 +249,51 @@ export default function StepperForm({
         return;
       }
 
-      //console.log('cofepris option', form.cofeprisOption);
+      if ( form.tipo_club.includes('cultivo') && !form.armarios) {
+        enqueueSnackbar(
+          `❓  ¿ Y cómo sabemos para cuántas flores tienes espacio ? -- Especifica para cuántos armarios tienes espacio`,
+          { variant: "warning" }
+        );
+        return;
+      }
+
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
+        "application/pdf",
+      ];
+
+      // 1️⃣ Validar que existan ambos archivos
+      const ineFrente  = form?.ine_frente;
+      const ineReverso = form?.ine_reverso;
+
+      if (!ineFrente || !ineReverso) {
+        enqueueSnackbar(
+          "🪪 Sube tu INE completo: frente y reverso.",
+          { variant: "warning" }
+        );
+        return;
+      }
+
+      // 2️⃣ Validar tipo de archivo (solo imágenes)
+      const files = [ineFrente, ineReverso];
+
+      const fileInvalido = files.find(
+        f => !allowedTypes.includes(f?.type)
+      );
+
+      if (fileInvalido) {
+        enqueueSnackbar(
+          "🖼️ El INE debe ser imagen (.JPG, .PNG o .WEBP) o documento .PDF. No se aceptan otros formatos.",
+          { variant: "error" }
+        );
+        return;
+      }
+
+
+
 
       if (form.cofeprismode === "folio" && 2 < 1) {
         enqueueSnackbar(

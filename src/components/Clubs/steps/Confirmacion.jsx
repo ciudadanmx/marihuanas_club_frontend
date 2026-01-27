@@ -396,7 +396,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
         </Grid>
 
         {/* =================== FOTOS DOCUMENTALES =================== */}
-        {form.documentales && (
+        {(form.tipo_club.includes('cultivo') && form.documentales) && (
           <Grid item xs={12}>
             <CardInfo
               icon={ImageIcon}
@@ -408,7 +408,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
         )}
 
         {/* =================== SKILLS / ARMARIOS =================== */}
-        {form.armarios && (
+        {(form.tipo_club.includes('cultivo') && form.armarios) && (
           <Grid item xs={12}>
             <CardInfo icon={YardIcon} title="Habilidades del Jardinero">
               <Typography sx={{ whiteSpace: "pre-line" }}>

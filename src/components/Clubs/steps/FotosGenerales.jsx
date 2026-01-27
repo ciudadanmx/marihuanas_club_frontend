@@ -246,7 +246,7 @@ const FotosGenerales = ({
               type="file"
               name="documentales"
               multiple
-            accept=".jpg,.jpeg,.png,.webp"
+              accept=".jpg,.jpeg,.png,.webp"
               inputProps={{
                     accept: ".jpg,.jpeg,.png,.webp",
                     multiple: true,
