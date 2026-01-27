@@ -88,6 +88,9 @@ const FotosGenerales = ({
             accept=".jpg,.jpeg,.png,.webp"
             onChange={onFileValidatedChange}
             sx={{ display: "none" }}
+            inputProps={{
+                accept: ".jpg,.jpeg,.png,.webp",
+            }}
           />
         </Button>
       </Tooltip>
@@ -140,8 +143,9 @@ const FotosGenerales = ({
           <Input
             type="file"
             name="fotos_club"
+            accept=".jpg,.jpeg,.png,.webp"            
             inputProps={{
-                    accept: ".jpg,.jpeg,.png,.webp,.pdf",
+                    accept: ".jpg,.jpeg,.png,.webp",
                     multiple: true,
                 }}
             multiple
@@ -241,8 +245,12 @@ const FotosGenerales = ({
             <Input
               type="file"
               name="documentales"
-              accept=".jpg,.jpeg,.png,.webp"
               multiple
+            accept=".jpg,.jpeg,.png,.webp"
+              inputProps={{
+                    accept: ".jpg,.jpeg,.png,.webp",
+                    multiple: true,
+                }}
               onChange={onFileValidatedChange}
               sx={{ display: "none" }}
             />
