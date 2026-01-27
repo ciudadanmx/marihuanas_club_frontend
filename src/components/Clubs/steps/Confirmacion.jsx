@@ -39,6 +39,7 @@ import {
   Yard as YardIcon,
   Forest as ForestIcon,
   Gavel as MedicalServicesIcon,
+  Badge as IdentificationIcon,
 } from "@mui/icons-material";
 
 
@@ -245,6 +246,7 @@ const renderHorarios = (horarios) => {
 };
 
 
+// MANEJO DE UPLOADS
 const getSafeFileData = (file, index, getExtension) => {
   const name =
     file?.name ||
@@ -259,7 +261,6 @@ const getSafeFileData = (file, index, getExtension) => {
 
   return { name, ext };
 };
-
 
 
 /* =========================================================
@@ -289,23 +290,20 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
   ];
 
 
-  
   // Normalizamos los archivos de INE para que siempre tengamos arrays (aunque vengan como File único o bajo otro nombre)
-const ineFrenteFiles = (() => {
-  const v = form.ine_frente_archivos ?? form.ine_frente ?? form.ineFrente ?? null;
-  if (!v) return [];
-  return Array.isArray(v) ? v : [v];
-})();
+  const ineFrenteFiles = (() => {
+    const v = form.ine_frente_archivos ?? form.ine_frente ?? form.ineFrente ?? null;
+    if (!v) return [];
+    return Array.isArray(v) ? v : [v];
+  })();
 
-const ineTrasFiles = (() => {
-  const v = form.ine_tras_archivos ?? form.ine_reverso ?? form.ine_tras ?? form.ineTras ?? null;
-  if (!v) return [];
-  return Array.isArray(v) ? v : [v];
-})();
+  const ineTrasFiles = (() => {
+    const v = form.ine_tras_archivos ?? form.ine_reverso ?? form.ine_tras ?? form.ineTras ?? null;
+    if (!v) return [];
+    return Array.isArray(v) ? v : [v];
+  })();
 
-
-
-
+  // RENDER **
   return (
     <Box>
       {/* =================== TÍTULO =================== */}
@@ -387,8 +385,6 @@ const ineTrasFiles = (() => {
             <ImageGallery files={form.fotos_club} />
           </CardInfo>
         </Grid>
-
-        
 
         {/* =================== DESCRIPCIÓN =================== */}
         <Grid item xs={12}>
@@ -512,7 +508,6 @@ const ineTrasFiles = (() => {
           </>
         )}
 
-
         {/* =================== HORARIOS =================== */}
         <Grid item xs={12}>
           <CardInfo icon={CalendarIcon} title="Horarios">
@@ -529,57 +524,102 @@ const ineTrasFiles = (() => {
           </CardInfo>
         </Grid>
       
-        
-        {/* =================== STATUS LEGAL =================== */}
-        <Grid item xs={6} sm={6}>
+        {/* =================== STATUS LEGAL =================== */} 
+        <Grid item xs={6} sm={6}>       
           <CardInfo icon={MedicalServicesIcon} title="Trámite COFEPRIS">
-            <Typography>
-              {form.cofeprismode === 'folio' ? (
-                <>
-                  Ya tienes el trámite {(form.tipoResolucion === 'enproceso' || form.tipoResolucion === 'desconozco') ? 'iniciado, con el status de: ' : 'realizado en la modalidad:'}, <b>{form.tipoResolucion}</b> con el folio:
-                  <i>{form.cofepris}</i>
-                  <br />
-                </>
-              ) : (
-                 <>
-                    Gestionaremos tu trámite con los siguientes datos:
-                    {form.usarDireccionExistente ? 'Misma dirección que en los datos anteriores.' : (
-                      <>
-                        <>
-                          {`${form.direccionGestion?.calle} no. ${form.direccionGestion?.numero}, Colonia ${form.direccionGestion?.colonia} Municipio de ${form.direccionGestion?.municipio}, ${form.direccionGestion?.estado}, CP. ${form.direccionGestion?.cp}`}
-                        </>
-                      </>
-                    )}
+            {form.cofeprismode === "folio" ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8 }}>
+                
+                <Typography variant="body2" color="text.secondary">
+                  Estado del trámite
+                </Typography>
 
-                    {form.usarWhatsappExistente === true 
-                      ? `Mismo teléfono que el Whatsapp registrado. [${form.whatsapp}]` 
-                      : `Teléfono de Contacto para trámite: [${form.telefonoGestion}]`
-                    }
+                <Typography variant="body1">
+                  Trámite{" "}
+                  <strong>
+                    {form.tipoResolucion === "enproceso" ||
+                    form.tipoResolucion === "desconozco"
+                      ? "iniciado"
+                      : "realizado"}
+                  </strong>
+                </Typography>
 
-                    {form.usarEmailExistente 
-                      ? `Mismo e-mail que el asociado a tu cuenta. [${user.email}]` 
-                      : `E-Mail: [${form.emailGestion}]`
-                    }
+                <Typography variant="body2" color="text.secondary">
+                  Modalidad / Status
+                </Typography>
 
-                 </>
-                )
-              }
-            </Typography>
+                <Typography variant="body1" fontWeight="bold">
+                  {form.tipoResolucion}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  Folio COFEPRIS
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{ fontStyle: "italic", wordBreak: "break-all" }}
+                >
+                  {form.cofepris || "-"}
+                </Typography>
+
+              </Box>
+            ) : (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+
+                <Typography variant="body2" color="text.secondary">
+                  Modalidad
+                </Typography>
+
+                <Typography variant="body1" fontWeight="bold">
+                  Gestión asistida por Ciudadan
+                </Typography>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Typography variant="body2" color="text.secondary">
+                  Dirección para el trámite
+                </Typography>
+
+                <Typography variant="body1">
+                  {form.usarDireccionExistente
+                    ? "Misma dirección registrada en los datos generales."
+                    : `${form.direccionGestion?.calle} no. ${form.direccionGestion?.numero}, Col. ${form.direccionGestion?.colonia}, ${form.direccionGestion?.municipio}, ${form.direccionGestion?.estado}, CP ${form.direccionGestion?.cp}`}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  Teléfono de contacto
+                </Typography>
+
+                <Typography variant="body1">
+                  {form.usarWhatsappExistente
+                    ? form.whatsapp
+                    : form.telefonoGestion}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary">
+                  Correo electrónico
+                </Typography>
+
+                <Typography variant="body1">
+                  {form.usarEmailExistente
+                    ? user.email
+                    : form.emailGestion}
+                </Typography>
+
+              </Box>
+            )}
           </CardInfo>
-
-          
         </Grid>
 
         {/* =================== INE =================== */}
         <Grid item xs={12} sm={12}>
-          <CardInfo icon={MedicalServicesIcon} title="IDENTIFICACIÓN OFICIAL"> 
+          <CardInfo icon={IdentificationIcon} title="IDENTIFICACIÓN OFICIAL"> 
             {ineFrenteFiles.length === 0 ? (
               <Typography color="text.secondary">No hay INE  cargado.</Typography>
             ) : (
-               
-                  <>
+                <>
                     {/* =================== INE - REVERSO =================== */}
-
                     {ineFrenteFiles.map((file, index) => {
                       const { name, ext } = getSafeFileData(file, index, getExtension);
 
@@ -634,67 +674,64 @@ const ineTrasFiles = (() => {
                   </>
             )}
 
-              {/* =================== INE - REVERSO =================== */}
-                {ineTrasFiles.length === 0 ? (
-                  <Typography color="text.secondary">No hay INE (reverso) cargado.</Typography>
-                ) : (
-                  <>
-                    {ineTrasFiles.map((file, index) => {
-                      const { name, ext } = getSafeFileData(file, index, getExtension);
+            {/* =================== INE - REVERSO =================== */}
+              {ineTrasFiles.length === 0 ? (
+                <Typography color="text.secondary">No hay INE (reverso) cargado.</Typography>
+              ) : (
+                <>
+                  {ineTrasFiles.map((file, index) => {
+                    const { name, ext } = getSafeFileData(file, index, getExtension);
 
-                      return (
-                        <Box
-                          key={`ine-tras-${index}`}
+                    return (
+                      <Box
+                        key={`ine-tras-${index}`}
+                        sx={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          mt: 1,
+                        }}
+                      >
+                        <span style={{ fontSize: 20, marginTop: 2 }}>
+                          {ext === "pdf" ? "📄" : "🖼️"}
+                        </span>
+
+                        <Typography
                           sx={{
-                            display: "flex",
-                            alignItems: "flex-start",
-                            mt: 1,
+                            ml: 1,
+                            flex: 1,
+                            fontSize: 14,
+                            lineHeight: 1.3,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            overflowWrap: "anywhere",
                           }}
                         >
-                          <span style={{ fontSize: 20, marginTop: 2 }}>
-                            {ext === "pdf" ? "📄" : "🖼️"}
-                          </span>
+                          <FileLink file={file}>
+                            <u>{name}</u>
+                          </FileLink>
+                        </Typography>
 
-                          <Typography
+                        <FileLink file={file}>
+                          <Box
                             sx={{
-                              ml: 1,
-                              flex: 1,
+                              display: "flex",
+                              alignItems: "center",
                               fontSize: 14,
-                              lineHeight: 1.3,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              overflowWrap: "anywhere",
+                              color: "#1976d2",
+                              ml: 1,
+                              whiteSpace: "nowrap",
+                              cursor: "pointer",
                             }}
                           >
-                            <FileLink file={file}>
-                              <u>{name}</u>
-                            </FileLink>
-                          </Typography>
-
-                          <FileLink file={file}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                fontSize: 14,
-                                color: "#1976d2",
-                                ml: 1,
-                                whiteSpace: "nowrap",
-                                cursor: "pointer",
-                              }}
-                            >
-                              <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
-                              Ver
-                            </Box>
-                          </FileLink>
-                        </Box>
-                      );
-                    })}
-                  </>
-                )}
-
-              
-            
+                            <VisibilityIcon color="success" sx={{ mr: 0.5 }} />
+                            Ver
+                          </Box>
+                        </FileLink>
+                      </Box>
+                    );
+                  })}
+                </>
+              )}
  
           </CardInfo>
         </Grid>
