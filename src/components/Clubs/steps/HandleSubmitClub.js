@@ -1,4 +1,5 @@
 // src/utils/handleSubmitClub.js
+import { appendFiles } from "../../../utils/FileHelpers";
 
 export async function handleSubmitClub({
   form,
@@ -23,32 +24,26 @@ export async function handleSubmitClub({
   const productos = Array.isArray(form.productos)
     ? form.productos.map(p => String(p).trim()).filter(Boolean).join(", ")
     : form.productos
-      ? String(form.productos)
-      : "";
+    ? String(form.productos)
+    : "";
 
   const serviciosArray = [
     ...(Array.isArray(form.servicios) ? form.servicios : []),
     ...(Array.isArray(form.tipo_club)
-      ? form.tipo_club.filter(
-          t => !["cultivo", "consumo"].includes(t)
-        )
+      ? form.tipo_club.filter(t => !["cultivo", "consumo"].includes(t))
       : []),
   ];
 
-  const servicios = serviciosArray
-    .map(s => String(s).trim())
-    .filter(Boolean)
-    .filter((v, i, arr) => arr.indexOf(v) === i)
-    .join(", ");
+  const servicios = [...new Set(
+    serviciosArray.map(s => String(s).trim()).filter(Boolean)
+  )].join(", ");
 
   let tipo = "consumo";
-
   if (Array.isArray(form.tipo_club)) {
-    const tieneCultivo = form.tipo_club.includes("cultivo");
-    const tieneConsumo = form.tipo_club.includes("consumo");
-
-    if (tieneCultivo && tieneConsumo) tipo = "ambos";
-    else if (tieneCultivo) tipo = "cultivo";
+    if (form.tipo_club.includes("cultivo") && form.tipo_club.includes("consumo"))
+      tipo = "ambos";
+    else if (form.tipo_club.includes("cultivo"))
+      tipo = "cultivo";
   }
 
   // ================== ENVÍO ==================
@@ -76,15 +71,15 @@ export async function handleSubmitClub({
       en_revision: true,
     };
 
+    // 👉 datos
     dataToSend.append("data", JSON.stringify(payload));
 
-    if (form.foto_perfil) {
-      dataToSend.append("files.foto_perfil", form.foto_perfil);
-    }
-
-    form.fotos_club?.forEach(foto => {
-      dataToSend.append("files.fotos_club", foto);
-    });
+    // 👉 archivos (TODOS aquí)
+    appendFiles(dataToSend, "foto_de_perfil", form.foto_perfil);
+    appendFiles(dataToSend, "fotos", form.fotos_club);
+    //appendFiles(dataToSend, "ine_frente", form.ine_frente);
+    //appendFiles(dataToSend, "ine_reverso", form.ine_reverso);
+    appendFiles(dataToSend, "documentales", form.documentales);
 
     const res = await fetch(`${STRAPI_URL}/api/clubs`, {
       method: "POST",

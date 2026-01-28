@@ -6,7 +6,6 @@ export async function handleNextStep({
   enqueueSnackbar,
   user,
 }) {
-
     
     // 🔒 Validación SOLO en el step "Datos Generales"
     const stepLabel = steps[activeStep]?.label;

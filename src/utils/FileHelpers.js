@@ -49,3 +49,22 @@ export const createFileHandlers = ({
     getExtension,
   };
 };
+
+
+//Helper para subir archivos a Strapi
+export const appendFiles = (formData, field, files) => {
+  if (!files) return;
+
+  if (Array.isArray(files)) {
+    files.forEach((file) => {
+      if (file instanceof File) {
+        formData.append(`files.${field}`, file);
+      }
+    });
+    return;
+  }
+
+  if (files instanceof File) {
+    formData.append(`files.${field}`, files);
+  }
+};

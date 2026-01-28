@@ -47,8 +47,10 @@ const CofeprisSection = ({
           control={
             <Checkbox
               name="opcFolio"
-              checked={form.cofeprismode === "folio"}
-              onChange={() => selectConsumoOption("folio")}
+              checked={consumoOption === "folio"}
+              onChange={(e) =>
+                e.target.checked && selectConsumoOption("folio")
+              }
               color="success"
             />
           }
@@ -67,8 +69,10 @@ const CofeprisSection = ({
           control={
             <Checkbox
               name="opcGestion"
-              checked={form.cofeprismode === "gestion"}
-              onChange={() => selectConsumoOption("gestion")}
+              checked={consumoOption === "gestion"}
+              onChange={(e) =>
+                e.target.checked && selectConsumoOption("gestion")
+              }
               color="success"
             />
           }
@@ -90,7 +94,9 @@ const CofeprisSection = ({
             <Checkbox
               name="opcPorMi"
               checked={consumoOption === "pormi"}
-              onChange={() => selectConsumoOption("pormi")}
+              onChange={(e) =>
+                e.target.checked && selectConsumoOption("pormi")
+              }
               color="success"
             />
           }

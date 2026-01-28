@@ -19,7 +19,7 @@ import { useSnackbar } from "notistack";
 import { useRoles } from '../../Contexts/RolesContext'; 
 import Ingresa from "../Usuarios/Ingresa.jsx";
 import { handleSubmitClub } from './steps/HandleSubmitClub.js';
-import { handleNextStep  } from './steps/handleNextStepForm.js';
+import { handleNextStep  } from './steps/Validaciones.js';
 
 export default function StepperForm({
   tipo,
