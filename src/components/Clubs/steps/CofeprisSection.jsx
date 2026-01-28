@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react'
 import {
   Box,
-  Button,
-  Divider,
   Typography,
-  Checkbox,
+  Divider,
   FormControlLabel,
   FormGroup,
+  Checkbox,
   FormHelperText,
 } from "@mui/material";
-import CofeprisGestionDatosForm from './CofeprisGestionDatosForm';
 import CofeprisFolioSection from './CofeprisFolioSection';
+import CofeprisGestionDatosForm from './CofeprisGestionDatosForm';
 
+/**
+ * CofeprisSection ahora es un componente CONTROLADO:
+ * recibe consumoOption y selectConsumoOption desde el padre (Archivos).
+ */
 const CofeprisSection = ({
+  selectConsumoOption,
   handleFormChange,
   setFocusedField,
   isActivaMembresia,
@@ -20,28 +24,10 @@ const CofeprisSection = ({
   handleNestedChange,
   user,
   goGeneradorLibre,
-  setForm,
+  setForm, // se deja por compatibilidad si lo usan otras funciones
 }) => {
-  // ✅ Estado local para controlar la opción seleccionada
-  const [consumoOption, setConsumoOption] = useState(form?.cofeprismode || "");
 
-  // Inicializamos form.cofeprismode si no existe
-  useEffect(() => {
-    if (!form?.cofeprismode && consumoOption) {
-      setForm(prev => ({
-        ...prev,
-        cofeprismode: consumoOption,
-      }));
-    }
-  }, [consumoOption, form, setForm]);
-
-  const selectConsumoOption = (option) => {
-    setConsumoOption(option);
-    setForm(prev => ({
-      ...prev,
-      cofeprismode: option,
-    }));
-  };
+    const consumoOption = form.cofeprismode;
 
   return (
     <>
@@ -61,7 +47,7 @@ const CofeprisSection = ({
           control={
             <Checkbox
               name="opcFolio"
-              checked={consumoOption === "folio"}
+              checked={form.cofeprismode === "folio"}
               onChange={() => selectConsumoOption("folio")}
               color="success"
             />
@@ -81,7 +67,7 @@ const CofeprisSection = ({
           control={
             <Checkbox
               name="opcGestion"
-              checked={consumoOption === "gestion"}
+              checked={form.cofeprismode === "gestion"}
               onChange={() => selectConsumoOption("gestion")}
               color="success"
             />
@@ -117,17 +103,17 @@ const CofeprisSection = ({
               Cuando tengas el folio regresa a este formulario y agrégalo en "Ya cuento con un folio".
             </Typography>
 
-            <Button
-              variant="contained"
-              onClick={goGeneradorLibre}
-              sx={{
-                backgroundColor: "#6a1b9a",
-                "&:hover": { backgroundColor: "#4a148c" },
-                color: "#fff",
-              }}
-            >
+            <Box component="button" onClick={goGeneradorLibre} sx={{
+                display: 'inline-block',
+                padding: '8px 12px',
+                backgroundColor: '#6a1b9a',
+                color: '#fff',
+                borderRadius: 2,
+                border: 'none',
+                cursor: 'pointer'
+            }}>
               ✍️ Ir al Generador de Escrito Libre
-            </Button>
+            </Box>
           </Box>
         )}
 

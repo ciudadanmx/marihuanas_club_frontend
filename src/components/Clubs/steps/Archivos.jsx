@@ -100,7 +100,7 @@ const {
       cofeprismode: option,
     }));
     
-    setConsumoOption(option);
+    //setConsumoOption(option);
 
     if (option === "folio") {
       window.scrollBy({
