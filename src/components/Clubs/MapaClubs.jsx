@@ -488,7 +488,23 @@ export default function MapaClubs() {
             />
           </StandaloneSearchBox>
 
-          <Button size="small" variant="outlined" onClick={() => setCityOnly(v => !v)} sx={{ whiteSpace: 'nowrap' }}>
+          <Button size="small" variant="outlined" onClick={() => setCityOnly(v => !v)} sx={{
+            whiteSpace: 'nowrap',
+            color: '#39FF14',
+            borderColor: 'rgba(57,255,20,0.6)',
+            background: 'linear-gradient(135deg, rgba(57,255,20,0.12), rgba(156,39,176,0.12))',
+            backdropFilter: 'blur(6px)',
+            boxShadow: '0 0 8px rgba(57,255,20,0.6), inset 0 0 6px rgba(156,39,176,0.4)',
+            fontWeight: 700,
+            textTransform: 'none',
+            transition: 'all 0.25s ease',
+            '&:hover': {
+              background: 'linear-gradient(135deg, rgba(57,255,20,0.25), rgba(156,39,176,0.25))',
+              boxShadow: '0 0 14px rgba(57,255,20,0.9), 0 0 22px rgba(156,39,176,0.7)',
+              borderColor: '#39FF14',
+            },
+          }}
+          >
             {cityOnly ? 'Ciudades' : 'Todos'}
           </Button>
         </Box>
