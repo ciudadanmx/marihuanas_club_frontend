@@ -233,7 +233,8 @@ const {
       {/* 🏛️ SECCIÓN COFEPRIS                                 */}
       {/* ================================================== */}
 
-      {Array.isArray(form.tipo_club) && form.tipo_club.includes("cultivo") ? (
+      { /* Array.isArray(form.tipo_club) && form.tipo_club.includes("cultivo") ? ( */}
+      {2<1 ? (
         
         /* -------------------------------------------------- */
         /* CLUB DE CULTIVO → SECCIÓN COMPLETA COFEPRIS        */
