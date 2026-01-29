@@ -12,6 +12,9 @@ export async function handleSubmitClub({
 }) {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
+  let skills, lugares, miembros_activos;
+
+
   if (!isAuthenticated || !userId) {
     console.warn("❗ Usuario no autenticado o sin userId");
     return;
@@ -46,6 +49,19 @@ export async function handleSubmitClub({
       tipo = "cultivo";
   }
 
+      if (form.skills) {
+    skills = String(form.skills).trim;
+  }
+
+// --- armarios => lugares + miembros_activos = 0 (solo si existe armarios)
+    if (form.armarios || form.armarios === 0) {
+      // aceptar 0 u otros valores; si null/undefined, no se setea
+      lugares = form.armarios;
+      miembros_activos = 0;
+    }
+
+
+
   // ================== ENVÍO ==================
 
   try {
@@ -69,6 +85,9 @@ export async function handleSubmitClub({
       activo: false,
       fecha_alta: new Date().toISOString(),
       en_revision: true,
+      skills: skills || '',
+      lugares: lugares ? lugares : null,
+      miembros_activos: miembros_activos ? miembros_activos : null,
     };
 
     // 👉 datos
@@ -88,7 +107,7 @@ export async function handleSubmitClub({
 
     if (res.ok) {
       enqueueSnackbar("🎉 Club creado con éxito", { variant: "success" });
-      navigate("/clubs");
+      //navigate("/clubs");
     } else {
       const error = await res.json();
       enqueueSnackbar(
