@@ -1,5 +1,6 @@
 // src/utils/handleSubmitClub.js
 import { appendFiles } from "../../../utils/FileHelpers";
+import formaters from "../../../utils/formaters";
 
 export async function handleSubmitClub({
   form,
@@ -49,7 +50,10 @@ export async function handleSubmitClub({
       tipo = "cultivo";
   }
 
-      // Soportar array o string; usar trim() correctamente (con paréntesis)
+  const slug = formaters.buildSlug(form.nombre_club);
+
+  //Skills
+  // Soportar array o string; usar trim() correctamente (con paréntesis)
   if (form.skills) {
     if (Array.isArray(form.skills)) {
       skills = form.skills.map(s => String(s).trim()).filter(Boolean).join(", ");
@@ -176,6 +180,7 @@ export async function handleSubmitClub({
       miembrosactivos: lugares ? 0 : null,
       status_legal: status_legal || null,
       datos_legales: datos_legales || null,
+      slug: slug || '',
     };
 
     // 👉 datos

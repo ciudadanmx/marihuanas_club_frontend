@@ -83,6 +83,18 @@ const capitalizePhrase = (text) => {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 };
 
+const buildSlug = (text = "") => {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")                 // separa acentos
+    .replace(/[\u0300-\u036f]/g, "") // elimina acentos
+    .replace(/[^a-z0-9\s-]/g, "")    // elimina símbolos raros
+    .trim()
+    .replace(/\s+/g, "-")            // espacios a guiones
+    .replace(/-+/g, "-");            // guiones dobles
+};
+
 /**
  * Exportamos todo en un solo objeto
  * para mantener el mismo patrón que ya usas
@@ -93,6 +105,7 @@ const formaters = {
   formatearDireccionConInterior,
   capitalizeWords,
   capitalizePhrase,
+  buildSlug,
 };
 
 export default formaters;
