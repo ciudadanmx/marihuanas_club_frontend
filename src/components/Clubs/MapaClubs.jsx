@@ -163,7 +163,7 @@ export default function MapaClubs() {
     img.style.height = '56px';
     img.style.borderRadius = '6px';
     img.style.objectFit = 'cover';
-    img.src = club.foto_de_perfil?.url || club.fotoUrl || '';
+    img.src = club.foto_de_perfil?.url || ambosIcon || '';
     wrapper.appendChild(img);
 
     const right = document.createElement('div');
