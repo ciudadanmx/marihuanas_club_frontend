@@ -158,6 +158,14 @@ export async function handleNextStep({
         );
         return;
       }
+      
+      if (!form.horarios && !form.reservacion) {
+        enqueueSnackbar(
+          "😑 Y cuándo vas a atender a los usuarios?? Tienes que ingresar horarios o mínimo activar la opción de se requiere reservación.",
+          { variant: "error" }
+        );
+        return;
+      }
     }
 
     if (stepLabel === "Archivos") {
