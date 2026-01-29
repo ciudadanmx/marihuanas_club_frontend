@@ -6,8 +6,6 @@ export async function handleNextStep({
   enqueueSnackbar,
   user,
 }) {
-    
-    // 🔒 Validación SOLO en el step "Datos Generales"
     const stepLabel = steps[activeStep]?.label;
     const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
     const TEXTO_REGEX = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s]+$/;
@@ -169,7 +167,7 @@ export async function handleNextStep({
     }
 
     if (stepLabel === "Archivos") {
-       if (!Array.isArray(form.fotos_club) || form.fotos_club.length < 2) {
+      if (!Array.isArray(form.fotos_club) || form.fotos_club.length < 2) {
         enqueueSnackbar(
           "😍  De la vista nace el amor mazter -- Agrega al menos 2 Fotos de tu Club",
           { variant: "warning" }
@@ -177,9 +175,34 @@ export async function handleNextStep({
         return;
       }
       
+      if (form.fotos_club.length > 15) {
+          enqueueSnackbar(
+          "😲  El máximo de fotos del club es de 15.",
+          { variant: "warning" }
+        );
+        return;
+      }
+    
+      
       if ( form.tipo_club.includes('cultivo') && (!Array.isArray(form.documentales) || form.documentales.length < 5) ) {
         enqueueSnackbar(
           `❓  ¿ Y cómo sabemos que tienes espacio para las flores ? -- Agrega al menos 5 Fotos de tu Verificación según las indicaciones`,
+          { variant: "warning" }
+        );
+        return;
+      }
+
+      if (form.documentales?.length > 15) {
+          enqueueSnackbar(
+          "😲  El máximo de fotos documentales es de 15.",
+          { variant: "warning" }
+        );
+        return;
+      }
+      
+      if (form.certificados?.length > 15) {
+          enqueueSnackbar(
+          "😲  El máximo de archivos de certificados es de 15.",
           { variant: "warning" }
         );
         return;

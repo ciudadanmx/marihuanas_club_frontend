@@ -10,73 +10,116 @@ import {
   Grid,
 } from "@mui/material";
 
-const CofeprisGestionDatosForm = ({    
-    form,
-    setForm,
-    handleFormChange,
-    handleNestedChange,
-    user
+const CofeprisGestionDatosForm = ({
+  form,
+  setForm,
+  handleFormChange,
+  handleNestedChange,
+  user,
 }) => {
+  const [datosGestion, setDatosGestion] = useState({
+    direccion: "",
+    telefono: "",
+    email: "",
+  });
 
-const [datosGestion, setDatosGestion] = useState({
-  direccion: "",
-  telefono: "",
-  email: "",
-});
-useEffect(() => {
-  // Solo aplica para gestión asistida
-  if (form.cofeprismode === "folio") return;
+  // helper: detecta si hay algún campo no vacío en direccionGestion
+  const hasDireccionGestionContenido = (dg) => {
+    if (!dg) return false;
+    return Object.values(dg).some(
+      (v) => v !== undefined && v !== null && String(v).trim() !== ""
+    );
+  };
 
-  // Dirección
-  const direccionResuelta = form.direccion
-    ? formaters.capitalizeWords(
+  const buildDireccionLegal = (dg) => {
+    if (!dg) return "-";
+    // arma la dirección pensando en escritos legales
+    const parts = [];
+
+    const calleParte = dg.calle ? dg.calle : "-";
+    let primeros = calleParte;
+    if (dg.numero) primeros += ` no. ${dg.numero}`;
+    if (dg.numero_interior) primeros += ` int. ${dg.numero_interior}`;
+    parts.push(primeros);
+
+    if (dg.colonia) parts.push(`Col. ${dg.colonia}`);
+
+    // incluir ciudad si viene y es distinta del municipio
+    if (dg.ciudad && String(dg.ciudad).trim() !== "") {
+      if (!dg.municipio || dg.ciudad.trim().toLowerCase() !== String(dg.municipio).trim().toLowerCase()) {
+        parts.push(dg.ciudad);
+      }
+    }
+
+    if (dg.municipio) parts.push(dg.municipio);
+    if (dg.estado) parts.push(dg.estado);
+
+    const cpPart = dg.cp ? `C.P. ${dg.cp}` : null;
+    if (cpPart) parts.push(cpPart);
+
+    // unir y asegurar mayúsculas iniciales con tu utilitario
+    const direccion = parts.join(", ");
+    return formaters.capitalizeWords(direccion + (direccion !== "-" ? ", México" : ""));
+  };
+
+  useEffect(() => {
+    // Solo aplica para gestión asistida
+    if (form.cofeprismode === "folio") return;
+
+    let direccionResuelta = "-";
+
+    if (hasDireccionGestionContenido(form.direccionGestion)) {
+      // priorizamos la dirección manual construida para escritos legales
+      direccionResuelta = buildDireccionLegal(form.direccionGestion);
+    } else if (form.direccion) {
+      // si no hay dirección manual, usamos la dirección existente / formateada
+      direccionResuelta = formaters.capitalizeWords(
         formaters.formatearDireccionConInterior(
           form.direccion_formateada,
           form.numero_interior
         ) || form.direccion || "-"
-      )
-    : form.direccionGestion
-      ? `${form.direccionGestion.calle} no. ${form.direccionGestion.numero}, Col. ${form.direccionGestion.colonia}, ${form.direccionGestion.municipio}, ${form.direccionGestion.estado}, CP ${form.direccionGestion.cp}`
-      : "-";
-
-  // Teléfono
-  const telefonoResuelto = form.usarWhatsappExistente
-    ? form.whatsapp || "-"
-    : form.telefonoGestion || "-";
-
-  // Email
-  const emailResuelto = form.usarEmailExistente
-    ? user?.email || "-"
-    : form.emailGestion || "-";
-
-  const nuevosDatosGestion = {
-    direccion: direccionResuelta,
-    telefono: telefonoResuelto,
-    email: emailResuelto,
-  };
-
-  // 👉 estado local (visual)
-  setDatosGestion(nuevosDatosGestion);
-
-  // 👉 persistir en el FORM del stepper
-  setForm(prev => {
-    // evita loop si ya es lo mismo
-    if (
-      prev?.datosGestion?.direccion === nuevosDatosGestion.direccion &&
-      prev?.datosGestion?.telefono === nuevosDatosGestion.telefono &&
-      prev?.datosGestion?.email === nuevosDatosGestion.email
-    ) {
-      return prev;
+      );
+    } else if (form.direccionGestion) {
+      // fallback: si existe objeto pero no tiene campos útiles
+      direccionResuelta = buildDireccionLegal(form.direccionGestion);
     }
 
-    return {
-      ...prev,
-      datosGestion: nuevosDatosGestion,
+    // Teléfono
+    const telefonoResuelto = form.usarWhatsappExistente
+      ? form.whatsapp || "-"
+      : form.telefonoGestion || "-";
+
+    // Email
+    const emailResuelto = form.usarEmailExistente
+      ? user?.email || "-"
+      : form.emailGestion || "-";
+
+    const nuevosDatosGestion = {
+      direccion: direccionResuelta,
+      telefono: telefonoResuelto,
+      email: emailResuelto,
     };
-  });
 
-}, [form, user]);
+    // estado local (visual)
+    setDatosGestion(nuevosDatosGestion);
 
+    // persistir en el FORM del stepper
+    setForm((prev) => {
+      // evita loop si ya es lo mismo
+      if (
+        prev?.datosGestion?.direccion === nuevosDatosGestion.direccion &&
+        prev?.datosGestion?.telefono === nuevosDatosGestion.telefono &&
+        prev?.datosGestion?.email === nuevosDatosGestion.email
+      ) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        datosGestion: nuevosDatosGestion,
+      };
+    });
+  }, [form, user, setForm]);
 
   return (
     <>
@@ -86,7 +129,6 @@ useEffect(() => {
         </Typography>
 
         <Grid container spacing={2}>
-
           {/* CURP */}
           <Grid item xs={12} sm={6}>
             <TextField
@@ -126,23 +168,20 @@ useEffect(() => {
                     color="success"
                   />
                 }
-                label={form?.direccion ? (
-                  <Box>
-                    <Typography variant="body2">
-                      Usar domicilio que ya tenemos:
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{ ml: 3, mt: 0.5, color: "text.secondary" }}
-                    >
-                      {datosGestion.direccion}
-                    </Typography>
-                  </Box>
-                ) : (
-                "No hay domicilio guardado")}
+                label={
+                  form?.direccion ? (
+                    <Box>
+                      <Typography variant="body2">Usar domicilio que ya tenemos:</Typography>
+                      <Typography variant="body2" sx={{ ml: 3, mt: 0.5, color: "text.secondary" }}>
+                        {datosGestion.direccion}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    "No hay domicilio guardado"
+                  )
+                }
               />
-                {(form.direccion && form.usarDireccionExistente) ? `${form.direccion}` : '' }
+              {(form.direccion && form.usarDireccionExistente) ? `${form.direccion}` : ""}
             </FormGroup>
 
             {!(form.usarDireccionExistente ?? !!form?.direccion) && (
@@ -159,7 +198,8 @@ useEffect(() => {
                       color="success"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={4}>
+
+                  <Grid item xs={6} sm={2}>
                     <TextField
                       label="Número"
                       fullWidth
@@ -170,6 +210,19 @@ useEffect(() => {
                       color="success"
                     />
                   </Grid>
+
+                  <Grid item xs={6} sm={2}>
+                    <TextField
+                      label="Número interior"
+                      fullWidth
+                      margin="dense"
+                      name="numero_interior"
+                      value={form.direccionGestion?.numero_interior || ""}
+                      onChange={handleNestedChange("direccionGestion")}
+                      color="success"
+                    />
+                  </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Colonia"
@@ -181,6 +234,20 @@ useEffect(() => {
                       color="success"
                     />
                   </Grid>
+
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label="Ciudad / Localidad"
+                      fullWidth
+                      margin="dense"
+                      name="ciudad"
+                      value={form.direccionGestion?.ciudad || ""}
+                      onChange={handleNestedChange("direccionGestion")}
+                      color="success"
+                      helperText="Opcional pero recomendado para escritos legales"
+                    />
+                  </Grid>
+
                   <Grid item xs={12} sm={6}>
                     <TextField
                       label="Municipio / Alcaldía"
@@ -192,7 +259,8 @@ useEffect(() => {
                       color="success"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+
+                  <Grid item xs={6} sm={3}>
                     <TextField
                       label="Estado"
                       fullWidth
@@ -203,7 +271,8 @@ useEffect(() => {
                       color="success"
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+
+                  <Grid item xs={6} sm={3}>
                     <TextField
                       label="Código Postal"
                       fullWidth
@@ -246,7 +315,7 @@ useEffect(() => {
                 onChange={handleFormChange}
                 color="success"
               />
-              )}
+            )}
           </Grid>
 
           {/* EMAIL */}
@@ -279,10 +348,9 @@ useEffect(() => {
             )}
           </Grid>
         </Grid>
-
       </Box>
-</>
-  )
-}
+    </>
+  );
+};
 
-export default CofeprisGestionDatosForm
+export default CofeprisGestionDatosForm;
