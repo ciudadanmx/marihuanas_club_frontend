@@ -14,6 +14,7 @@ import ambosIcon from '../../assets/marcador_club_ambos.png';
 // placeholder SVG (usado para precarga/inicial) y GIF (interacción)
 import markerPlaceholderSVG from '../../assets/club_ambos.svg';
 import markerHoverGIF from '../../assets/marcador_club_ambos.gif';
+import PreLoader from '../PreLoader';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 const GOOGLE_MAPS_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
@@ -51,8 +52,8 @@ function haversineDistance(lat1, lng1, lat2, lng2) {
 export default function MapaClubs() {
   const { isLoaded, loadError } = useLoadScript({ googleMapsApiKey: GOOGLE_MAPS_API_KEY, libraries });
 
-  const { membresia } = useRoles();
-  const [hasAccess, setHasAccess] = useState(membresia);
+  const { isActivaMembresia } = useRoles();
+  const [hasAccess, setHasAccess] = useState(null);
   const [center, setCenter] = useState(defaultCenter);
   const [zoom, setZoom] = useState(defaultZoom);
   const [clubs, setClubs] = useState([]);
@@ -413,6 +414,12 @@ export default function MapaClubs() {
   // hoveredClub derivado desde hoveredIndex -> evita inconsistencias
   const hoveredClub = (hoveredIndex !== null && clubs[hoveredIndex]) ? clubs[hoveredIndex] : null;
 
+  //barra restringir mapa si no tiene membresía activa
+  useEffect(() => {
+    const activa = isActivaMembresia();
+    setHasAccess(activa);
+  }, [isActivaMembresia]);
+  
   // cuando cambia hoveredIndex abrimos / cerramos la única InfoWindow
   useEffect(() => {
     if (!infoWindowRef.current || !mapRef.current) return;
@@ -509,24 +516,94 @@ export default function MapaClubs() {
           </Button>
         </Box>
 
-        {!hasAccess && (
-          <Box sx={{
-            position: 'absolute',
-            top: '50%', left: 0, transform: 'translateY(-50%)',
-            width: '100%',
-            backgroundColor: 'rgba(0,128,0,0.3)',
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            zIndex: 10,
-          }}>
-                <Typography color="white" variant="h6">Tienes que tener membresía para ver los clubs</Typography>
-                <Button variant="contained" onClick={() => navigate(activar)} sx={{ mt: 1 }}>Activar membresía</Button>
+        {hasAccess === null ? null : !hasAccess && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'calc(100% - 16px)',
+              maxWidth: '1100px',
+              boxSizing: 'border-box',
+              backgroundColor: 'rgba(0,128,0,0.3)',
+              p: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textAlign: 'center',
+              zIndex: 10,
+              borderRadius: 2,
+              backdropFilter: 'blur(6px)',
+            }}
+          >
+            <Typography color="white" variant="h6">Tienes que tener membresía para ver los clubs</Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate(activar)}
+              sx={{
+                mt: 1.5,
+                px: 3,
+                py: 1,
+                fontWeight: 900,
+                textTransform: 'uppercase',
+                fontFamily: '"Bebas Neue", "Oswald", "Impact", sans-serif',
+
+                /* tamaño responsive */
+                fontSize: {
+                  xs: 14,
+                  sm: 15,
+                  md: 17,
+                },
+
+                /* espaciado entre letras */
+                letterSpacing: {
+                  xs: '0.12em',
+                  md: '0.18em',
+                },
+
+                color: '#379427ff',
+
+                /* borde superfino naranja en letras (fake stroke) */
+                textShadow: `
+                  -0.4px -0.4px 0 rgba(255,140,0,0.9),
+                  0.4px -0.4px 0 rgba(255,140,0,0.9),
+                  -0.4px  0.4px 0 rgba(255,140,0,0.9),
+                  0.4px  0.4px 0 rgba(255,140,0,0.9),
+                  0 0 6px rgba(255,140,0,0.4)
+                `,
+
+                background: 'linear-gradient(135deg, rgba(128,0,255,0.9), rgba(90,0,200,0.9))',
+                border: '2px solid rgba(57,255,20,0.7)',
+                borderRadius: '10px',
+
+                boxShadow: `
+                  0 0 8px rgba(57,255,20,0.6),
+                  0 0 18px rgba(128,0,255,0.6)
+                `,
+
+                transition: 'all 0.25s ease',
+
+                '&:hover': {
+                  background: 'linear-gradient(135deg, rgba(150,0,255,1), rgba(110,0,220,1))',
+                  boxShadow: `
+                    0 0 12px rgba(57,255,20,0.9),
+                    0 0 28px rgba(128,0,255,0.9)
+                  `,
+                  transform: 'scale(1.06)',
+                },
+
+                '&:active': {
+                  transform: 'scale(0.97)',
+                },
+              }}
+            >
+              Activar membresía
+            </Button>
           </Box>
         )}
 
-        {loading && (<Box sx={{ textAlign: 'center', my: 2 }}><CircularProgress /><Typography>Cargando clubes...</Typography></Box>)}
+        {loading && (<Box sx={{ textAlign: 'center', my: 2 }}><PreLoader /><Typography>Cargando clubes...</Typography></Box>)}
         {error && (<Typography color="error">Error: {error}</Typography>)}
 
         <GoogleMap
