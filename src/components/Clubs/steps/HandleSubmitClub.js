@@ -49,8 +49,15 @@ export async function handleSubmitClub({
       tipo = "cultivo";
   }
 
-      if (form.skills) {
-    skills = String(form.skills).trim;
+      // Soportar array o string; usar trim() correctamente (con paréntesis)
+  if (form.skills) {
+    if (Array.isArray(form.skills)) {
+      skills = form.skills.map(s => String(s).trim()).filter(Boolean).join(", ");
+    } else {
+      skills = String(form.skills).trim();
+    }
+  } else {
+    skills = "";
   }
 
 // --- armarios => lugares + miembros_activos = 0 (solo si existe armarios)
