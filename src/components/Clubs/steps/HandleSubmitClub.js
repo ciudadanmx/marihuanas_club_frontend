@@ -192,6 +192,7 @@ export async function handleSubmitClub({
     //appendFiles(dataToSend, "ine_frente", form.ine_frente);
     //appendFiles(dataToSend, "ine_reverso", form.ine_reverso);
     appendFiles(dataToSend, "documentales", form.documentales);
+    appendFiles(dataToSend, "certificados", form.certificados_archivos);
 
     const res = await fetch(`${STRAPI_URL}/api/clubs`, {
       method: "POST",

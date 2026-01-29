@@ -291,8 +291,7 @@ const FotosGenerales = ({
           )}
         </>
       )}
-
-      <Divider sx={{ my: 3, borderColor: "rgba(104, 64, 92, 0.57)" }} />
+      
     </>
   );
 };
