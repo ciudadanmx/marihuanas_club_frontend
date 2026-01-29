@@ -59,9 +59,7 @@ export default function MapaClubs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // para mostrar InfoWindow al pasar hover
-  const [hoveredClub, setHoveredClub] = useState(null);
-  // índice del marker que está en hover (para mostrar GIF)
+  // índice del marker que está en hover (para mostrar GIF) -> única fuente para popup también
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   // precarga de PNGs por tipo
@@ -77,6 +75,9 @@ export default function MapaClubs() {
   const searchBoxRef = useRef(null);
 
   const mapRef = useRef();
+  const markerRefs = useRef({}); // <-- guardamos instancia de cada marker aquí
+  const infoWindowRef = useRef(null); // <-- InfoWindow única reutilizable
+
   const onMapLoad = map => { mapRef.current = map; };
   const onZoomChanged = () => { if (mapRef.current) setZoom(mapRef.current.getZoom()); };
 
@@ -126,45 +127,217 @@ export default function MapaClubs() {
     // no hace falta onload handler estrictamente
   }, []);
 
-  const fetchClubs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${STRAPI_URL}/api/clubs?populate=*&pagination[pageSize]=1000`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      const itemsRaw = json.data || [];
-
-      const items = itemsRaw.map(item => {
-        const a = item.attributes || {};
-        const fotoData = a.foto_de_perfil?.data?.attributes || null;
-        let fotoUrl = null;
-        if (fotoData && fotoData.url) {
-          fotoUrl = fotoData.url.startsWith('http') ? fotoData.url : `${STRAPI_URL}${fotoData.url}`;
-        }
-        return { ...a, fotoUrl };
+  /* ================= INFOWINDOW ÚNICO ================= */
+  useEffect(() => {
+    if (window.google && !infoWindowRef.current) {
+      infoWindowRef.current = new window.google.maps.InfoWindow({
+        pixelOffset: new window.google.maps.Size(0, -30),
       });
-
-      const filtered = items.filter(club => {
-        if (!club.lat || !club.lng) return false;
-        try {
-          return haversineDistance(center.lat, center.lng, club.lat, club.lng) <= RADIUS_KM;
-        } catch { return false; }
-      });
-
-      setClubs(filtered);
-    } catch (err) {
-      setError(err.message || String(err));
-    } finally {
-      setLoading(false);
     }
-  }, [center]);
 
-  useEffect(() => { fetchClubs(); }, [fetchClubs]);
+    // cerrar al desmontar componente
+    return () => {
+      if (infoWindowRef.current) {
+        infoWindowRef.current.close();
+        infoWindowRef.current = null;
+      }
+    };
+  }, []);
 
-  if (loadError) return <Typography color="error">Error loading maps</Typography>;
-  if (!isLoaded) return <Box sx={{ textAlign: 'center', my: 4 }}><CircularProgress /></Box>;
+  const closeInfoWindow = () => {
+    if (infoWindowRef.current) infoWindowRef.current.close();
+  };
 
-  const searchOptions = cityOnly ? { types: ['(cities)'], componentRestrictions: { country: 'mx' } } : {};
+  // Construye el HTML del contenido del popup (replica el contenido principal)
+  const buildInfoContent = (club) => {
+    const wrapper = document.createElement('div');
+    wrapper.style.maxWidth = '340px';
+    wrapper.style.fontFamily = "'Roboto', sans-serif";
+    wrapper.style.display = 'flex';
+    wrapper.style.gap = '8px';
+    wrapper.style.alignItems = 'flex-start';
+
+    // Imagen / avatar
+    const img = document.createElement('img');
+    img.style.width = '56px';
+    img.style.height = '56px';
+    img.style.borderRadius = '6px';
+    img.style.objectFit = 'cover';
+    img.src = club.foto_de_perfil?.url || club.fotoUrl || '';
+    wrapper.appendChild(img);
+
+    const right = document.createElement('div');
+    right.style.display = 'flex';
+    right.style.flexDirection = 'column';
+    right.style.minWidth = '0';
+
+    // Nombre + chips (simplificado visualmente)
+    const topRow = document.createElement('div');
+    topRow.style.display = 'flex';
+    topRow.style.flexWrap = 'wrap';
+    topRow.style.gap = '6px';
+    topRow.style.alignItems = 'center';
+
+    const name = document.createElement('div');
+    name.textContent = club.nombre_club || 'Club sin nombre';
+    name.style.fontWeight = '700';
+    name.style.fontSize = '15px';
+    name.style.whiteSpace = 'nowrap';
+    name.style.overflow = 'hidden';
+    name.style.textOverflow = 'ellipsis';
+    name.style.maxWidth = '180px';
+    topRow.appendChild(name);
+
+    // Chip tipo simple
+    const tipo = (club.tipo || '').toString().toLowerCase();
+    if (tipo === 'consumo' || tipo === 'cultivo' || tipo.includes('ambas') || tipo.includes('consumo') || tipo.includes('cultivo')) {
+      const chip = document.createElement('div');
+      chip.style.padding = '2px 6px';
+      chip.style.borderRadius = '6px';
+      chip.style.fontSize = '11px';
+      chip.style.fontWeight = '700';
+      chip.style.marginLeft = '4px';
+      if (tipo === 'consumo') { chip.textContent = 'Club de Consumo'; chip.style.background = '#ffb74d'; chip.style.color = '#3e2723'; }
+      else if (tipo === 'cultivo') { chip.textContent = 'Club de Cultivo'; chip.style.background = '#a5d6a7'; chip.style.color = '#1b5e20'; }
+      else { chip.textContent = 'Club de Cultivo y Consumo'; chip.style.background = '#ce93d8'; chip.style.color = '#4a148c'; }
+      topRow.appendChild(chip);
+    }
+
+    right.appendChild(topRow);
+
+    // Descripción
+    const desc = document.createElement('div');
+    desc.style.color = '#666';
+    desc.style.fontSize = '13px';
+    desc.style.maxHeight = '40px';
+    desc.style.overflow = 'hidden';
+    desc.style.textOverflow = 'ellipsis';
+    desc.textContent = club.descripcion || 'Sin descripción.';
+    right.appendChild(desc);
+
+    // Productos (lista corta)
+    if (Array.isArray(club.productos) && club.productos.length > 0) {
+      const productsWrapper = document.createElement('div');
+      productsWrapper.style.marginTop = '6px';
+      const title = document.createElement('div');
+      title.style.fontSize = '11px';
+      title.style.fontWeight = '700';
+      title.textContent = 'Productos';
+      productsWrapper.appendChild(title);
+
+      const list = document.createElement('div');
+      list.style.display = 'flex';
+      list.style.flexWrap = 'wrap';
+      list.style.gap = '6px';
+      club.productos.slice(0,6).forEach(p => {
+        const chip = document.createElement('div');
+        chip.style.padding = '2px 6px';
+        chip.style.border = '1px solid #ddd';
+        chip.style.borderRadius = '6px';
+        chip.style.fontSize = '11px';
+        chip.textContent = (typeof p === 'string' ? p : (p.nombre || p.titulo || JSON.stringify(p))).slice(0,30);
+        list.appendChild(chip);
+      });
+      productsWrapper.appendChild(list);
+      right.appendChild(productsWrapper);
+    }
+
+    // Servicios (lista)
+    if (Array.isArray(club.servicios) && club.servicios.length > 0) {
+      const servWrapper = document.createElement('div');
+      servWrapper.style.marginTop = '6px';
+      const title = document.createElement('div');
+      title.style.fontSize = '11px';
+      title.style.fontWeight = '700';
+      title.textContent = 'Servicios';
+      servWrapper.appendChild(title);
+
+      const list = document.createElement('div');
+      list.style.display = 'flex';
+      list.style.flexDirection = 'column';
+      list.style.gap = '4px';
+      club.servicios.slice(0,4).forEach(s => {
+        const row = document.createElement('div');
+        row.style.fontSize = '12px';
+        row.style.color = '#666';
+        row.textContent = '• ' + (typeof s === 'string' ? s : (s.nombre || s.descripcion || JSON.stringify(s)));
+        list.appendChild(row);
+      });
+      servWrapper.appendChild(list);
+      right.appendChild(servWrapper);
+    }
+
+    // Horarios (simplificado: muestra hasta dos tipos)
+    if (club.horarios && typeof club.horarios === 'object') {
+      const horariosWrapper = document.createElement('div');
+      horariosWrapper.style.marginTop = '6px';
+      ['consumo','cultivo'].forEach(tipoKey => {
+        const bloque = club.horarios[tipoKey];
+        if (!bloque) return;
+        const title = document.createElement('div');
+        title.style.fontSize = '11px';
+        title.style.fontWeight = '700';
+        title.textContent = tipoKey === 'consumo' ? 'Horario de Consumo' : 'Horario de Cultivo';
+        horariosWrapper.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.style.display = 'grid';
+        grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+        grid.style.gap = '4px';
+        ['lunes','martes','miércoles','jueves','viernes','sábado','domingo'].forEach(dia => {
+          const d = bloque[dia] || bloque[dia.toLowerCase()] || { abre: 'cerrado', cierra: '' };
+          const abierto = d.abre && d.abre.toString().toLowerCase() !== 'cerrado' && d.abre !== '';
+          const row = document.createElement('div');
+          row.style.display = 'flex';
+          row.style.justifyContent = 'space-between';
+          row.style.fontSize = '12px';
+          const left = document.createElement('div');
+          left.style.color = '#666';
+          left.textContent = dia.charAt(0).toUpperCase() + dia.slice(1);
+          const rightT = document.createElement('div');
+          rightT.style.fontWeight = '600';
+          rightT.textContent = abierto ? `${d.abre} — ${d.cierra}` : 'Cerrado';
+          row.appendChild(left);
+          row.appendChild(rightT);
+          grid.appendChild(row);
+        });
+        horariosWrapper.appendChild(grid);
+      });
+      right.appendChild(horariosWrapper);
+    }
+
+    // Botón ver club
+    const btn = document.createElement('button');
+    btn.textContent = 'Ver club';
+    btn.style.marginTop = '8px';
+    btn.style.padding = '6px 10px';
+    btn.style.background = '#1976d2';
+    btn.style.color = '#fff';
+    btn.style.border = 'none';
+    btn.style.borderRadius = '6px';
+    btn.style.cursor = 'pointer';
+    btn.onclick = () => {
+      if (infoWindowRef.current) infoWindowRef.current.close();
+      navigate(`/clubs/${encodeURIComponent(club.nombre_club || club.id || '')}`);
+    };
+    right.appendChild(btn);
+
+    // Barra reservación (si aplica)
+    if (club.reservacion === true) {
+      const r = document.createElement('div');
+      r.textContent = 'Requiere reservación';
+      r.style.background = '#d32f2f';
+      r.style.color = '#fff';
+      r.style.padding = '6px';
+      r.style.borderRadius = '6px';
+      r.style.fontWeight = '800';
+      r.style.marginTop = '8px';
+      right.appendChild(r);
+    }
+
+    wrapper.appendChild(right);
+    return wrapper;
+  };
 
   const handlePlacesChanged = () => {
     const sb = searchBoxRef.current;
@@ -197,6 +370,84 @@ export default function MapaClubs() {
       }, () => console.warn('No fue posible obtener geolocalización'));
     }
   };
+
+  const fetchClubs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(`${STRAPI_URL}/api/clubs?populate=*&pagination[pageSize]=1000`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      const itemsRaw = json.data || [];
+
+      const items = itemsRaw.map(item => {
+        const a = item.attributes || {};
+        const fotoData = a.foto_de_perfil?.data?.attributes || null;
+        let fotoUrl = null;
+        if (fotoData && fotoData.url) {
+          fotoUrl = fotoData.url.startsWith('http') ? fotoData.url : `${STRAPI_URL}${fotoData.url}`;
+        }
+        return { ...a, fotoUrl };
+      });
+
+      const filtered = items.filter(club => {
+        if (!club.lat || !club.lng) return false;
+        try {
+          return haversineDistance(center.lat, center.lng, club.lat, club.lng) <= RADIUS_KM;
+        } catch { return false; }
+      });
+
+      setClubs(filtered);
+      // limpiar hover por si había algún índice inválido (evita popups vacíos)
+      setHoveredIndex(null);
+      // cerrar cualquier infowindow abierta al actualizar clubes
+      closeInfoWindow();
+    } catch (err) {
+      setError(err.message || String(err));
+    } finally {
+      setLoading(false);
+    }
+  }, [center]);
+
+  useEffect(() => { fetchClubs(); }, [fetchClubs]);
+
+  // hoveredClub derivado desde hoveredIndex -> evita inconsistencias
+  const hoveredClub = (hoveredIndex !== null && clubs[hoveredIndex]) ? clubs[hoveredIndex] : null;
+
+  // cuando cambia hoveredIndex abrimos / cerramos la única InfoWindow
+  useEffect(() => {
+    if (!infoWindowRef.current || !mapRef.current) return;
+
+    if (hoveredIndex === null) {
+      infoWindowRef.current.close();
+      return;
+    }
+
+    const marker = markerRefs.current[hoveredIndex];
+    const club = clubs[hoveredIndex];
+    if (!marker || !club) {
+      infoWindowRef.current.close();
+      return;
+    }
+
+    // setContent con DOM node
+    const content = buildInfoContent(club);
+    infoWindowRef.current.setContent(content);
+    // abrir anclada al marker
+    try {
+      infoWindowRef.current.open({ anchor: marker, map: mapRef.current, shouldFocus: false });
+    } catch (e) {
+      // fallback por si la forma de abrir falla
+      infoWindowRef.current.open(mapRef.current);
+      infoWindowRef.current.setPosition({ lat: club.lat, lng: club.lng });
+    }
+
+    // cleanup: si desaparece el marker o cambia hoveredIndex se cerrará en siguiente efecto
+  }, [hoveredIndex, clubs]);
+
+  if (loadError) return <Typography color="error">Error loading maps</Typography>;
+  if (!isLoaded) return <Box sx={{ textAlign: 'center', my: 4 }}><CircularProgress /></Box>;
+
+  const searchOptions = cityOnly ? { types: ['(cities)'], componentRestrictions: { country: 'mx' } } : {};
 
   return (
     <Box sx={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
@@ -275,18 +526,23 @@ export default function MapaClubs() {
             // determinamos cuál PNG es el final para este club
             let finalIcon = ambosIcon;
             let typeKey = 'ambos';
-            if ((club.tipo || '').toString().toLowerCase().includes('cultivo')) {
+            const tipoStr = (club.tipo || '').toString().toLowerCase();
+            if (tipoStr.includes('cultivo') && !tipoStr.includes('consumo')) {
               finalIcon = cultivoIcon;
               typeKey = 'cultivo';
-            } else if ((club.tipo || '').toString().toLowerCase().includes('consumo')) {
+            } else if (tipoStr.includes('consumo') && !tipoStr.includes('cultivo')) {
               finalIcon = consumoIcon;
               typeKey = 'consumo';
+            } else {
+              // club_ambos (ambos o mezcla) se queda en 'ambos'
+              finalIcon = ambosIcon;
+              typeKey = 'ambos';
             }
 
             // si PNG para este tipo ya está listo, úsalo; si no, usa placeholder SVG
             const iconIfReady = pngReadyMap[typeKey] ? finalIcon : markerPlaceholderSVG;
 
-            // si este marker está en hover y gif está listo usamos gif (interacción)
+            // si este marker está en hover y gif está listo usamos gif (interacción) — GIF siempre es el de 'ambos'
             const isHovered = hoveredIndex === idx;
             const iconToShow = (isHovered && gifReady) ? markerHoverGIF : iconIfReady;
 
@@ -294,12 +550,13 @@ export default function MapaClubs() {
 
             const onMarkerClick = () => {
               const safeName = encodeURIComponent(club.nombre_club || club.id || `club-${idx}`);
+              setHoveredIndex(null); // cerrar popup si clickean y navegar
               navigate(`/clubs/${safeName}`);
             };
 
             return (
               <Marker
-                key={`${idx}-${iconToShow}`} // fuerza re-render cuando cambia iconToShow
+                key={`${idx}-${pngReadyMap[typeKey] ? '1' : '0'}`} // fuerza re-render solo cuando cambia el estado de PNG disponible
                 position={{ lat: club.lat, lng: club.lng }}
                 title={club.nombre_club}
                 icon={{
@@ -308,241 +565,15 @@ export default function MapaClubs() {
                 }}
                 clickable
                 onClick={onMarkerClick}
-                onMouseOver={() => { setHoveredClub(club); setHoveredIndex(idx); }}
-                onMouseOut={() => { setHoveredIndex(null); }}
+                onMouseOver={() => { if (hoveredIndex !== idx) setHoveredIndex(idx); }}
+                onMouseOut={() => { if (hoveredIndex === idx) setHoveredIndex(null); }}
+                onLoad={(marker) => { markerRefs.current[idx] = marker; }}
+                onUnmount={() => { delete markerRefs.current[idx]; }}
               />
             );
           })}
 
-          {/* SINGLE INFOWINDOW */}
-          {hoveredClub?.lat && hoveredClub?.lng && (
-            <InfoWindow
-              position={{ lat: hoveredClub.lat, lng: hoveredClub.lng }}
-              onCloseClick={() => setHoveredClub()}
-              options={{ pixelOffset: new window.google.maps.Size(0, -30) }}
-            >
-              <Box
-                sx={{
-                  maxWidth: 340,
-                  display: 'flex',
-                  gap: 1,
-                  alignItems: 'flex-start',
-                  fontFamily: "'Roboto', sans-serif",
-                  position: 'relative' // necesario para colocar la barra de reservación
-                }}
-              >
-                {/* Imagen */}
-                <Avatar
-                  src={hoveredClub.foto_de_perfil?.url || hoveredClub.fotoUrl || undefined}
-                  alt={hoveredClub.nombre_club || 'Club'}
-                  variant="rounded"
-                  sx={{ width: 56, height: 56, flexShrink: 0, boxShadow: 1 }}
-                >
-                  {(!hoveredClub.foto_de_perfil?.url && !hoveredClub.fotoUrl && (hoveredClub.nombre_club || '').charAt(0)) || ''}
-                </Avatar>
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                  {/* --- FILA superior: chips de cultivo (si aplica) + nombre */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 0.4, flexWrap: 'wrap' }}>
-                    {/* Solo si es cultivo o ambas */}
-                    {(() => {
-                      const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
-                      const isCultivo = tipo === 'cultivo' || tipo === 'ambas' || tipo === 'ambos' || tipo.includes('cultivo');
-                      if (!isCultivo) return null;
-
-                      // lugares solo si existe (mostramos chip únicamente en ese caso)
-                      const lugares = typeof hoveredClub.lugares === 'number' ? hoveredClub.lugares : null;
-                      // si num_integrantes no viene, asumimos 0 para calcular libres
-                      const numIntegrantes = typeof hoveredClub.num_integrantes === 'number' ? hoveredClub.num_integrantes : 0;
-
-                      if (lugares === null) return null; // **no mostramos nada si no hay dato de lugares**
-
-                      const libres = Math.max(0, lugares - numIntegrantes);
-
-                      return (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4, mr: 0.6 }}>
-                          <Chip
-                            size="small"
-                            label={`${libres} de ${lugares} lugares libres`}
-                            sx={{
-                              bgcolor: '#000',
-                              color: '#fff',
-                              fontWeight: 700,
-                              fontSize: 12,
-                            }}
-                          />
-                        </Box>
-                      );
-                    })()}
-
-                    {/* Nombre y chip tipo (alineado en la misma fila cuando hay espacio) */}
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6, flexWrap: 'wrap', minWidth: 0 }}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{
-                          fontWeight: 700,
-                          fontSize: 15,
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          maxWidth: 180
-                        }}
-                      >
-                        {hoveredClub.nombre_club || 'Club sin nombre'}
-                      </Typography>
-
-                      {(() => {
-                        const tipo = (hoveredClub.tipo || '').toString().toLowerCase();
-                        if (tipo === 'consumo') {
-                          return (
-                            <Chip
-                              label="Club de Consumo"
-                              size="small"
-                              sx={{ bgcolor: '#ffb74d', color: '#3e2723', fontWeight: 700 }}
-                            />
-                          );
-                        }
-                        if (tipo === 'cultivo') {
-                          return (
-                            <Chip
-                              label="Club de Cultivo"
-                              size="small"
-                              sx={{ bgcolor: '#a5d6a7', color: '#1b5e20', fontWeight: 700 }}
-                            />
-                          );
-                        }
-                        if (tipo === 'ambas' || tipo === 'ambos' || tipo === 'consumo_y_cultivo') {
-                          return (
-                            <Chip
-                              label="Club de Cultivo y Consumo"
-                              size="small"
-                              sx={{ bgcolor: '#ce93d8', color: '#4a148c', fontWeight: 700 }}
-                            />
-                          );
-                        }
-                        return null;
-                      })()}
-                    </Box>
-                  </Box>
-
-                  {/* Descripción */}
-                  <Typography variant="body2" sx={{ maxHeight: 40, overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary', fontSize: 13 }}>
-                    {hoveredClub.descripcion || 'Sin descripción.'}
-                  </Typography>
-
-                  {/* Productos y Servicios */}
-                  <Box sx={{ mt: 0.6, display: 'flex', gap: 1, flexDirection: 'column' }}>
-                    {Array.isArray(hoveredClub.productos) && hoveredClub.productos.length > 0 && (
-                      <Box>
-                        <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Productos</Typography>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {hoveredClub.productos.slice(0, 6).map((p, i) => (
-                            <Chip
-                              key={i}
-                              label={(typeof p === 'string' ? p : (p.nombre || p.titulo || JSON.stringify(p))).slice(0, 30)}
-                              size="small"
-                              variant="outlined"
-                            />
-                          ))}
-                          {hoveredClub.productos.length > 6 && <Typography variant="caption" sx={{ alignSelf: 'center' }}>+{hoveredClub.productos.length - 6}</Typography>}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {Array.isArray(hoveredClub.servicios) && hoveredClub.servicios.length > 0 && (
-                      <Box sx={{ mt: 0.4 }}>
-                        <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>Servicios</Typography>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.3 }}>
-                          {hoveredClub.servicios.slice(0, 4).map((s, i) => (
-                            <Typography key={i} variant="body2" sx={{ fontSize: 12, color: 'text.secondary' }}>
-                              • {typeof s === 'string' ? s : (s.nombre || s.descripcion || JSON.stringify(s))}
-                            </Typography>
-                          ))}
-                          {hoveredClub.servicios.length > 4 && <Typography variant="caption">+{hoveredClub.servicios.length - 4} más</Typography>}
-                        </Box>
-                      </Box>
-                    )}
-                  </Box>
-
-                  {/* Horarios (consumo / cultivo si existen) */}
-                  {hoveredClub.horarios && typeof hoveredClub.horarios === 'object' && (
-                    <Box sx={{ mt: 0.7 }}>
-                      {['consumo', 'cultivo'].map((tipoKey) => {
-                        const bloque = hoveredClub.horarios[tipoKey];
-                        if (!bloque) return null;
-                        const titulo = tipoKey === 'consumo' ? 'Horario de Consumo' : 'Horario de Cultivo';
-                        return (
-                          <Box key={tipoKey} sx={{ mb: 0.6 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 700, display: 'block', mb: 0.3 }}>
-                              {titulo}
-                            </Typography>
-
-                            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 0.3 }}>
-                              {['lunes','martes','miércoles','jueves','viernes','sábado','domingo'].map((dia) => {
-                                const d = bloque[dia] || bloque[dia.toLowerCase()] || { abre: 'cerrado', cierra: '' };
-                                const abierto = d.abre && d.abre.toString().toLowerCase() !== 'cerrado' && d.abre !== '';
-                                return (
-                                  <Box key={dia} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 12 }}>
-                                    <Typography sx={{ fontSize: 12, color: 'text.secondary' }}>{dia.charAt(0).toUpperCase() + dia.slice(1)}</Typography>
-                                    <Typography sx={{ fontSize: 12, fontWeight: 600 }}>
-                                      {abierto ? `${d.abre} — ${d.cierra}` : 'Cerrado'}
-                                    </Typography>
-                                  </Box>
-                                );
-                              })}
-                            </Box>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  )}
-
-                  {/* Botón ver club */}
-                  <Box sx={{ mt: 0.6 }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      sx={{ mt: 0.3, alignSelf: 'flex-start' }}
-                      onClick={() => {
-                        const safeName = encodeURIComponent(hoveredClub.nombre_club || hoveredClub.id || '');
-                        setHoveredClub(null);
-                        navigate(`/clubs/${safeName}`);
-                      }}
-                    >
-                      Ver club
-                    </Button>
-                  </Box>
-                </Box>
-
-                {/* Barra de reservación (si aplica) */}
-                {hoveredClub.reservacion === true && (
-                  <Box
-                    sx={{
-                      position: 'sticky',
-                      left: 10,
-                      right: 10,
-                      bottom: -10,
-                      bgcolor: '#d32f2f',
-                      color: '#fff',
-                      px: 1.2,
-                      py: 0.5,
-                      borderRadius: 1,
-                      textAlign: 'center',
-                      fontWeight: 800,
-                      zIndex: 4000,
-                      boxShadow: 4,
-                      fontSize: 12,
-                      // pointerEvents none para que no interrumpa clicks si quieres que no sea interactiva
-                      pointerEvents: 'auto'
-                    }}
-                  >
-                    Requiere reservación
-                    <br /><br />
-                  </Box>
-                )}
-              </Box>
-            </InfoWindow>
-          )}
+          {/* Nota: ya no usamos <InfoWindow> de React — manejamos una sola instancia nativa para evitar fantasmas */}
         </GoogleMap>
       </Box>
     </Box>
