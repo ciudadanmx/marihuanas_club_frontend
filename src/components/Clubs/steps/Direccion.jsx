@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useEffect } from "react";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 // Imagen del marcador personalizada (asegúrate que la ruta sea correcta)
-import userMarker from "../../../assets/user_marker.png";
+import userMarker from "../../../assets/club_ambos.png";
 import { deffaultLat, deffaultLng } from "../../../utils/constants";
 import PreLoader from "../../../components/PreLoader";
 import usePlacesAutocomplete, {
@@ -186,13 +186,7 @@ export default function Direccion({ form, setForm }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.direccion]);
 
-  useEffect(() => {
-    if (typeof form.direccion === "string") {
-      setValue(form.direccion);
-    } else {
-      setValue("");
-    }
-  }, [form.direccion, setValue]);
+
 
   // Returns condicionales: si hay error o aún no carga la librería
   if (loadError) return <div>Error al cargar el mapa</div>;
