@@ -87,8 +87,10 @@ export async function handleSubmitClub({
     const {
       calle,
       numero,
+      numero_interior,
       colonia,
       municipio,
+      ciudad,
       estado,
       cp
     } = form.direccionGestion;
@@ -96,11 +98,13 @@ export async function handleSubmitClub({
     // solo si al menos hay algo escrito
     if (calle || numero || colonia || municipio || estado || cp) {
       direccion = {
-        calle: calle || null,
+        calle: formaters.capitalizeWords(calle) || null,
         numero: numero || null,
-        colonia: colonia || null,
-        municipio: municipio || null,
-        estado: estado || null,
+        numero_interior: numero_interior || null,
+        colonia: formaters.capitalizeWords(colonia) || null,
+        municipio: formaters.capitalizeWords(municipio) || null,
+        ciudad: formaters.capitalizeWords(ciudad) || null,
+        estado: formaters.capitalizeWords(estado) || null,
         cp: cp || null
       };
     }
@@ -112,7 +116,7 @@ export async function handleSubmitClub({
   if (form.usarWhatsappExistente && form.whatsapp) {
     telefono = form.whatsapp;
   } else if (form.telefonoGestion) {
-    telefono = form.telefonoGestion;
+    telefono = `+52${form.telefonoGestion}`;
   }
 
   // 📧 EMAIL

@@ -495,14 +495,22 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
             {/* =================== PRODUCTOS =================== */}
             <Grid item xs={12} sm={6}>
               <CardInfo icon={ShoppingCartIcon} title="Productos">
-                <Typography>{renderArray(form.productos)}</Typography>
+                <Typography>
+                  {Array.isArray(form.productos) && form.productos.length > 0
+                    ? renderArray(form.productos)
+                    : '---- No especificados ----'}
+                </Typography>
               </CardInfo>
             </Grid>
 
             {/* =================== SERVICIOS =================== */}
             <Grid item xs={12} sm={6}>
               <CardInfo icon={BuildIcon} title="Servicios">
-                <Typography>{renderArray(serviciosArray)}</Typography>
+                <Typography>
+                  {Array.isArray(form.servicios) && form.servicios.length > 0
+                    ? renderArray(form.servicios)
+                    : '---- No especificados ----'}
+                </Typography>
               </CardInfo>
             </Grid>
           </>
@@ -583,7 +591,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
 
                 <Typography variant="body1">
                   {form.usarDireccionExistente
-                    ? "Misma dirección registrada en los datos generales."
+                    ? `Misma dirección registrada en los datos generales: \n ${form.direccion}`
                     : `${form.datosGestion.direccion}`}
                 </Typography>
 
@@ -594,7 +602,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 <Typography variant="body1">
                   {(form.usarWhatsappExistente !== false)
                     ? form.whatsapp
-                    : form.telefonoGestion}
+                    : `+52${form.telefonoGestion}`}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
