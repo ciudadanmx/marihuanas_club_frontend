@@ -11,7 +11,6 @@ import IneSection from './IneSection.jsx';
 import CofeprisSection from './CofeprisSection.jsx';
 import FotosGenerales from './FotosGenerales.jsx';
 import Skills from './Skills.jsx';
-import GestionCofepris from './GestionCofepris.jsx';
 
 export default function Archivos({ form, setForm, tipo }) {
 
@@ -233,29 +232,11 @@ const {
       {/* 🏛️ SECCIÓN COFEPRIS                                 */}
       {/* ================================================== */}
 
-      { /* Array.isArray(form.tipo_club) && form.tipo_club.includes("cultivo") ? ( */}
-      {2<1 ? (
-        
-        /* -------------------------------------------------- */
-        /* CLUB DE CULTIVO → SECCIÓN COMPLETA COFEPRIS        */
-        /* -------------------------------------------------- */
-        <GestionCofepris
-          tipo={tipo}
-          form={form}
-          setForm={setForm}
-          handleFormChange={handleFormChange}
-          isActivaMembresia={isActivaMembresia}
-          consumoOption={consumoOption}
-          selectConsumoOption={selectConsumoOption}
-          setFocusedField={setFocusedField}
-          handleNestedChange={handleNestedChange}
-          goGeneradorLibre={goGeneradorLibre}
-          user={user}
-        />
-      ) : (
-        /* -------------------------------------------------- */
-        /* CLUB DE CONSUMO → COFEPRIS OPCIONAL                */
-        /* -------------------------------------------------- */
+
+      {/* -------------------------------------------------- */}
+      {/* CLUB DE CONSUMO → COFEPRIS OPCIONAL                */}
+      {/* -------------------------------------------------- */}
+      
        <CofeprisSection
           consumoOption={consumoOption}
           selectConsumoOption={selectConsumoOption}
@@ -268,7 +249,7 @@ const {
           goGeneradorLibre={goGeneradorLibre}
           setForm={setForm}
         />
-      )}
+    
 
       <IneSection
         form={form}

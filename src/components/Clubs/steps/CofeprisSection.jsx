@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -28,6 +28,22 @@ const CofeprisSection = ({
 }) => {
 
     const consumoOption = form.cofeprismode;
+
+    useEffect(() => {
+        // solo si todavía no hay opción seleccionada
+        if (!form.cofeprismode) {
+            const tieneGestion =
+            (typeof isActivaMembresia === "function" && isActivaMembresia()) ||
+            form.tipo_club?.includes("cultivo");
+
+            if (tieneGestion) {
+            selectConsumoOption("gestion");
+            } else {
+            selectConsumoOption("folio");
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
   return (
     <>
@@ -65,27 +81,32 @@ const CofeprisSection = ({
         )}
 
         {/* 📝 Solicitar la gestión */}
-        <FormControlLabel
-          control={
-            <Checkbox
-              name="opcGestion"
-              checked={consumoOption === "gestion"}
-              onChange={(e) =>
-                e.target.checked && selectConsumoOption("gestion")
-              }
-              color="success"
-            />
-          }
-          label="📝 Solicitar la gestión de mi trámite"
-        />
-        {consumoOption === "gestion" && (
-          <CofeprisGestionDatosForm
-            form={form}
-            setForm={setForm}
-            handleFormChange={handleFormChange}
-            handleNestedChange={handleNestedChange}
-            user={user}
-          />
+         {(isActivaMembresia() || form.tipo_club?.includes("cultivo")) && (
+        <>
+                <FormControlLabel
+                control={
+                    <Checkbox
+                    name="opcGestion"
+                    checked={consumoOption === "gestion"}
+                    onChange={(e) =>
+                        e.target.checked && selectConsumoOption("gestion")
+                    }
+                    color="success"
+                    />
+                }
+                label="📝 Solicitar la gestión de mi trámite"
+                />
+                
+                    {consumoOption === "gestion" && (
+                    <CofeprisGestionDatosForm
+                        form={form}
+                        setForm={setForm}
+                        handleFormChange={handleFormChange}
+                        handleNestedChange={handleNestedChange}
+                        user={user}
+                    />
+                )}
+        </>
         )}
 
         {/* 🔧 Realizar el trámite por mí mismo */}
