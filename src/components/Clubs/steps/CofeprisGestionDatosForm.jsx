@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from "react";
+import formaters from "../../../utils/formaters";
 import {
   Box,
   Typography,
@@ -16,6 +17,67 @@ const CofeprisGestionDatosForm = ({
     handleNestedChange,
     user
 }) => {
+
+const [datosGestion, setDatosGestion] = useState({
+  direccion: "",
+  telefono: "",
+  email: "",
+});
+useEffect(() => {
+  // Solo aplica para gestión asistida
+  if (form.cofeprismode === "folio") return;
+
+  // Dirección
+  const direccionResuelta = form.direccion
+    ? formaters.capitalizeWords(
+        formaters.formatearDireccionConInterior(
+          form.direccion_formateada,
+          form.numero_interior
+        ) || form.direccion || "-"
+      )
+    : form.direccionGestion
+      ? `${form.direccionGestion.calle} no. ${form.direccionGestion.numero}, Col. ${form.direccionGestion.colonia}, ${form.direccionGestion.municipio}, ${form.direccionGestion.estado}, CP ${form.direccionGestion.cp}`
+      : "-";
+
+  // Teléfono
+  const telefonoResuelto = form.usarWhatsappExistente
+    ? form.whatsapp || "-"
+    : form.telefonoGestion || "-";
+
+  // Email
+  const emailResuelto = form.usarEmailExistente
+    ? user?.email || "-"
+    : form.emailGestion || "-";
+
+  const nuevosDatosGestion = {
+    direccion: direccionResuelta,
+    telefono: telefonoResuelto,
+    email: emailResuelto,
+  };
+
+  // 👉 estado local (visual)
+  setDatosGestion(nuevosDatosGestion);
+
+  // 👉 persistir en el FORM del stepper
+  setForm(prev => {
+    // evita loop si ya es lo mismo
+    if (
+      prev?.datosGestion?.direccion === nuevosDatosGestion.direccion &&
+      prev?.datosGestion?.telefono === nuevosDatosGestion.telefono &&
+      prev?.datosGestion?.email === nuevosDatosGestion.email
+    ) {
+      return prev;
+    }
+
+    return {
+      ...prev,
+      datosGestion: nuevosDatosGestion,
+    };
+  });
+
+}, [form, user]);
+
+
   return (
     <>
       <Box sx={{ pl: 4, pr: 2, pb: 2, borderLeft: "3px solid rgba(156,39,176,0.12)" }}>
@@ -64,9 +126,23 @@ const CofeprisGestionDatosForm = ({
                     color="success"
                   />
                 }
-                label={form?.direccion ? "Usar domicilio que ya tenemos" : "No hay domicilio guardado"}
+                label={form?.direccion ? (
+                  <Box>
+                    <Typography variant="body2">
+                      Usar domicilio que ya tenemos:
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      sx={{ ml: 3, mt: 0.5, color: "text.secondary" }}
+                    >
+                      {datosGestion.direccion}
+                    </Typography>
+                  </Box>
+                ) : (
+                "No hay domicilio guardado")}
               />
-              {(form.direccion && form.usarDireccionExistente) ? `${form.direccion}` : '' }
+                {(form.direccion && form.usarDireccionExistente) ? `${form.direccion}` : '' }
             </FormGroup>
 
             {!(form.usarDireccionExistente ?? !!form?.direccion) && (

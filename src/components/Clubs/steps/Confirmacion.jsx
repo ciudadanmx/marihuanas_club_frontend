@@ -584,7 +584,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 <Typography variant="body1">
                   {form.usarDireccionExistente
                     ? "Misma dirección registrada en los datos generales."
-                    : `${form.direccionGestion?.calle} no. ${form.direccionGestion?.numero}, Col. ${form.direccionGestion?.colonia}, ${form.direccionGestion?.municipio}, ${form.direccionGestion?.estado}, CP ${form.direccionGestion?.cp}`}
+                    : `${form.datosGestion.direccion}`}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary">
@@ -592,7 +592,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 </Typography>
 
                 <Typography variant="body1">
-                  {form.usarWhatsappExistente
+                  {(form.usarWhatsappExistente !== false)
                     ? form.whatsapp
                     : form.telefonoGestion}
                 </Typography>
@@ -602,7 +602,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 </Typography>
 
                 <Typography variant="body1">
-                  {form.usarEmailExistente
+                  {(form.usarEmailExistente !== false)
                     ? user.email
                     : form.emailGestion}
                 </Typography>

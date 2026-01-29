@@ -142,11 +142,12 @@ export async function handleSubmitClub({
 
       datos_legales = {
         tipo_resolucion: form.tipoResolucion || null,
-        anio_tramite: form.anio || null,
+        folio: form.cofepris || null,
+        anio_tramite: form.anioResolucion || null,
       };
     } else if (modo === "gestion") {
       datos_legales = buildDatosLegales({ form, user });
-  status_legal = "gestión";
+      status_legal = "gestión";
     }
 
 

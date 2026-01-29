@@ -227,12 +227,185 @@ export async function handleNextStep({
         );
         return;
       }
+            // ===============================
+      // VALIDACIONES COFEPRIS (MODO FOLIO)
+      // ===============================
+
+      if (form.cofeprismode === "gestion") {
+
+        // -------------------------------
+        // CURP (18 caracteres, formato MX)
+        // -------------------------------
+        const curpRegex =
+          /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z]{2}$/i;
+
+        if (!form.curp || !curpRegex.test(form.curp.trim())) {
+          enqueueSnackbar(
+            "❌ CURP inválida. Debe tener el formato oficial mexicano (18 caracteres).",
+            { variant: "error" }
+          );
+          return;
+        }
+
+        // -------------------------------
+        // RFC (persona física o moral)
+        // -------------------------------
+        const rfcRegex =
+          /^([A-ZÑ&]{3,4})[0-9]{6}([A-Z0-9]{3})$/i;
+
+        if (!form.rfc || !rfcRegex.test(form.rfc.trim())) {
+          enqueueSnackbar(
+            "❌ RFC inválido. Verifica que esté correctamente escrito.",
+            { variant: "error" }
+          );
+          return;
+        }
+
+        // -------------------------------
+        // DOMICILIO
+        // -------------------------------
+        const usarDireccion = form.usarDireccionExistente ?? !!form?.direccion;
+
+        if (!usarDireccion) {
+          const d = form.direccionGestion || {};
+
+          if (!d.calle || !d.numero || !d.colonia || !d.municipio || !d.estado || !d.cp) {
+            enqueueSnackbar(
+              "🏠 Completa todos los campos del domicilio para el trámite.",
+              { variant: "error" }
+            );
+            return;
+          }
+
+          // Código Postal MX: 5 dígitos
+          if (!/^\d{5}$/.test(d.cp)) {
+            enqueueSnackbar(
+              "📮 El código postal debe tener 5 dígitos.",
+              { variant: "error" }
+            );
+            return;
+          }
+        }
+
+        // -------------------------------
+        // TELÉFONO (MX – 10 dígitos)
+        // -------------------------------
+        const usarTelefono = form.usarWhatsappExistente ?? !!form?.whatsapp;
+
+        if (!usarTelefono) {
+          if (!/^\d{10}$/.test(form.telefonoGestion || "")) {
+            enqueueSnackbar(
+              "📱 El teléfono debe tener 10 dígitos (ej. 5512345678).",
+              { variant: "error" }
+            );
+            return;
+          }
+        }
+
+        // -------------------------------
+        // EMAIL
+        // -------------------------------
+        const usarEmail = form.usarEmailExistente ?? !!user?.email;
+
+        if (!usarEmail) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+          if (!form.emailGestion || !emailRegex.test(form.emailGestion)) {
+            enqueueSnackbar(
+              "📧 Ingresa un correo electrónico válido.",
+              { variant: "error" }
+            );
+            return;
+          }
+        }
+      }
 
 
 
+      // ===============================
+      // VALIDACIÓN DE FOLIO COFEPRIS
+      // según tipo de resolución
+      // ===============================
+      if (form.cofeprismode === "folio"){
+        const folio = (form.cofepris || "").trim();
 
+        // base mínima
+        if (!folio || folio.length < 4) {
+          enqueueSnackbar(
+            "❌ Ingresa un folio o número de expediente COFEPRIS válido.",
+            { variant: "error" }
+          );
+          return;
+        }
 
+        switch (form.tipoResolucion) {
 
+          // ----------------------------------
+          // AUTORIZACIÓN EN TRÁMITE
+          // ----------------------------------
+          case "enproceso":
+            // suele ser numérico o alfanumérico con /
+            // ej: COFEPRIS-2023/12345, 12345/2022, EXP-4567
+            if (!/^[A-Z0-9\-\/]{5,}$/i.test(folio)) {
+              enqueueSnackbar(
+                "❌ El folio en trámite debe ser alfanumérico (puede incluir / o -).",
+                { variant: "error" }
+              );
+              return;
+            }
+            break;
+
+          // ----------------------------------
+          // AUTORIZACIÓN DIRECTA COFEPRIS
+          // ----------------------------------
+          case "cofepris":
+            // normalmente más formal: letras + números
+            // ej: COFEPRIS-ABC-2021-1234
+            if (!/^[A-Z]{2,}[\- ]?[A-Z0-9\-\/]{4,}$/i.test(folio)) {
+              enqueueSnackbar(
+                "❌ El folio COFEPRIS no parece tener un formato válido.",
+                { variant: "error" }
+              );
+              return;
+            }
+            break;
+
+          // ----------------------------------
+          // AMPARO
+          // ----------------------------------
+          case "amparo":
+            // suele venir como: 123/2020, 456-2021, AMPARO-123/2022
+            if (!/^[A-Z0-9\-\/]{5,}$/i.test(folio)) {
+              enqueueSnackbar(
+                "❌ El número de amparo debe contener números y/o diagonales.",
+                { variant: "error" }
+              );
+              return;
+            }
+            break;
+
+          // ----------------------------------
+          // DESCONOZCO → MÁS LIBRE
+          // ----------------------------------
+          case "desconozco":
+            // solo evitamos basura total
+            if (folio.length < 3) {
+              enqueueSnackbar(
+                "❌ Ingresa cualquier referencia que tengas del trámite.",
+                { variant: "error" }
+              );
+              return;
+            }
+            break;
+
+          default:
+            enqueueSnackbar(
+              "❌ Selecciona el tipo de resolución COFEPRIS.",
+              { variant: "error" }
+            );
+            return;
+        }
+      }
     }
 
     // ✅ todo bien → avanzamos
