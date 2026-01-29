@@ -207,6 +207,84 @@ export async function handleSubmitClub({
     if (res.ok) {
       enqueueSnackbar("🎉 Club creado con éxito", { variant: "success" });
       //navigate("/clubs");
+
+      // ==== NUEVA LÓGICA: buscar usuario por email en Strapi y actualizarlo ====
+      try {
+        // obtener payload de respuesta para obtener ID del club creado
+        const createdClubJson = await res.json();
+        // soportar diferentes formas de respuesta (Strapi v4 suele devolver { data: { id, attributes: {...} } })
+        const createdClubId =
+          (createdClubJson && createdClubJson.data && createdClubJson.data.id) ||
+          createdClubJson?.id ||
+          (createdClubJson && createdClubJson?.data && createdClubJson.data?.id) ||
+          null;
+
+        if (!createdClubId) {
+          // si no se pudo obtener el id del club, avisar y salir de la lógica de update de user
+          enqueueSnackbar("⚠️ Club creado pero no se pudo obtener su ID para relacionarlo.", { variant: "warning" });
+        } else if (!user?.email) {
+          enqueueSnackbar("⚠️ Club creado pero no se pudo actualizar el usuario: falta user.email.", { variant: "warning" });
+        } else {
+          // buscar usuario por email en Strapi (filtro)
+          const encodedEmail = encodeURIComponent(user.email);
+          const searchUrl = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodedEmail}`;
+
+          const userRes = await fetch(searchUrl);
+          if (!userRes.ok) {
+            enqueueSnackbar("❌ Error al buscar usuario en Strapi: " + (userRes.statusText || userRes.status), { variant: "error" });
+          } else {
+            const userJson = await userRes.json();
+            // Strapi puede devolver data como array o un objeto único dependiendo de la configuración
+            // Strapi /api/users devuelve un ARRAY directo, no { data }
+const foundUser =
+  Array.isArray(userJson) && userJson.length > 0
+    ? userJson[0]
+    : null;
+
+const strapiUserId = foundUser?.id || null;
+
+            if (!strapiUserId) {
+              enqueueSnackbar("⚠️ Usuario no encontrado en Strapi para el email: " + user.email, { variant: "warning" });
+            } else {
+              // actualizar el usuario: setear isclub = true y relacionar club con el id creado
+              const updateUrl = `${STRAPI_URL}/api/users/${strapiUserId}`;
+              const updateBody = {
+                
+                  isclub: true,
+                  // para relaciones en Strapi normalmente basta el id; si tu relación es singular usaremos el id directo
+                  club: createdClubId,
+                
+              };
+
+              const updateRes = await fetch(updateUrl, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(updateBody),
+              });
+
+              if (updateRes.ok) {
+                enqueueSnackbar("✅ Usuario actualizado en Strapi: isclub = true y club relacionado.", { variant: "success" });
+              } else {
+                // intentar leer el error para mostrar detalle
+                let errText = "";
+                try {
+                  const errJson = await updateRes.json();
+                  errText = errJson?.error?.message || JSON.stringify(errJson);
+                } catch (e) {
+                  errText = updateRes.statusText || String(updateRes.status);
+                }
+                enqueueSnackbar("❌ No se pudo actualizar el usuario en Strapi: " + errText, { variant: "error" });
+              }
+            }
+          }
+        }
+      } catch (innerErr) {
+        enqueueSnackbar("❌ Error al intentar relacionar usuario y club: " + (innerErr?.message || "Error desconocido"), { variant: "error" });
+      }
+      // ==== FIN nueva lógica ====
+
     } else {
       const error = await res.json();
       enqueueSnackbar(
