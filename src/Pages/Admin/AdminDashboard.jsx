@@ -3,11 +3,13 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRoles } from '../../Contexts/RolesContext.jsx';
-
-import InfoMiClub from '../../components/Clubs/InfoMiClub.jsx';
-import Bitacora from '../../components/Clubs/Bitacora.jsx';
-import Documentos from '../../components/Clubs/Documentos.jsx';
-import GestionClub from '../../components/Clubs/GestionClub.jsx';
+import AdminClubs from '../../components/Admin/AdminClubs.jsx';
+import CofeprisAdmin from '../../components/Admin/CofeprisAdmin.jsx';
+import AmparosAdmin from '../../components/Admin/AmparosAdmin.jsx';
+import MembresiasAdmin from '../../components/Admin/MembresiasAdmin.jsx';
+import PagosAdmin from '../../components/Admin/PagosAdmin.jsx';
+import KitsAdmin from '../../components/Admin/KitsAdmin.jsx';
+import AfiliacionesAdmin from '../../components/Admin/AfiliacionesAdmin.jsx';
 import PreCargador from '../../components/PreCargador.jsx';
 
 const AdminDashboard = () => {
@@ -87,13 +89,13 @@ const AdminDashboard = () => {
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>
-          {tabs[tabIndex]?.path === 'clubs' && <InfoMiClub />}
-          {tabs[tabIndex]?.path === 'tramites' && <Bitacora />}
-          {tabs[tabIndex]?.path === 'amparos' && <Documentos />}
-          {tabs[tabIndex]?.path === 'membresias' && <GestionClub />}
-          {tabs[tabIndex]?.path === 'pagos' && <GestionClub />}
-          {tabs[tabIndex]?.path === 'kits' && <GestionClub />}
-          {tabs[tabIndex]?.path === 'afiliaciones' && <GestionClub />}
+          {tabs[tabIndex]?.path === 'clubs' && <AdminClubs />}
+          {tabs[tabIndex]?.path === 'tramites' && <CofeprisAdmin />}
+          {tabs[tabIndex]?.path === 'amparos' && <AmparosAdmin />}
+          {tabs[tabIndex]?.path === 'membresias' && <MembresiasAdmin />}
+          {tabs[tabIndex]?.path === 'pagos' && <PagosAdmin />}
+          {tabs[tabIndex]?.path === 'kits' && <KitsAdmin />}
+          {tabs[tabIndex]?.path === 'afiliaciones' && <AfiliacionesAdmin />}
           
         </div>
       </div>
