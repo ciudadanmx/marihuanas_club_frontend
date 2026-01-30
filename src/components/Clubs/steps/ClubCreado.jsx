@@ -101,7 +101,6 @@ export default function ClubCreado({
   }, []);
 
   function handleClose() {
-    // animación de salida
     setShow(false);
     setTimeout(() => onClose && onClose(), 420);
   }
@@ -117,12 +116,20 @@ export default function ClubCreado({
           style={{ position: 'fixed', inset: 0, zIndex: 1400 }}
         >
           <Box sx={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+
             {/* Video */}
             <video
               ref={videoRef}
               src={videoSrc}
               poster={posterImage}
-              style={{ position: 'absolute', top: '50%', left: '50%', width: 'auto', height: '120%', transform: 'translate(-50%,-50%)', objectFit: 'cover' }}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+                objectFit: 'cover'
+              }}
               autoPlay
               muted
               loop
@@ -157,7 +164,6 @@ export default function ClubCreado({
                 textAlign: 'center',
               }}
             >
-              {/* Close top-right */}
               <IconButton
                 onClick={handleClose}
                 sx={{ position: 'absolute', right: 12, top: 12, color: 'rgba(255,255,255,0.9)', bgcolor: 'rgba(0,0,0,0.3)' }}
@@ -165,7 +171,6 @@ export default function ClubCreado({
                 <CloseIcon />
               </IconButton>
 
-              {/* Imagen de referencia integrada y centrada sobre el card con blend */}
               <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
                 <motion.img
                   src={posterImage}
