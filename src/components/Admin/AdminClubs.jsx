@@ -14,6 +14,9 @@ import {
   MenuItem,
   useTheme,
   useMediaQuery,
+  Autocomplete,
+  TextField,
+  Chip,
 } from "@mui/material";
 import {
   Visibility,
@@ -27,6 +30,7 @@ import {
   ArrowDownward,
   ArrowUpward,
 } from "@mui/icons-material";
+import { Agriculture, LocalDining, AllInclusive } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import PreLoader from "../PreLoader.jsx";
 
@@ -41,16 +45,8 @@ const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
  *
  * Componente completo para listar clubs en el panel de administración.
  * - Trae clubs desde Strapi con paginación, filtro y orden.
- * - Muestra avatar, dirección, fecha, y acciones.
- * - Los botones usan useNavigate para navegar a rutas tipo:
- *    /admin/clubs/revisar/:slug
- *    /admin/clubs/agendar/:slug
- *    /admin/clubs/aprobar/:slug
- *    /admin/clubs/rechazar/:slug
- *    /admin/clubs/ver/:slug
- *    /admin/clubs/configurar/:slug
- *
- * He puesto comentarios detallados en cada bloque tal como pediste.
+ * - Muestra avatar, dirección, fecha, acciones.
+ * - Añadido: buscador/autocomplete y badges para status_legal y tipo.
  */
 export default function AdminClubs() {
   // estado local
@@ -62,6 +58,9 @@ export default function AdminClubs() {
   const [order, setOrder] = useState("desc"); // 'desc' = recientes, 'asc' = viejos
   const [pageSize] = useState(8); // tamaño de página (constante aquí)
 
+  // buscador
+  const [searchTerm, setSearchTerm] = useState("");
+
   // hooks de MUI para responsive
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.down("sm"));
@@ -72,11 +71,6 @@ export default function AdminClubs() {
   /**
    * getMediaUrl
    * Helper robusto para obtener la URL completa de un mediaField de Strapi.
-   * Maneja:
-   *  - null/undefined
-   *  - objeto single { data: { attributes: { url } } }
-   *  - array de medias
-   *  - formatos (thumbnail, small, medium, large)
    */
   const getMediaUrl = (mediaField) => {
     if (!mediaField) return null;
@@ -108,7 +102,6 @@ export default function AdminClubs() {
 
   /**
    * formatDate
-   * Formatea fechas a locale es-MX tipo "01 ene 2026"
    */
   const formatDate = (d) => {
     if (!d) return "Sin fecha";
@@ -126,8 +119,6 @@ export default function AdminClubs() {
 
   /**
    * extractLocation
-   * Extrae colonia, ciudad y estado de un string de dirección.
-   * Este helper intenta heurísticas comunes de Google Maps / direcciones mexicanas.
    */
   const extractLocation = (direccion) => {
     if (!direccion || typeof direccion !== "string") {
@@ -180,7 +171,6 @@ export default function AdminClubs() {
   /**
    * fetchClubs
    * Llama a Strapi con filtros, paginación y orden.
-   * Usa useCallback para no recrear la función en cada render.
    */
   const fetchClubs = useCallback(async () => {
     setLoading(true);
@@ -227,6 +217,21 @@ export default function AdminClubs() {
     setOrder(e.target.value);
     setPage(1);
   };
+
+  // Filtrado local usando searchTerm (por nombre del club)
+  const clubOptions = Array.from(
+    new Set(
+      clubs
+        .map((c) => (c.attributes ? c.attributes.nombre_club : null))
+        .filter(Boolean)
+    )
+  );
+
+  const filteredClubs = clubs.filter((c) => {
+    const nombre = (c.attributes && c.attributes.nombre_club) || "";
+    if (!searchTerm) return true;
+    return nombre.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   // loader inicial mientras carga los datos
   if (loading) return <PreLoader />;
@@ -307,33 +312,66 @@ export default function AdminClubs() {
           </Stack>
         </Stack>
 
-        {/* orden */}
-        <Stack direction="row" spacing={1} alignItems="center">
-          <FilterList sx={{ mr: 0.5 }} />
-          <Select
+        {/* Search + orden */}
+        <Stack
+          direction={isSm ? "column" : "row"}
+          spacing={1}
+          alignItems="center"
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
+          {/* Autocomplete busqueda pequeña y estilizada */}
+          <Autocomplete
+            freeSolo
             size="small"
-            value={order}
-            onChange={handleOrderChange}
-            sx={{ minWidth: 150 }}
-          >
-            <MenuItem value="desc">
-              <Stack direction="row" spacing={1} alignItems="center">
-                <ArrowDownward fontSize="small" /> Más recientes
-              </Stack>
-            </MenuItem>
-            <MenuItem value="asc">
-              <Stack direction="row" spacing={1} alignItems="center">
-                <ArrowUpward fontSize="small" /> Más viejos
-              </Stack>
-            </MenuItem>
-          </Select>
+            options={clubOptions}
+            onInputChange={(_, value) => setSearchTerm(value || "")}
+            inputValue={searchTerm}
+            sx={{
+              width: { xs: "100%", sm: 300 },
+              bgcolor: "background.paper",
+              boxShadow: 1,
+              borderRadius: 1,
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                placeholder="Buscar clubs..."
+                size="small"
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: params.InputProps.endAdornment,
+                }}
+              />
+            )}
+          />
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <FilterList sx={{ mr: 0.5 }} />
+            <Select
+              size="small"
+              value={order}
+              onChange={handleOrderChange}
+              sx={{ minWidth: 150 }}
+            >
+              <MenuItem value="desc">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <ArrowDownward fontSize="small" /> Más recientes
+                </Stack>
+              </MenuItem>
+              <MenuItem value="asc">
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <ArrowUpward fontSize="small" /> Más viejos
+                </Stack>
+              </MenuItem>
+            </Select>
+          </Stack>
         </Stack>
       </Box>
 
       {/* Lista de items */}
       <Stack spacing={2}>
         <AnimatePresence>
-          {clubs.map((club) => {
+          {filteredClubs.map((club) => {
             // cada entry de Strapi viene como { id, attributes: { ... } }
             const attrs = club.attributes || {};
             // foto de perfil usando helper robusto
@@ -344,8 +382,6 @@ export default function AdminClubs() {
             const fecha = attrs.fecha_alta || attrs.createdAt || null;
 
             // --- SLUG seguro ---
-            // Strapi suele devolver attrs.slug; si no existe, generamos uno sencillo a partir del nombre
-            // Esto garantiza que siempre pasamos STRING al navigate y nunca un objeto.
             const clubSlug =
               attrs.slug ||
               (attrs.nombre_club
@@ -357,19 +393,18 @@ export default function AdminClubs() {
                 : String(club.id));
 
             // Handlers de navegación (todos usan useNavigate)
-            // Los verbos están mapeados según tu petición:
-            //  - revisar  <- FactCheck
-            //  - agendar  <- Event
-            //  - aprobar  <- CheckCircle
-            //  - rechazar <- Cancel
-            //  - ver      <- Visibility (en lista 'todos')
-            //  - configurar <- Settings (en lista 'todos')
             const goRevisar = () => navigate(`/admin/clubs/revisar/${clubSlug}`);
             const goAgendar = () => navigate(`/admin/clubs/agendar/${clubSlug}`);
             const goAprobar = () => navigate(`/admin/clubs/aprobar/${clubSlug}`);
             const goRechazar = () => navigate(`/admin/clubs/rechazar/${clubSlug}`);
             const goVer = () => navigate(`/admin/clubs/ver/${clubSlug}`);
             const goConfigurar = () => navigate(`/admin/clubs/configurar/${clubSlug}`);
+
+            // status_legal: 'gestión' -> Gestionar ; 'folio' -> Revisar trámite
+            const statusLegal = (attrs.status_legal || "").toString().toLowerCase();
+
+            // tipo: puede ser 'cultivo' 'consumo' o 'ambos'
+            const tipo = (attrs.tipo || "").toString().toLowerCase();
 
             return (
               <motion.div
@@ -426,13 +461,92 @@ export default function AdminClubs() {
                       gap: 0.5,
                     }}
                   >
-                    <Typography
-                      variant="h6"
-                      sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 18 } }}
-                    >
-                      {/* Aquí mostramos nombre del club (STRING). Nunca renderizamos objetos. */}
-                      {attrs.nombre_club || "Club sin nombre"}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 18 } }}
+                      >
+                        {/* Aquí mostramos nombre del club (STRING). Nunca renderizamos objetos. */}
+                        {attrs.nombre_club || "Club sin nombre"}
+                      </Typography>
+
+                      {/* Badges pequeños al lado del título */}
+                      {statusLegal === "gestión" && (
+                        <Tooltip title="Requires legal management">
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 0.6,
+                              px: 1,
+                              py: 0.4,
+                              borderRadius: 1,
+                              bgcolor: "info.light",
+                              color: "info.contrastText",
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                            aria-label="Gestionar"
+                          >
+                            <Settings sx={{ fontSize: 16 }} />
+                            Gestionar
+                          </Box>
+                        </Tooltip>
+                      )}
+
+                      {statusLegal === "folio" && (
+                        <Tooltip title="Revisar trámite">
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 0.6,
+                              px: 1,
+                              py: 0.4,
+                              borderRadius: 1,
+                              bgcolor: "warning.light",
+                              color: "warning.contrastText",
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                            aria-label="Revisar trámite"
+                          >
+                            <FactCheck sx={{ fontSize: 16 }} />
+                            Revisar trámite
+                          </Box>
+                        </Tooltip>
+                      )}
+
+                      {/* tipo - badge alargado */}
+                      {(tipo === "cultivo" || tipo === "consumo" || tipo === "ambos") && (
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 0.6,
+                            px: 1,
+                            py: 0.4,
+                            borderRadius: 2,
+                            bgcolor: "grey.100",
+                            color: "text.primary",
+                            fontSize: 12,
+                            fontWeight: 700,
+                            ml: 0.5,
+                          }}
+                          aria-label={`Tipo: ${tipo}`}
+                        >
+                          {tipo === "cultivo" && <Agriculture sx={{ fontSize: 16 }} />}
+                          {tipo === "consumo" && <LocalDining sx={{ fontSize: 16 }} />}
+                          {tipo === "ambos" && <AllInclusive sx={{ fontSize: 16 }} />}
+                          {tipo === "cultivo" && "Cultivo"}
+                          {tipo === "consumo" && "Consumo"}
+                          {tipo === "ambos" && "Ambos"}
+                        </Box>
+                      )}
+                    </Box>
 
                     <Typography
                       variant="body2"
@@ -550,7 +664,7 @@ export default function AdminClubs() {
           })}
         </AnimatePresence>
 
-        {!clubs.length && (
+        {!filteredClubs.length && (
           <Typography align="center" color="text.secondary">
             No hay clubs para mostrar.
           </Typography>
