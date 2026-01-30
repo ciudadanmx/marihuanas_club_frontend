@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRoles } from '../../Contexts/RolesContext.jsx';
-import AdminClubs from '../../components/Admin/AdminClubs.jsx';
+import AdminClubsRouter from '../../components/Admin/AdminClubsRouter.jsx';
 import CofeprisAdmin from '../../components/Admin/CofeprisAdmin.jsx';
 import AmparosAdmin from '../../components/Admin/AmparosAdmin.jsx';
 import MembresiasAdmin from '../../components/Admin/MembresiasAdmin.jsx';
@@ -89,7 +89,7 @@ const AdminDashboard = () => {
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>
-          {tabs[tabIndex]?.path === 'clubs' && <AdminClubs />}
+          {tabs[tabIndex]?.path === 'clubs' && <AdminClubsRouter />}
           {tabs[tabIndex]?.path === 'tramites' && <CofeprisAdmin />}
           {tabs[tabIndex]?.path === 'amparos' && <AmparosAdmin />}
           {tabs[tabIndex]?.path === 'membresias' && <MembresiasAdmin />}

@@ -30,35 +30,64 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import PreLoader from "../PreLoader.jsx";
 
+// Navegación programática (lo pediste): usamos useNavigate para movernos a /admin/clubs/:verbo/:slug
+import { useNavigate } from "react-router-dom";
+
+// URL base de Strapi desde .env (mantener tal como lo tenías)
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
+/**
+ * AdminClubs
+ *
+ * Componente completo para listar clubs en el panel de administración.
+ * - Trae clubs desde Strapi con paginación, filtro y orden.
+ * - Muestra avatar, dirección, fecha, y acciones.
+ * - Los botones usan useNavigate para navegar a rutas tipo:
+ *    /admin/clubs/revisar/:slug
+ *    /admin/clubs/agendar/:slug
+ *    /admin/clubs/aprobar/:slug
+ *    /admin/clubs/rechazar/:slug
+ *    /admin/clubs/ver/:slug
+ *    /admin/clubs/configurar/:slug
+ *
+ * He puesto comentarios detallados en cada bloque tal como pediste.
+ */
 export default function AdminClubs() {
-  const [clubs, setClubs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [pageCount, setPageCount] = useState(1);
+  // estado local
+  const [clubs, setClubs] = useState([]); // lista de clubs (json.data desde Strapi)
+  const [loading, setLoading] = useState(true); // indicador de carga
+  const [page, setPage] = useState(1); // página actual
+  const [pageCount, setPageCount] = useState(1); // total de páginas
   const [filtro, setFiltro] = useState("revisar"); // 'revisar' | 'todos'
   const [order, setOrder] = useState("desc"); // 'desc' = recientes, 'asc' = viejos
-  const [pageSize] = useState(8);
+  const [pageSize] = useState(8); // tamaño de página (constante aquí)
 
+  // hooks de MUI para responsive
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // --- helpers robustos para Strapi media y direccion ---
+  // useNavigate para navegación por botones (requerimiento)
+  const navigate = useNavigate();
+
+  /**
+   * getMediaUrl
+   * Helper robusto para obtener la URL completa de un mediaField de Strapi.
+   * Maneja:
+   *  - null/undefined
+   *  - objeto single { data: { attributes: { url } } }
+   *  - array de medias
+   *  - formatos (thumbnail, small, medium, large)
+   */
   const getMediaUrl = (mediaField) => {
-    // soporta: null, object single, { data: {...} }, array, formats.thumbnail
     if (!mediaField) return null;
 
     const extract = (m) => {
       if (!m) return null;
-      // Strapi v4 single media: m.data or m
       const file = m.data ? m.data : m;
       if (!file) return null;
-      // if array (multiple)
       const first = Array.isArray(file) ? file[0] : file;
       if (!first) return null;
       const attrs = first.attributes || first;
-      // buscar thumbnail -> formatos -> thumbnail.url
       const formats = attrs.formats || attrs.formats || attrs.formats;
       const thumb =
         formats?.thumbnail?.url ||
@@ -68,22 +97,24 @@ export default function AdminClubs() {
       const url = thumb || attrs.url || attrs?.data?.attributes?.url;
       if (!url) return null;
       if (url.startsWith("http")) return url;
-      // Strapi normalmente devuelve /uploads/..., necesita prefijo
       return `${STRAPI_URL}${url}`;
     };
 
-    // si es array directo
     if (Array.isArray(mediaField)) {
       return extract(mediaField[0]);
     }
     return extract(mediaField);
   };
 
+  /**
+   * formatDate
+   * Formatea fechas a locale es-MX tipo "01 ene 2026"
+   */
   const formatDate = (d) => {
     if (!d) return "Sin fecha";
     try {
       const date = new Date(d);
-      return date.toLocaleDateString("es-MX", {
+      return date.toLocaleString("es-MX", {
         day: "2-digit",
         month: "short",
         year: "numeric",
@@ -93,41 +124,83 @@ export default function AdminClubs() {
     }
   };
 
-  const extractLocation = (data) => {
-    // data puede ser string, json con {colonia, ciudad, estado}, o null
-    if (!data) return { colonia: null, ciudad: null, estado: null };
-
-    // si es string intentar parsear (no siempre posible)
-    if (typeof data === "string") {
-      return { colonia: data, ciudad: null, estado: null };
+  /**
+   * extractLocation
+   * Extrae colonia, ciudad y estado de un string de dirección.
+   * Este helper intenta heurísticas comunes de Google Maps / direcciones mexicanas.
+   */
+  const extractLocation = (direccion) => {
+    if (!direccion || typeof direccion !== "string") {
+      return { colonia: null, ciudad: null, estado: null };
     }
 
-    // si es objeto
-    const colonia = data.colonia || data.col || data.neighborhood || null;
-    const ciudad =
-      data.ciudad || data.municipio || data.city || data.locality || null;
-    const estado = data.estado || data.state || null;
-    return { colonia, ciudad, estado };
+    const parts = direccion
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    let colonia = null;
+    let ciudad = null;
+    let estado = null;
+
+    const mexicoIndex = parts.findIndex(
+      (p) => p.toLowerCase() === "méxico" || p.toLowerCase() === "mexico"
+    );
+
+    if (mexicoIndex > 0) {
+      estado = parts[mexicoIndex - 1];
+    } else if (parts.length >= 2) {
+      estado = parts[parts.length - 2];
+    }
+
+    for (let p of parts) {
+      if (/\b\d{4,5}\b/.test(p)) {
+        ciudad = p.replace(/\b\d{4,5}\b/, "").trim();
+        break;
+      }
+    }
+
+    if (parts.length >= 2) {
+      colonia = parts[1];
+    }
+
+    if (!ciudad && estado) {
+      ciudad = estado;
+    }
+
+    const clean = (v) => (typeof v === "string" ? v.replace(/^\s+|\s+$/g, "") : null);
+
+    return {
+      colonia: clean(colonia),
+      ciudad: clean(ciudad),
+      estado: clean(estado),
+    };
   };
 
-  // --- fetch con filtros, paginación y orden ---
+  /**
+   * fetchClubs
+   * Llama a Strapi con filtros, paginación y orden.
+   * Usa useCallback para no recrear la función en cada render.
+   */
   const fetchClubs = useCallback(async () => {
     setLoading(true);
     try {
-      // base
+      // URL base con populate y paginación
       let url = `${STRAPI_URL}/api/clubs?populate=foto_de_perfil&pagination[page]=${page}&pagination[pageSize]=${pageSize}`;
-      // filtro por revisión
+
+      // cuando filtro = 'revisar' añadimos filtro por en_revision = true
       if (filtro === "revisar") {
         url += `&filters[en_revision][$eq]=true`;
       }
-      // orden
-      // Strapi: sort=fecha_alta:desc
+
+      // orden por fecha_alta
       url += `&sort=fecha_alta:${order}`;
 
       const res = await fetch(url);
       if (!res.ok) throw new Error("Respuesta no OK");
       const json = await res.json();
 
+      // json.data es el arreglo de entries en Strapi v4
       setClubs(json.data || []);
       setPageCount(json.meta?.pagination?.pageCount || 1);
     } catch (err) {
@@ -139,6 +212,7 @@ export default function AdminClubs() {
     }
   }, [filtro, page, pageSize, order]);
 
+  // efecto que trae los clubs cuando cambia el fetchClubs (page, filtro, order)
   useEffect(() => {
     fetchClubs();
   }, [fetchClubs]);
@@ -154,6 +228,7 @@ export default function AdminClubs() {
     setPage(1);
   };
 
+  // loader inicial mientras carga los datos
   if (loading) return <PreLoader />;
 
   return (
@@ -171,7 +246,7 @@ export default function AdminClubs() {
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <Typography variant="subtitle2" color="text.secondary">
-            Admin / Clubs
+            Admin / Clubs -->
           </Typography>
 
           {/* barra de enlaces discreta */}
@@ -259,11 +334,42 @@ export default function AdminClubs() {
       <Stack spacing={2}>
         <AnimatePresence>
           {clubs.map((club) => {
+            // cada entry de Strapi viene como { id, attributes: { ... } }
             const attrs = club.attributes || {};
+            // foto de perfil usando helper robusto
             const fotoUrl = getMediaUrl(attrs.foto_de_perfil);
+            // dirección posible
             const direccion = attrs.direccion || attrs.direccion_legal || null;
             const { colonia, ciudad, estado } = extractLocation(direccion);
             const fecha = attrs.fecha_alta || attrs.createdAt || null;
+
+            // --- SLUG seguro ---
+            // Strapi suele devolver attrs.slug; si no existe, generamos uno sencillo a partir del nombre
+            // Esto garantiza que siempre pasamos STRING al navigate y nunca un objeto.
+            const clubSlug =
+              attrs.slug ||
+              (attrs.nombre_club
+                ? String(attrs.nombre_club)
+                    .trim()
+                    .toLowerCase()
+                    .replace(/[^a-z0-9áéíóúñ]+/g, "-")
+                    .replace(/^-+|-+$/g, "")
+                : String(club.id));
+
+            // Handlers de navegación (todos usan useNavigate)
+            // Los verbos están mapeados según tu petición:
+            //  - revisar  <- FactCheck
+            //  - agendar  <- Event
+            //  - aprobar  <- CheckCircle
+            //  - rechazar <- Cancel
+            //  - ver      <- Visibility (en lista 'todos')
+            //  - configurar <- Settings (en lista 'todos')
+            const goRevisar = () => navigate(`/admin/clubs/revisar/${clubSlug}`);
+            const goAgendar = () => navigate(`/admin/clubs/agendar/${clubSlug}`);
+            const goAprobar = () => navigate(`/admin/clubs/aprobar/${clubSlug}`);
+            const goRechazar = () => navigate(`/admin/clubs/rechazar/${clubSlug}`);
+            const goVer = () => navigate(`/admin/clubs/ver/${clubSlug}`);
+            const goConfigurar = () => navigate(`/admin/clubs/configurar/${clubSlug}`);
 
             return (
               <motion.div
@@ -324,6 +430,7 @@ export default function AdminClubs() {
                       variant="h6"
                       sx={{ fontWeight: 700, fontSize: { xs: 16, sm: 18 } }}
                     >
+                      {/* Aquí mostramos nombre del club (STRING). Nunca renderizamos objetos. */}
                       {attrs.nombre_club || "Club sin nombre"}
                     </Typography>
 
@@ -333,7 +440,9 @@ export default function AdminClubs() {
                       sx={{ fontSize: 13 }}
                     >
                       {colonia ? `${colonia} · ` : ""}
-                      {ciudad ? `${ciudad}${estado ? ` / ${estado}` : ""}` : "Ciudad no especificada"}
+                      {ciudad
+                        ? `${ciudad}${estado ? ` / ${estado}` : ""}`
+                        : "Ciudad no especificada"}
                     </Typography>
 
                     <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -360,40 +469,75 @@ export default function AdminClubs() {
                   >
                     {filtro === "revisar" ? (
                       <>
+                        {/* Revisar: navega a /admin/clubs/revisar/:slug */}
                         <Tooltip title="Revisar datos">
-                          <IconButton color="primary" size={isSm ? "small" : "medium"}>
+                          <IconButton
+                            sx={{ color: "#7b2cbf" }}
+                            size={isSm ? "small" : "medium"}
+                            onClick={goRevisar}
+                            aria-label={`Revisar ${attrs.nombre_club || clubSlug}`}
+                          >
                             <FactCheck />
                           </IconButton>
                         </Tooltip>
 
+                        {/* Agendar: navega a /admin/clubs/agendar/:slug */}
                         <Tooltip title="Agendar">
-                          <IconButton color="info" size={isSm ? "small" : "medium"}>
+                          <IconButton
+                            color="info"
+                            size={isSm ? "small" : "medium"}
+                            onClick={goAgendar}
+                            aria-label={`Agendar ${attrs.nombre_club || clubSlug}`}
+                          >
                             <Event />
                           </IconButton>
                         </Tooltip>
 
+                        {/* Activar / Aprobar: navega a /admin/clubs/aprobar/:slug */}
                         <Tooltip title="Activar">
-                          <IconButton color="success" size={isSm ? "small" : "medium"}>
+                          <IconButton
+                            color="success"
+                            size={isSm ? "small" : "medium"}
+                            onClick={goAprobar}
+                            aria-label={`Aprobar ${attrs.nombre_club || clubSlug}`}
+                          >
                             <CheckCircle />
                           </IconButton>
                         </Tooltip>
 
+                        {/* Rechazar: navega a /admin/clubs/rechazar/:slug */}
                         <Tooltip title="Rechazar">
-                          <IconButton color="error" size={isSm ? "small" : "medium"}>
+                          <IconButton
+                            color="error"
+                            size={isSm ? "small" : "medium"}
+                            onClick={goRechazar}
+                            aria-label={`Rechazar ${attrs.nombre_club || clubSlug}`}
+                          >
                             <Cancel />
                           </IconButton>
                         </Tooltip>
                       </>
                     ) : (
                       <>
+                        {/* En vista 'todos' mostramos Ver y Configurar */}
                         <Tooltip title="Ver">
-                          <IconButton color="primary" size={isSm ? "small" : "medium"}>
+                          <IconButton
+                            color="primary"
+                            size={isSm ? "small" : "medium"}
+                            onClick={goVer}
+                            aria-label={`Ver ${attrs.nombre_club || clubSlug}`}
+                          >
                             <Visibility />
                           </IconButton>
                         </Tooltip>
 
-                        <Tooltip title="Acciones">
-                          <IconButton color="default" size={isSm ? "small" : "medium"}>
+                        <Tooltip title="Acciones / Configurar">
+                          <IconButton
+                            color="default"
+                            size={isSm ? "small" : "medium"}
+                            onClick={goConfigurar}
+                            aria-label={`Configurar ${attrs.nombre_club || clubSlug}`}
+                          >
                             <Settings />
                           </IconButton>
                         </Tooltip>
@@ -430,6 +574,11 @@ export default function AdminClubs() {
 
 /* --- pequeños componentes internos para estilo --- */
 
+/**
+ * ChipMini
+ * Componente pequeño para etiquetas (ej: "En revisión")
+ * Mantengo la implementación original y la dejo al final del archivo.
+ */
 function ChipMini({ label }) {
   return (
     <Box

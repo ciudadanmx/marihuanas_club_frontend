@@ -94,13 +94,15 @@ import InstruccionesActa from '../Pages/Legal/InstruccionesActa.jsx';
 import TuAbogado from '../Pages/Legal/TuAbogado.jsx';
 import Activismo from '../Pages/Legal/Activismo.jsx';
 //Admin
-import AdminClubs from '../components/Admin/AdminClubs.jsx';
+/*import AdminClubs from '../components/Admin/AdminClubsRouter.jsx';
 import CofeprisAdmin from '../components/Admin/CofeprisAdmin.jsx';
 import AmparosAdmin from '../components/Admin/AmparosAdmin.jsx';
 import MembresiasAdmin from '../components/Admin/MembresiasAdmin.jsx';
 import PagosAdmin from '../components/Admin/PagosAdmin.jsx';
 import KitsAdmin from '../components/Admin/KitsAdmin.jsx';
+
 import AfiliacionesAdmin from '../components/Admin/AfiliacionesAdmin.jsx';
+*/
 //Info
 import QuienesSomos from '../Pages/Info/QuienesSomos';
 import PreguntasFrecuentes from '../Pages/Info/PreguntasFrecuentes.jsx';
