@@ -4,6 +4,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { motion, AnimatePresence } from "framer-motion";
 import clubCreadoVideo from "../../../assets/videos/clubcreado.mp4";
 import posterRef from "../../../assets/videos/clubcreado_ref.png";
+import { useNavigate } from "react-router-dom";
 
 // ClubCreado.jsx
 // Versión mejorada: uso de Material UI + Framer Motion
@@ -20,6 +21,7 @@ export default function ClubCreado({
   videoSrc = clubCreadoVideo,
   posterImage = posterRef,
 }) {
+  const navigate = useNavigate();
   const canvasRef = useRef(null);
   const videoRef = useRef(null);
   const [show, setShow] = useState(true);
@@ -103,6 +105,7 @@ export default function ClubCreado({
   function handleClose() {
     setShow(false);
     setTimeout(() => onClose && onClose(), 420);
+    navigate("/clubs/miclub")
   }
 
   return (

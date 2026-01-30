@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 
-export default function PreCargador({ text = "Cargando..." }) {
+export default function PreCargador({ text }) {
   const letters = text.split("");
 
   /* =======================

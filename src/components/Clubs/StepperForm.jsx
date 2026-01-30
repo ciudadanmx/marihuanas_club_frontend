@@ -11,6 +11,7 @@ import {
 import Instrucciones from "./steps/Instrucciones.jsx";
 import DatosGenerales from "./steps/DatosGenerales";
 import Direccion from "./steps/Direccion";
+import PreCargador from "../PreCargador.jsx";
 import Confirmacion from "./steps/Confirmacion";
 import Archivos from "./steps/Archivos";
 import Contacto from "./steps/Contacto.jsx";
@@ -43,19 +44,20 @@ export default function StepperForm({
   };
   
   const handleSubmit = () => {
-  handleSubmitClub({
+    handleSubmitClub({
       form,
       isAuthenticated,
       userId,
       user,
       setLoading,
+      setPreCargador, // <-- se pasa para que handleSubmitClub controle el preloader durante el envío
       enqueueSnackbar,
       navigate,
     });
   };
 
   const { isClub, isActivaMembresia } = useRoles();
-  const { cofeprisOption, setCofeprisOption } = useState();
+  const [cofeprisOption, setCofeprisOption] = useState();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -93,10 +95,12 @@ export default function StepperForm({
       }
     );
     return baseSteps;
-  }, [tipo, form, setForm]);
+  }, [tipo, form, setForm, user, isActivaMembresia]);
 
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  // Por defecto visible mientras carga el contenido a renderizar
+  const [preCargador, setPreCargador] = useState(true);
 
   const handleBack = () => {
     setActiveStep((prev) => prev - 1);
@@ -116,31 +120,40 @@ export default function StepperForm({
     el?.scrollTo({ top: 0, behavior: "auto" });
   }, [activeStep]);
 
-   useEffect(() => {
-      const behavior = 'auto';
-      const targetId = 'marihuahasclub-app';
-        const el = document.getElementById(targetId);
-        if (el) {
-          if (typeof el.scrollTo === 'function') {
-            el.scrollTo({ top: 0, left: 0, behavior });
-          } else {
-            el.scrollTop = 0;
-          }
-          return;
+  useEffect(() => {
+    const behavior = 'auto';
+    const targetId = 'marihuahasclub-app';
+      const el = document.getElementById(targetId);
+      if (el) {
+        if (typeof el.scrollTo === 'function') {
+          el.scrollTo({ top: 0, left: 0, behavior });
+        } else {
+          el.scrollTop = 0;
         }
-        // si targetId no existe, fallback a window
-      
-  
-      if (typeof window.scrollTo === 'function') {
-        window.scrollTo({ top: 0, left: 0, behavior });
-      } else {
-        window.scroll(0, 0);
+        return;
       }
-    }, [activeStep]); 
+    
+    if (typeof window.scrollTo === 'function') {
+      window.scrollTo({ top: 0, left: 0, behavior });
+    } else {
+      window.scroll(0, 0);
+    }
+  }, [activeStep]); 
+
+  // Oculta el preloader inicial cuando el contenido (usuario/steps) esté listo.
+  useEffect(() => {
+    // se apaga UNA SOLA VEZ al montar
+    const t = setTimeout(() => setPreCargador(false), 150);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (preCargador) {
+    return <PreCargador text="Enviando datos..." />;
+  }
 
   if (isClub === true) {
-  return <Typography>Redirigiendo a tu club...</Typography>;
-}
+    return <Typography>Redirigiendo a tu club...</Typography>;
+  }
 
   if (!user) {
     return <Ingresa />

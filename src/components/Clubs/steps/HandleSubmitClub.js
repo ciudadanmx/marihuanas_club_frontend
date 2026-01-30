@@ -10,6 +10,7 @@ export async function handleSubmitClub({
   setLoading,
   enqueueSnackbar,
   navigate,
+  setPreCargador,
 }) {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
@@ -22,6 +23,8 @@ export async function handleSubmitClub({
   }
 
   setLoading(true);
+  setPreCargador(true); // 👈 ACTIVA PRECARGADOR
+
 
   // ================== LIMPIEZA DE DATOS ==================
 
@@ -206,7 +209,6 @@ export async function handleSubmitClub({
 
     if (res.ok) {
       enqueueSnackbar("🎉 Club creado con éxito", { variant: "success" });
-      //navigate("/clubs");
 
       // ==== NUEVA LÓGICA: buscar usuario por email en Strapi y actualizarlo ====
       try {
@@ -309,6 +311,8 @@ const strapiUserId = foundUser?.id || null;
 
                   if (credRes.ok) {
                     enqueueSnackbar("✅ Credenciales creadas en Strapi para revisión.", { variant: "success" });
+                    navigate("/club-creado");
+                    if (setPreCargador) setPreCargador(false); // 👈 APAGA PRECARGADOR SIEMPRE
                   } else {
                     let errText = "";
                     try {
