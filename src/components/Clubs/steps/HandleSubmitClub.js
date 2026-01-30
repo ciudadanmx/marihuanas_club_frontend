@@ -64,7 +64,7 @@ export async function handleSubmitClub({
     skills = "";
   }
 
-// --- armarios => lugares + miembros_activos = 0 (solo si existe armarios)
+  // --- armarios => lugares + miembros_activos = 0 (solo si existe armarios)
     if (form.armarios || form.armarios === 0) {
       // aceptar 0 u otros valores; si null/undefined, no se setea
       lugares = form.armarios;
@@ -277,6 +277,53 @@ const strapiUserId = foundUser?.id || null;
                 }
                 enqueueSnackbar("❌ No se pudo actualizar el usuario en Strapi: " + errText, { variant: "error" });
               }
+
+              // ==== NUEVA LÓGICA: crear registro en colección 'credenciales' con archivos INE ====
+              try {
+                // Tomar los archivos como single si vinieran en arrays
+                const ineFrenteFile = Array.isArray(form.ine_frente) ? form.ine_frente[0] : form.ine_frente;
+                const ineReversoFile = Array.isArray(form.ine_reverso) ? form.ine_reverso[0] : form.ine_reverso;
+
+                // Solo intentar crear credenciales si tenemos ID de usuario en Strapi
+                if (strapiUserId) {
+                  const credData = new FormData();
+                  const credPayload = {
+                    usuario: strapiUserId,
+                    usuario_email: user?.email || null,
+                    status: "para revisión inicial",
+                  };
+                  credData.append("data", JSON.stringify(credPayload));
+
+                  // Adjuntar archivos si existen (frente -> frente, reverso -> tras)
+                  if (ineFrenteFile) {
+                    appendFiles(credData, "frente", ineFrenteFile);
+                  }
+                  if (ineReversoFile) {
+                    appendFiles(credData, "tras", ineReversoFile);
+                  }
+
+                  const credRes = await fetch(`${STRAPI_URL}/api/credenciales`, {
+                    method: "POST",
+                    body: credData,
+                  });
+
+                  if (credRes.ok) {
+                    enqueueSnackbar("✅ Credenciales creadas en Strapi para revisión.", { variant: "success" });
+                  } else {
+                    let errText = "";
+                    try {
+                      const errJson = await credRes.json();
+                      errText = errJson?.error?.message || JSON.stringify(errJson);
+                    } catch (e) {
+                      errText = credRes.statusText || String(credRes.status);
+                    }
+                    enqueueSnackbar("❌ No se pudo crear credenciales en Strapi: " + errText, { variant: "error" });
+                  }
+                }
+              } catch (credErr) {
+                enqueueSnackbar("❌ Error al crear credenciales: " + (credErr?.message || "Error desconocido"), { variant: "error" });
+              }
+              // ==== FIN nueva lógica de credenciales ====
             }
           }
         }

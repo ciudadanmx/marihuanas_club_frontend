@@ -112,6 +112,7 @@ import Humo from '../components/Membresias/Humo/Humo.jsx';
 
 import Registrar from './components/Registrar.jsx';
 import PreCargador from '../components/PreCargador.jsx';
+import ClubCreado from '../components/Clubs/steps/ClubCreado.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -220,6 +221,7 @@ const Rutas = () => (
     <Route path="/contenido/:slug" element={<Contenido />} />
     
     <Route path="/precargador" element={<PreCargador />} />
+    <Route path="/club-creado" element={<ClubCreado />} />
 
 
     <Route path="/notificationtester" element={<NotificationTester />} />

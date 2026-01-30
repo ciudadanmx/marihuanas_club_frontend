@@ -292,13 +292,13 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
 
   // Normalizamos los archivos de INE para que siempre tengamos arrays (aunque vengan como File único o bajo otro nombre)
   const ineFrenteFiles = (() => {
-    const v = form.ine_frente_archivos ?? form.ine_frente ?? form.ineFrente ?? null;
+    const v = form.ine_frente ?? null;
     if (!v) return [];
     return Array.isArray(v) ? v : [v];
   })();
 
   const ineTrasFiles = (() => {
-    const v = form.ine_tras_archivos ?? form.ine_reverso ?? form.ine_tras ?? form.ineTras ?? null;
+    const v = form.ine_reverso ?? null;
     if (!v) return [];
     return Array.isArray(v) ? v : [v];
   })();
