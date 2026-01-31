@@ -18,7 +18,7 @@ import { Link } from 'react-router-dom';
 import { styled } from '@mui/system';
 import placeholder from '../../assets/placeholders/placeholder.jpg';
 import { useRoles } from '../../Contexts/RolesContext';
-
+import PreLoader from '../../components/PreLoader';
 const CardAnimada = styled(Card)(() => ({
   transition: 'transform 0.4s ease, box-shadow 0.4s ease',
   '&:hover': {
@@ -77,10 +77,7 @@ export default function EventosGrid() {
   if (loading) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
-        <CircularProgress color="success" />
-        <Typography mt={2} color="white">
-          Cargando eventos...
-        </Typography>
+        <PreLoader text="Cargando Eventos..." color="success" />
       </Box>
     );
   }
@@ -111,7 +108,7 @@ export default function EventosGrid() {
   const ciudades = Array.from(new Set(eventos.map(e => e.ciudad).filter(Boolean))).sort();
 
   return (
-    <Box sx={{ px: 2, py: 4 }}>
+    <Box sx={{ px: 2, py: 4, pb:0, mb:0 }}>
       <Box
         sx={{
           mb: 3,
