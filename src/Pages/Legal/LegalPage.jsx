@@ -144,6 +144,9 @@ export default function LegalPage() {
           basePath={basePath}
           onTabChange={handleTabChange}
           collapseAt={640}
+          backgroundColor="linear-gradient(90deg, #3b0f14 0%, #5a141b 50%, #3b0f14 100%)"
+          textColor="#f0e6e2"
+          activeColor="#d84a4a"
         />
       )}
 

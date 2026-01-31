@@ -5,31 +5,61 @@ import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 
+/**
+ * Componente de pestañas estilo Facebook / dashboard
+ * - Sincroniza la pestaña activa con la URL
+ * - Responsive: tabs horizontales en desktop, select en mobile
+ * - Indicador animado bajo la pestaña activa
+ * - Totalmente controlado por rutas
+ */
 const Pestanas = ({
-  tabs = [],
-  basePath = '',
-  className = '',
-  onTabChange,
-  collapseAt = 640,
-  children,
-  topOffset = 64 // ajusta esto si tu navbar tiene otra altura
+  tabs = [],               // Array de pestañas { label, path }
+  basePath = '',           // Ruta base para construir paths absolutos
+  className = '',          // Clases extra opcionales
+  onTabChange,             // Callback cuando cambia la pestaña activa
+  collapseAt = 640,        // Ancho donde colapsa a versión mobile
+  children,                // Contenido renderizado debajo de las pestañas
+  topOffset = 64,          // Altura del navbar (no se modifica aquí)
+  backgroundColor,         // 👉 color de fondo opcional
+  textColor,               // 👉 color de texto opcional
+  activeColor              // 👉 color activo opcional (SOLO si se pasa explícito)
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // índice de la pestaña activa
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < collapseAt : false);
 
+  // detectar vista mobile
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < collapseAt : false
+  );
+
+  // refs para medir posiciones
   const rowRef = useRef(null);
   const btnRefs = useRef([]);
-  const [indicator, setIndicator] = useState({ left: 0, width: 0, visible: false });
 
+  // estado del indicador animado
+  const [indicator, setIndicator] = useState({
+    left: 0,
+    width: 0,
+    visible: false
+  });
+
+  /**
+   * Normaliza el basePath
+   * - elimina slash final
+   * - maneja root correctamente
+   */
   const normBase = useMemo(() => {
     if (!basePath) return '';
     if (basePath === '/') return '/';
     return basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
   }, [basePath]);
 
+  /**
+   * Construye rutas absolutas para cada pestaña
+   */
   const absPaths = useMemo(() => {
     return tabs.map((t) => {
       const p = (t.path || '').toString();
@@ -40,6 +70,11 @@ const Pestanas = ({
     });
   }, [tabs, normBase]);
 
+  /**
+   * Listener de resize para:
+   * - detectar mobile / desktop
+   * - recalcular el indicador
+   */
   useEffect(() => {
     const onResize = () => {
       setIsMobile(window.innerWidth < collapseAt);
@@ -49,10 +84,14 @@ const Pestanas = ({
     return () => window.removeEventListener('resize', onResize);
   }, [collapseAt, activeIndex]);
 
+  /**
+   * Sincroniza pestaña activa con la URL actual
+   */
   useEffect(() => {
     const currentRaw = (location.pathname || '').replace(/\/+$/, '') || '/';
     let bestIndex = -1;
     let bestLen = -1;
+
     absPaths.forEach((p, i) => {
       const pp = (p || '').replace(/\/+$/, '') || '/';
       if (currentRaw === pp) {
@@ -64,54 +103,92 @@ const Pestanas = ({
         if (pp.length > bestLen) { bestIndex = i; bestLen = pp.length; }
       }
     });
+
     if (bestIndex === -1) bestIndex = 0;
     setActiveIndex(bestIndex);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname, JSON.stringify(absPaths)]);
 
+  /**
+   * Recalcula indicador y dispara callback externo
+   */
   useLayoutEffect(() => {
     measureIndicator(activeIndex);
-    if (typeof onTabChange === 'function') onTabChange(activeIndex, tabs[activeIndex]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (typeof onTabChange === 'function') {
+      onTabChange(activeIndex, tabs[activeIndex]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, isMobile, JSON.stringify(absPaths)]);
 
+  /**
+   * Mide posición y tamaño del botón activo
+   */
   const measureIndicator = (index) => {
     const row = rowRef.current;
     const btn = btnRefs.current[index];
+
     if (!row || !btn) {
       setIndicator({ left: 0, width: 0, visible: false });
       return;
     }
+
     const rowRect = row.getBoundingClientRect();
     const btnRect = btn.getBoundingClientRect();
     const left = btnRect.left - rowRect.left + row.scrollLeft;
     const width = Math.max(24, btnRect.width);
+
     setIndicator({ left, width, visible: true });
-    // asegurar boton visible en scroll horizontal
-    try { btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }); } catch (e) {}
+
+    // asegura que el botón activo quede visible
+    try {
+      btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    } catch (e) {}
   };
 
+  /**
+   * Navega a la ruta de la pestaña
+   */
   const handleClick = (index) => {
     const dest = absPaths[index] || '/';
     navigate(dest);
-    // no hacemos setActiveIndex aquí: lo hará el effect al cambiar la URL
+    // el activeIndex se actualiza por el effect de la URL
   };
 
+  /**
+   * Cambio desde select (mobile)
+   */
   const handleSelectChange = (e) => {
     const idx = Number(e.target.value);
     handleClick(idx);
   };
 
-  const setBtnRef = (el, i) => { btnRefs.current[i] = el; };
+  /**
+   * Guarda refs de botones
+   */
+  const setBtnRef = (el, i) => {
+    btnRefs.current[i] = el;
+  };
 
   return (
-    <nav className={`pestanas-wrapper ${className || ''}`} aria-label="Pestañas" style={{ margin: 0, padding: 0 }}>
+    <nav
+      className={`pestanas-wrapper ${className || ''}`}
+      aria-label="Pestañas"
+      style={{
+        margin: 0,
+        padding: 0,
+        // 👉 variables CSS con defaults
+        '--pestanas-bg': backgroundColor || 'linear-gradient(90deg, #7b2cff 0%, #b300ff 50%, #7b2cff 100%)',
+        '--pestanas-text': textColor || '#ffffff',
+        '--pestanas-active': activeColor || '#fff200'
+      }}
+    >
       <style>{`
         .pestanas-wrapper { width:100%; margin:0; padding:0; }
+
         .pestanas-bar {
           width:100%;
-          background: linear-gradient(90deg, #7b2cff 0%, #b300ff 50%, #7b2cff 100%);
-          color: #fff;
+          background: var(--pestanas-bg);
+          color: var(--pestanas-text);
           padding: 13px 12px;
           position:relative;
           top: -20px;
@@ -119,6 +196,7 @@ const Pestanas = ({
           margin-bottom: 0px;
           padding-bottom: 0px;
         }
+
         .pestanas-row {
           display:flex;
           gap:12px;
@@ -129,11 +207,13 @@ const Pestanas = ({
           -webkit-overflow-scrolling:touch;
           scrollbar-width:none;
         }
+
         .pestanas-row::-webkit-scrollbar { display:none; }
+
         .pestana-btn {
           background:transparent;
           border:none;
-          color: rgba(255,255,255,0.95);
+          color: var(--pestanas-text);
           padding:8px 14px;
           font-weight:600;
           font-size:0.95rem;
@@ -142,25 +222,33 @@ const Pestanas = ({
           white-space:nowrap;
           transition: transform .12s ease, color .12s ease, background .12s ease;
         }
-        .pestana-btn:hover { transform:translateY(-2px); background: rgba(255,255,255,0.06); color:#fff; }
-        .pestana-btn[aria-selected="true"] { color:#fff200; }
+
+        .pestana-btn:hover {
+          transform:translateY(-2px);
+          background: rgba(255,255,255,0.06);
+        }
+
+        .pestana-btn[aria-selected="true"] { color: var(--pestanas-active); }
+
         .pestanas-indicator {
           position:absolute;
           height:4px;
           bottom:6px;
           border-radius:4px;
-          background:#fff200;
+          background: var(--pestanas-active);
           box-shadow: 0 6px 18px rgba(255,242,0,0.16);
           transition:left 260ms cubic-bezier(.2,.9,.2,1), width 260ms cubic-bezier(.2,.9,.2,1), opacity 160ms;
         }
+
         .pestana-select {
           width:100%;
           padding:10px;
           border-radius:8px;
           border:1px solid rgba(255,255,255,0.12);
           background: rgba(0,0,0,0.06);
-          color:#fff;
+          color: var(--pestanas-text);
         }
+
         .pestanas-content { margin-top:12px; }
       `}</style>
 
@@ -173,11 +261,18 @@ const Pestanas = ({
               value={activeIndex}
               onChange={handleSelectChange}
             >
-              {tabs.map((t, i) => <option key={t.label + i} value={i}>{t.label}</option>)}
+              {tabs.map((t, i) => (
+                <option key={t.label + i} value={i}>{t.label}</option>
+              ))}
             </select>
           </div>
         ) : (
-          <div className="pestanas-row" role="tablist" aria-orientation="horizontal" ref={rowRef}>
+          <div
+            className="pestanas-row"
+            role="tablist"
+            aria-orientation="horizontal"
+            ref={rowRef}
+          >
             {tabs.map((t, i) => (
               <button
                 key={t.label + i}
@@ -191,6 +286,7 @@ const Pestanas = ({
                 {t.label}
               </button>
             ))}
+
             <div
               className="pestanas-indicator"
               style={{
@@ -216,13 +312,21 @@ const Pestanas = ({
 };
 
 Pestanas.propTypes = {
-  tabs: PropTypes.arrayOf(PropTypes.shape({ label: PropTypes.string.isRequired, path: PropTypes.string })).isRequired,
+  tabs: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      path: PropTypes.string
+    })
+  ).isRequired,
   basePath: PropTypes.string,
   className: PropTypes.string,
   onTabChange: PropTypes.func,
   collapseAt: PropTypes.number,
   children: PropTypes.node,
-  topOffset: PropTypes.number
+  topOffset: PropTypes.number,
+  backgroundColor: PropTypes.string,
+  textColor: PropTypes.string,
+  activeColor: PropTypes.string
 };
 
 export default Pestanas;

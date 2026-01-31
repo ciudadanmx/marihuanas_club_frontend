@@ -78,6 +78,8 @@ const Anuncios = () => {
           basePath={basePrueba}
           onTabChange={(index) => setTabIndex(index)}
           collapseAt={640}
+          backgroundColor="linear-gradient(90deg, #000000 0%, #1a1a1a 50%, #000000 100%)"
+          textColor="#cfd2d6"
         />
 
         <div>

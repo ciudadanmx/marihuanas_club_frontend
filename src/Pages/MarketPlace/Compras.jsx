@@ -134,6 +134,8 @@ const Compras = () => {
           basePath={basePrueba}
           onTabChange={(index) => setTabIndex(index)}
           collapseAt={640}
+          backgroundColor="linear-gradient(90deg, #2b0a3d 0%, #3a0f55 50%, #2b0a3d 100%)"
+          textColor="#d9c9ff"
         />
 
         <Box

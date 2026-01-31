@@ -79,6 +79,8 @@ const RootDashboard = () => {
           basePath={basePrueba}
           onTabChange={setTabIndex}
           collapseAt={640}
+          backgroundColor="#000000"
+          textColor="#00ff66"
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>

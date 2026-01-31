@@ -80,6 +80,8 @@ const AdminDashboard = () => {
           basePath={basePrueba}
           onTabChange={setTabIndex}
           collapseAt={640}
+          backgroundColor="#000000"
+          textColor="#dbfa88ff"
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>

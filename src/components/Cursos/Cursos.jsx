@@ -289,6 +289,7 @@ const Cursos = ({ filtros, parametros }) => {
                   basePath={basePrueba}
                   onTabChange={(index) => setTabIndex(index)}
                   collapseAt={640}
+                  backgroundColor="linear-gradient(90deg, #0b2e2a 0%, #0f4c4a 50%, #0b2e2a 100%)"
                 />
         
                 

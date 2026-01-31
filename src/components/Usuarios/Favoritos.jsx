@@ -195,6 +195,9 @@ const Favoritos = () => {
             setTabIndex(index);
           }}
           collapseAt={640}
+          backgroundColor="linear-gradient(90deg, #3a0b2e 0%, #5a0f44 50%, #3a0b2e 100%)"
+          textColor="#e6d9e2"
+          activeColor="#ff4fa3"
         />
 
         <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
