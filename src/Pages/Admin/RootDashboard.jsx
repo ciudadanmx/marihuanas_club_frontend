@@ -3,14 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRoles } from '../../Contexts/RolesContext.jsx';
-import AdminClubsRouter from '../../components/Admin/AdminClubsRouter.jsx';
-import CofeprisAdmin from '../../components/Admin/CofeprisAdmin.jsx';
-import AmparosAdmin from '../../components/Admin/AmparosAdmin.jsx';
-import AgendaAdmin from '../../components/Admin/AgendaAdmin.jsx';
-import BitacoraAdmin from '../../components/Admin/BitacoraAdmin.jsx';
+import RootTools from '../../components/Admin/Root/RootTools.jsx';
+import MembresiasAdmin from '../../components/Admin/Root/MembresiasAdmin.jsx';
+import PagosAdmin from '../../components/Admin/Root/PagosAdmin.jsx';
+import KitsAdmin from '../../components/Admin/Root/KitsAdmin.jsx';
+import AfiliacionesAdmin from '../../components/Admin/Root/AfiliacionesAdmin.jsx';
 import PreCargador from '../../components/PreCargador.jsx';
 
-const AdminDashboard = () => {
+const RootDashboard = () => {
   const location = useLocation();
   const { user, isLoading } = useAuth0();
   const { isJardinero, isAdmin, userData } = useRoles();
@@ -22,15 +22,14 @@ const AdminDashboard = () => {
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
 
-  const basePrueba = '/admin';
+  const basePrueba = '/root';
 
   const tabs = useMemo(() => {
     return [
-      { label: 'Clubs', path: 'clubs' },
-      { label: 'Trámites COFEPRIS', path: 'tramites' },
-      { label: 'Amparos', path: 'amparos' },
-      { label: 'Agenda', path: 'agenda' },
-      { label: 'Bitácora', path: 'bitacora' },
+      { label: 'Membresías', path: 'membresias' },
+      { label: 'Pagos', path: 'pagos' },
+      { label: 'Kits', path: 'kits' },
+      { label: 'Afiliaciones', path: 'admin' },
     ];
   }, [jardinero]);
 
@@ -45,16 +44,16 @@ const AdminDashboard = () => {
   useEffect(() => {
     const path = (location.pathname || '').toLowerCase();
 
-    if (path.includes(`${basePrueba}/clubs`)) setTabIndex(0);
-    else if (path.includes(`${basePrueba}/tramites`)) setTabIndex(1);
-    else if (path.includes(`${basePrueba}/amparos`)) setTabIndex(2);
-    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(3);
-    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(4);
+    if (path.includes(`${basePrueba}/tools`)) setTabIndex(0);
+    else if (path.includes(`${basePrueba}/membresias`)) setTabIndex(1);
+    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(2);
+    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(3);
+    else if (path.includes(`${basePrueba}/afiliaciones`)) setTabIndex(4);
     else setTabIndex(0);
   }, [location.pathname, jardinero]);
 
   // Esperar Auth0 + Strapi
-  if (isLoading || !userData) return <PreCargador text="Cargando Panel de Administración... " />;
+  if (isLoading || !userData) return <PreCargador text="Cargando Panel Root... " />;
 
   const path = location.pathname || '';
 
@@ -83,11 +82,11 @@ const AdminDashboard = () => {
         />
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>
-          {tabs[tabIndex]?.path === 'clubs' && <AdminClubsRouter />}
-          {tabs[tabIndex]?.path === 'tramites' && <CofeprisAdmin />}
-          {tabs[tabIndex]?.path === 'amparos' && <AmparosAdmin />}
-          {tabs[tabIndex]?.path === 'agenda' && <AgendaAdmin />}
-          {tabs[tabIndex]?.path === 'bitacora' && <BitacoraAdmin />}
+          {tabs[tabIndex]?.path === 'tools' && <RootTools />}
+          {tabs[tabIndex]?.path === 'membresias' && <MembresiasAdmin />}
+          {tabs[tabIndex]?.path === 'pagos' && <PagosAdmin />}
+          {tabs[tabIndex]?.path === 'kits' && <KitsAdmin />}
+          {tabs[tabIndex]?.path === 'afiliaciones' && <AfiliacionesAdmin />}
           
         </div>
       </div>
@@ -95,4 +94,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default RootDashboard;

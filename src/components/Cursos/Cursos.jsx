@@ -484,7 +484,7 @@ const Cursos = ({ filtros, parametros }) => {
             <Grid item xs={12}>
               
                 
-                  <PreCargador>Cargando cursos...</PreCargador> 
+                  <PreCargador text="Cargando Cursos..."></PreCargador> 
                
             </Grid>
           )}

@@ -70,6 +70,7 @@ import GeneraContenidos from '../Pages/Gana/GeneraContenidos.jsx';
 //Usuario
 import UsuarioPage from '../Pages/Usuarios/UsuarioPage';
 import AdminDashboard from '../Pages/Admin/AdminDashboard.jsx';
+import RootDashboard from '../Pages/Admin/RootDashboard.jsx';
 //Cursos
 import CursoDetalle from '../Pages/Cursos/Curso.jsx';
 import Cursos from '../Pages/Cursos/Cursos';
@@ -209,6 +210,7 @@ const Rutas = () => (
     <Route path="/membresias/adquirir/*" element={<MembershipCheckout />} />
     <Route path="/mi-membresia" element={<MiMembresia />} />
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
+    <Route path="/root/*" element={<RootDashboard />} />
     <Route path="/legal" element={<LegalPage />} />
     <Route path="/legal/rutalegal" element={<LegalPage />} />
     <Route path="/legal/misdocumentos" element={<LegalPage />} />
