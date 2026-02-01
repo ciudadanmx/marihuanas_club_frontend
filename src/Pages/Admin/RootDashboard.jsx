@@ -8,6 +8,9 @@ import MembresiasAdmin from '../../components/Admin/Root/MembresiasAdmin.jsx';
 import PagosAdmin from '../../components/Admin/Root/PagosAdmin.jsx';
 import KitsAdmin from '../../components/Admin/Root/KitsAdmin.jsx';
 import AfiliacionesAdmin from '../../components/Admin/Root/AfiliacionesAdmin.jsx';
+import ConfiguracionesAdmin from '../../components/Admin/Root/AfiliacionesAdmin.jsx';
+import PostulacionesAdmin from '../../components/Admin/Root/AfiliacionesAdmin.jsx';
+import MarketAdmin from '../../components/Admin/Root/AfiliacionesAdmin.jsx';
 import PreCargador from '../../components/PreCargador.jsx';
 
 const RootDashboard = () => {
@@ -27,9 +30,13 @@ const RootDashboard = () => {
   const tabs = useMemo(() => {
     return [
       { label: 'Membresías', path: 'membresias' },
+      { label: 'Market', path: 'market' },
+      { label: 'Afiliaciones', path: 'afiliaciones' },
+      { label: 'Postulaciones', path: 'postulaciones' },
       { label: 'Pagos', path: 'pagos' },
       { label: 'Kits', path: 'kits' },
-      { label: 'Afiliaciones', path: 'admin' },
+      { label: 'Configuraciones', path: 'configuraciones' },
+      
     ];
   }, [jardinero]);
 
@@ -46,9 +53,12 @@ const RootDashboard = () => {
 
     if (path.includes(`${basePrueba}/tools`)) setTabIndex(0);
     else if (path.includes(`${basePrueba}/membresias`)) setTabIndex(1);
-    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(2);
-    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(3);
-    else if (path.includes(`${basePrueba}/afiliaciones`)) setTabIndex(4);
+    else if (path.includes(`${basePrueba}/market`)) setTabIndex(2);
+    else if (path.includes(`${basePrueba}/afiliaciones`)) setTabIndex(3);
+    else if (path.includes(`${basePrueba}/postulaciones`)) setTabIndex(4);
+    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(5);
+    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(6);
+    else if (path.includes(`${basePrueba}/configuraciones`)) setTabIndex(7);
     else setTabIndex(0);
   }, [location.pathname, jardinero]);
 
@@ -86,9 +96,11 @@ const RootDashboard = () => {
         <div style={{ width: '100%', overflowX: 'hidden' }}>
           {tabs[tabIndex]?.path === 'tools' && <RootTools />}
           {tabs[tabIndex]?.path === 'membresias' && <MembresiasAdmin />}
+          {tabs[tabIndex]?.path === 'market' && <MarketAdmin />}
+          {tabs[tabIndex]?.path === 'afiliaciones' && <AfiliacionesAdmin />}
+          {tabs[tabIndex]?.path === 'postulaciones' && <PostulacionesAdmin />}
           {tabs[tabIndex]?.path === 'pagos' && <PagosAdmin />}
           {tabs[tabIndex]?.path === 'kits' && <KitsAdmin />}
-          {tabs[tabIndex]?.path === 'afiliaciones' && <AfiliacionesAdmin />}
           
         </div>
       </div>
