@@ -17,7 +17,6 @@ const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || "";
 export default function IngresarCitaCofeprisModal({
   open,
   onClose,
-  tramiteId,
   rfc,
   onSaved,
 }) {
@@ -36,34 +35,54 @@ export default function IngresarCitaCofeprisModal({
     setError(null);
 
     try {
-      // Combinar fecha + hora → ISO
       const fechaCitaISO = new Date(`${fecha}T${hora}:00`).toISOString();
 
-      const res = await fetch(
+      const findRes = await fetch(
+        `${STRAPI_URL}/api/cofepristramites?filters[rfc][$eq]=${encodeURIComponent(
+          rfc
+        )}`
+      );
+
+      if (!findRes.ok) {
+        throw new Error("No se pudo buscar el trámite");
+      }
+
+      const findJson = await findRes.json();
+      const tramite = findJson?.data?.[0];
+
+      if (!tramite) {
+        throw new Error("No existe trámite con ese RFC");
+      }
+
+      const tramiteId = tramite.id;
+
+      const updateRes = await fetch(
         `${STRAPI_URL}/api/cofepristramites/${tramiteId}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             data: {
               fecha_cita: fechaCitaISO,
+              status: "cita cofepris",
             },
           }),
         }
       );
 
-      if (!res.ok) {
-        throw new Error("Error guardando fecha de cita");
+      if (!updateRes.ok) {
+        const txt = await updateRes.text();
+        console.error("STRAPI UPDATE ERROR:", txt);
+        throw new Error("Error guardando fecha");
       }
 
       if (onSaved) onSaved(fechaCitaISO);
       onClose();
     } catch (err) {
       console.error(err);
-      setError("No se pudo guardar la fecha de cita");
+      setError(err.message || "No se pudo guardar la fecha de cita");
     } finally {
       setLoading(false);
     }
@@ -75,8 +94,8 @@ export default function IngresarCitaCofeprisModal({
 
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
-          <Typography variant="body2" color="text.secondary">
-            RFC: <strong>{rfc || "—"}</strong>
+          <Typography variant="body2">
+            RFC: <strong>{rfc}</strong>
           </Typography>
 
           <TextField
@@ -109,11 +128,7 @@ export default function IngresarCitaCofeprisModal({
         <Button onClick={onClose} disabled={loading}>
           Cancelar
         </Button>
-        <Button
-          onClick={handleSave}
-          variant="contained"
-          disabled={loading}
-        >
+        <Button onClick={handleSave} variant="contained" disabled={loading}>
           {loading ? <CircularProgress size={20} /> : "Guardar"}
         </Button>
       </DialogActions>
