@@ -12,6 +12,7 @@ export default function Home() {
   const [leaves, setLeaves] = useState([]);
   const contentRef = useRef(null);
   const gifSideRef = useRef(null);
+  const gifRef = useRef(null);
   const [isTextFullWidth, setIsTextFullWidth] = useState(false);
 
   useEffect(() => {
@@ -56,11 +57,12 @@ export default function Home() {
 
     let gifBottom = 0;
 
-    const calcGifBottom = () => {
-      const rect = gifSideRef.current.getBoundingClientRect();
-      // gifBottom en coordenadas de documento
-      gifBottom = rect.bottom + window.scrollY;
-    };
+      const calcGifBottom = () => {
+    requestAnimationFrame(() => {
+      if (!gifRef.current) return;
+      gifRef.current.getBoundingClientRect();
+    });
+  };
 
     const onScroll = () => {
       // si ya pasamos la parte donde terminan las imágenes, activamos full width para texto

@@ -1,155 +1,122 @@
-// ==================== IMPORTS ====================
+// src/index.js
+import React, { useEffect, useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import PreLoader from './components/PreLoader.jsx';
+import { useNavigate } from 'react-router-dom'
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import { AuthProvider } from './Contexts/AuthContext';
+import { RolesProvider } from './Contexts/RolesContext';
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { BrowserRouter as Router, useLocation } from 'react-router-dom';
+import { CartProvider }  from './Contexts/CartContext';
+import NavBar from './components/NavBar/NavBar.jsx';
+import Rutas from './Routes/index.jsx';
+import Asistente from './components/Asistente/Asistente';
+import { SnackbarProvider } from 'notistack';
+import { NotificationsProvider } from './Contexts/NotificationsContext';
+import Footer from './components/Footer/Footer.jsx';
+import './styles/index.css';
 
-// Hooks básicos de React
-import { useEffect, useState } from 'react';
+import { findUserInStrapi } from './utils/strapiUserService.jsx';
+// IMPORTA ScrollToTop
+import ScrollToTop from './components/ScrollToTop.jsx';
+import AuthGate from './components/AuthGate.jsx';
+import ShareButton from './components/ShareButton.jsx';
 
-// Hook de Auth0 para autenticación
-import { useAuth0 } from '@auth0/auth0-react';
+const domain    = process.env.REACT_APP_AUTH0_DOMAIN;
+const clientId  = process.env.REACT_APP_AUTH0_CLIENT_ID;
+const audience  = process.env.REACT_APP_AUTH0_AUDIENCE;
 
-// Hooks de React Router
-import { useLocation, useNavigate } from 'react-router-dom';
-
-// Loader visual mientras se valida Auth0 + Strapi
-import PreLoader from './components/PreLoader';
-
-// Servicio que consulta usuarios en Strapi por email
-import { findUserInStrapi } from './utils/strapiUserService';
-
-// ==================== COMPONENTE ====================
-
-/**
- * AuthGate
- * --------------------------------------------------
- * Este componente actúa como una "puerta" de acceso.
- *
- * Flujo real:
- * 1. Espera a que Auth0 termine
- * 2. Si el usuario está logueado → consulta Strapi
- * 3. Le da TIEMPO a Strapi (reintentos)
- * 4. SOLO redirige a /registrar si está 100% seguro
- * 5. Evita loops infinitos
- */
-export default function AuthGate({ children }) {
-
-  // Datos que vienen de Auth0
-  const { isAuthenticated, isLoading, user } = useAuth0();
-
-  // Ruta actual
+// Componente wrapper que decide si mostrar NavBar u ocultarla según la ruta
+const AppWrapper = () => {
+  const { isLoading } = useAuth0();
   const location = useLocation();
 
-  // Función para redirecciones
+  if (isLoading) {
+    return <PreLoader />;
+  }
+
+  const isWikiRoute = location.pathname.startsWith('/wiki');
+
+  //normalizador de rutas para seleccionar sección
+  const sectionMap = {
+    productos: 'market',
+    contenido: 'contenidos',
+    club: 'clubs',
+    carrito: 'market',
+    curso: 'cursos',
+  };
+  const pathSection = location.pathname.split('/').filter(Boolean)[0];
+  const siteSection = sectionMap[pathSection] ?? pathSection ?? '';
+
+  return (
+    <>
+      <ScrollToTop behavior="auto" targetId="marihuanasclub-app" />
+      {!isWikiRoute && <NavBar siteSection={siteSection} />}
+      <Rutas />
+      <AuthGate>
+        <Asistente />
+        <ShareButton />
+      </AuthGate>
+      
+      <Footer />
+    </>
+  );
+};
+
+
+//Auth0
+const Auth0ProviderWithNavigate = ({ children }) => {
   const navigate = useNavigate();
 
-  /**
-   * Estado que controla si seguimos validando.
-   * Mientras sea true, mostramos el PreLoader.
-   */
-  const [checking, setChecking] = useState(true);
+  const onRedirectCallback = (appState) => {
+    navigate(appState?.returnTo || '/', { replace: true });
+  };
 
-  useEffect(() => {
+  return (
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      authorizationParams={{
+        audience,
+        scope: 'openid profile email offline_access',
+        redirect_uri: window.location.origin,
+      }}
+      cacheLocation="localstorage"
+      useRefreshTokens
+      onRedirectCallback={onRedirectCallback}
+    >
+      {children}
+    </Auth0Provider>
+  );
+};
 
-    // ==================== CONFIG STRAPI ====================
 
-    // Número máximo de intentos a Strapi
-    const MAX_RETRIES = 3;
-
-    // Tiempo entre intentos (ms)
-    const RETRY_DELAY = 700;
-
-    /**
-     * Helper para esperar X milisegundos
-     */
-    const sleep = (ms) =>
-      new Promise((resolve) => setTimeout(resolve, ms));
-
-    /**
-     * Función principal de validación
-     */
-    const check = async () => {
-
-      // Auth0 todavía está cargando → no hacemos nada
-      if (isLoading) return;
-
-      // No autenticado o sin email → no bloqueamos
-      if (!isAuthenticated || !user?.email) {
-        setChecking(false);
-        return;
-      }
-
-      // Si ya estamos en /registrar → no redirigir otra vez
-      if (location.pathname.startsWith('/registrar')) {
-        setChecking(false);
-        return;
-      }
-
-      let attempt = 0;
-      let strapiUser = null;
-
-      /**
-       * Reintentos controlados a Strapi
-       * (porque a veces despierta lento el cabrón)
-       */
-      while (attempt < MAX_RETRIES && !strapiUser) {
-        try {
-          const data = await findUserInStrapi(user.email);
-
-          // Tomamos el primer resultado si existe
-          strapiUser = data?.[0] || null;
-
-          // Si ya respondió bien, salimos del loop
-          if (strapiUser) break;
-
-        } catch (error) {
-          console.warn(
-            `Intento ${attempt + 1} a Strapi fallido`,
-            error
-          );
-        }
-
-        attempt++;
-
-        // Esperamos antes del siguiente intento
-        if (attempt < MAX_RETRIES) {
-          await sleep(RETRY_DELAY);
-        }
-      }
-
-      /**
-       * AQUÍ YA SE HIZO TODO LO POSIBLE
-       */
-
-      // Si después de reintentar:
-      // - el usuario NO existe en Strapi
-      // - o existe pero NO terminó registro
-      if (!strapiUser || strapiUser.registrado !== true) {
-        navigate('/registrar', { replace: true });
-        return;
-      }
-
-      // Todo OK → acceso concedido
-      setChecking(false);
-    };
-
-    // Cada vez que se dispara el efecto,
-    // activamos el loader
-    setChecking(true);
-
-    // Ejecutamos validación
-    check();
-
-  }, [
-    location.pathname,
-    isAuthenticated,
-    isLoading,
-    user,
-    navigate,
-  ]);
-
-  // ==================== RENDER ====================
-
-  // Mientras validamos Auth0 + Strapi (con paciencia)
-  if (checking) return <PreLoader />;
-
-  // Si todo pasó bien, renderizamos la app
-  return children;
-}
+//RENDER
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <Router>
+    <Auth0ProviderWithNavigate>
+      <AuthProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+          <RolesProvider>
+            <NotificationsProvider>
+              <CartProvider>
+                
+                  <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
+                   
+                      <AppWrapper />
+                   
+                  </SnackbarProvider>
+                
+              </CartProvider>
+            </NotificationsProvider>
+          </RolesProvider>
+        </LocalizationProvider>
+      </AuthProvider>
+    </Auth0ProviderWithNavigate>
+    </Router>
+  </React.StrictMode>
+);

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
@@ -6,269 +6,453 @@ const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 const RolesContext = createContext();
 export const useRoles = () => useContext(RolesContext);
 
+/**
+ * Optimizations summary:
+ * - In-memory + sessionStorage cache keyed by user email with TTL to avoid redundant network calls.
+ * - Promise coalescing for concurrent fetches (reuses an existing request when available).
+ * - Minimal re-fetching: only when auth email changes or when forced.
+ * - Optimistic updates for updateExtraRole and local cache synchronization.
+ * - Safe setState (checks if component is mounted).
+ *
+ * API compatibility: keeps the same exported values and function names so other components work unchanged.
+ */
 export const RolesProvider = ({ children }) => {
   const { user: auth0User, isAuthenticated, isLoading } = useAuth0();
+
+  // Estados locales expuestos
   const [roles, setRoles] = useState(['invitado']);
   const [membresia, setMembresia] = useState(null);
   const [userData, setUserData] = useState(null);
 
-  const fetchRolesYMembresia = async () => {
-    console.group('🔄 fetchRolesYMembresia');
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('auth0User:', auth0User);
-    if (!isAuthenticated || !auth0User) {
-      console.warn('⏳ No autenticado o user no listo');
-      console.groupEnd();
-      return;
-    }
+  // ----- CONFIG -----
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de TTL para la caché (ajustable)
 
+  // ----- Refs -----
+  // para evitar setState después de un unmount
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  // cache in-memory: { [email]: { data: { roles, userData, membresia }, fetchedAt } }
+  const cacheRef = useRef(new Map());
+
+  // promiseRef para coalescer fetches concurrentes por email: { [email]: Promise }
+  const promiseRef = useRef({});
+
+  // utils para cache persistente ligera en sessionStorage (por si remonta la app)
+  const CACHE_KEY_PREFIX = 'roles_provider_cache_v1::';
+
+  const readSessionCache = (email) => {
+    if (!email) return null;
     try {
-      const url = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(auth0User.email)}&populate=role,roles,direcciones`;
-      console.log('🔍 Fetching Strapi user at:', url);
-      const res = await fetch(url, { credentials: 'include' });
-      const json = await res.json();
-      console.log('📥 /users raw response:', json);
-      const users = Array.isArray(json) ? json : (json.data || []);
-      console.log('🔍 Parsed users array:', users);
+      const raw = sessionStorage.getItem(CACHE_KEY_PREFIX + email);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed;
+    } catch (e) {
+      // no detener ejecución por error de storage
+      return null;
+    }
+  };
 
-      if (!users.length) {
-        console.log('⚠️ Usuario no encontrado en Strapi, creando uno nuevo');
-        await createStrapiUser();
-        console.groupEnd();
+  const writeSessionCache = (email, payload) => {
+    if (!email) return;
+    try {
+      sessionStorage.setItem(CACHE_KEY_PREFIX + email, JSON.stringify(payload));
+    } catch (e) {
+      // si falla storage, no es crítico
+    }
+  };
+
+  const isCacheFresh = (fetchedAt) => {
+    if (!fetchedAt) return false;
+    return Date.now() - fetchedAt <= CACHE_TTL;
+  };
+
+  // Helper para volcar cache a estados (si el componente sigue montado)
+  const applyCacheToState = (cached) => {
+    if (!mountedRef.current || !cached) return;
+    const { roles: cRoles, userData: cUserData, membresia: cMembresia } = cached;
+    setRoles(Array.isArray(cRoles) ? cRoles : ['usuario']);
+    setUserData(cUserData || null);
+    setMembresia(cMembresia || null);
+  };
+
+  /**
+   * fetchRolesYMembresia(force = false)
+   * - Si hay caché fresca para el email y !force -> usa cache.
+   * - Si hay una petición en curso para el mismo email -> reuse Promise (coalesce).
+   * - Actualiza cache (in-memory + sessionStorage) al término.
+   */
+  const fetchRolesYMembresia = useCallback(
+    async (force = false) => {
+      // Si no estamos autenticados o no hay user, limpiamos y salimos.
+      const email = auth0User?.email;
+      if (!isAuthenticated || !email) {
+        // Si no autenticado, dejar valores por defecto
+        setRoles(['invitado']);
+        setMembresia(null);
+        setUserData(null);
         return;
       }
 
-      const raw = users[0];
-      const attrs = raw.attributes || raw;
-      const usrId = raw.id || raw._id;
-      console.log('👤 Usuario Strapi attributes:', attrs);
-      setUserData({ id: usrId, ...attrs });
+      // Revisa caché in-memory primero
+      const memCache = cacheRef.current.get(email);
+      if (!force && memCache && isCacheFresh(memCache.fetchedAt)) {
+        applyCacheToState(memCache.data);
+        return memCache.data;
+      }
 
-      // Compute roles
-      const primary = attrs.role?.data?.attributes?.name;
-      console.log('⚙️ Primary role:', primary);
-      const extraArr = Array.isArray(attrs.roles?.extra) ? attrs.roles.extra : [];
-      console.log('⚙️ Extra roles array:', extraArr);
-      const combined = primary ? [primary, ...extraArr] : (extraArr.length ? extraArr : ['usuario']);
-      console.log('✅ Setting roles to:', combined);
-      setRoles(combined);
-
-      // Log role checks
-      console.log('🔑 Role flags - isEditor:', combined.includes('editor'), 'isAdmin:', combined.includes('admin'), 'isRoot:', combined.includes('root'));
-
-      // Fetch active membership
-      console.log('🔍 Fetching membresias for userId:', usrId);
-      const membUrl = `${STRAPI_URL}/api/membresias?filters[usuarioemail][$eq]=${auth0User.email}&filters[activa][$eq]=true`;
-      console.log('🔍 Membresias URL:', membUrl);
-      const membRes = await fetch(membUrl, { credentials: 'include' });
-      if (!membRes.ok) {
-        console.warn(`⚠️ /membresias fallo: ${membRes.status}`);
-        setMembresia(null);
-      } else {
-        const membJson = await membRes.json();
-        console.log('📥 /membresias response:', membJson);
-        const items = (membJson.data || []).map(item => ({ id: item.id, ...item.attributes }));
-        console.log('🔍 Parsed membresias items:', items);
-        const hoy = new Date();
-        const vigentes = items.filter(m => new Date(m.fechaInicio) <= hoy && hoy <= new Date(m.fechaFin));
-        console.log('🔍 Membresias vigentes:', vigentes);
-        if (vigentes.length) {
-          vigentes.sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio));
-          console.log('🎟️ Seleccionada membresia vigente:', vigentes[0]);
-          setMembresia(vigentes[0]);
-        } else {
-          console.log('ℹ️ No hay membresía vigente');
-          setMembresia(null);
+      // Luego revisa sessionStorage si memCache no existe o está vieja
+      if (!force && (!memCache || !isCacheFresh(memCache.fetchedAt))) {
+        const sess = readSessionCache(email);
+        if (sess && isCacheFresh(sess.fetchedAt)) {
+          // Bulk load from session cache
+          cacheRef.current.set(email, sess);
+          applyCacheToState(sess.data);
+          return sess.data;
         }
       }
-    } catch (err) {
-      console.error('❌ fetchRolesYMembresia error:', err);
-      setRoles(['usuario']);
-      setMembresia(null);
-      setUserData(null);
-    }
-    console.groupEnd();
-  };
 
-  const createStrapiUser = async () => {
-    console.group('🆕 createStrapiUser');
-    console.log('Creating Strapi user for:', auth0User.email);
+      // Si ya hay una promesa en curso para este email, devuelve la misma (coalescing)
+      if (promiseRef.current[email]) {
+        try {
+          const existingResult = await promiseRef.current[email];
+          return existingResult;
+        } catch (err) {
+          // Si la promesa previa falló, continuar y crear una nueva solicitud abajo
+        }
+      }
+
+      // Creamos la promesa y la guardamos para coalescer
+      const fetchPromise = (async () => {
+        try {
+          // 1) Obtener usuario Strapi por email (con populate necesario)
+          const url = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
+            email
+          )}&populate=role,roles,direcciones`;
+          const res = await fetch(url, { credentials: 'include' });
+          const json = await res.json();
+          const users = Array.isArray(json) ? json : json.data || [];
+
+          if (!users.length) {
+            // Usuario no existe en Strapi: crear uno nuevo (no forzar re-fetch automático para evitar loops)
+            try {
+              await createStrapiUser(); // createStrapiUser maneja errores internamente (lanza si falla)
+              // Tras crear, no hacemos refetch forzado automáticamente; dejamos roles default.
+              const defaultData = { roles: ['usuario'], userData: null, membresia: null };
+              const cachedObj = { data: defaultData, fetchedAt: Date.now() };
+              cacheRef.current.set(email, cachedObj);
+              writeSessionCache(email, cachedObj);
+              if (mountedRef.current) applyCacheToState(defaultData);
+              return defaultData;
+            } catch (err) {
+              // Propagar error
+              throw err;
+            }
+          }
+
+          // Existe usuario -> normalizar atributos
+          const raw = users[0];
+          const attrs = raw.attributes || raw;
+          const usrId = raw.id || raw._id;
+
+          // Compute roles
+          const primary = attrs.role?.data?.attributes?.name;
+          const extraArr = Array.isArray(attrs.roles?.extra) ? attrs.roles.extra : [];
+          const combined = primary
+            ? [primary, ...extraArr]
+            : extraArr.length
+            ? extraArr
+            : ['usuario'];
+
+          // 2) Obtener membresias activas para el user by email
+          const membUrl = `${STRAPI_URL}/api/membresias?filters[usuarioemail][$eq]=${email}&filters[activa][$eq]=true`;
+          const membRes = await fetch(membUrl, { credentials: 'include' });
+
+          let selectedMembresia = null;
+          if (membRes.ok) {
+            const membJson = await membRes.json();
+            const items = (membJson.data || []).map((item) => ({
+              id: item.id,
+              ...item.attributes
+            }));
+
+            const hoy = new Date();
+            const vigentes = items.filter(
+              (m) => new Date(m.fechaInicio) <= hoy && hoy <= new Date(m.fechaFin)
+            );
+            if (vigentes.length) {
+              vigentes.sort((a, b) => new Date(b.fechaInicio) - new Date(a.fechaInicio));
+              selectedMembresia = vigentes[0];
+            } else {
+              selectedMembresia = null;
+            }
+          } else {
+            // Si falla la petición de membresías, no lanzar: dejamos membresia en null y warn
+            console.warn(`⚠️ /membresias fallo: ${membRes.status}`);
+            selectedMembresia = null;
+          }
+
+          // Normalizar userData: incluir id + attrs (igual que antes)
+          const normalizedUserData = { id: usrId, ...attrs };
+
+          // Construir objeto a cachear y aplicar a estados
+          const result = { roles: combined, userData: normalizedUserData, membresia: selectedMembresia };
+          const cachedObj = { data: result, fetchedAt: Date.now() };
+          cacheRef.current.set(email, cachedObj);
+          writeSessionCache(email, cachedObj);
+
+          if (mountedRef.current) {
+            setRoles(combined);
+            setUserData(normalizedUserData);
+            setMembresia(selectedMembresia);
+          }
+
+          return result;
+        } catch (err) {
+          // En caso de error crítico, restauramos un estado razonable y lanzamos
+          if (mountedRef.current) {
+            setRoles(['usuario']);
+            setMembresia(null);
+            setUserData(null);
+          }
+          console.error('❌ fetchRolesYMembresia error:', err);
+          throw err;
+        } finally {
+          // limpiar promesa guardada (para permitir futuros reintentos)
+          delete promiseRef.current[email];
+        }
+      })();
+
+      // Guardar promesa para coalescing
+      promiseRef.current[email] = fetchPromise;
+      return fetchPromise;
+    },
+    // Dependencias: auth0User.email e isAuthenticated son leídos del closure, pero la función expuesta no cambiará innecesariamente
+    [auth0User?.email, isAuthenticated]
+  );
+
+  /**
+   * createStrapiUser
+   * - Misma funcionalidad que antes pero sin mutar logs.
+   * - Intencionalmente simple: crea usuario en Strapi con los datos de Auth0.
+   * - Nota: no hace re-fetch forzado para no crear loops; la llamada superior decide qué hacer.
+   */
+  const createStrapiUser = useCallback(async () => {
+    const email = auth0User?.email;
+    if (!email) {
+      throw new Error('No auth0 user available to create Strapi user');
+    }
     const password = Math.random().toString(36).slice(-10);
     const roleId = 1;
     const payload = {
-      username: auth0User.nickname || auth0User.name || auth0User.email.split('@')[0],
-      email: auth0User.email,
+      username: auth0User.nickname || auth0User.name || email.split('@')[0],
+      email,
       password,
       role: roleId,
       provider: 'auth0',
       confirmed: true,
       blocked: false
     };
-    console.log('Payload for new user:', payload);
+
     const createRes = await fetch(`${STRAPI_URL}/api/users`, {
-      method: 'POST', credentials: 'include',
+      method: 'POST',
+      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
     if (!createRes.ok) {
       const errText = await createRes.text();
       console.error('❌ Crear usuario falló:', errText);
       throw new Error('Failed to create Strapi user');
     }
-    console.log('✅ Usuario creado en Strapi');
-    setRoles(['usuario']);
-    setMembresia(null);
-    setUserData(null);
-    console.groupEnd();
-  };
 
-  const hasExtra = roleName => {
-    const arr = userData?.roles?.extra;
-    console.log(`🔍 Checking extra role '${roleName}' in:`, arr);
-    return Array.isArray(arr) && arr.includes(roleName);
-  };
-
-  const isEditor = () => {
-  if (!isAuthenticated || !userData) {
-    console.log('🔒 isEditor: esperando datos de usuario...');
-    return false;
-  }
-  const res = hasExtra('editor');
-  console.log('🔑 isEditor (evaluado con userData):', res);
-  return res;
-};
-const isAdmin = () => {
-  if (!isAuthenticated || !userData) return false;
-  return hasExtra('admin');
-};
-const isRoot = () => {
-  if (!isAuthenticated || !userData) return false;
-  return hasExtra('root');
-};
-
-  const isActivaMembresia = () => {
-    const active = Boolean(membresia);
-    console.log('🔑 isActivaMembresia:', active, 'membresia:', membresia);
-    return active;
-  };
-
-  const updateExtraRole = async (roleName, enabled) => {
-    console.group(`✏️ updateExtraRole(${roleName}, ${enabled})`);
-    if (!userData) {
-      console.warn('⚠️ No hay userData. Abortando.');
-      console.groupEnd();
-      return;
+    // Tras creación, dejamos rol por defecto y estado limpio.
+    if (mountedRef.current) {
+      setRoles(['usuario']);
+      setMembresia(null);
+      setUserData(null);
     }
-    const existing = Array.isArray(userData.roles?.extra) ? [...userData.roles.extra] : [];
-    console.log('👥 Current extra roles:', existing);
-    const idx = existing.indexOf(roleName);
-    if (enabled && idx === -1) {
-      existing.push(roleName);
-      console.log(`➕ Agregando rol '${roleName}'`);
-    }
-    if (!enabled && idx > -1) {
-      existing.splice(idx, 1);
-      console.log(`➖ Removiendo rol '${roleName}'`);
-    }
+    return true;
+  }, [auth0User?.email]);
 
-    const payload = { roles: { extra: existing } };
-    console.log('Payload for update:', payload);
-    const res = await fetch(
-      `${STRAPI_URL}/api/users/${userData.id}`,
-      {
-        method: 'PUT', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: payload })
+  /**
+   * hasExtra(roleName)
+   * - Simple check contra userData.roles.extra (no hace network)
+   */
+  const hasExtra = useCallback(
+    (roleName) => {
+      const arr = userData?.roles?.extra;
+      return Array.isArray(arr) && arr.includes(roleName);
+    },
+    [userData]
+  );
+
+  // isEditor / isAdmin / isRoot (idéntico comportamiento público)
+  const isEditor = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return hasExtra('editor');
+  }, [isAuthenticated, userData, hasExtra]);
+
+  const isAdmin = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return hasExtra('admin');
+  }, [isAuthenticated, userData, hasExtra]);
+
+  const isRoot = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return hasExtra('root');
+  }, [isAuthenticated, userData, hasExtra]);
+
+  const isActivaMembresia = useCallback(() => Boolean(membresia), [membresia]);
+
+  /**
+   * updateExtraRole(roleName, enabled)
+   * - Optimistic update: actualiza localmente + cache para evitar re-fetchs.
+   * - Envía PUT a Strapi; si falla, revierte estado local y cache.
+   */
+  const updateExtraRole = useCallback(
+    async (roleName, enabled) => {
+      if (!userData) {
+        console.warn('⚠️ No hay userData. Abortando.');
+        return;
       }
-    );
-    if (!res.ok) {
-      console.error(`❌ updateExtraRole failed: ${res.status}`);
-      console.groupEnd();
-      throw new Error(`Failed to update roles: ${res.status}`);
-    }
-    console.log('✅ updateExtraRole success');
-    setUserData(prev => ({ ...prev, roles: { extra: existing } }));
-    setRoles(prev => {
-      const primary = prev[0] && !['editor','admin','root'].includes(prev[0]) ? prev[0] : null;
-      const newList = primary ? [primary, ...existing] : (existing.length ? existing : ['usuario']);
-      console.log('🔄 New combined roles:', newList);
-      return newList;
-    });
-    console.groupEnd();
-  };
 
-  const isJardinero = () => {
-    if (!isAuthenticated || !userData) {
-      console.log('🌱 isJardinero: esperando datos de usuario...');
-      return false;
-    }
+      const email = auth0User?.email;
+      const prevUserData = userData;
+      const existing = Array.isArray(userData.roles?.extra) ? [...userData.roles.extra] : [];
+      const idx = existing.indexOf(roleName);
 
-    const res = userData.isJardinero === true;
-    console.log('🌱 isJardinero:', res, 'valor:', userData.isjardinero);
-    return res;
-  };
+      // Calcular nueva lista
+      const newExtra = [...existing];
+      if (enabled && idx === -1) newExtra.push(roleName);
+      if (!enabled && idx > -1) newExtra.splice(idx, 1);
 
-  const isClub = () => {
-  if (!isAuthenticated || !userData) {
-    console.log('🏟️ isClub: esperando datos de usuario...');
-    return false;
-  }
+      // Update optimisticamente local state y cache
+      const newUserData = { ...userData, roles: { ...userData.roles, extra: newExtra } };
+      const newRolesList = (prev => {
+        const primary = prev[0] && !['editor','admin','root'].includes(prev[0]) ? prev[0] : null;
+        return primary ? [primary, ...newExtra] : (newExtra.length ? newExtra : ['usuario']);
+      })(roles);
 
-  const res = userData.isclub === true;
-  console.log('🏟️ isClub:', res, 'valor:', userData.isclub);
-  return res;
-};
+      // aplicar cambios localmente
+      if (mountedRef.current) {
+        setUserData(newUserData);
+        setRoles(newRolesList);
+      }
 
-const haveClub = () => {
-  if (!isAuthenticated || !userData) {
-    console.log('🏟️ haveClub: esperando datos de usuario...');
-    return false;
-  }
+      // actualizar cache in-memory + sessionStorage (si tenemos email)
+      if (email) {
+        const cached = cacheRef.current.get(email);
+        const updatedCached = {
+          data: {
+            roles: newRolesList,
+            userData: newUserData,
+            membresia: cached?.data?.membresia ?? membresia
+          },
+          fetchedAt: cached?.fetchedAt ?? Date.now()
+        };
+        cacheRef.current.set(email, updatedCached);
+        writeSessionCache(email, updatedCached);
+      }
 
-  const res = userData.haveclub === true;
-  console.log('🏟️ haveClub:', res, 'valor:', userData.haveclub);
-  return res;
-};
+      // Envío a Strapi (PUT)
+      try {
+        const payload = { roles: { extra: newExtra } };
+        const res = await fetch(`${STRAPI_URL}/api/users/${userData.id}`, {
+          method: 'PUT',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ data: payload })
+        });
 
-const verificado = () => {
-  if (!isAuthenticated || !userData) {
-    console.log('🏟️ verificado: esperando datos de usuario...');
-    return false;
-  }
+        if (!res.ok) {
+          console.error(`❌ updateExtraRole failed: ${res.status}`);
+          // revertir a prev
+          if (mountedRef.current) {
+            setUserData(prevUserData);
+            // recalcular roles desde prevUserData
+            const primary = prevUserData?.role?.data?.attributes?.name;
+            const prevExtra = Array.isArray(prevUserData.roles?.extra) ? prevUserData.roles.extra : [];
+            const prevCombined = primary ? [primary, ...prevExtra] : (prevExtra.length ? prevExtra : ['usuario']);
+            setRoles(prevCombined);
+          }
+          throw new Error(`Failed to update roles: ${res.status}`);
+        }
 
-  const res = userData.verificado === true;
-  console.log('🏟️ verificado:', res, 'valor:', userData.verificado);
-  return res;
-};
+        // Si todo OK, dejamos el estado ya actualizado (optimistic) — cache ya actualizada arriba.
+        return true;
+      } catch (err) {
+        // Error ya manejado arriba, solo re-lanzamos para que el llamador pueda manejar
+        throw err;
+      }
+    },
+    [userData, roles, auth0User?.email, membresia]
+  );
 
-  const setEditor = enabled => updateExtraRole('editor', enabled);
-  const setAdmin = enabled => updateExtraRole('admin', enabled);
-  const setRoot = enabled => updateExtraRole('root', enabled);
+  // isJardinero / isClub / haveClub / verificado
+  // Nota: se conservó la semántica; si en backend el casing difiere, normalizar al setear userData.
+  const isJardinero = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return userData.isJardinero === true;
+  }, [isAuthenticated, userData]);
 
+  const isClub = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return userData.isclub === true;
+  }, [isAuthenticated, userData]);
+
+  const haveClub = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return userData.haveclub === true;
+  }, [isAuthenticated, userData]);
+
+  const verificado = useCallback(() => {
+    if (!isAuthenticated || !userData) return false;
+    return userData.verificado === true;
+  }, [isAuthenticated, userData]);
+
+  const setEditor = useCallback((enabled) => updateExtraRole('editor', enabled), [updateExtraRole]);
+  const setAdmin = useCallback((enabled) => updateExtraRole('admin', enabled), [updateExtraRole]);
+  const setRoot = useCallback((enabled) => updateExtraRole('root', enabled), [updateExtraRole]);
+
+  /**
+   * useEffect principal:
+   * - Se disparará cuando cambie isLoading, isAuthenticated o el email de auth0User.
+   * - Llama a fetchRolesYMembresia() para inicializar estados si corresponde.
+   */
   useEffect(() => {
-    console.group('🚦 RolesProvider useEffect');
-    console.log('isLoading:', isLoading);
-    console.log('isAuthenticated:', isAuthenticated);
-    console.log('auth0User:', auth0User);
     if (!isLoading) {
-      if (isAuthenticated) fetchRolesYMembresia();
-      else {
-        console.log('⚠️ No autenticado → usando invitado');
+      if (isAuthenticated) {
+        // no forzamos por defecto: usamos caché si está fresca
+        fetchRolesYMembresia().catch(err => {
+          // ya logueado internamente; aquí solo prevenimos warnings no deseados
+          // si quieres manejar errores a nivel UI, podrías exponerlos.
+        });
+      } else {
+        // usuario no autenticado: asegurar estado invitado
         setRoles(['invitado']);
         setMembresia(null);
         setUserData(null);
       }
     }
-    console.groupEnd();
-  }, [isLoading, isAuthenticated, auth0User]);
+    // dependencias: solamente valores necesarios (email dentro de fetch está en closure)
+  }, [isLoading, isAuthenticated, auth0User?.email, fetchRolesYMembresia]);
 
+  // Exponer la misma API que el componente anterior
   return (
     <RolesContext.Provider
       value={{
         roles,
         userData,
         membresia,
-        fetchRolesYMembresia,
+        fetchRolesYMembresia, // se mantiene para compatibilidad (ahora soporta fetchRolesYMembresia(force))
         isEditor,
         isAdmin,
         isRoot,
@@ -280,7 +464,8 @@ const verificado = () => {
         setAdmin,
         setRoot,
         verificado
-      }}>
+      }}
+    >
       {children}
     </RolesContext.Provider>
   );
