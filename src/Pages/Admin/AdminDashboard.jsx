@@ -1,11 +1,10 @@
-import Pestanas from '../../components/Pestanas';
 import React, { useState, useEffect, useMemo } from 'react';
+import Pestanas from '../../components/Pestanas';
 import { useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
 import { useRoles } from '../../Contexts/RolesContext.jsx';
 import AdminClubsRouter from '../../components/Admin/AdminClubsRouter.jsx';
-import CofeprisAdmin from '../../components/Admin/CofeprisAdmin.jsx';
-import AmparosAdmin from '../../components/Admin/AmparosAdmin.jsx';
+import AdminCofeprisRoute from '../../components/Admin/AdminCofeprisRoute.jsx';
 import AgendaAdmin from '../../components/Admin/AgendaAdmin.jsx';
 import BitacoraAdmin from '../../components/Admin/BitacoraAdmin.jsx';
 import PreCargador from '../../components/PreCargador.jsx';
@@ -28,7 +27,6 @@ const AdminDashboard = () => {
     return [
       { label: 'Clubs', path: 'clubs' },
       { label: 'Trámites COFEPRIS', path: 'tramites' },
-      { label: 'Amparos', path: 'amparos' },
       { label: 'Agenda', path: 'agenda' },
       { label: 'Bitácora', path: 'bitacora' },
     ];
@@ -47,9 +45,8 @@ const AdminDashboard = () => {
 
     if (path.includes(`${basePrueba}/clubs`)) setTabIndex(0);
     else if (path.includes(`${basePrueba}/tramites`)) setTabIndex(1);
-    else if (path.includes(`${basePrueba}/amparos`)) setTabIndex(2);
-    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(3);
-    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(4);
+    else if (path.includes(`${basePrueba}/pagos`)) setTabIndex(2);
+    else if (path.includes(`${basePrueba}/kits`)) setTabIndex(3);
     else setTabIndex(0);
   }, [location.pathname, jardinero]);
 
@@ -86,8 +83,7 @@ const AdminDashboard = () => {
 
         <div style={{ width: '100%', overflowX: 'hidden' }}>
           {tabs[tabIndex]?.path === 'clubs' && <AdminClubsRouter />}
-          {tabs[tabIndex]?.path === 'tramites' && <CofeprisAdmin />}
-          {tabs[tabIndex]?.path === 'amparos' && <AmparosAdmin />}
+          {tabs[tabIndex]?.path === 'tramites' && <AdminCofeprisRoute />}
           {tabs[tabIndex]?.path === 'agenda' && <AgendaAdmin />}
           {tabs[tabIndex]?.path === 'bitacora' && <BitacoraAdmin />}
           

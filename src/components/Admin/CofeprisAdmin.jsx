@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   Box,
   Typography,
-  Button,
   Stack,
   Paper,
   Pagination,
@@ -20,10 +19,6 @@ import {
 } from "@mui/material";
 import {
   Visibility,
-  Event,
-  CheckCircle,
-  Cancel,
-  Settings,
   FactCheck,
   ListAlt,
   FilterList,
@@ -31,63 +26,44 @@ import {
   ArrowUpward,
   Print,
   Autorenew,
+  CheckCircle,
+  Cancel,
 } from "@mui/icons-material";
 
-// Iconos para los tipos (elige alguno que te guste)
 import CardMembership from "@mui/icons-material/CardMembership"; // membresía
-import EmojiNature from "@mui/icons-material/EmojiNature"; // jardinero (florecita)
+import EmojiNature from "@mui/icons-material/EmojiNature"; // jardinero
 import Group from "@mui/icons-material/Group"; // club
 import AccountCircle from "@mui/icons-material/AccountCircle"; // usuario
 import ManageAccounts from "@mui/icons-material/ManageAccounts"; // gestión
 
 import { motion, AnimatePresence } from "framer-motion";
-import PreLoader from "../PreLoader.jsx";
+import PreLoader from "../../components/PreLoader.jsx";
 import { useNavigate } from "react-router-dom";
 
 // placeholder local para cuando no haya imagen
 import sinImagen from "../../assets/placeholders/sinimagen.jpg";
 
-// URL base de Strapi (igual que en tu ejemplo)
-const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
+const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || "";
 
 /**
- * AdminCofeprisTramites
+ * AdminCofeprisTramites - Versión corregida
  *
- * Lista y gestiona trámites (colección cofepristramites).
- *
- * Reglas de filtrado:
- * - "solicitados": status === "solicitado"  (default)
- * - "entramite": status NOT IN ["solicitado","concluido","cancelado"]
- * - "concluidos": status === "concluido"
- * - "cancelados": status === "cancelado"
- *
- * Relaciones:
- * - Si tipo === 'membresia' || 'usuario' -> relación usuario (colección users, campos username + profilepic)
- * - Si tipo === 'club' || 'jardinero' -> relación club (colección clubs, campos nombre_club + foto_de_perfil)
- *
- * Botones:
- * - solicitados: Ver (/admin/tramites/ver/:rfc)
- * - entramite: Ver, Checar status, Imprimir documentos, Actualizar (los 3 últimos solo para tipos 'gestion' o 'club').
- *
+ * - Soluciona el bug del filtro "En trámite" que estaba mostrando todo.
+ * - Mejora el espaciado de los botones para pantallas grandes.
+ * - Sigue las reglas: iconos por tipo, imagen usuario/club, botones condicionales.
  */
-export default function CofeprisAdmin() {
-  // estados principales
-  const [tramites, setTramites] = useState([]); // array de registros de cofepristramites
+export default function AdminCofeprisTramites() {
+  const [tramites, setTramites] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [pageCount, setPageCount] = useState(1);
   const [pageSize] = useState(8);
 
-  // filtro actual: 'solicitados' | 'entramite' | 'concluidos' | 'cancelados'
-  const [filtro, setFiltro] = useState("solicitados");
-
-  // orden (desc | asc)
+  const [filtro, setFiltro] = useState("solicitados"); // solicitados | entramite | concluidos | cancelados
   const [order, setOrder] = useState("desc");
-
-  // buscador simple por rfc o nombre
   const [searchTerm, setSearchTerm] = useState("");
 
-  // mapas temporales para users/clubs minimal (id -> objeto)
+  // mapas minimal de users y clubs (id -> objeto con fields mínimos)
   const [usersMap, setUsersMap] = useState({});
   const [clubsMap, setClubsMap] = useState({});
 
@@ -95,16 +71,15 @@ export default function CofeprisAdmin() {
   const isSm = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
+  const bannedStatusesForEnTramite = ["solicitado", "concluido", "cancelado"];
+
   /**
-   * getMediaUrl
-   * helper robusto para extraer urls de archivos en Strapi.
-   * Acepta: objeto populate, array o directamente atributos.
+   * Helper robusto para extraer URL de media desde Strapi (similar al ejemplo original)
    */
   const getMediaUrl = (mediaField) => {
     if (!mediaField) return null;
     const extract = (m) => {
       if (!m) return null;
-      // Strapi puede traer data: { id, attributes: { url, formats... } }
       const file = m.data ? m.data : m;
       const first = Array.isArray(file) ? file[0] : file;
       if (!first) return null;
@@ -120,7 +95,6 @@ export default function CofeprisAdmin() {
       if (String(url).startsWith("http")) return url;
       return `${STRAPI_URL}${url}`;
     };
-
     if (Array.isArray(mediaField)) {
       return extract(mediaField[0]);
     }
@@ -142,17 +116,16 @@ export default function CofeprisAdmin() {
   };
 
   /**
-   * buildTramitesUrl
-   * Construye la URL para consultar la colección cofepristramites según filtro, paginación y orden.
+   * Construye la URL de trámites (populate mínimo para obtener ids de relacion)
    */
   const buildTramitesUrl = (page, pageSize, filtro, order) => {
     let url = `${STRAPI_URL}/api/cofepristramites?pagination[page]=${page}&pagination[pageSize]=${pageSize}&sort=fecha_inicial:${order}`;
 
-    // agregamos filtros segun la pestaña
     if (filtro === "solicitados") {
       url += `&filters[status][$eq]=solicitado`;
     } else if (filtro === "entramite") {
-      // NOT IN solicitados,concluido,cancelado
+      // intento de filtro servidor: excluye los estados comunes
+      // NOTA: usamos además filtrado en cliente (ver abajo) para robustez
       url += `&filters[status][$notIn]=solicitado,concluido,cancelado`;
     } else if (filtro === "concluidos") {
       url += `&filters[status][$eq]=concluido`;
@@ -160,124 +133,52 @@ export default function CofeprisAdmin() {
       url += `&filters[status][$eq]=cancelado`;
     }
 
-    // populate mínimo para poder leer relaciones (id) — si Strapi no devuelve ids sin populate,
-    // esto asegura que tengamos al menos la estructura, pero no pedimos full media pesado.
-    // Notarás que posteriormente hacemos fetch separado de users/clubs para traer solo los campos necesarios.
+    // populate leve para obtener referencias (usuario, club)
     url += `&populate[usuario]=usuario&populate[club]=club`;
 
     return url;
   };
 
   /**
-   * fetchTramites
-   * 1) Trae tramites según filtro/paginación
-   * 2) Recolecta ids de usuario y clubs referenciados y trae desde /api/users y /api/clubs
-   *    solo los campos necesarios (username + profilepic) y (nombre_club + foto_de_perfil).
+   * getRelatedInfo: devuelve tipo, displayName e imageUrl resolviendo con usersMap / clubsMap
    */
-  const fetchTramites = useCallback(async () => {
-    setLoading(true);
-    try {
-      const url = buildTramitesUrl(page, pageSize, filtro, order);
-      const res = await fetch(url);
-      if (!res.ok) throw new Error("Error al traer trámites");
-      const json = await res.json();
+  const getRelatedInfo = (attrs) => {
+    const tipo = (attrs.tipo || "")?.toString?.().toLowerCase?.() || "";
 
-      const entries = json.data || [];
-      setTramites(entries || []);
-      setPageCount(json.meta?.pagination?.pageCount || 1);
+    let displayName = "Sin nombre";
+    let imageUrl = null;
 
-      // Recolectar IDs de usuarios y clubs referenciados en los trámites
-      const userIds = new Set();
-      const clubIds = new Set();
+    if (tipo === "membresia" || tipo === "usuario") {
+      const usuarioData = attrs.usuario && attrs.usuario.data ? attrs.usuario.data : attrs.usuario;
+      const userId = usuarioData ? usuarioData.id || usuarioData : null;
+      const u = userId ? usersMap[userId] : null;
 
-      entries.forEach((entry) => {
-        const attrs = entry.attributes || {};
-        // Cuando populate hizo su trabajo: attrs.usuario.data?.id
-        if (attrs.usuario && attrs.usuario.data) {
-          const u = attrs.usuario.data;
-          if (u && u.id) userIds.add(u.id);
-        } else if (attrs.usuario && typeof attrs.usuario === "number") {
-          userIds.add(attrs.usuario);
-        }
+      displayName = (u && (u.username || "Usuario sin nombre")) || attrs.usuario?.username || "Usuario sin nombre";
+      imageUrl =
+        (u && getMediaUrl(u.profilepic)) ||
+        getMediaUrl(attrs.usuario?.data?.attributes?.profilepic) ||
+        null;
+    } else if (tipo === "club" || tipo === "jardinero") {
+      const clubData = attrs.club && attrs.club.data ? attrs.club.data : attrs.club;
+      const clubId = clubData ? clubData.id || clubData : null;
+      const c = clubId ? clubsMap[clubId] : null;
 
-        if (attrs.club && attrs.club.data) {
-          const c = attrs.club.data;
-          if (c && c.id) clubIds.add(c.id);
-        } else if (attrs.club && typeof attrs.club === "number") {
-          clubIds.add(attrs.club);
-        }
-      });
-
-      // FETCH users minimal (solo si hay ids)
-      const usersMapLocal = {};
-      if (userIds.size > 0) {
-        const ids = Array.from(userIds).join(",");
-        // populate profilepic y solo traer username + profilepic
-        const usersUrl = `${STRAPI_URL}/api/users?filters[id][$in]=${ids}&fields=username&populate[profilepic]=profilepic`;
-        const rU = await fetch(usersUrl);
-        if (rU.ok) {
-          const jU = await rU.json();
-          (jU.data || []).forEach((u) => {
-            const a = u.attributes || {};
-            usersMapLocal[u.id] = {
-              id: u.id,
-              username: a.username || null,
-              profilepic: a.profilepic || null,
-            };
-          });
-        }
-      }
-
-      // FETCH clubs minimal (solo si hay ids)
-      const clubsMapLocal = {};
-      if (clubIds.size > 0) {
-        const ids = Array.from(clubIds).join(",");
-        const clubsUrl = `${STRAPI_URL}/api/clubs?filters[id][$in]=${ids}&fields=nombre_club&populate[foto_de_perfil]=foto_de_perfil`;
-        const rC = await fetch(clubsUrl);
-        if (rC.ok) {
-          const jC = await rC.json();
-          (jC.data || []).forEach((c) => {
-            const a = c.attributes || {};
-            clubsMapLocal[c.id] = {
-              id: c.id,
-              nombre_club: a.nombre_club || null,
-              foto_de_perfil: a.foto_de_perfil || null,
-            };
-          });
-        }
-      }
-
-      // Guardar en estado (mapas)
-      setUsersMap(usersMapLocal);
-      setClubsMap(clubsMapLocal);
-    } catch (err) {
-      console.error("Error fetchTramites:", err);
-      setTramites([]);
-      setPageCount(1);
-      setUsersMap({});
-      setClubsMap({});
-    } finally {
-      setLoading(false);
+      displayName = (c && (c.nombre_club || "Club sin nombre")) || attrs.club?.nombre_club || "Club sin nombre";
+      imageUrl =
+        (c && getMediaUrl(c.foto_de_perfil)) ||
+        getMediaUrl(attrs.club?.data?.attributes?.foto_de_perfil) ||
+        null;
+    } else {
+      displayName = attrs.titulo || attrs.nombre || "Trámite sin título";
+      imageUrl = null;
     }
-  }, [page, pageSize, filtro, order]);
 
-  // efecto para traer tramites al cargar / cambiar filtros o paginación
-  useEffect(() => {
-    fetchTramites();
-  }, [fetchTramites]);
-
-  // --- UI handlers ---
-  const handleFiltroClick = (nuevo) => {
-    setFiltro(nuevo);
-    setPage(1);
+    return { tipo, displayName, imageUrl };
   };
 
-  const handleOrderChange = (e) => {
-    setOrder(e.target.value);
-    setPage(1);
-  };
-
-  // mapping para iconos segun tipo
+  /**
+   * TipoIcon: icono bonito según tipo
+   */
   const TipoIcon = ({ tipo }) => {
     const style = { fontSize: 18 };
     if (!tipo) return null;
@@ -297,54 +198,154 @@ export default function CofeprisAdmin() {
     }
   };
 
-  // Helper para obtener nombre e imagen asociada a un trámite
-  const getRelatedInfo = (attrs) => {
-    // tipo: membresia, jardinero, club, usuario, gestion
-    const tipo = (attrs.tipo || "")?.toString?.().toLowerCase?.() || "";
+  /**
+   * fetchTramites:
+   * - Trae la página actual desde Strapi con populate mínimo
+   * - Luego hace fetch minimal de users y clubs para poblar mapas (solo los campos que necesitamos)
+   * - Finalmente aplica un filtrado local extra para asegurar que 'en trámite' realmente excluya los estados baneados
+   */
+  const fetchTramites = useCallback(async () => {
+    setLoading(true);
+    try {
+      const url = buildTramitesUrl(page, pageSize, filtro, order);
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Error al traer trámites");
+      const json = await res.json();
+      let entries = json.data || [];
+      setPageCount(json.meta?.pagination?.pageCount || 1);
 
-    // default placeholders
-    let displayName = "Sin nombre";
-    let imageUrl = null;
+      // --- filtrado adicional en cliente (normaliza status) para 'entramite' ---
+      if (filtro === "entramite") {
+        entries = entries.filter((entry) => {
+          const s = ((entry.attributes && entry.attributes.status) || "").toString().toLowerCase().trim();
+          return !bannedStatusesForEnTramite.includes(s);
+        });
+      } else if (filtro === "solicitados") {
+        // normalizar solicitados por si el servidor devolvió algo raro:
+        entries = entries.filter((entry) => {
+          const s = ((entry.attributes && entry.attributes.status) || "").toString().toLowerCase().trim();
+          return s === "solicitado";
+        });
+      } else if (filtro === "concluidos") {
+        entries = entries.filter((entry) => {
+          const s = ((entry.attributes && entry.attributes.status) || "").toString().toLowerCase().trim();
+          return s === "concluido";
+        });
+      } else if (filtro === "cancelados") {
+        entries = entries.filter((entry) => {
+          const s = ((entry.attributes && entry.attributes.status) || "").toString().toLowerCase().trim();
+          return s === "cancelado";
+        });
+      }
 
-    if (tipo === "membresia" || tipo === "usuario") {
-      // buscar en usersMap por id (attrs.usuario.data.id)
-      const usuarioData = attrs.usuario && attrs.usuario.data ? attrs.usuario.data : attrs.usuario;
-      const userId = usuarioData ? usuarioData.id || usuarioData : null;
-      const u = userId ? usersMap[userId] : null;
+      setTramites(entries);
 
-      displayName = (u && (u.username || "Usuario sin nombre")) || attrs.usuario?.username || "Usuario sin nombre";
-      imageUrl = (u && getMediaUrl(u.profilepic)) || getMediaUrl(attrs.usuario?.data?.attributes?.profilepic) || null;
-    } else if (tipo === "club" || tipo === "jardinero") {
-      const clubData = attrs.club && attrs.club.data ? attrs.club.data : attrs.club;
-      const clubId = clubData ? clubData.id || clubData : null;
-      const c = clubId ? clubsMap[clubId] : null;
+      // Recolectar IDs de usuarios y clubs para traer datos mínimos
+      const userIds = new Set();
+      const clubIds = new Set();
 
-      displayName = (c && (c.nombre_club || "Club sin nombre")) || attrs.club?.nombre_club || "Club sin nombre";
-      imageUrl = (c && getMediaUrl(c.foto_de_perfil)) || getMediaUrl(attrs.club?.data?.attributes?.foto_de_perfil) || null;
-    } else {
-      // fallback general
-      displayName = attrs.titulo || attrs.nombre || "Trámite sin título";
-      imageUrl = null;
+      entries.forEach((entry) => {
+        const attrs = entry.attributes || {};
+        if (attrs.usuario && attrs.usuario.data) {
+          const u = attrs.usuario.data;
+          if (u && u.id) userIds.add(u.id);
+        } else if (attrs.usuario && typeof attrs.usuario === "number") {
+          userIds.add(attrs.usuario);
+        }
+        if (attrs.club && attrs.club.data) {
+          const c = attrs.club.data;
+          if (c && c.id) clubIds.add(c.id);
+        } else if (attrs.club && typeof attrs.club === "number") {
+          clubIds.add(attrs.club);
+        }
+      });
+
+      // Fetch users minimal
+      const usersMapLocal = {};
+      if (userIds.size > 0) {
+        const ids = Array.from(userIds).join(",");
+        const usersUrl = `${STRAPI_URL}/api/users?filters[id][$in]=${ids}&fields=username&populate[profilepic]=profilepic`;
+        try {
+          const rU = await fetch(usersUrl);
+          if (rU.ok) {
+            const jU = await rU.json();
+            (jU.data || []).forEach((u) => {
+              const a = u.attributes || {};
+              usersMapLocal[u.id] = {
+                id: u.id,
+                username: a.username || null,
+                profilepic: a.profilepic || null,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn("No se pudieron cargar users minimal:", e);
+        }
+      }
+
+      // Fetch clubs minimal
+      const clubsMapLocal = {};
+      if (clubIds.size > 0) {
+        const ids = Array.from(clubIds).join(",");
+        const clubsUrl = `${STRAPI_URL}/api/clubs?filters[id][$in]=${ids}&fields=nombre_club&populate[foto_de_perfil]=foto_de_perfil`;
+        try {
+          const rC = await fetch(clubsUrl);
+          if (rC.ok) {
+            const jC = await rC.json();
+            (jC.data || []).forEach((c) => {
+              const a = c.attributes || {};
+              clubsMapLocal[c.id] = {
+                id: c.id,
+                nombre_club: a.nombre_club || null,
+                foto_de_perfil: a.foto_de_perfil || null,
+              };
+            });
+          }
+        } catch (e) {
+          console.warn("No se pudieron cargar clubs minimal:", e);
+        }
+      }
+
+      setUsersMap(usersMapLocal);
+      setClubsMap(clubsMapLocal);
+    } catch (err) {
+      console.error("Error fetchTramites:", err);
+      setTramites([]);
+      setPageCount(1);
+      setUsersMap({});
+      setClubsMap({});
+    } finally {
+      setLoading(false);
     }
+  }, [page, pageSize, filtro, order]);
 
-    return { tipo, displayName, imageUrl };
+  useEffect(() => {
+    fetchTramites();
+  }, [fetchTramites]);
+
+  const handleFiltroClick = (nuevo) => {
+    setFiltro(nuevo);
+    setPage(1);
   };
 
-  // Navegación para botones: /admin/tramites/:verbo/:rfc
+  const handleOrderChange = (e) => {
+    setOrder(e.target.value);
+    setPage(1);
+  };
+
   const goTo = (verbo, rfcOrId) => {
     const key = rfcOrId || "no-rfc";
     navigate(`/admin/tramites/${verbo}/${key}`);
   };
 
-  // loader
   if (loading) return <PreLoader />;
 
-  // filtro local por searchTerm (rfc o nombre relacionado)
+  // Filtrado local por searchTerm
   const filtered = tramites.filter((t) => {
     if (!searchTerm) return true;
     const attrs = t.attributes || {};
     const { displayName } = getRelatedInfo(attrs);
-    const rfc = attrs.rfc || "";
+    const rfc = attrs.rfc || t.id;
     const term = searchTerm.toLowerCase();
     return (
       String(displayName).toLowerCase().includes(term) ||
@@ -370,15 +371,7 @@ export default function CofeprisAdmin() {
             Admin / Cofepris Trámites
           </Typography>
 
-          <Stack
-            direction="row"
-            spacing={1}
-            sx={{
-              ml: 1,
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
+          <Stack direction="row" spacing={1} sx={{ ml: 1, alignItems: "center", flexWrap: "wrap" }}>
             <Link
               component="button"
               onClick={() => handleFiltroClick("solicitados")}
@@ -527,13 +520,8 @@ export default function CofeprisAdmin() {
             const rfc = attrs.rfc || String(tramite.id);
             const { tipo, displayName, imageUrl } = getRelatedInfo(attrs);
 
-            // avatar final (usa placeholder si no trae)
             const avatarSrc = imageUrl || sinImagen;
-
-            // slug o key para navegación (aquí usamos rfc si existe)
             const keyForNav = rfc;
-
-            // botones condicionales (para 'en trámite' mostrar checar/imprimir/actualizar solo para tipo 'gestion' o 'club')
             const esAccionEspecial = tipo === "gestion" || tipo === "club";
 
             return (
@@ -549,35 +537,21 @@ export default function CofeprisAdmin() {
                   sx={{
                     display: "flex",
                     gap: 2,
-                    p: { xs: 2, sm: 2.5 },
+                    p: { xs: 2, sm: 2.5, md: 3 }, // más padding en md
                     alignItems: "center",
                     flexDirection: { xs: "column", sm: "row" },
-                    borderLeft: `6px solid ${
-                      filtro === "solicitados" ? "warning.main" : "success.main"
-                    }`,
+                    borderLeft: `6px solid ${filtro === "solicitados" ? "warning.main" : "success.main"}`,
+                    // para que no pegue con los bordes extremos en pantallas grandes:
+                    pr: { xs: 2, sm: 2.5, md: 4 },
                   }}
                 >
-                  {/* avatar / thumb */}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      width: { xs: "100%", sm: 120 },
-                      flexShrink: 0,
-                      justifyContent: { xs: "flex-start", sm: "center" },
-                    }}
-                  >
+                  {/* avatar */}
+                  <Box sx={{ display: "flex", alignItems: "center", width: { xs: "100%", sm: 120 }, flexShrink: 0, justifyContent: { xs: "flex-start", sm: "center" } }}>
                     <Avatar
                       src={avatarSrc}
                       alt={displayName}
                       variant="rounded"
-                      sx={{
-                        width: { xs: 64, sm: 88 },
-                        height: { xs: 64, sm: 88 },
-                        borderRadius: 2,
-                        bgcolor: "grey.100",
-                        boxShadow: 1,
-                      }}
+                      sx={{ width: { xs: 64, sm: 88 }, height: { xs: 64, sm: 88 }, borderRadius: 2, bgcolor: "grey.100", boxShadow: 1 }}
                     />
                   </Box>
 
@@ -588,31 +562,13 @@ export default function CofeprisAdmin() {
                         {displayName || "Sin nombre"}
                       </Typography>
 
-                      {/* badge con icono tipo */}
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 0.6,
-                          px: 1,
-                          py: 0.4,
-                          borderRadius: 2,
-                          bgcolor: "grey.100",
-                          color: "text.primary",
-                          fontSize: 12,
-                          fontWeight: 700,
-                          ml: 0.5,
-                        }}
-                        aria-label={`Tipo: ${tipo}`}
-                      >
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", gap: 0.6, px: 1, py: 0.4, borderRadius: 2, bgcolor: "grey.100", color: "text.primary", fontSize: 12, fontWeight: 700, ml: 0.5 }} aria-label={`Tipo: ${tipo}`}>
                         <TipoIcon tipo={tipo} />
                         <Typography sx={{ fontSize: 12, fontWeight: 700 }}>
                           {tipo ? tipo.charAt(0).toUpperCase() + tipo.slice(1) : "Tipo no especificado"}
                         </Typography>
                       </Box>
 
-                      {/* status pequeño */}
                       <Chip label={attrs.status || "Sin status"} size="small" sx={{ ml: 1 }} />
                     </Box>
 
@@ -624,13 +580,12 @@ export default function CofeprisAdmin() {
                       Solicitado: {formatDate(fecha)}
                     </Typography>
 
-                    {/* si hay algún campo adicional de nota lo podrías mostrar aquí */}
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                       {attrs.descripcion || attrs.observaciones || "Sin descripción"}
                     </Typography>
                   </Box>
 
-                  {/* acciones */}
+                  {/* acciones: agrego margin-right y minWidth para que no queden pegados */}
                   <Box
                     sx={{
                       display: "flex",
@@ -639,57 +594,38 @@ export default function CofeprisAdmin() {
                       justifyContent: { xs: "flex-end", sm: "flex-end" },
                       width: { xs: "100%", sm: "auto" },
                       pt: { xs: 1, sm: 0 },
+                      mr: { xs: 0, sm: 1.5, md: 3 }, // <-- espacio a la derecha para pantallas grandes
+                      minWidth: { sm: 120 }, // evita que los botones se amontonen contra el borde
                     }}
                   >
-                    {/* Ver (siempre) */}
                     <Tooltip title="Ver">
-                      <IconButton
-                        color="primary"
-                        size={isSm ? "small" : "medium"}
-                        onClick={() => goTo("ver", keyForNav)}
-                        aria-label={`Ver ${displayName}`}
-                      >
+                      <IconButton color="primary" size={isSm ? "small" : "medium"} onClick={() => goTo("ver", keyForNav)} aria-label={`Ver ${displayName}`}>
                         <Visibility />
                       </IconButton>
                     </Tooltip>
 
-                    {filtro === "solicitados" ? null : (
+                    {/* Si estamos en 'solicitados' no mostramos botones extras */}
+                    {filtro !== "solicitados" && (
                       <>
-                        {/* Si estamos en 'en trámite' u otras vistas, mostramos botones adicionales segun reglas */}
-                        {/* Checar status (solo para tipos gestion o club) */}
                         {esAccionEspecial && (
                           <Tooltip title="Checar status">
-                            <IconButton
-                              size={isSm ? "small" : "medium"}
-                              onClick={() => goTo("checar", keyForNav)}
-                              aria-label={`Checar ${displayName}`}
-                            >
+                            <IconButton size={isSm ? "small" : "medium"} onClick={() => goTo("checar", keyForNav)} aria-label={`Checar ${displayName}`}>
                               <FactCheck />
                             </IconButton>
                           </Tooltip>
                         )}
 
-                        {/* Imprimir documentos (solo gestion o club) */}
                         {esAccionEspecial && (
                           <Tooltip title="Imprimir documentos">
-                            <IconButton
-                              size={isSm ? "small" : "medium"}
-                              onClick={() => goTo("imprimir", keyForNav)}
-                              aria-label={`Imprimir ${displayName}`}
-                            >
+                            <IconButton size={isSm ? "small" : "medium"} onClick={() => goTo("imprimir", keyForNav)} aria-label={`Imprimir ${displayName}`}>
                               <Print />
                             </IconButton>
                           </Tooltip>
                         )}
 
-                        {/* Actualizar (solo gestion o club) */}
                         {esAccionEspecial && (
                           <Tooltip title="Actualizar">
-                            <IconButton
-                              size={isSm ? "small" : "medium"}
-                              onClick={() => goTo("actualizar", keyForNav)}
-                              aria-label={`Actualizar ${displayName}`}
-                            >
+                            <IconButton size={isSm ? "small" : "medium"} onClick={() => goTo("actualizar", keyForNav)} aria-label={`Actualizar ${displayName}`}>
                               <Autorenew />
                             </IconButton>
                           </Tooltip>
@@ -720,8 +656,10 @@ export default function CofeprisAdmin() {
   );
 }
 
-/* --- Nota:
- - Asegúrate de que los nombres de campos en Strapi coincidan: rfc, fecha_inicial, status, tipo, usuario, club, profilepic, foto_de_perfil, nombre_club, username.
- - Si algún campo difiere ajusta los nombres en el código.
- - Si prefieres que los users/clubs se obtengan directamente con populate (y evitar la segunda petición), podemos simplificarlo — pero siguiendo tu pedido hice la doble solicitud para traer *solo* los campos necesarios.
+/* --- NOTAS RÁPIDAS:
+ - Por seguridad y robustez he dejado filtro en la URL **y** filtro adicional en cliente normalizando el status.
+ - Si tus estados en la BD usan mayúsculas o espacios (p.e. "Solicitado " o "Concluido"), la normalización los captura.
+ - El espaciado se mejoró añadiendo pr y mr y un minWidth en la caja de acciones.
+ - Si quieres que la paginación refleje el total REAL después del filtrado en servidor (p.e. que pageCount se reduzca cuando filtramos en cliente),
+   puedo implementar una llamada adicional para obtener el total (count) por filtro y recalcular pageCount. ¿Quieres que lo haga también?
 */
