@@ -42,7 +42,7 @@ const CardAnimada = styled(Card)(() => ({
  * COMPONENTE CALENDARIOS
  * =====================================================
  */
-export default function Calendarios({
+export default function Bitacora({
   coleccion = 'registrosbitacoras',
   titulo,
   parametro,
@@ -170,7 +170,7 @@ export default function Calendarios({
    */
   if (loading) {
     return (
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', px:0, m:0 }}>
         <CircularProgress color="success" />
         <Typography mt={2} color="white">Cargando...</Typography>
       </Box>
@@ -208,7 +208,7 @@ export default function Calendarios({
    * =========================
    */
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#101b10', px: 2, pt: 1 }}>
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#101b10', px: 2, pt: 1, my:0, mx:0 }}>
       {/* HEADER */}
       <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2, mb: 2 }}>
         <Typography variant="h4" sx={{ color: '#b8ff57', flexGrow: 1 }}>
