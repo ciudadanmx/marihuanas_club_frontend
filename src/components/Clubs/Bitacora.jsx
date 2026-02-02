@@ -19,6 +19,12 @@ import { styled } from '@mui/system';
 import placeholder from '../../assets/placeholders/bitacoraplaceholder.jpg';
 import { useRoles } from '../../Contexts/RolesContext';
 
+/**
+ * =====================================================
+ * CARD ANIMADA
+ * =====================================================
+ * Tarjeta con hover + se usa dentro de <Link>
+ */
 const CardAnimada = styled(Card)(() => ({
   transition: 'transform 0.4s ease, box-shadow 0.4s ease',
   '&:hover': {
@@ -31,266 +37,270 @@ const CardAnimada = styled(Card)(() => ({
   borderRadius: '16px',
 }));
 
-export default function Bitacora() {
+/**
+ * =====================================================
+ * COMPONENTE CALENDARIOS
+ * =====================================================
+ */
+export default function Calendarios({
+  coleccion = 'registrosbitacoras',
+  titulo,
+  parametro,
+  parametro_valor,
+  mostrarboton = true,
+  botontitulo = '+ Hacer Anotación',
+  botonaccion,
+  mostrarTipos = true, // 👈 NUEVA PROP (default TRUE)
+}) {
+  /**
+   * =========================
+   * ESTADOS
+   * =========================
+   */
   const [registros, setRegistros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [mesSelected, setMesSelected] = useState(new Date().getMonth());
   const [yearSelected, setYearSelected] = useState(new Date().getFullYear());
   const [tipoSelected, setTipoSelected] = useState('');
   const [yearsDisponibles, setYearsDisponibles] = useState([]);
+
   const isMobile = useMediaQuery('(max-width:600px)');
   const { roles, membresia } = useRoles();
   const baseURL = process.env.REACT_APP_STRAPI_URL;
 
+  /**
+   * =========================
+   * CONSTANTES
+   * =========================
+   */
   const meses = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   const diasSemana = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
 
-  const years = [];
-  for (let y = new Date().getFullYear(); y >= 2020; y--) years.push(y);
-
+  /**
+   * =========================
+   * FETCH AÑOS DISPONIBLES
+   * =========================
+   */
   useEffect(() => {
     const fetchYearsDisponibles = async () => {
-      console.group('[BITACORA] fetchYearsDisponibles');
-
-      const url = `${baseURL}/api/registrosbitacoras?fields[0]=timestamp&pagination[pageSize]=1000`;
-
-      console.log('[BITACORA] URL años:', url);
-
       try {
+        let url = `${baseURL}/api/${coleccion}?fields[0]=timestamp&pagination[pageSize]=1000`;
+
+        if (parametro && parametro_valor !== undefined && parametro_valor !== null) {
+          url += `&filters[${parametro}][$eq]=${parametro_valor}`;
+        }
+
         const res = await fetch(url);
         const json = await res.json();
 
-        console.log('[BITACORA] respuesta años cruda:', json);
-
         const setAnios = new Set();
-
         json.data.forEach(r => {
-          const y = new Date(r.attributes.timestamp).getFullYear();
-          setAnios.add(y);
+          setAnios.add(new Date(r.attributes.timestamp).getFullYear());
         });
 
-        const ordenados = Array.from(setAnios).sort((a, b) => a - b);
-
-        console.log('[BITACORA] años detectados:', ordenados);
-
-        setYearsDisponibles(ordenados);
-      } catch (err) {
-        console.error('[BITACORA] error años:', err);
+        setYearsDisponibles([...setAnios].sort((a, b) => a - b));
+      } catch {
         setYearsDisponibles([]);
-      } finally {
-        console.groupEnd();
       }
     };
 
     fetchYearsDisponibles();
-  }, [baseURL]);
+  }, [baseURL, coleccion, parametro, parametro_valor]);
 
+  /**
+   * =========================
+   * AÑOS FINALES
+   * =========================
+   */
   const yearsDisponiblesFinales = (() => {
     const resultado = [...yearsDisponibles];
-
-    if (mesSelected === 11 && resultado.length > 0) {
-      const max = Math.max(...resultado);
-      resultado.push(max + 1);
+    if (mesSelected === 11 && resultado.length) {
+      resultado.push(Math.max(...resultado) + 1);
     }
-
-    return Array.from(new Set(resultado)).sort((a, b) => a - b);
+    return [...new Set(resultado)].sort((a, b) => a - b);
   })();
 
+  /**
+   * =========================
+   * FETCH REGISTROS
+   * =========================
+   */
   useEffect(() => {
     const fetchRegistros = async () => {
-      console.group('[BITACORA] fetchRegistros');
+      setLoading(true);
 
-      console.log('[BITACORA] mesSelected:', mesSelected, meses[mesSelected]);
-      console.log('[BITACORA] yearSelected:', yearSelected);
-      console.log('[BITACORA] tipoSelected:', tipoSelected || '(todos)');
+      const startISO = new Date(yearSelected, mesSelected, 1).toISOString();
+      const endISO = new Date(yearSelected, mesSelected + 1, 0).toISOString();
 
-      const start = new Date(yearSelected, mesSelected, 1);
-      const end = new Date(yearSelected, mesSelected + 1, 0);
-
-      console.log('[BITACORA] start local:', start);
-      console.log('[BITACORA] end local:', end);
-
-      const startISO = start.toISOString();
-      const endISO = end.toISOString();
-
-      console.log('[BITACORA] startISO:', startISO);
-      console.log('[BITACORA] endISO:', endISO);
-
-      let url = `${baseURL}/api/registrosbitacoras?filters[timestamp][$gte]=${startISO}&filters[timestamp][$lte]=${endISO}&populate=*`;
+      let url = `${baseURL}/api/${coleccion}?populate=*`;
+      url += `&filters[timestamp][$gte]=${startISO}`;
+      url += `&filters[timestamp][$lte]=${endISO}`;
 
       if (tipoSelected) {
         url += `&filters[tipo][$eq]=${tipoSelected}`;
       }
 
-      console.log('[BITACORA] URL:', url);
+      if (parametro && parametro_valor !== undefined && parametro_valor !== null) {
+        url += `&filters[${parametro}][$eq]=${parametro_valor}`;
+      }
 
       try {
         const res = await fetch(url);
         const json = await res.json();
 
-        console.log('[BITACORA] respuesta cruda:', json);
-
-        const items = Array.isArray(json.data)
-          ? json.data.map(r => ({ id: r.id, ...r.attributes }))
-          : [];
-
-        console.log('[BITACORA] total registros:', items.length);
-
-        items.forEach((r, i) => {
-          console.log(`[BITACORA] registro ${i + 1}`, {
-            timestamp: r.timestamp,
-            dateObj: new Date(r.timestamp),
-            tipo: r.tipo,
-          });
-        });
-
-        setRegistros(items);
-      } catch (err) {
-        console.error('[BITACORA] error fetch:', err);
+        setRegistros(
+          Array.isArray(json.data)
+            ? json.data.map(r => ({ id: r.id, ...r.attributes }))
+            : []
+        );
+      } catch {
         setRegistros([]);
       } finally {
         setLoading(false);
-        console.groupEnd();
       }
     };
 
-    console.log('[BITACORA] useEffect triggered');
-    setLoading(true);
     fetchRegistros();
-  }, [baseURL, mesSelected, yearSelected, tipoSelected]);
+  }, [baseURL, coleccion, mesSelected, yearSelected, tipoSelected, parametro, parametro_valor]);
 
+  /**
+   * =========================
+   * LOADING
+   * =========================
+   */
   if (loading) {
-    console.log('[BITACORA] loading true');
     return (
       <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
         <CircularProgress color="success" />
-        <Typography mt={2} color="white">
-          Cargando Bitácora...
-        </Typography>
+        <Typography mt={2} color="white">Cargando...</Typography>
       </Box>
     );
   }
 
+  /**
+   * =========================
+   * CALENDARIO
+   * =========================
+   */
   const totalDiasMes = new Date(yearSelected, mesSelected + 1, 0).getDate();
-  console.log('[BITACORA] totalDiasMes:', totalDiasMes);
 
-  const diasDelMes = [];
-
-  for (let d = 1; d <= totalDiasMes; d++) {
-    const fecha = new Date(yearSelected, mesSelected, d);
-    diasDelMes.push({
-      dia: d,
-      fecha,
-      diaSemana: fecha.getDay(),
-    });
-  }
+  const diasDelMes = Array.from({ length: totalDiasMes }, (_, i) => {
+    const fecha = new Date(yearSelected, mesSelected, i + 1);
+    return { dia: i + 1, fecha, diaSemana: fecha.getDay() };
+  });
 
   const registrosPorFecha = {};
   registros.forEach(reg => {
-    const fechaStr = new Date(reg.timestamp).toISOString().split('T')[0];
-    if (!registrosPorFecha[fechaStr]) registrosPorFecha[fechaStr] = [];
-    registrosPorFecha[fechaStr].push(reg);
+    const key = new Date(reg.timestamp).toISOString().split('T')[0];
+    if (!registrosPorFecha[key]) registrosPorFecha[key] = [];
+    registrosPorFecha[key].push(reg);
   });
-
-  console.log('[BITACORA] registrosPorFecha:', registrosPorFecha);
 
   const tipos = Array.from(new Set(registros.map(r => r.tipo).filter(Boolean)));
 
+  const botonLink = botonaccion
+    ? `/${String(botonaccion).replace(/^\/+/, '')}/agregar`
+    : '/club/bitacora/escribir';
+
+  /**
+   * =========================
+   * RENDER
+   * =========================
+   */
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#101b10', px: 2, pt: 1, pb: 0 }}>
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: isMobile ? 'column' : 'row',
-          alignItems: isMobile ? 'stretch' : 'center',
-          gap: 2,
-          mb: 2,
-        }}
-      >
+    <Box sx={{ minHeight: '100vh', backgroundColor: '#101b10', px: 2, pt: 1 }}>
+      {/* HEADER */}
+      <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 2, mb: 2 }}>
         <Typography variant="h4" sx={{ color: '#b8ff57', flexGrow: 1 }}>
-          Bitácora {meses[mesSelected]} {yearSelected}
+          {titulo || `Bitácora ${meses[mesSelected]} ${yearSelected}`}
         </Typography>
 
-        <Button
-          variant="contained"
-          component={Link}
-          to="/club/bitacora/escribir"
-          sx={{
-            backgroundColor: '#91ff49',
-            color: '#1a1a1a',
-            fontWeight: 'bold',
-            borderRadius: '12px',
-            px: 3,
-            boxShadow: '0 0 10px #91ff49',
-            '&:hover': { backgroundColor: '#a5ff30' },
-          }}
-        >
-          + Hacer Anotación
-        </Button>
+        {mostrarboton && (
+          <Button
+            component={Link}
+            to={botonLink}
+            sx={{
+              backgroundColor: '#91ff49',
+              color: '#1a1a1a',
+              fontWeight: 'bold',
+              borderRadius: '12px',
+              px: 3,
+              boxShadow: '0 0 10px #91ff49',
+            }}
+          >
+            {botontitulo}
+          </Button>
+        )}
       </Box>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
-          gap: 2,
-          mb: 3,
-        }}
-      >
+      {/* FILTROS */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: 2, mb: 3 }}>
+        {/* MES */}
         <FormControl>
           <InputLabel sx={{ color: '#7fff8d' }}>Mes</InputLabel>
-          <Select value={mesSelected} onChange={(e) => setMesSelected(e.target.value)} sx={{ color: '#b8ff57' }}>
-            {meses.map((m, i) => (
-              <MenuItem key={i} value={i}>{m}</MenuItem>
-            ))}
+          <Select
+            value={mesSelected}
+            onChange={(e) => setMesSelected(e.target.value)}
+            sx={{
+              color: '#b8ff57',
+              '.MuiOutlinedInput-notchedOutline': { borderColor: '#7fff8d' },
+              '.MuiSvgIcon-root': { color: '#7fff8d' },
+            }}
+          >
+            {meses.map((m, i) => <MenuItem key={i} value={i}>{m}</MenuItem>)}
           </Select>
         </FormControl>
 
+        {/* AÑO */}
         <FormControl>
           <InputLabel sx={{ color: '#7fff8d' }}>Año</InputLabel>
-          <Select value={yearSelected} onChange={(e) => setYearSelected(e.target.value)} sx={{ color: '#b8ff57' }}>
-            {yearsDisponiblesFinales.map(y => (
-              <MenuItem key={y} value={y}>{y}</MenuItem>
-            ))}
+          <Select
+            value={yearSelected}
+            onChange={(e) => setYearSelected(e.target.value)}
+            sx={{
+              color: '#b8ff57',
+              '.MuiOutlinedInput-notchedOutline': { borderColor: '#7fff8d' },
+              '.MuiSvgIcon-root': { color: '#7fff8d' },
+            }}
+          >
+            {yearsDisponiblesFinales.map(y => <MenuItem key={y} value={y}>{y}</MenuItem>)}
           </Select>
         </FormControl>
 
-        <FormControl>
-          <InputLabel sx={{ color: '#7fff8d' }}>Tipo</InputLabel>
-          <Select value={tipoSelected} onChange={(e) => setTipoSelected(e.target.value)} sx={{ color: '#b8ff57' }}>
-            <MenuItem value="">Todos</MenuItem>
-            {tipos.map(t => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+        {/* TIPO (CONDICIONAL POR PROP) */}
+        {mostrarTipos && (
+          <FormControl>
+            <InputLabel sx={{ color: '#7fff8d' }}>Tipo</InputLabel>
+            <Select
+              value={tipoSelected}
+              onChange={(e) => setTipoSelected(e.target.value)}
+              sx={{
+                color: '#b8ff57',
+                '.MuiOutlinedInput-notchedOutline': { borderColor: '#7fff8d' },
+                '.MuiSvgIcon-root': { color: '#7fff8d' },
+              }}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              {tipos.map(t => <MenuItem key={t} value={t}>{t}</MenuItem>)}
+            </Select>
+          </FormControl>
+        )}
       </Box>
 
-      <Grid container spacing={2} sx={{ mb: 0 }}>
+      {/* GRID CALENDARIO */}
+      <Grid container spacing={2}>
         {diasDelMes.map(({ dia, fecha, diaSemana }) => {
-          const fechaStr = fecha.toISOString().split('T')[0];
-          const registrosDia = registrosPorFecha[fechaStr] || [];
-
-          if (registrosDia.length > 0) {
-            console.log(`[BITACORA] ${fechaStr} → ${registrosDia.length} registros`);
-          }
+          const key = fecha.toISOString().split('T')[0];
+          const regs = registrosPorFecha[key] || [];
 
           return (
-            <Grid key={fechaStr} item xs={12} sm={6} md={1.7} sx={{ minWidth: 150, flexGrow: 1 }}>
-              <Typography
-                variant="h6"
-                align="center"
-                sx={{ color: '#b8ff57', mb: 1, borderBottom: '1px solid #b8ff57' }}
-              >
+            <Grid key={key} item xs={12} sm={6} md={1.7} sx={{ minWidth: 150 }}>
+              <Typography align="center" sx={{ color: '#b8ff57', mb: 1, borderBottom: '1px solid #b8ff57' }}>
                 {diasSemana[diaSemana]} {dia}
               </Typography>
 
-              {registrosDia.map(reg => (
-                <Link
-                  key={reg.timestamp}
-                  to={`/club/bitacoras/${encodeURIComponent(reg.timestamp)}`}
-                  style={{ textDecoration: 'none' }}
-                >
+              {regs.map(reg => (
+                <Link key={reg.timestamp} to={`/club/bitacoras/${encodeURIComponent(reg.timestamp)}`} style={{ textDecoration: 'none' }}>
                   <CardAnimada sx={{ mb: 2 }}>
                     <CardMedia
                       component="img"
@@ -300,15 +310,10 @@ export default function Bitacora() {
                           ? `${baseURL}${reg.media.data[0].attributes.url}`
                           : placeholder
                       }
-                      sx={{ objectFit: 'cover' }}
                     />
                     <CardContent>
-                      <Typography sx={{ color: '#a5ff30', fontWeight: 'bold' }}>
-                        {reg.tipo}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                        {reg.texto}
-                      </Typography>
+                      <Typography sx={{ color: '#a5ff30', fontWeight: 'bold' }}>{reg.tipo}</Typography>
+                      <Typography variant="body2" sx={{ opacity: 0.8 }}>{reg.texto}</Typography>
                     </CardContent>
                   </CardAnimada>
                 </Link>
