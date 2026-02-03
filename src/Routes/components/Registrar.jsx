@@ -200,7 +200,7 @@ export default function Registrar() {
         const registerResult = await registerUserInStrapi(email, username);
 
         if (!registerResult) {
-          throw new Error('registerUserInStrapi devolvió null. Imposible crear usuario.');
+          throw new Error('registerUserInStrapi devolvió null. No se pudo crear usuario.');
         }
 
         // Intentamos extraer jwt y user creado del helper
@@ -354,12 +354,10 @@ export default function Registrar() {
           </div>
 
           <div style={{ marginTop: 12, fontSize: 13, color: '#666' }}>
-            <strong>Nota técnica:</strong>{' '}
-            Para que el proceso sea 100% automático recomendamos configurar un token de administrador en tu .env:
+            <strong>Falla técnica:</strong>{' '}
+            Nuestro departamento técnico la reparará en breve, nomás que terminen de forjar....
             <br />
-            <code>REACT_APP_STRAPI_ADMIN_KEY=tu_api_token</code>
-            <br />
-            Con eso la app podrá crear y marcar usuarios directamente, evitando estos escenarios.
+            
           </div>
         </div>
       ) : (
