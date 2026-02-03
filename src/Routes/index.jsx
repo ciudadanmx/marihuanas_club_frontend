@@ -162,6 +162,8 @@ const Rutas = () => (
     <Route path="/probador" element={<Probador />} />
     <Route path="/registrar" element={<Registrar />} />
     
+    <Route path="/clubs/sembrar" element={<Sembrar />} />
+
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />
     <Route path="/herramientas/maria" element={<Maria />} />
@@ -237,6 +239,7 @@ const Rutas = () => (
 
     <Route path="/precargador" element={<PreCargador />} />
     <Route path="/club-creado" element={<ClubCreado />} />
+    
 
 
     <Route path="/notificationtester" element={<NotificationTester />} />
