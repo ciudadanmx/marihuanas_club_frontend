@@ -133,7 +133,7 @@ export default function Sembrar() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => navigate("/semillas/ingresar")}
+          onClick={() => navigate("/clubs/miclub/admin/ingresarsemillas")}
         >
           Ingresar semillas a stock
         </Button>

@@ -603,7 +603,7 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
           </Tooltip>
 
           <Button variant="outlined" startIcon={<AddIcon />} onClick={handleIngresarSemillas} sx={{ textTransform: "none" }}>
-            Ingresar semillas
+            Semillas
           </Button>
 
           <Button variant="outlined" startIcon={<FlorIcon />} onClick={handleEntregarFlores} sx={{ textTransform: "none" }}>
