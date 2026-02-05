@@ -18,10 +18,10 @@ const MiClub = () => {
   const { user, isLoading } = useAuth0();
   const { isJardinero, userData } = useRoles();
 
-const jardinero = useMemo(() => {
-  if (!userData) return false;
-  return isJardinero();
-}, [userData, isJardinero]);
+  const jardinero = useMemo(() => {
+    if (!userData) return false;
+    return isJardinero();
+  }, [userData, isJardinero]);
 
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(
@@ -57,36 +57,35 @@ const jardinero = useMemo(() => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // sincroniza tabIndex con la URL
+  // sincroniza tabIndex con la URL — ahora robusto: busca la pestaña dentro de `tabs`
   useEffect(() => {
-    const path = (location.pathname || '').toLowerCase();
+    const currentPath = (location.pathname || '').toLowerCase();
 
-    if (path.includes(`${basePrueba}/info`)) setTabIndex(jardinero ? 3 : 0);
-    else if (path.includes(`${basePrueba}/bitacora`)) setTabIndex(jardinero ? 0 : 1);
-    else if (path.includes(`${basePrueba}/documentos`)) setTabIndex(jardinero ? 1 : 2);
-    else if (path.includes(`${basePrueba}/misplantas`)) setTabIndex(jardinero ? 2 : 3);
-    else if (path.includes(`${basePrueba}/admin`)) setTabIndex(jardinero ? 3 : 4);
+    // encontrar la pestaña cuyo path coincide con la URL (soporta sub-rutas)
+    const foundIndex = tabs.findIndex((t) =>
+      currentPath.includes(`${basePrueba}/${t.path}`)
+    );
+
+    if (foundIndex !== -1) setTabIndex(foundIndex);
     else setTabIndex(0);
-  }, [location.pathname, jardinero]);
+  }, [location.pathname, tabs]);
 
   // Esperar Auth0 + Strapi
   if (isLoading || !userData) return <p>Cargando...</p>;
 
-  const path = location.pathname || '';
+  // normalizamos y separamos segmentos para comprobaciones robustas
+  const path = (location.pathname || '').toLowerCase();
+  const rel = path.startsWith(basePrueba) ? path.slice(basePrueba.length) : path;
+  const segments = rel.split('/').filter(Boolean); // ej: ['admin','ingresarsemillas'] o ['misplantas','sembrar', ...]
 
-  const isSembrar = path.includes(`${basePrueba}/misplantas/sembrar`);
-  const isAdminSembrar = path.includes(`${basePrueba}/admin/sembrar`);
-  const isAdminIngresarSemillas = path.includes(
-    `${basePrueba}/admin/ingresarsemillas`
-  );
+  const isSembrar = segments[0] === 'misplantas' && segments[1] === 'sembrar';
+  const isAdminSembrar = segments[0] === 'admin' && segments[1] === 'sembrar';
+  const isAdminIngresarSemillas = segments[0] === 'admin' && segments[1] === 'ingresarsemillas';
 
-  const misPlantasDetalleMatch = path.match(
-    new RegExp(`^${basePrueba}/misplantas/([^/]+)$`)
-  );
-
-  const codigoPlanta = misPlantasDetalleMatch
-    ? misPlantasDetalleMatch[1]
-    : null;
+  const codigoPlanta =
+    segments[0] === 'misplantas' && segments[1] && segments[1] !== 'sembrar'
+      ? segments[1]
+      : null;
 
   return (
     <div
