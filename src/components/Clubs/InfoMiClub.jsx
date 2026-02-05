@@ -74,7 +74,7 @@ const InfoMiClub = ({jardinero}) => {
         }}
       >
         <button
-          onClick={() => navigate('/clubs/miclub/misplantas/sembrar')}
+          onClick={() => navigate('/clubs/miclub/info/axiones/ingresarsemillas')}
           style={btnStyle}
         >
           <FaSeedling size={28} />
@@ -82,7 +82,7 @@ const InfoMiClub = ({jardinero}) => {
         </button>
 
         <button
-          onClick={() => navigate('/clubs/miclub/retirarflores')}
+          onClick={() => navigate('/clubs/miclub/info/axiones/retirarflores')}
           style={btnStyle}
         >
           <FaLeaf size={28} />

@@ -134,7 +134,7 @@ export const RolesProvider = ({ children }) => {
           // 1) Obtener usuario Strapi por email (con populate necesario)
           const url = `${STRAPI_URL}/api/users?filters[email][$eq]=${encodeURIComponent(
             email
-          )}&populate=role,roles,direcciones`;
+          )}&populate[role]=*&populate[roles]=*&populate[direcciones]=*&populate[club]=*`;
           const res = await fetch(url, { credentials: 'include' });
           const json = await res.json();
           const users = Array.isArray(json) ? json : json.data || [];
