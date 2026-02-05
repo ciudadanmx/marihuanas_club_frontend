@@ -10,6 +10,7 @@ import Documentos from '../../components/Clubs/Documentos.jsx';
 import MisPlantas from '../../components/Clubs/MisPlantas/MisPlantas.jsx';
 import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
+import IngresarSemillas from '../../components/Clubs/IngresarSemillas.jsx';
 import GestionClub from '../../components/Clubs/GestionClub.jsx';
 
 const MiClub = () => {
@@ -17,7 +18,10 @@ const MiClub = () => {
   const { user, isLoading } = useAuth0();
   const { isJardinero, userData } = useRoles();
 
-  const jardinero = isJardinero();
+const jardinero = useMemo(() => {
+  if (!userData) return false;
+  return isJardinero();
+}, [userData, isJardinero]);
 
   const [tabIndex, setTabIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(
@@ -69,7 +73,12 @@ const MiClub = () => {
   if (isLoading || !userData) return <p>Cargando...</p>;
 
   const path = location.pathname || '';
+
   const isSembrar = path.includes(`${basePrueba}/misplantas/sembrar`);
+  const isAdminSembrar = path.includes(`${basePrueba}/admin/sembrar`);
+  const isAdminIngresarSemillas = path.includes(
+    `${basePrueba}/admin/ingresarsemillas`
+  );
 
   const misPlantasDetalleMatch = path.match(
     new RegExp(`^${basePrueba}/misplantas/([^/]+)$`)
@@ -107,7 +116,17 @@ const MiClub = () => {
           {tabs[tabIndex]?.path === 'info' && <InfoMiClub />}
           {tabs[tabIndex]?.path === 'bitacora' && <Bitacora />}
           {tabs[tabIndex]?.path === 'documentos' && <Documentos />}
-          {tabs[tabIndex]?.path === 'admin' && <GestionClub />}
+
+          {tabs[tabIndex]?.path === 'admin' && (
+            isAdminSembrar ? (
+              <Sembrar user={user} />
+            ) : isAdminIngresarSemillas ? (
+              <IngresarSemillas user={user} />
+            ) : (
+              <GestionClub />
+            )
+          )}
+
           {tabs[tabIndex]?.path === 'misplantas' && (
             isSembrar ? (
               <Sembrar user={user} />

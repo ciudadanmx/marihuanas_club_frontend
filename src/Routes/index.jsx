@@ -15,6 +15,7 @@ import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import MiClub from '../Pages/Clubs/MiClub.jsx';
 import Sembrar from '../components/Clubs/Sembrar.jsx';
+import IngresarSemillas from '../components/Clubs/IngresarSemillas.jsx';
 import GestionClub from '../components/Clubs/GestionClub.jsx';
 
 //Membresías
@@ -162,7 +163,8 @@ const Rutas = () => (
     <Route path="/probador" element={<Probador />} />
     <Route path="/registrar" element={<Registrar />} />
     
-    <Route path="/clubs/sembrar" element={<Sembrar />} />
+    
+    <Route path="/clubs/mi-club/ingresar-semillas" element={<IngresarSemillas />} />
 
     <Route path="/lmai" element={<LmAi />} />
     <Route path="/herramientas/test-consumo-responsable" element={<TestConsumoResponsable />} />

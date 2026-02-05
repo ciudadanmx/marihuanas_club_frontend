@@ -362,8 +362,13 @@ export default function GestionClub({ clubId: clubIdProp = null }) {
         });
       }
 
-      const colorKey = (pl.color || pl.codigo_color || "").toString().toLowerCase();
-      const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
+      const rawColor =
+  typeof pl.color === "string"
+    ? pl.color
+    : pl.color?.codigo || pl.color?.nombre || pl.codigo_color || "";
+
+const colorKey = rawColor.toString().trim().toLowerCase();
+const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
       const viva = !!pl.viva;
       const secado = !!pl.secado;
       const curado = !!pl.curado;
@@ -397,7 +402,7 @@ export default function GestionClub({ clubId: clubIdProp = null }) {
 
   /* ================= acciones de navegación ================= */
   const handleAgregarRegistro = () => navigate("/plantas/agregar");
-  const handleIngresarSemillas = () => navigate("/semillas/ingresar");
+  const handleIngresarSemillas = () => navigate("/clubs/miclub/admin/sembrar");
   const handleEntregarFlores = () => navigate("/flores/entregar");
   const handleExcedentes = () => navigate("/excedentes");
 
@@ -422,14 +427,14 @@ export default function GestionClub({ clubId: clubIdProp = null }) {
         borderRadius: 2,
         minWidth: 240,
         maxWidth: 420,
-        borderLeft: `6px solid ${planta._colorHex}`,
         border: "1px solid rgba(0,0,0,0.06)",
+        borderLeft: `6px solid ${planta._colorHex}`, // 👈 DESPUÉS
         backgroundColor: "#fff",
       }}
     >
       <Avatar variant="rounded" src={planta._mediaUrl || sinImagen} sx={{ width: 64, height: 64 }} />
       <Box sx={{ flex: 1 }}>
-        <Typography sx={{ fontWeight: 800 }}>{planta.nombre ?? `Planta ${planta.id}`}</Typography>
+        <Typography sx={{ fontWeight: 800 }}>{planta.codigo ?? `Planta ${planta.id}`}</Typography>
         <Typography variant="caption" sx={{ color: "text.secondary" }}>
           {planta.variedad ?? "Variedad"}
         </Typography>
