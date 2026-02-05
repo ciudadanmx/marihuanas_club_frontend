@@ -8,7 +8,7 @@ import InfoMiClub from '../../components/Clubs/InfoMiClub.jsx';
 import Bitacora from '../../components/Clubs/Bitacora.jsx';
 import Documentos from '../../components/Clubs/Documentos.jsx';
 import MisPlantas from '../../components/Clubs/MisPlantas/MisPlantas.jsx';
-import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx'; // <-- verifica la ruta si tu carpeta es "MisPlantas" (mantuve la original)
+import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
 import IngresarSemillas from '../../components/Clubs/IngresarSemillas.jsx';
 import GestionClub from '../../components/Clubs/GestionClub.jsx';
@@ -19,18 +19,20 @@ import Esquejear from '../../components/Clubs/Esquejear.jsx';
 import Entregar from '../../components/Clubs/Entregar.jsx';
 import Excedentes from '../../components/Clubs/Excedentes.jsx';
 import ClubActions from '../../components/Clubs/ClubActions.jsx';
-import Agenda from '../../components/Clubs/Agenda.jsx'; // <-- nueva pestaña Agenda para admin
+import Agenda from '../../components/Clubs/Agenda.jsx'; // nueva pestaña Agenda para admin
 
 const MiClub = () => {
   const location = useLocation();
   const { user, isLoading } = useAuth0();
   const { isJardinero, userData } = useRoles();
 
-  // Durante desarrollo NO memoizamos roles: queremos re-evaluar siempre
-  // (useMemo provoca que el rol se "pegue" si alguna dependencia no cambia)
+  // Evaluamos el rol directamente (sin useMemo) para que cambie en caliente durante dev
   const jardinero = userData ? isJardinero() : false;
 
+  // estado del tab seleccionado
   const [tabIndex, setTabIndex] = useState(0);
+
+  // responsive
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
@@ -39,9 +41,9 @@ const MiClub = () => {
 
   /**
    * Tabs principales.
-   * - Usuarios normales: muestran Info, Bitácora, Documentos, Mis Plantas.
-   * - Admins (jardineros): NO muestran "Mis Plantas" (está dentro de Gestión),
-   *   y ahora tienen una pestaña adicional "Agenda" **después** de Mi Bitácora.
+   * - Usuarios normales: Info, Bitácora, Documentos, Mis Plantas.
+   * - Admins (jardineros): Bitácora, Agenda, Documentos, Info, Gestionar Club.
+   *   Nota: "Mis Plantas" NO aparece para admins (está en Gestión).
    */
   const tabs = !jardinero
     ? [
@@ -52,13 +54,13 @@ const MiClub = () => {
       ]
     : [
         { label: 'Mi Bitácora', path: 'bitacora' },
-        { label: 'Agenda', path: 'agenda' }, // <-- la nueva pestaña para admins
+        { label: 'Agenda', path: 'agenda' }, // nueva pestaña
         { label: 'Documentación Legal', path: 'documentos' },
         { label: 'Info tu Club', path: 'info' },
         { label: 'Gestionar Club', path: 'admin' },
       ];
 
-  // Listener responsive (mueve layout en mobile)
+  // Listener responsive
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -66,10 +68,13 @@ const MiClub = () => {
   }, []);
 
   /**
-   * Sincroniza el tabIndex con la URL.
-   * - Soporta subrutas: /clubs/miclub/admin/..., /clubs/miclub/info/axiones/...
-   * - Si la ruta es una subruta admin (segment[0] === 'admin') marca la pestaña 'admin'.
-   * - Si la ruta está bajo info/axiones/... marca la pestaña 'info'.
+   * Sincroniza tabIndex con la URL y con el rol.
+   *
+   * NOTAS IMPORTANTES:
+   * - Este effect se dispara cuando cambia location.pathname, tabs (por cambio de rol)
+   *   o jardinero.
+   * - No dependemos de tabIndex para evitar loops.
+   * - Para actualizar en caliente cuando cambia el rol, tabs cambia y el effect corre.
    */
   useEffect(() => {
     const currentPath = (location.pathname || '').toLowerCase();
@@ -80,35 +85,47 @@ const MiClub = () => {
       : currentPath;
     const segments = rel.split('/').filter(Boolean); // ej: ['admin','ingresarsemillas']
 
+    // Detectamos si estamos EXACAMENTE en la raíz /clubs/miclub o con / al final
+    const isAtRoot = segments.length === 0;
+
     let found = -1;
 
-    // Prioridad por casos especiales
     if (segments[0] === 'info') {
       // /clubs/miclub/info/... -> pestaña 'info'
       found = tabs.findIndex((t) => t.path === 'info');
     } else if (segments[0] === 'admin') {
-      // cualquier /clubs/miclub/admin/... -> pestaña 'admin'
+      // /clubs/miclub/admin/... -> pestaña 'admin'
       found = tabs.findIndex((t) => t.path === 'admin');
     } else if (segments[0]) {
-      // intenta match por primer segmento (ej: /misplantas, /bitacora, /agenda)
+      // Intentamos match directo por primer segmento (misplantas, bitacora, agenda, etc.)
       found = tabs.findIndex((t) => t.path === segments[0]);
-      // si no se encontró exacto, intentar includes por si hay subrutas
+      // Si no hay match exacto, probamos includes por si hay subruta (ej: /bitacora/sub)
       if (found === -1) {
         found = tabs.findIndex((t) => currentPath.includes(`${basePrueba}/${t.path}`));
       }
-    } else {
-      // raíz /clubs/miclub -> default 0
-      found = 0;
+    } else if (isAtRoot) {
+      // Caso raíz EXACTA: aplicamos default según rol
+      if (jardinero) {
+        found = tabs.findIndex((t) => t.path === 'admin'); // Gestionar Club para admin
+      } else {
+        found = tabs.findIndex((t) => t.path === 'info'); // Info para no-admin
+      }
     }
 
-    if (found !== -1) setTabIndex(found);
-    else setTabIndex(0);
-  }, [location.pathname, tabs]);
+    // Actualizamos solo si found es válido y distinto del actual
+    setTabIndex((prev) => {
+      if (found !== -1 && found !== prev) return found;
+      return prev;
+    });
+
+    // DEBUG opcional: si quieres ver qué está pasando descomenta la línea
+    // console.log('MiClub.sync', { currentPath, segments, jardinero, tabs, found });
+  }, [location.pathname, tabs, jardinero]);
 
   // Esperar Auth0 + datos de roles antes de renderizar
   if (isLoading || !userData) return <p>Cargando...</p>;
 
-  // normalizamos y separamos segmentos para comprobaciones robustas
+  // Normalizamos y separamos segmentos para las comprobaciones de render
   const path = (location.pathname || '').toLowerCase();
   const rel = path.startsWith(basePrueba) ? path.slice(basePrueba.length) : path;
   const segments = rel.split('/').filter(Boolean); // ej: ['admin','ingresarsemillas'] o ['misplantas','sembrar', ...]
@@ -136,6 +153,18 @@ const MiClub = () => {
   const isInfoAxiones = segments[0] === 'info' && segments[1] === 'axiones' && !!segments[2];
   const infoAccion = isInfoAxiones ? segments[2] : null;
   const infoResto = isInfoAxiones ? segments.slice(3).join('/') : null;
+
+  console.log('DEBUG MiClub', {
+  pathname: location.pathname,
+  jardinero,
+  tabs,
+  tabIndex
+});
+
+console.log('ROL DEBUG', {
+  userData,
+  isJardinero: isJardinero(),
+});
 
   return (
     <div
@@ -168,7 +197,7 @@ const MiClub = () => {
             isInfoAxiones ? (
               <ClubActions accion={infoAccion} params={infoResto} user={user} />
             ) : (
-              <InfoMiClub />
+              <InfoMiClub jardinero={jardinero} />
             )
           )}
 

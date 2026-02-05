@@ -25,7 +25,7 @@ export const RolesProvider = ({ children }) => {
   const [userData, setUserData] = useState(null);
 
   // ----- CONFIG -----
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de TTL para la caché (ajustable)
+  const CACHE_TTL = 1 * 1 * 1000; // 5 minutos de TTL para la caché (ajustable)AJUSTAR ESTÁ EN 1 SEGUNDO
 
   // ----- Refs -----
   // para evitar setState después de un unmount

@@ -11,7 +11,7 @@ import {
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
 
-const InfoMiClub = () => {
+const InfoMiClub = ({jardinero}) => {
   const { user, isLoading } = useAuth0();
   const navigate = useNavigate();
 
@@ -64,6 +64,7 @@ const InfoMiClub = () => {
   return (
     <>
       {/* ÁREA DE BOTONES – ARRIBA */}
+      {jardinero === false && (
       <div
         style={{
           display: 'grid',
@@ -107,6 +108,7 @@ const InfoMiClub = () => {
           <span>Configuración</span>
         </button>
       </div>
+      ) }
 
       {/* CLUB */}
       <Club miclub={nombreClub} />
