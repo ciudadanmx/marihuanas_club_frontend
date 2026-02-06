@@ -61,12 +61,13 @@ export default function Sembrar() {
   useEffect(() => {
     const fetchSemillas = async () => {
       setLoading(true);
-      try {
-        let url = `${STRAPI_BASE}/api/plantas`;
-        url += `?filters[semilla][$eq]=true`;
-        url += `&populate=usuario.profilepic`;
-        url += `&pagination[pageSize]=1000`;
-
+     try {
+      let url = `${STRAPI_BASE}/api/plantas`;
+      url += `?filters[semilla][$eq]=true`;
+      url += `&filters[status][$eq]=recibidas`;
+      url += `&populate=usuario.profilepic`;
+      url += `&pagination[pageSize]=1000`;
+      
         const res = await fetch(url);
         const json = await res.json();
 

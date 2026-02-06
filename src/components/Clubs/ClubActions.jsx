@@ -21,6 +21,7 @@ import { CloudUpload, Refresh, Clear } from "@mui/icons-material";
 import { motion } from "framer-motion";
 import { useRoles } from "../../Contexts/RolesContext.jsx";
 import { useNavigate } from "react-router-dom";
+import { generarCodigoPlanta } from '../../utils/CodigosPlantas.js';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || "";
 const MotionPaper = motion(Paper);
@@ -348,8 +349,10 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
       const requestedISO = new Date(fechaSolicitada).toISOString();
 
       if (accion === "ingresarsemillas") {
-        // create up to remainingPlants (fallback to DEFAULT_NUM_PLANTAS_FALLBACK if unknown)
-        const createCount = (remainingPlants == null) ? DEFAULT_NUM_PLANTAS_FALLBACK : Math.max(0, remainingPlants);
+        // create up to requested number of seeds but not exceeding remainingPlants (or fallback)
+        const requestedCount = Number(numSemillas) || 1;
+        const maxAllowed = (remainingPlants == null) ? DEFAULT_NUM_PLANTAS_FALLBACK : remainingPlants;
+        const createCount = Math.max(0, Math.min(requestedCount, maxAllowed));
         if (createCount <= 0) {
           setError(`Tu solicitud de ingreso de semillas ya ha sido realizada. Solo se permiten hasta ${allowedPlants} plantas.`);
           setSending(false);
@@ -357,14 +360,39 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
         }
 
         const fechaBase = userData?.fechaingresoplantas || requestedISO || nowISO;
-        const fechaForCode = formatForCodigo(fechaBase);
-        const emailNoAt = safeEmailForCode((user && user.email) || userData?.email);
+        const fechaObj = new Date(fechaBase);
+        const emailStr = (user && user.email) || userData?.email || "";
+
+        // fetch existing plant codes (hasta 100) para alimentar el helper y mantener secuencia
+        let plantasExistentes = [];
+        try {
+          const resp = await fetch(`${STRAPI_URL}/api/plantas?filters[usuario_email][$eq]=${encodeURIComponent(emailStr)}&pagination[pageSize]=100&fields[0]=codigo`, { credentials: "include" });
+          if (resp.ok) {
+            const json = await resp.json();
+            const items = json?.data || [];
+            plantasExistentes = items.map((it) => ({ codigo: it?.attributes?.codigo || null })).filter(p => p.codigo);
+          }
+        } catch (err) {
+          console.warn('No pude obtener plantas existentes para secuencia, continuaré igualmente', err);
+          plantasExistentes = [];
+        }
 
         const created = [];
+        // baseIndex: punto de partida 0-based. Preferimos existingPlantCount si ya lo tenemos.
+        const baseIndex = (typeof existingPlantCount === 'number' && !Number.isNaN(existingPlantCount))
+          ? existingPlantCount
+          : (plantasExistentes ? plantasExistentes.length : 0);
+
         for (let i = 0; i < createCount; i++) {
-          const color = COLORS[(existingPlantCount + i) % COLORS.length];
-          const seqIndex = existingPlantCount + i + 1; // global index
-          const codigo = `${emailNoAt}-${fechaForCode}-${String(seqIndex).padStart(2, "0")}-${color}`;
+          const idxGlobal = baseIndex + i;
+          const gen = generarCodigoPlanta({
+            email: emailStr,
+            fecha: fechaObj,
+            indexGlobal: idxGlobal,
+          });
+          const codigo = gen.codigo;
+          const color = gen.color;
+
           const payload = {
             data: {
               usuario: usuarioId,
@@ -380,6 +408,7 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
               numero_semillas_reportadas: numSemillas,
             },
           };
+
           const res = await fetch(`${STRAPI_URL}/api/plantas`, {
             method: "POST",
             credentials: "include",
@@ -392,6 +421,9 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
           }
           const json = await res.json();
           created.push(json);
+
+          // empujamos localmente el codigo creado para que la siguiente iteración vea la nueva planta
+          plantasExistentes.push({ codigo });
         }
         setMensaje(`Solicitud enviada: ${created.length} plantas creadas. El club confirmará la hora.`);
         clearForm();
