@@ -401,7 +401,7 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
   }, [plantas]);
 
   /* ================= acciones de navegación ================= */
-  const handleAgregarRegistro = () => navigate("/plantas/agregar");
+  const handleAgregarRegistro = () => navigate("/clubs/miclub/admin/anotar");
   const handleIngresarSemillas = () => navigate("/clubs/miclub/admin/sembrar");
   const handleEntregarFlores = () => navigate("/clubs/miclub/admin/entregar");
   const handleExcedentes = () => navigate("/clubs/miclub/admin/excedentes");
@@ -487,7 +487,7 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
 
           <Stack direction="row" spacing={1} sx={{ mt: { xs: 1, md: 0 } }}>
             <Tooltip title="Agregar registro">
-              <IconButton color="primary" onClick={() => navigate(`/plantas/agregar?usuario=${user.id}`)}>
+              <IconButton color="primary" onClick={() => navigate(`/clubs/miclub/admin/anotar?usuario=${user.id}`)}>
                 <EditIcon />
               </IconButton>
             </Tooltip>

@@ -13,6 +13,7 @@ import Sembrar from '../../components/Clubs/Sembrar.jsx';
 import IngresarSemillas from '../../components/Clubs/IngresarSemillas.jsx';
 import GestionClub from '../../components/Clubs/GestionClub.jsx';
 import ChecarPlanta from '../../components/Clubs/ChecarClub.jsx';
+import EscribirBitacora from './EscribirBitacora.jsx';
 
 // Nuevos componentes que mencionaste
 import Cosechar from '../../components/Clubs/Cosechar.jsx';
@@ -146,6 +147,7 @@ const MiClub = () => {
   const isAdminEntregar = adminAction === 'entregar';
   const isAdminExcedentes = adminAction === 'excedentes';
   const isAdminChecar = adminAction === 'checar';
+  const isAdminAnotar = adminAction === 'anotar';
   const isAdminVer = adminAction === 'ver' && !!adminCode;
 
   // admin item id (cuando la ruta tiene /admin/<action>/<id>)
@@ -244,13 +246,15 @@ const MiClub = () => {
             ) : isAdminCosechar ? (
               <Cosechar user={user} cosechaid={adminItemId} />
             ) : isAdminEsquejear ? (
-              <Esquejear user={user} cosechaid={adminItemId} />
+              <Esquejear user={user} idplanta={adminItemId} />
             ) : isAdminEntregar ? (
               <Entregar user={user} cosechaid={adminItemId} />
             ) : isAdminExcedentes ? (
               <Excedentes />
             ) : isAdminChecar ? (
               <ChecarPlanta user={user} plantaid={adminItemId} />
+            ) : isAdminAnotar ? (
+              <EscribirBitacora user={user} />
             ) : isAdminVer ? (
               // /clubs/miclub/admin/ver/:codigo -> ver detalle de planta (mismo comportamiento que no-admin)
               <DetallePlanta codigo={adminCode} user={user} />
