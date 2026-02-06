@@ -9,19 +9,21 @@ import {
   IconButton,
   Divider,
   Tooltip,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
   Spa as SembrarIcon,
+  UploadFile as IngresarStockIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useRoles } from "../../Contexts/RolesContext.jsx";
 import sinImagen from "../../assets/placeholders/sinimagen.jpg";
 
-const STRAPI = process.env.REACT_APP_STRAPI_URL;
+const STRAPI = process.env.REACT_APP_STRAPI_URL || "";
+const STRAPI_BASE = STRAPI.replace(/\/$/, "");
 
 /* ================= Helpers ================= */
-
-const STRAPI_BASE = (STRAPI || "").replace(/\/$/, "");
 
 function toAbsoluteUrl(url) {
   if (!url) return null;
@@ -51,44 +53,94 @@ function getImageUrl(obj) {
 
 /* ================= Componente ================= */
 
-export default function Sembrar() {
+/**
+ * Sembrar
+ * Props:
+ *  - user: (opcional) objeto de Auth0 user (se usa para contextos donde haga falta)
+ *  - tipo: 'recibidas' (default) | 'solicitadas'
+ *
+ * Uso:
+ * <Sembrar user={user} tipo={'solicitadas'} />
+ */
+export default function Sembrar({ user = null, tipo = "recibidas" }) {
   const navigate = useNavigate();
+  const { userData } = useRoles();
+
   const [semillas, setSemillas] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
-  /* ================= Fetch ================= */
+  // extraer clubId robustamente de userData
+  const clubId = useMemo(() => {
+    const raw = userData?.club;
+    if (!raw) return null;
+    // varios formatos posibles
+    if (typeof raw === "string" || typeof raw === "number") return raw;
+    if (raw?.id) return raw.id;
+    if (raw?.data?.id) return raw.data.id;
+    if (Array.isArray(raw) && raw[0]) {
+      const first = raw[0];
+      if (first?.id) return first.id;
+      if (first?.data?.id) return first.data.id;
+    }
+    return null;
+  }, [userData]);
 
   useEffect(() => {
+    let mounted = true;
     const fetchSemillas = async () => {
       setLoading(true);
-     try {
-      let url = `${STRAPI_BASE}/api/plantas`;
-      url += `?filters[semilla][$eq]=true`;
-      url += `&filters[status][$eq]=recibidas`;
-      url += `&populate=usuario.profilepic`;
-      url += `&pagination[pageSize]=1000`;
-      
-        const res = await fetch(url);
-        const json = await res.json();
+      setFetchError(null);
+      try {
+        // base URL
+        let url = `${STRAPI_BASE}/api/plantas`;
+        // filtros obligatorios
+        url += `?filters[semilla][$eq]=true`;
 
+        // status según tipo
+        const statusToUse = tipo === "solicitadas" ? "solicitadas" : "recibidas";
+        url += `&filters[status][$eq]=${encodeURIComponent(statusToUse)}`;
+
+        // filter por club relacionado (si lo tenemos)
+        if (clubId) {
+          // filtrado por relación club id en Strapi v4:
+          url += `&filters[club][id][$eq]=${encodeURIComponent(clubId)}`;
+        }
+
+        // populate usuario.profilepic
+        url += `&populate=usuario.profilepic`;
+        // page size grande para traer todo
+        url += `&pagination[pageSize]=1000`;
+
+        const res = await fetch(url, { credentials: "include" });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(`HTTP ${res.status} ${txt}`);
+        }
+        const json = await res.json();
         const data = Array.isArray(json.data) ? json.data : [];
         const normalized = data.map((p) => ({
           id: p.id,
           ...p.attributes,
           usuario: p.attributes.usuario?.data ?? null,
         }));
-
-        setSemillas(normalized);
+        if (mounted) setSemillas(normalized);
       } catch (err) {
         console.error("Error trayendo semillas:", err);
-        setSemillas([]);
+        if (mounted) {
+          setSemillas([]);
+          setFetchError(String(err?.message || err));
+        }
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     };
 
     fetchSemillas();
-  }, []);
+    return () => {
+      mounted = false;
+    };
+  }, [tipo, clubId]);
 
   /* ================= Agrupar por usuario ================= */
 
@@ -96,14 +148,14 @@ export default function Sembrar() {
     const map = new Map();
 
     semillas.forEach((s) => {
-      const user = s.usuario;
-      const userId = user?.id ?? "sin-usuario";
-      const userAttrs = user?.attributes ?? {};
+      const userObj = s.usuario;
+      const userId = userObj?.id ?? "sin-usuario";
+      const userAttrs = userObj?.attributes ?? {};
 
       if (!map.has(userId)) {
         map.set(userId, {
           id: userId,
-          username: userAttrs.username ?? "Usuario",
+          username: userAttrs.username ?? userAttrs.email ?? "Usuario",
           profilepic: getImageUrl(userAttrs),
           semillas: [],
         });
@@ -117,9 +169,12 @@ export default function Sembrar() {
 
   /* ================= Render ================= */
 
+  const isSolicitadas = tipo === "solicitadas";
+  const titulo = isSolicitadas ? "🌿 Semillas solicitadas" : "🌱 Sembrar";
+  const encabezadoButton = !isSolicitadas; // si es solicitadas, ocultar el botón de encabezado
+
   return (
     <Box sx={{ px: 2, py: 2 }}>
-      {/* Header */}
       <Stack
         direction={{ xs: "column", md: "row" }}
         justifyContent="space-between"
@@ -128,33 +183,35 @@ export default function Sembrar() {
         sx={{ mb: 3 }}
       >
         <Typography variant="h5" sx={{ fontWeight: 900 }}>
-          🌱 Sembrar
+          {titulo}
         </Typography>
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/clubs/miclub/admin/ingresarsemillas")}
-        >
-          Ingresar semillas a stock
-        </Button>
+        {encabezadoButton && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => navigate("/clubs/miclub/admin/ingresarsemillas")}
+          >
+            Ingresar semillas a stock
+          </Button>
+        )}
       </Stack>
 
       {loading && (
-        <Typography color="text.secondary">
-          Cargando semillas…
-        </Typography>
+        <Typography color="text.secondary">Cargando semillas…</Typography>
       )}
 
-      {!loading && semillasPorUsuario.length === 0 && (
-        <Typography color="text.secondary">
-          No hay semillas disponibles.
-        </Typography>
+      {!loading && fetchError && (
+        <Alert severity="error">Error cargando semillas: {String(fetchError)}</Alert>
+      )}
+
+      {!loading && !fetchError && semillasPorUsuario.length === 0 && (
+        <Typography color="text.secondary">No hay semillas disponibles.</Typography>
       )}
 
       <Stack spacing={4}>
-        {semillasPorUsuario.map((user) => (
-          <Box key={user.id}>
+        {semillasPorUsuario.map((userBlock) => (
+          <Box key={userBlock.id}>
             {/* Usuario */}
             <Stack
               direction="row"
@@ -163,25 +220,25 @@ export default function Sembrar() {
               sx={{ mb: 1 }}
             >
               <Avatar
-                src={user.profilepic || sinImagen}
+                src={userBlock.profilepic || sinImagen}
                 sx={{ width: 40, height: 40 }}
                 imgProps={{ crossOrigin: "anonymous" }}
               >
-                {user.username?.charAt(0)?.toUpperCase()}
+                {userBlock.username?.charAt(0)?.toUpperCase()}
               </Avatar>
 
               <Typography sx={{ fontWeight: 800 }}>
-                {user.username}
+                {userBlock.username}
               </Typography>
 
               <Typography variant="caption" color="text.secondary">
-                ({user.semillas.length} semillas)
+                ({userBlock.semillas.length} semillas)
               </Typography>
             </Stack>
 
             {/* Semillas */}
             <Stack spacing={1}>
-              {user.semillas.map((s) => (
+              {userBlock.semillas.map((s) => (
                 <Paper
                   key={s.id}
                   elevation={1}
@@ -197,22 +254,32 @@ export default function Sembrar() {
                     <Typography sx={{ fontWeight: 700 }}>
                       {s.nombre ?? `Semilla ${s.id}`}
                     </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                    >
+                    <Typography variant="caption" color="text.secondary">
                       {s.variedad ?? "Variedad"}
+                      {s.codigo ? ` — ${s.codigo}` : ""}
                     </Typography>
                   </Box>
 
-                  <Tooltip title="Sembrar">
+                  <Tooltip
+                    title={
+                      isSolicitadas
+                        ? "Ingresar semillas a stock"
+                        : "Sembrar"
+                    }
+                  >
                     <IconButton
-                      color="success"
+                      color={isSolicitadas ? "primary" : "success"}
                       onClick={() =>
-                        navigate(`/plantas/sembrar/${s.id}`)
+                        isSolicitadas
+                          ? navigate(
+                              `/clubs/miclub/admin/ingresarsemillas/${encodeURIComponent(
+                                s.id
+                              )}`
+                            )
+                          : navigate(`/clubs/miclub/admin/sembrar/${s.id}`)
                       }
                     >
-                      <SembrarIcon />
+                      {isSolicitadas ? <IngresarStockIcon /> : <SembrarIcon />}
                     </IconButton>
                   </Tooltip>
                 </Paper>

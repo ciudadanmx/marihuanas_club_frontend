@@ -403,12 +403,12 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
   /* ================= acciones de navegación ================= */
   const handleAgregarRegistro = () => navigate("/plantas/agregar");
   const handleIngresarSemillas = () => navigate("/clubs/miclub/admin/sembrar");
-  const handleEntregarFlores = () => navigate("/flores/entregar");
-  const handleExcedentes = () => navigate("/excedentes");
+  const handleEntregarFlores = () => navigate("/clubs/miclub/admin/entregar");
+  const handleExcedentes = () => navigate("/clubs/miclub/admin/excedentes");
 
-  const handleChecar = (id) => navigate(`/plantas/checar/${id}`);
-  const handleEsquejear = (id) => navigate(`/plantas/esquejar/${id}`);
-  const handleCosechar = (id) => navigate(`/plantas/cosechar/${id}`);
+  const handleChecar = (id) => navigate(`/clubs/miclub/admin/checar/${id}`);
+  const handleEsquejear = (id) => navigate(`/clubs/miclub/admin/esquejear/${id}`);
+  const handleCosechar = (id) => navigate(`/clubs/miclub/admin/cosechar/${id}`);
 
   const handlePasarACurado = (userId) =>
     navigate(`/plantas/pasar-a-curado?armario=${encodeURIComponent(userId)}`);

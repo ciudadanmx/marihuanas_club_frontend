@@ -12,6 +12,7 @@ import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
 import Sembrar from '../../components/Clubs/Sembrar.jsx';
 import IngresarSemillas from '../../components/Clubs/IngresarSemillas.jsx';
 import GestionClub from '../../components/Clubs/GestionClub.jsx';
+import ChecarPlanta from '../../components/Clubs/ChecarClub.jsx';
 
 // Nuevos componentes que mencionaste
 import Cosechar from '../../components/Clubs/Cosechar.jsx';
@@ -20,6 +21,10 @@ import Entregar from '../../components/Clubs/Entregar.jsx';
 import Excedentes from '../../components/Clubs/Excedentes.jsx';
 import ClubActions from '../../components/Clubs/ClubActions.jsx';
 import Agenda from '../../components/Clubs/Agenda.jsx'; // nueva pestaña Agenda para admin
+
+// Componentes para los casos con /:id
+import SembrarSemilla from '../../components/Clubs/SembrarSemilla.jsx';
+
 
 const MiClub = () => {
   const location = useLocation();
@@ -140,7 +145,11 @@ const MiClub = () => {
   const isAdminEsquejear = adminAction === 'esquejear';
   const isAdminEntregar = adminAction === 'entregar';
   const isAdminExcedentes = adminAction === 'excedentes';
+  const isAdminChecar = adminAction === 'checar';
   const isAdminVer = adminAction === 'ver' && !!adminCode;
+
+  // admin item id (cuando la ruta tiene /admin/<action>/<id>)
+  const adminItemId = segments[0] === 'admin' && segments[2] ? segments[2] : null;
 
   // --- Mis plantas (usuarios normales) ---
   const isSembrar = segments[0] === 'misplantas' && segments[1] === 'sembrar';
@@ -149,22 +158,27 @@ const MiClub = () => {
       ? segments[1]
       : null;
 
+  // semillaId cuando la ruta es /misplantas/sembrar/:id
+  const semillaIdEnMisplantas = segments[0] === 'misplantas' && segments[1] === 'sembrar' && segments[2]
+    ? segments[2]
+    : null;
+
   // --- Info/axiones para usuarios no-admin (mapea a ClubActions) ---
   const isInfoAxiones = segments[0] === 'info' && segments[1] === 'axiones' && !!segments[2];
   const infoAccion = isInfoAxiones ? segments[2] : null;
   const infoResto = isInfoAxiones ? segments.slice(3).join('/') : null;
 
   console.log('DEBUG MiClub', {
-  pathname: location.pathname,
-  jardinero,
-  tabs,
-  tabIndex
-});
+    pathname: location.pathname,
+    jardinero,
+    tabs,
+    tabIndex
+  });
 
-console.log('ROL DEBUG', {
-  userData,
-  isJardinero: isJardinero(),
-});
+  console.log('ROL DEBUG', {
+    userData,
+    isJardinero: isJardinero(),
+  });
 
   return (
     <div
@@ -213,17 +227,30 @@ console.log('ROL DEBUG', {
           {/* ADMIN tab y sus subrutas internas (sembrar, ingresarsemillas, cosechar, etc.) */}
           {tabs[tabIndex]?.path === 'admin' && (
             isAdminSembrar ? (
-              <Sembrar user={user} />
+              // Si la ruta es /admin/sembrar/:id usamos SembrarSemilla
+              adminItemId ? (
+                <SembrarSemilla idplanta={adminItemId} user={user} />
+              ) : (
+                <Sembrar user={user} />
+              )
             ) : isAdminIngresarSemillas ? (
-              <IngresarSemillas user={user} />
+              // Si la ruta es /admin/ingresarsemillas/:id usamos IngresarSemilla
+              adminItemId ? (
+                <IngresarSemillas idplanta={adminItemId} user={user} />
+              ) : (
+                // por compatibilidad se estaba usando Sembrar con tipo 'solicitadas'
+                <Sembrar user={user} tipo={'solicitadas'} />
+              )
             ) : isAdminCosechar ? (
-              <Cosechar user={user} />
+              <Cosechar user={user} cosechaid={adminItemId} />
             ) : isAdminEsquejear ? (
-              <Esquejear user={user} />
+              <Esquejear user={user} cosechaid={adminItemId} />
             ) : isAdminEntregar ? (
-              <Entregar user={user} />
+              <Entregar user={user} cosechaid={adminItemId} />
             ) : isAdminExcedentes ? (
-              <Excedentes user={user} />
+              <Excedentes />
+            ) : isAdminChecar ? (
+              <ChecarPlanta user={user} plantaid={adminItemId} />
             ) : isAdminVer ? (
               // /clubs/miclub/admin/ver/:codigo -> ver detalle de planta (mismo comportamiento que no-admin)
               <DetallePlanta codigo={adminCode} user={user} />
@@ -236,7 +263,12 @@ console.log('ROL DEBUG', {
           {/* MISPLANTAS tab (solo aparece para no-admins) */}
           {tabs[tabIndex]?.path === 'misplantas' && (
             isSembrar ? (
-              <Sembrar user={user} />
+              // si es /misplantas/sembrar/:id usar SembrarSemilla
+              semillaIdEnMisplantas ? (
+                <SembrarSemilla idplanta={semillaIdEnMisplantas} user={user} />
+              ) : (
+                <Sembrar user={user} />
+              )
             ) : codigoPlanta ? (
               <DetallePlanta codigo={codigoPlanta} user={user} />
             ) : (
