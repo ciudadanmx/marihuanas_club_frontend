@@ -15,6 +15,7 @@ import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 
 import guestImage from '../../assets/guest.png';
 import MenuIcon from './MenuIcon';
+import NotificationsIcon from './NotificationsIcon.jsx';
 import UserIcon from './UserIcon.jsx'
 import CartIcon from './CartIcon';
 import NavButton from './NavButton.jsx';
@@ -23,6 +24,7 @@ import '../../styles/CuentaIcon.css';
 import '../../styles/AccountMenu.css';
 import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
+import MenuTopBar from './MenuTopBar.jsx';
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
@@ -30,10 +32,12 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationMenuOpen, setIsNotificationMenuOpen] = useState(false);
   const [isInfoMenuOpen, setIsInfoMenuOpen] = useState(false);
+  const [topBarOpen, setTopBarOpen] = useState(false); // <-- Estado de la barra superior
 
   const profileRef = useRef(null);
   const notifRef = useRef(null);
   const InfoRef = useRef(null);
+  const topBarRef = useRef(null);
 
   const { user, isAuthenticated, loginWithRedirect, logout } = useAuth0();
   const [isMenuOpen, setIsMenuOpen] = useState(SetIsMenuOpen || false);
@@ -96,12 +100,17 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   useEffect(() => {
     const handleResize = () => {
       setLogoSrc(window.innerWidth < 490 ? "/logo193.png" : "/marihuanasclub_logo.png");
-    };
 
+      // Al redimensionar, actualiza la altura de la topBar para la animación si está abierta
+      if (topBarRef.current && topBarOpen) {
+        topBarRef.current.style.maxHeight = topBarRef.current.scrollHeight + 'px';
+      }
+
+    };
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [topBarOpen]);
 
   useEffect(() => {
     setActiveTab(siteSection);
@@ -117,6 +126,34 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     setIsNotificationMenuOpen(false);
     setIsInfoMenuOpen(false);
   };
+
+
+  
+  // Toggle de la topBar: calculamos la altura para la animación
+  const toggleTopBar = () => {
+    setTopBarOpen(prev => {
+      const next = !prev;
+      // si la referencia existe y vamos a abrir, ajustamos maxHeight
+      if (topBarRef.current) {
+        if (!next) {
+          topBarRef.current.style.maxHeight = '0px';
+        } else {
+          // fuerza reflow para que la transición funcione si venimos de 0
+          topBarRef.current.style.maxHeight = '0px';
+          // pequeño timeout para permitir el reflow
+          setTimeout(() => {
+            if (topBarRef.current) topBarRef.current.style.maxHeight = topBarRef.current.scrollHeight + 'px';
+          }, 20);
+        }
+      }
+      return next;
+    });
+  };
+
+  // Inicializamos los estilos de la topBar a 0
+  useEffect(() => {
+    if (topBarRef.current && !topBarOpen) topBarRef.current.style.maxHeight = '0px';
+  }, []);
 
   // --- Notifications context (usa lo que tengas disponible) ---
   // Asegúrate que tu NotificationsContext exponga refreshNotificaciones si quieres que pushNotification
@@ -246,6 +283,28 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
 
   return (
     <>
+
+      <MenuTopBar
+        iconMap={iconMap}
+        isOpen={topBarOpen}
+        setIsOpen={(open) => {
+          if (topBarRef.current) {
+            if (!open) {
+              topBarRef.current.style.maxHeight = '0px';
+            } else {
+              topBarRef.current.style.maxHeight = '0px';
+              setTimeout(() => {
+                if (topBarRef.current) topBarRef.current.style.maxHeight = topBarRef.current.scrollHeight + 'px';
+              }, 20);
+            }
+          }
+          closeAllMenus();
+          setTopBarOpen(open);
+        }}
+        topBarRef={topBarRef}
+        handleNavigation={handleNavigation}
+      />
+    
       <section className="navbar"
         style={{
           width: "100%",
@@ -260,6 +319,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
           <div className='nav-links columnas'>
             <div className="logo-container" alt="MaRiHuaNaS.CLuB --> Red de Clubs 4.20 Mex." onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
               <img
+                id="marihuanas-club-logo"
                 src={logoSrc}
                 alt="Marihuanas.Club Logo"
                 name="Marihuanas.Club - Red de Clubs 4.20 Mex. - Logo"
@@ -270,21 +330,30 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
             <div className="columna3">
               <div className="nav-linky">
                 <MenuIcon
-                  isOpen={isInfoMenuOpen}
-                  onClose={() => setIsInfoMenuOpen(false)}
-                  authenticated={isAuthenticated}
-                  userData={user}
-                  className="cuenta-icon"
-                  containerRef={InfoRef}
+                  isOpen={topBarOpen}
                   setIsOpen={(open) => {
+                    // animación: ajusta maxHeight para la transición
+                    if (topBarRef.current) {
+                      if (!open) {
+                        topBarRef.current.style.maxHeight = '0px';
+                      } else {
+                        // forzamos reflow para que la transición se anime bien
+                        topBarRef.current.style.maxHeight = '0px';
+                        setTimeout(() => {
+                          if (topBarRef.current) topBarRef.current.style.maxHeight = topBarRef.current.scrollHeight + 'px';
+                        }, 20);
+                      }
+                    }
+                    // cierra otras menus si hace falta
                     closeAllMenus();
-                    setIsInfoMenuOpen(open);
+                    setTopBarOpen(open);
                   }}
+                  className="cuenta-icon"
                 />
               </div>
 
               <div className="nav-linky">
-                <MenuIcon
+                <NotificationsIcon
                   action='notifications'
                   isOpen={isNotificationMenuOpen}
                   setIsOpen={(open) => {

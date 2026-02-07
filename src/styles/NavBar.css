@@ -406,3 +406,13 @@
     max-height: 5vw !important;    
   }
 }
+
+.navbar-wrapper {
+  position: relative;
+  transition: transform 280ms ease;
+}
+
+/* cuando el menú está abierto */
+.navbar-wrapper.menu-open {
+  transform: translateY(280px); /* mismo alto que el MenuTopBar */
+}
