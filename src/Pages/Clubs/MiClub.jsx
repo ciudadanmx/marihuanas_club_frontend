@@ -20,7 +20,7 @@ import Cosechar from '../../components/Clubs/Cosechar.jsx';
 import Esquejear from '../../components/Clubs/Esquejear.jsx';
 import Entregar from '../../components/Clubs/Entregar.jsx';
 import Excedentes from '../../components/Clubs/Excedentes.jsx';
-import ClubActions from '../../components/Clubs/ClubActions.jsx';
+import ClubActions from '../../components/Clubs/ClubActions/ClubActions.jsx';
 import Agenda from '../../components/Clubs/Agenda.jsx'; // nueva pestaña Agenda para admin
 
 // Componentes para los casos con /:id

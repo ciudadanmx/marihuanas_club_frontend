@@ -1,4 +1,6 @@
 import { consola } from './consola';
-import minutesSince from './timeSince';
+//utilidades.getMinutesSince()
+import utilidades from './timeSince';
+import diccionarios from './diccionarios.js'
 
-export { consola, minutesSince };
+export { consola, utilidades };

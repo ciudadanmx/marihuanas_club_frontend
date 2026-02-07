@@ -28,7 +28,7 @@ const getMinutesSince = (utcTime, city = 'cdmx') => {
     return diffMinutes;
   };
   
-  const minutesSince = { getMinutesSince };
+  const contadorfechas = { getMinutesSince };
   
-  export default minutesSince;
+  export default contadorfechas;
   
