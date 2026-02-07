@@ -14,25 +14,7 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import SaveIcon from '@mui/icons-material/Save';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { motion } from 'framer-motion';
-import { useRoles } from '../../Contexts/RolesContext'; // Ajusta la ruta si tu contexto está en otra carpeta
-
-/**
- * SembrarSemilla
- * Props: { idplanta, user }
- * - idplanta: ID de la planta en Strapi
- * - user: auth0 user (opcional, el chequeo se hace con useRoles())
- *
- * Requisitos implementados:
- * - Verifica acceso: isJardinero() && plant.club === userData.club
- * - Formulario para:
- *    - fotos (media)
- *    - observaciones
- *    - fecha y hora (campo `fecha`) (input datetime-local)
- *    - timestamp (se adiciona con la fecha actual al payload)
- *    - toggle `desechar` (default: false)
- *    - toggle `germinada` (default: false) — cuando se activa se marcará planta.viva = true
- * - Al crear registro en `registrosbitacoras` también actualiza la planta con los cambios de status/viva/codigo
- */
+import { useRoles } from '../../../Contexts/RolesContext'; // ajusta la ruta si es necesario
 
 const STRAPI = process.env.REACT_APP_STRAPI_URL;
 const STRAPI_TOKEN = process.env.REACT_APP_STRAPI_TOKEN || null;
@@ -40,31 +22,85 @@ const STRAPI_TOKEN = process.env.REACT_APP_STRAPI_TOKEN || null;
 function extractRelId(rel) {
   if (!rel) return null;
   if (typeof rel === 'number') return rel;
-  if (rel.id) return rel.id;
-  if (rel.data) {
+  if (rel?.id) return rel.id;
+  if (rel?.data) {
     if (Array.isArray(rel.data)) return rel.data[0]?.id ?? null;
     return rel.data.id ?? null;
   }
   return null;
 }
 
-export default function SembrarSemilla({ idplanta, user }) {
+function incrementLettersBase26(s) {
+  if (!s) return 'a';
+  const arr = s.toLowerCase().split('').map((c) => c.charCodeAt(0) - 97);
+  let i = arr.length - 1;
+  let carry = 1;
+  while (i >= 0 && carry) {
+    arr[i] += carry;
+    if (arr[i] >= 26) {
+      arr[i] = 0;
+      carry = 1;
+    } else {
+      carry = 0;
+    }
+    i -= 1;
+  }
+  if (carry) arr.unshift(0);
+  return arr.map((n) => String.fromCharCode(97 + n)).join('');
+}
+
+function parseAndIncCodeSegment(code) {
+  // code like: ...-rojo-a01
+  if (!code || typeof code !== 'string') return null;
+  const parts = code.split('-');
+  const last = parts[parts.length - 1];
+  // separate trailing two digits
+  const match = last.match(/^([a-zA-Z]+)(\d{2})$/);
+  if (!match) return null;
+  const letters = match[1].toLowerCase();
+  const digits = match[2];
+  const inc = incrementLettersBase26(letters);
+  const newLast = `${inc}${digits}`;
+  parts[parts.length - 1] = newLast;
+  return parts.join('-');
+}
+
+async function uploadFiles(list) {
+  if (!list || list.length === 0) return [];
+  const form = new FormData();
+  list.forEach((i) => form.append('files', i.file));
+  const headers = {};
+  if (STRAPI_TOKEN) headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
+  const res = await fetch(`${STRAPI}/api/upload`, { method: 'POST', headers, body: form });
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error(`Error subiendo archivos: ${res.status} ${txt}`);
+  }
+  const uploaded = await res.json();
+  return Array.isArray(uploaded) ? uploaded.map((u) => u.id) : (uploaded?.data || []).map((u) => u.id);
+}
+
+function conjugateToPast(verbo) {
+  if (!verbo) return 'esquejado';
+  const v = verbo.trim().toLowerCase();
+  if (v.endsWith('ar')) return v.slice(0, -2) + 'ada';
+  if (v.endsWith('ear')) return v.slice(0, -3) + 'eada';
+  // fallback: append 'ada'
+  return v + 'ada';
+}
+
+export default function Esquejear({ idplanta, verbo = 'esquejeando' }) {
   const { userData, isJardinero } = useRoles();
   const [loading, setLoading] = useState(true);
   const [plant, setPlant] = useState(null);
   const [accessError, setAccessError] = useState(null);
 
-  // Form
+  // form
   const [photoFiles, setPhotoFiles] = useState([]);
   const [observaciones, setObservaciones] = useState('');
-  const [fecha, setFecha] = useState(() => {
-    // input type datetime-local expects YYYY-MM-DDTHH:mm
-    const d = new Date();
-    const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-    return local;
-  });
+  const [vivaFirme, setVivaFirme] = useState(false); // default en proceso (false)
   const [desechar, setDesechar] = useState(false);
-  const [germinada, setGerminada] = useState(false);
+  const [fechaInicioVida, setFechaInicioVida] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -79,7 +115,6 @@ export default function SembrarSemilla({ idplanta, user }) {
         const headers = {};
         if (STRAPI_TOKEN) headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
 
-        // Traer planta con populate completo (usuario, club, etc.)
         const res = await fetch(`${STRAPI}/api/plantas/${idplanta}?populate=usuario,club`, { headers });
         if (!res.ok) {
           if (res.status === 404) throw new Error('Planta no encontrada');
@@ -88,20 +123,15 @@ export default function SembrarSemilla({ idplanta, user }) {
         const json = await res.json();
         const data = json?.data;
         if (!data) throw new Error('Planta no encontrada');
-
         const normalized = { id: data.id, ...(data.attributes || {}) };
-
         if (!mounted) return;
         setPlant(normalized);
 
-        // Chequeo de permisos
-        // 1) isJardinero
+        // permissions
         if (typeof isJardinero === 'function' && !isJardinero()) {
           setAccessError('No tienes permiso (no eres jardinero).');
           return;
         }
-
-        // 2) club match
         const userClubId = extractRelId(userData?.club);
         const plantClubId = extractRelId(normalized?.club);
         if (!userClubId) {
@@ -140,21 +170,6 @@ export default function SembrarSemilla({ idplanta, user }) {
     });
   }
 
-  async function uploadFiles(list) {
-    if (!list || list.length === 0) return [];
-    const form = new FormData();
-    list.forEach((i) => form.append('files', i.file));
-    const headers = {};
-    if (STRAPI_TOKEN) headers['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
-    const res = await fetch(`${STRAPI}/api/upload`, { method: 'POST', headers, body: form });
-    if (!res.ok) {
-      const txt = await res.text();
-      throw new Error(`Error subiendo archivos: ${res.status} ${txt}`);
-    }
-    const uploaded = await res.json();
-    return Array.isArray(uploaded) ? uploaded.map((u) => u.id) : (uploaded?.data || []).map((u) => u.id);
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
@@ -162,30 +177,32 @@ export default function SembrarSemilla({ idplanta, user }) {
 
     try {
       if (!plant || !plant.id) throw new Error('Planta no disponible');
-      // 1) upload photos
+
+      // upload photos
       const photoIds = await uploadFiles(photoFiles);
 
-      // 2) build registro payload
-      const nowISO = new Date().toISOString();
-      // Fecha del input: convertir a ISO (asumiendo input en local)
-      let fechaISO = null;
-      if (fecha) {
-        // fecha value like YYYY-MM-DDTHH:mm
-        const local = new Date(fecha);
-        fechaISO = new Date(local.getTime() - local.getTimezoneOffset() * 60000).toISOString();
-      }
+      // take codigo from plant (if any)
+      const codigoOriginal = plant.codigo || '';
+      const newCodigo = parseAndIncCodeSegment(codigoOriginal) || `${plant.usuario_email || 'anon'}-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}-a01`;
 
+      // decide statuses
+      const nonVivaStatus = verbo || 'esquejeando';
+      const vivaStatus = conjugateToPast(verbo || 'esquejar');
+
+      // build registro payload
+      const nowISO = new Date().toISOString();
       const registroPayload = {
         data: {
           media: photoIds,
           observaciones: observaciones || '',
-          fecha: fechaISO,
           timestamp: nowISO,
+          status: vivaFirme ? vivaStatus : nonVivaStatus,
+          codigoplanta: newCodigo,
           plantas: [plant.id],
           usuario: extractRelId(plant.usuario) || null,
-          usuario_email: plant.usuario_email || plant.usuario_email || (plant.usuario?.email ?? null) || null,
-          codigo: plant.codigo || null,
-          // añadir campos adicionales si tu modelo los requiere
+          usuario_email: plant.usuario_email || plant.usuario?.email || null,
+          club: extractRelId(plant.club) || null,
+          registroJardinero: true,
         },
       };
 
@@ -205,52 +222,62 @@ export default function SembrarSemilla({ idplanta, user }) {
 
       const created = await createRes.json();
 
-      // 3) actualizar planta según toggles
-      let newStatus = 'germinando';
-      const updateObj = { data: {} };
+      // If vivaFirme -> create a new planta entry
+      let createdPlant = null;
+      if (vivaFirme) {
+        const plantPayload = {
+          data: {
+            codigo: newCodigo,
+            origen: 'esqueje',
+            media: photoIds,
+            fecha_inicia_vidas: fechaInicioVida || null,
+            semilla: false,
+            status: vivaStatus,
+            viva: true,
+            usuario: extractRelId(plant.usuario) || null,
+            usuario_email: plant.usuario_email || plant.usuario?.email || null,
+            club: extractRelId(plant.club) || null,
+            galleria: photoIds,
+          },
+        };
 
-      if (desechar) {
-        newStatus = 'semilladescartada';
-        updateObj.data.semilla = false;
-        // dejar en draft
-        updateObj.data.publishedAt = null;
-      } else {
-        if (germinada) {
-          newStatus = 'germinada';
-          updateObj.data.viva = true;
+        const createPlantRes = await fetch(`${STRAPI}/api/plantas`, {
+          method: 'POST',
+          headers: headersCreate,
+          body: JSON.stringify(plantPayload),
+        });
+
+        if (!createPlantRes.ok) {
+          const txt = await createPlantRes.text();
+          console.warn('Warning: falló crear nueva planta:', createPlantRes.status, txt);
+          // No rethrow: el registro ya fue creado
         } else {
-          newStatus = 'germinando';
+          const cp = await createPlantRes.json();
+          createdPlant = cp.data;
+        }
+      } else {
+        // If not vivaFirme, update original plant status to non-vivaStatus
+        const updateObj = { data: { status: nonVivaStatus } };
+        const updRes = await fetch(`${STRAPI}/api/plantas/${plant.id}`, {
+          method: 'PUT',
+          headers: headersCreate,
+          body: JSON.stringify(updateObj),
+        });
+        if (!updRes.ok) {
+          const txt = await updRes.text();
+          console.warn('Warning: fallo actualizar planta:', updRes.status, txt);
         }
       }
 
-      updateObj.data.status = newStatus;
-
-      const headersUpdate = { 'Content-Type': 'application/json' };
-      if (STRAPI_TOKEN) headersUpdate['Authorization'] = `Bearer ${STRAPI_TOKEN}`;
-
-      const updRes = await fetch(`${STRAPI}/api/plantas/${plant.id}`, {
-        method: 'PUT',
-        headers: headersUpdate,
-        body: JSON.stringify(updateObj),
-      });
-
-      if (!updRes.ok) {
-        const txt = await updRes.text();
-        console.warn('Warning: fallo al actualizar planta:', updRes.status, txt);
-        alert('Registro creado pero falló la actualización de la planta. Revisa logs.');
-      } else {
-        const updJson = await updRes.json();
-        setPlant({ id: updJson.data.id, ...(updJson.data.attributes || {}) });
-      }
-
-      // limpiar
+      // cleanup
       photoFiles.forEach((p) => URL.revokeObjectURL(p.preview));
       setPhotoFiles([]);
       setObservaciones('');
+      setVivaFirme(false);
       setDesechar(false);
-      setGerminada(false);
+      setFechaInicioVida('');
 
-      alert('Registro de siembra creado correctamente 🌱');
+      alert('Esqueje procesado correctamente 🌿');
     } catch (err) {
       console.error(err);
       setError(err.message || String(err));
@@ -275,21 +302,23 @@ export default function SembrarSemilla({ idplanta, user }) {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
       <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 720, mx: 'auto', p: 3, boxShadow: 4, borderRadius: 3 }}>
-        <Typography variant="h5" sx={{ mb: 1 }}>Sembrar semilla — {plant?.nombre || `Planta ${plant?.id}`}</Typography>
+        <Typography variant="h5" sx={{ mb: 1 }}>Esquejear — {plant?.nombre || `Planta ${plant?.id}`}</Typography>
         <Typography variant="body2" sx={{ mb: 2 }}>ID: {plant?.id} {plant.codigo ? `• Código: ${plant.codigo}` : ''}</Typography>
 
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <FormControlLabel control={<Switch checked={desechar} onChange={(e) => setDesechar(e.target.checked)} />} label={desechar ? 'Desechada' : 'Desechar'} />
 
-          <FormControlLabel control={<Switch checked={germinada} onChange={(e) => setGerminada(e.target.checked)} />} label={germinada ? 'Germinada' : 'Germinando'} sx={{ '.MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00ff6a' } }} />
+          <FormControlLabel control={<Switch checked={vivaFirme} onChange={(e) => setVivaFirme(e.target.checked)} />} label={vivaFirme ? 'Viva y firme' : 'En proceso'} sx={{ '.MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { bgcolor: '#00ff6a' } }} />
         </Box>
+
+        {vivaFirme && (
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>Fecha y hora inicio de vida</Typography>
+            <TextField type="datetime-local" fullWidth value={fechaInicioVida} onChange={(e) => setFechaInicioVida(e.target.value)} />
+          </Box>
+        )}
 
         <TextField label="Observaciones" multiline minRows={3} fullWidth value={observaciones} onChange={(e) => setObservaciones(e.target.value)} sx={{ mb: 2 }} />
-
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>Fecha y hora (actividad)</Typography>
-          <TextField type="datetime-local" fullWidth value={fecha} onChange={(e) => setFecha(e.target.value)} />
-        </Box>
 
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>Fotos (opcional)</Typography>
@@ -310,7 +339,7 @@ export default function SembrarSemilla({ idplanta, user }) {
 
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
 
-        <Button type="submit" fullWidth disabled={submitting} startIcon={<SaveIcon />} sx={{ py: 1.4, bgcolor: '#00ff6a', color: '#003300', fontWeight: 'bold', '&:hover': { bgcolor: '#00e65f' } }}>{submitting ? 'Guardando…' : 'Guardar registro'}</Button>
+        <Button type="submit" fullWidth disabled={submitting} startIcon={<SaveIcon />} sx={{ py: 1.4, bgcolor: '#00ff6a', color: '#003300', fontWeight: 'bold', '&:hover': { bgcolor: '#00e65f' } }}>{submitting ? 'Procesando…' : 'Procesar esqueje'}</Button>
       </Box>
     </motion.div>
   );

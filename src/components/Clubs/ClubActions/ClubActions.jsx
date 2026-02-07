@@ -22,6 +22,9 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useRoles } from "../../../Contexts/RolesContext.jsx";
 
+// <-- NUEVO: importamos el ClubContext hook para usar sus helpers/valores
+import { useClub } from "../../../Contexts/ClubContext.jsx";
+
 import {
   uploadFilesToStrapi,
   getStrapiFileId,
@@ -40,16 +43,27 @@ import RegistroForm from './RegistroForm.jsx';
 const MotionPaper = motion(Paper);
 const DEFAULT_NUM_PLANTAS_FALLBACK = 6;
 
-
 export default function ClubActions({ accion = "ingresarsemillas", params = "", user = null }) {
   // CONTEXT / HOOKS
   const { userData, fetchRolesYMembresia } = useRoles();
+
+  // <-- USO DEL ClubContext: consumimos club y helpers que ya definimos
+  // Nota: ClubProvider debe envolver la app (ya lo hiciste).
+  const {
+    club: clubFromCtx,         // club resuelto por el contexto (puede venir por isClub o haveClub)
+    clubRole,                  // 'owner' | 'member' | 'none'
+    esClubOwner = false,       // shortcut boolean
+    esJardineroClub = false,   // shortcut boolean (jardinero y pertenece)
+    puedeCultivarPlanta,       // función (planta) => boolean (usa lógica por planta)
+    modo,                      // 'club' | 'usuario'
+  } = useClub();
+
   const theme = useTheme();
   const isSm = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
 
   // ESTADOS PRINCIPALES
-  const [club, setClub] = useState(null); // club normalizado
+  const [club, setClub] = useState(null); // club normalizado (usaremos clubFromCtx preferentemente)
   const [clubLoading, setClubLoading] = useState(false);
   const [clubError, setClubError] = useState(null);
 
@@ -70,9 +84,10 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
   const [hasOpenSolicitud, setHasOpenSolicitud] = useState(false);
 
   const fetchingClubRef = useRef(false);
-  const rawClub = useMemo(() => userData?.club ?? null, [userData]);
 
-  // DERIVADOS
+  /* -------------------------
+     DERIVADOS
+     ------------------------- */
   const allowedPlants = Number(userData?.plantas ?? null);
   const remainingPlants = useMemo(() => {
     if (allowedPlants == null || existingPlantCount == null) return null;
@@ -80,34 +95,44 @@ export default function ClubActions({ accion = "ingresarsemillas", params = "", 
   }, [allowedPlants, existingPlantCount]);
 
   /* -------------------------
+     RAW CLUB derivation
+     - Antes: rawClub = userData?.club
+     - Ahora: preferimos el club que nos da ClubContext (clubFromCtx)
+       porque el contexto ya interpreta isClub / haveClub correctamente.
+     - Si por alguna razón clubFromCtx es null, mantenemos el fallback a userData.club
+     ------------------------- */
+  const rawClub = useMemo(() => clubFromCtx ?? userData?.club ?? null, [clubFromCtx, userData]);
+
+  /* -------------------------
      EFECTO: normalizar club
      - usa normalizeClub helper para cubrir todas las formas que puede traer RolesContext
+     - dejamos la UI intacta; solo cambiamos la fuente (rawClub) para preferir ClubContext
      ------------------------- */
-useEffect(() => {
-  setClubError(null);
+  useEffect(() => {
+    setClubError(null);
 
-  if (!rawClub) {
-    setClub(null);
-    return;
-  }
+    if (!rawClub) {
+      setClub(null);
+      return;
+    }
 
-  setClubLoading(true);
+    setClubLoading(true);
 
-  try {
-    // Si ya trae id + nombre_club, asumimos que está listo
-    const normalized =
-      rawClub?.id && rawClub?.nombre_club
-        ? rawClub
-        : normalizeClub(rawClub);
+    try {
+      // Si ya trae id + nombre_club, asumimos que está listo
+      const normalized =
+        rawClub?.id && rawClub?.nombre_club
+          ? rawClub
+          : normalizeClub(rawClub);
 
-    setClub(normalized);
-  } catch (err) {
-    setClubError(String(err?.message || err));
-    setClub(null);
-  } finally {
-    setClubLoading(false);
-  }
-}, [rawClub]);
+      setClub(normalized);
+    } catch (err) {
+      setClubError(String(err?.message || err));
+      setClub(null);
+    } finally {
+      setClubLoading(false);
+    }
+  }, [rawClub]);
 
   /* -------------------------
      EFECTO: previews de archivos (FileReader -> base64)
@@ -138,6 +163,7 @@ useEffect(() => {
   /* -------------------------
      EFECTO: obtener contadores / flags según acción
      - fetchExistingPlantCount / fetchHasOpenSolicitud viven en helpers
+     - se mantienen sin cambios
      ------------------------- */
   useEffect(() => {
     let mounted = true;
@@ -194,10 +220,25 @@ useEffect(() => {
   };
 
   /* -------------------------
+     AUTORIZACIÓN PREVIA (USO DEL ClubContext)
+     - Antes no había chequeo centralizado aquí; ahora usamos:
+       - esClubOwner / esJardineroClub / puedeOperar (si existe)
+     - Objetivo: bloquear acciones sobre el club si el contexto indica que
+       el usuario no puede operar en este club (p.ej. club en revisión, no activo, etc.)
+     - Comentario: No sustituye validaciones del backend; es UX + early guard.
+     ------------------------- */
+function tienePermisoOperarEnClub() {
+  if (esClubOwner) return true;
+  if (esJardineroClub) return true;
+  return false;
+}
+
+  /* -------------------------
      handleSubmit:
      - lógica central para las 3 acciones (ingresarsemillas, solicitarflores, retirarflores)
      - usa uploadFilesToStrapi + getStrapiFileId + generarCodigoPlanta
      - mantiene compatibilidad con la API Strapi que usas
+     - AÑADIDO: chequeo de permisos usando ClubContext antes de proceder.
      ------------------------- */
   const handleSubmit = async (ev) => {
     ev.preventDefault();
@@ -208,6 +249,13 @@ useEffect(() => {
       setError("No se encontró el club asociado al usuario.");
       return;
     }
+
+    // <-- NUEVO: autorización previa (UX guard)
+    if (!tienePermisoOperarEnClub()) {
+      setError("No tienes permisos para realizar esta acción en el club seleccionado.");
+      return;
+    }
+
     if (!acepto) {
       setError("Debes aceptar la declaración antes de continuar.");
       return;
@@ -301,6 +349,7 @@ useEffect(() => {
               fechasolicitada: nowISO,
               galeria: uploadedIds,
               numero_semillas_reportadas: numSemillas,
+              status: "solicitadas",
             },
           };
 
@@ -418,7 +467,7 @@ useEffect(() => {
               </Button>
             </Stack>
             <Typography variant="caption" color="text.secondary">
-              Si después de reintentar sigue sin aparecer, revisa en Strapi que el usuario tenga la relación <code>club</code> poblada o que
+              Si después de reintentar sigue sin aparecer, revisa en Strapi que el usuario tenga la relación <code>club</code> o que
               incluyas <code>populate=club</code> en RolesContext.
             </Typography>
           </Stack>

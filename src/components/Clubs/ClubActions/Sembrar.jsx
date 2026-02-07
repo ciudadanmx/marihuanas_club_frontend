@@ -17,8 +17,8 @@ import {
   UploadFile as IngresarStockIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useRoles } from "../../Contexts/RolesContext.jsx";
-import sinImagen from "../../assets/placeholders/sinimagen.jpg";
+import { useRoles } from "../../../Contexts/RolesContext.jsx";
+import sinImagen from "../../../assets/placeholders/sinimagen.jpg";
 
 const STRAPI = process.env.REACT_APP_STRAPI_URL || "";
 const STRAPI_BASE = STRAPI.replace(/\/$/, "");

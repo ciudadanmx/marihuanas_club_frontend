@@ -176,6 +176,7 @@ const Pestanas = ({
       style={{
         margin: 0,
         padding: 0,
+        marginLeft: -5,
         // 👉 variables CSS con defaults
         '--pestanas-bg': backgroundColor || 'linear-gradient(90deg, #7b2cff 0%, #b300ff 50%, #7b2cff 100%)',
         '--pestanas-text': textColor || '#ffffff',
@@ -186,7 +187,7 @@ const Pestanas = ({
         .pestanas-wrapper { width:100%; margin:0; padding:0; }
 
         .pestanas-bar {
-          width:100%;
+          width:103%;
           background: var(--pestanas-bg);
           color: var(--pestanas-text);
           padding: 13px 12px;
@@ -195,6 +196,7 @@ const Pestanas = ({
           box-shadow: 0 1px 6px rgba(0,0,0,0.12);
           margin-bottom: 0px;
           padding-bottom: 0px;
+          margin-left: -15px;
         }
 
         .pestanas-row {

@@ -14,8 +14,8 @@ import AgregarClubWrapper from '../components/Clubs/AgregarClubWrapper.jsx';
 import RequisitosJardinero from '../Pages/Clubs/RequisitosJardinero.jsx';
 import TiposClubs from '../Pages/Clubs/TiposClubs.jsx';
 import MiClub from '../Pages/Clubs/MiClub.jsx';
-import Sembrar from '../components/Clubs/Sembrar.jsx';
-import IngresarSemillas from '../components/Clubs/IngresarSemillas.jsx';
+import Sembrar from '../components/Clubs/ClubActions/Sembrar.jsx';
+import IngresarSemillas from '../components/Clubs/ClubActions/IngresarSemillas.jsx';
 import GestionClub from '../components/Clubs/GestionClub.jsx';
 
 //Membresías

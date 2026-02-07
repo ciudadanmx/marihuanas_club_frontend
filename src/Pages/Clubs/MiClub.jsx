@@ -9,22 +9,23 @@ import Bitacora from '../../components/Clubs/Bitacora.jsx';
 import Documentos from '../../components/Clubs/Documentos.jsx';
 import MisPlantas from '../../components/Clubs/MisPlantas/MisPlantas.jsx';
 import DetallePlanta from '../../components/Clubs/MisPlantas/DetallePlanta.jsx';
-import Sembrar from '../../components/Clubs/Sembrar.jsx';
-import IngresarSemillas from '../../components/Clubs/IngresarSemillas.jsx';
+import Sembrar from '../../components/Clubs/ClubActions/Sembrar.jsx';
+import IngresarSemillas from '../../components/Clubs/ClubActions/IngresarSemillas.jsx';
 import GestionClub from '../../components/Clubs/GestionClub.jsx';
-import ChecarPlanta from '../../components/Clubs/ChecarClub.jsx';
+import ChecarPlanta from '../../components/Clubs/ClubActions/ChecarPlanta.jsx';
 import EscribirBitacora from './EscribirBitacora.jsx';
 
 // Nuevos componentes que mencionaste
-import Cosechar from '../../components/Clubs/Cosechar.jsx';
-import Esquejear from '../../components/Clubs/Esquejear.jsx';
-import Entregar from '../../components/Clubs/Entregar.jsx';
-import Excedentes from '../../components/Clubs/Excedentes.jsx';
+import Cosechar from '../../components/Clubs/ClubActions/Cosechar.jsx';
+import Esquejear from '../../components/Clubs/ClubActions/Esquejear.jsx';
+import Entregar from '../../components/Clubs/ClubActions/Entregar.jsx';
+import Excedentes from '../../components/Clubs/ClubActions/Excedentes.jsx';
 import ClubActions from '../../components/Clubs/ClubActions/ClubActions.jsx';
 import Agenda from '../../components/Clubs/Agenda.jsx'; // nueva pestaña Agenda para admin
 
+
 // Componentes para los casos con /:id
-import SembrarSemilla from '../../components/Clubs/SembrarSemilla.jsx';
+import SembrarSemilla from '../../components/Clubs/ClubActions/SembrarSemilla.jsx';
 
 
 const MiClub = () => {

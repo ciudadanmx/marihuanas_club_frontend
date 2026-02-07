@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { Add, Remove, PhotoCamera } from "@mui/icons-material";
 import { motion } from "framer-motion";
-import { useRoles } from "../../Contexts/RolesContext";
+import { useRoles } from "../../../Contexts/RolesContext";
 import { uploadFilesToStrapi, getStrapiFileId, ensureUsuarioId } from "@/utils";
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;

@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { AuthProvider } from './Contexts/AuthContext';
 import { RolesProvider } from './Contexts/RolesContext';
+import { ClubProvider } from './Contexts/ClubContext';
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { BrowserRouter as Router, useLocation } from 'react-router-dom';
@@ -102,6 +103,7 @@ root.render(
       <AuthProvider>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
           <RolesProvider>
+            <ClubProvider>
             <NotificationsProvider>
               <CartProvider>
                 
@@ -113,6 +115,7 @@ root.render(
                 
               </CartProvider>
             </NotificationsProvider>
+            </ClubProvider>
           </RolesProvider>
         </LocalizationProvider>
       </AuthProvider>
