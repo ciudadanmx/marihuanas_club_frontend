@@ -194,95 +194,126 @@ useEffect(() => {
   <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
     {/* Search & Controls */}
     <Slide direction="down" in timeout={400}>
-      <Box
+<Box
+  sx={{
+    mb: 3,
+    backgroundColor: '#fff',
+    p: 2,
+    borderRadius: 3,
+    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+  }}
+>
+  <Stack
+    direction="row"
+    spacing={1}
+    alignItems="center"
+    justifyContent="space-between"
+    sx={{
+      width: '100%',
+      flexWrap: { xs: 'wrap', md: 'nowrap' },
+      rowGap: { xs: 1, md: 0 },
+    }}
+  >
+    {/* Buscar */}
+    <TextField
+      variant="outlined"
+      size="small"
+      placeholder="Buscar contenido..."
+      value={busqueda}
+      onChange={(e) => setBusqueda(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          setBusqueda(e.target.value);
+          handleBuscar();
+        }
+      }}
+      sx={{
+        flexGrow: 1,
+        minWidth: 0,
+        backgroundColor: '#f9f9f9',
+        borderRadius: 2,
+        '& input': {
+          fontSize: { xs: '0.9rem', md: '1rem' },
+          padding: { xs: '8px', md: '10px' },
+        },
+      }}
+    />
+
+    <Button
+      onClick={handleBuscar}
+      variant="contained"
+      size="small"
+      sx={{
+        flexShrink: 0,
+        minWidth: 40,
+        height: 40,
+        padding: 0,
+        backgroundColor: '#000',
+        color: '#fff200',
+        borderRadius: 2,
+        '&:hover': {
+          backgroundColor: '#222',
+          transform: 'scale(1.05)',
+        },
+      }}
+    >
+      <span className="material-icons">search</span>
+    </Button>
+
+    {/* Botones de editor */}
+    {isEditor() && (
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
         sx={{
-          mb: 3,
-          backgroundColor: '#fff',
-          p: 2,
-          borderRadius: 3,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          width: { xs: '100%', md: 'auto' },
+          justifyContent: { xs: 'flex-start', md: 'flex-end' },
+          flexShrink: 0,
         }}
       >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={2}
-          alignItems="center"
-          justifyContent="space-between"
+        <Button
+          onClick={handleMis}
+          variant="outlined"
+          size="small"
+          sx={{
+            color: '#000',
+            borderColor: '#000',
+            borderRadius: 2,
+            textTransform: 'none',
+            fontWeight: 600,
+            '&:hover': {
+              backgroundColor: '#f0f0f0',
+              transform: 'scale(1.03)',
+            },
+          }}
+          startIcon={<span className="material-icons">article</span>}
         >
-          {/* Buscar */}
-          <TextField
-            variant="outlined"
-            size="small"
-            placeholder="Buscar contenido..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                console.log('Buscando:', e.target.value);
-                setBusqueda(e.target.value);
-                handleBuscar();
-              }
-            }}
-            sx={{
-              flex: 1,
-              minWidth: { xs: '100%', md: '250px' },
-              backgroundColor: '#f9f9f9',
-              borderRadius: 2,
-            }}
-          />
+          Mis contenidos
+        </Button>
 
-          <Button
-            onClick={handleBuscar}
-            variant="contained"
-            size="small"
-            sx={{
-              backgroundColor: '#000',
-              color: '#fff200',
-              borderRadius: 2,
-              '&:hover': { backgroundColor: '#222', transform: 'scale(1.05)' },
-            }}
-          >
-            <span className="material-icons">search</span>
-          </Button>
+        <Button
+          onClick={handleAgregar}
+          variant="contained"
+          size="small"
+          sx={{
+            backgroundColor: '#fff200',
+            color: '#000',
+            borderRadius: 2,
+            '&:hover': {
+              backgroundColor: '#e6d900',
+              transform: 'scale(1.05)',
+            },
+          }}
+          startIcon={<span className="material-icons">add_circle</span>}
+        >
+          Crear
+        </Button>
+      </Stack>
+    )}
+  </Stack>
+</Box>
 
-          {/* Botones de editor */}
-          {isEditor() && (
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Button
-                onClick={handleMis}
-                variant="outlined"
-                size="small"
-                sx={{
-                  color: '#000',
-                  borderColor: '#000',
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  '&:hover': { backgroundColor: '#f0f0f0', transform: 'scale(1.03)' },
-                }}
-                startIcon={<span className="material-icons">article</span>}
-              >
-                Mis contenidos
-              </Button>
-
-              <Button
-                onClick={handleAgregar}
-                variant="contained"
-                size="small"
-                sx={{
-                  backgroundColor: '#fff200',
-                  color: '#000',
-                  borderRadius: 2,
-                  '&:hover': { backgroundColor: '#e6d900', transform: 'scale(1.05)' },
-                }}
-                startIcon={<span className="material-icons">add_circle</span>}
-              >
-                Crear
-              </Button>
-            </Stack>
-          )}
-        </Stack>
-      </Box>
     </Slide>
 
     {/* Contenidos */}

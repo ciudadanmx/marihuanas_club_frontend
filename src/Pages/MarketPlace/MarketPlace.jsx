@@ -363,9 +363,7 @@ useEffect(() => {
         <Box sx={{ flex: 1, mr: 1 }}>
           <Buscador value={busqueda} onChange={e => setBusqueda(e.target.value)} onSearch={handleBuscar} />
         </Box>
-        <Box>
-          <Button variant="text" onClick={handleMis}>Mis productos</Button>
-        </Box>
+       
       </Box>
 
       {shouldShowCategorias && (

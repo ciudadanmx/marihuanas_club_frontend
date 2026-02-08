@@ -15,12 +15,12 @@ const CategoriasSlider = ({ categorias, clasifica, forma }) => {
 
   return (
     <Box className="slider-wrapper" sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <Box className="slider-container" sx={{ width: '80%', position: 'relative', display: 'flex', alignItems: 'center' }}>
-        {isDesktop && (
+      <Box className="slider-container" sx={{ width: '99%', position: 'relative', display: 'flex', alignItems: 'center' }}>
+        
           <IconButton className="slider-arrow left" onClick={() => scroll('left')} sx={{ position: 'absolute', left: 0, zIndex: 1 }}>
             <i className="material-icons">chevron_left</i>
           </IconButton>
-        )}
+        
 
         <Box
           className="slider-scroll"
@@ -46,11 +46,11 @@ const CategoriasSlider = ({ categorias, clasifica, forma }) => {
           ))}
         </Box>
 
-        {isDesktop && (
+        
           <IconButton className="slider-arrow right" onClick={() => scroll('right')} sx={{ position: 'absolute', right: 0, zIndex: 1 }}>
             <i className="material-icons">chevron_right</i>
           </IconButton>
-        )}
+        
       </Box>
     </Box>
   );

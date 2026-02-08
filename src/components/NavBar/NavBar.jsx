@@ -328,7 +328,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
             </div>
 
             <div className="columna3">
-              <div className="nav-linky">
+              <div className="nav-linky corredo" >
                 <MenuIcon
                   isOpen={topBarOpen}
                   setIsOpen={(open) => {

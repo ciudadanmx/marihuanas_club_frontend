@@ -1,6 +1,6 @@
 {
-  "short_name": "CiuDaDaN.OrG",
-  "name": "Ciudadan.Org => Cooperativismo 6.0 el estilo de vida de la nueva era I.A.",
+  "short_name": "Marihuanas.Club",
+  "name": "Marihuanas.Club => Red de Clubs 4:20 Legales en México",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#e5e8ea"
+  "theme_color": "#ecd823ff",
+  "background_color": "#1344099a"
 }

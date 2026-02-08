@@ -149,135 +149,161 @@ const Buscador = () => {
   };
 
   return (
-    <Box mt={3} textAlign="center">
-      {/* 🔧 Flex para alinearlos horizontalmente */}
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        sx={{ gap: 1, maxWidth: '100%', mx: 'auto', px: 2 }}
-      >
-      <Box
-  component="form"
-  onSubmit={(e) => {
-    e.preventDefault(); // evita recargar página
-    handleBuscar();     // misma lógica de siempre
-  }}
-  sx={{ display: 'flex', flex: '0 1 520px' }}
->
-  <TextField
-    onChange={(e) => setBusqueda(e.target.value)}
-    value={busqueda}
-    variant="outlined"
-    placeholder="Buscar productos en MarketPlace 4:20..."
-    fullWidth
+<Box mt={3} textAlign="center">
+  <Box
+    display="flex"
+    justifyContent="center"
+    alignItems="center"
     sx={{
-      boxShadow: 3,
-      borderRadius: 2,
-      height: '100%',
-      '& .MuiOutlinedInput-root': { height: '56px' }
-    }}
-  />
-
-  <Button
-    type="submit"   // 👈 clave
-    variant="contained"
-    sx={{
-      backgroundColor: '#000',
-      color: '#fff200',
-      borderRadius: 2,
-      fontWeight: 'bold',
-      textTransform: 'none',
-      height: '56px',
-      minWidth: '56px',
-      ml: 1,
-      '&:hover': {
-        backgroundColor: '#222',
-        transform: 'scale(1.05)'
-      }
+      gap: 1,
+      maxWidth: '100%',
+      mx: 'auto',
+      px: { xs: 1, md: 2 },
+      flexWrap: { xs: 'wrap', md: 'nowrap' },
     }}
   >
-    <span className="material-icons">search</span>
-  </Button>
+    {/* Buscador */}
+    <Box
+      component="form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        handleBuscar();
+      }}
+      sx={{
+        display: 'flex',
+        flexGrow: 1,
+        minWidth: 0,
+        maxWidth: { xs: '100%', md: 520 },
+      }}
+    >
+      <TextField
+        onChange={(e) => setBusqueda(e.target.value)}
+        value={busqueda}
+        variant="outlined"
+        placeholder="Buscar productos en MarketPlace 4:20..."
+        fullWidth
+        sx={{
+          boxShadow: 3,
+          borderRadius: 2,
+          '& .MuiOutlinedInput-root': {
+            height: { xs: 48, md: 56 },
+            fontSize: { xs: '0.9rem', md: '1rem' },
+          },
+        }}
+      />
+
+      <Button
+        type="submit"
+        variant="contained"
+        sx={{
+          ml: 1,
+          minWidth: 48,
+          height: { xs: 48, md: 56 },
+          backgroundColor: '#000',
+          color: '#fff200',
+          borderRadius: 2,
+          fontWeight: 'bold',
+          textTransform: 'none',
+          flexShrink: 0,
+          '&:hover': {
+            backgroundColor: '#222',
+            transform: 'scale(1.05)',
+          },
+        }}
+      >
+        <span className="material-icons">search</span>
+      </Button>
+    </Box>
+
+    {/* Botón vender */}
+    <Box
+      sx={{
+        width: { xs: '100%', md: 'auto' },
+        display: 'flex',
+        justifyContent: 'center',
+        mt: { xs: 1, md: 0 },
+        flexShrink: 0,
+      }}
+    >
+      <BotonVender />
+    </Box>
+  </Box>
+
+  {/* Filtros avanzados */}
+  <Box mt={4} sx={{ maxWidth: 700, mx: 'auto', px: { xs: 1, md: 0 } }}>
+    <Accordion elevation={3}>
+      <AccordionSummary expandIcon={<span className="material-icons">expand_more</span>}>
+        <Typography>Filtros avanzados</Typography>
+      </AccordionSummary>
+      <AccordionDetails>
+        <Box display="grid" gap={2}>
+          <Box>
+            <Typography gutterBottom>Rango de Precio ($)</Typography>
+            <Slider
+              value={precio}
+              onChange={(e, newValue) => {
+                setPrecio(Array.isArray(newValue) ? newValue : [newValue, precio[1]]);
+              }}
+              min={0}
+              max={500}
+              valueLabelDisplay="auto"
+              sx={{
+                color: 'rgb(0, 200, 0)',
+                '& .MuiSlider-thumb': {
+                  backgroundColor: '#fff',
+                  border: '2px solid rgb(0, 200, 0)',
+                },
+                '& .MuiSlider-track': {
+                  backgroundColor: 'rgb(0, 200, 0)',
+                },
+                '& .MuiSlider-rail': {
+                  backgroundColor: '#ccc',
+                },
+              }}
+            />
+          </Box>
+
+          <FormControl fullWidth>
+            <InputLabel>Marca</InputLabel>
+            <Select
+              value={selectedMarca}
+              label="Marca"
+              onChange={(e) => setSelectedMarca(e.target.value)}
+            >
+              <MenuItem value="">Todas</MenuItem>
+              {loadingOptions ? (
+                <MenuItem disabled>Cargando...</MenuItem>
+              ) : (
+                marcas.map((m) => (
+                  <MenuItem key={m} value={m}>{m}</MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth>
+            <InputLabel>Tienda</InputLabel>
+            <Select
+              value={selectedTienda}
+              label="Tienda"
+              onChange={(e) => setSelectedTienda(e.target.value)}
+            >
+              <MenuItem value="">Todas</MenuItem>
+              {loadingOptions ? (
+                <MenuItem disabled>Cargando...</MenuItem>
+              ) : (
+                tiendas.map((t) => (
+                  <MenuItem key={t} value={t}>{t}</MenuItem>
+                ))
+              )}
+            </Select>
+          </FormControl>
+        </Box>
+      </AccordionDetails>
+    </Accordion>
+  </Box>
 </Box>
 
-
-        {/* Espacio de al menos 100px entre botón buscar y vender */}
-        <Box sx={{ ml: '100px' }}>
-          <BotonVender />
-        </Box>
-      </Box>
-
-      {/* Filtros avanzados */}
-      <Box mt={4} sx={{ maxWidth: 700, mx: 'auto' }}>
-        <Accordion elevation={3}>
-          <AccordionSummary expandIcon={<span className="material-icons">expand_more</span>}>
-            <Typography>Filtros avanzados</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Box display="grid" gap={2}>
-              <Box>
-                <Typography gutterBottom>Rango de Precio ($)</Typography>
-                <Slider
-                  value={precio}
-                  onChange={(e, newValue) => {
-                    setPrecio(Array.isArray(newValue) ? newValue : [newValue, precio[1]]);
-                  }}
-                  min={0}
-                  max={500}
-                  valueLabelDisplay="auto"
-                  sx={{
-                    color: 'rgb(0, 200, 0)', // ✅ verde vibrante
-                    '& .MuiSlider-thumb': {
-                      backgroundColor: '#fff',
-                      border: '2px solid rgb(0, 200, 0)',
-                    },
-                    '& .MuiSlider-track': {
-                      backgroundColor: 'rgb(0, 200, 0)',
-                    },
-                    '& .MuiSlider-rail': {
-                      backgroundColor: '#ccc',
-                    }
-                  }}
-                />
-              </Box>
-
-              <FormControl fullWidth>
-                <InputLabel>Marca</InputLabel>
-                <Select
-                  value={selectedMarca}
-                  label="Marca"
-                  onChange={(e) => setSelectedMarca(e.target.value)}
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {loadingOptions ? (
-                    <MenuItem disabled> Cargando... </MenuItem>
-                  ) : (
-                    marcas.map((m) => <MenuItem key={m} value={m}>{m}</MenuItem>)
-                  )}
-                </Select>
-              </FormControl>
-
-              <FormControl fullWidth>
-                <InputLabel>Tienda</InputLabel>
-                <Select
-                  value={selectedTienda}
-                  label="Tienda"
-                  onChange={(e) => setSelectedTienda(e.target.value)}
-                >
-                  <MenuItem value="">Todas</MenuItem>
-                  {loadingOptions ? (
-                    <MenuItem disabled> Cargando... </MenuItem>
-                  ) : (
-                    tiendas.map((t) => <MenuItem key={t} value={t}>{t}</MenuItem>)
-                  )}
-                </Select>
-              </FormControl>
-            </Box>
-          </AccordionDetails>
-        </Accordion>
-      </Box>
-    </Box>
   );
 };
 

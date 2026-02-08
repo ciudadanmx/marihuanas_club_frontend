@@ -580,7 +580,7 @@ export default function Confirmacion({ form, isActivaMembresia, user }) {
                 </Typography>
 
                 <Typography variant="body1" fontWeight="bold">
-                  Gestión asistida por Ciudadan
+                  Gestión asistida por Marihuanas.CLub
                 </Typography>
 
                 <Divider sx={{ my: 1 }} />
