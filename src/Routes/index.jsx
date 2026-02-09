@@ -284,6 +284,7 @@ const Rutas = () => (
       <Route path="pagos" element={<PagosTienda />} />
       <Route path="configuracion" element={<ConfiguracionTienda />} />
     </Route>
+    <Route path="/comunidad/nuevo-anuncio-programado" element={<Anuncios />} />
     <Route path="/comunidad/mis-anuncios" element={<Anuncios />} />
     <Route path="/comunidad/mis-anuncios/:slug" element={<Anuncios />}>
       <Route path="programados" element={<Anuncios />} />

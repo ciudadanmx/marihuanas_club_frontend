@@ -247,28 +247,7 @@ const Clubs = () => {
           loading="lazy"
         />
 
-        {/* Botón solo en móviles */}
-        {isMobile && (
-          <Button
-            variant="contained"
-            color="success"
-            sx={{
-              my: 2,
-              backgroundColor: '#66bb6a',
-              color: '#fff',
-              fontWeight: 'bold',
-              fontSize: '1.1rem',
-              padding: '12px 24px',
-              borderRadius: '12px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            }}
-            fullWidth
-            onMouseEnter={handleAfiliaHover}
-            onFocus={handleAfiliaHover}
-          >
-            Ver el Directorio de Clubs 420
-          </Button>
-        )}
+        
 
         {/* Imagen 2 con botón flotante (sin cambios visuales, sólo prefetch en hover) */}
         <Box

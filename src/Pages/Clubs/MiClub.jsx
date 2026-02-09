@@ -18,6 +18,7 @@ import EscribirBitacora from './EscribirBitacora.jsx';
 // Nuevos componentes que mencionaste
 import Cosechar from '../../components/Clubs/ClubActions/Cosechar.jsx';
 import Esquejear from '../../components/Clubs/ClubActions/Esquejear.jsx';
+import Curar from '../../components/Clubs/Curar.jsx';
 import Entregar from '../../components/Clubs/ClubActions/Entregar.jsx';
 import Excedentes from '../../components/Clubs/ClubActions/Excedentes.jsx';
 import ClubActions from '../../components/Clubs/ClubActions/ClubActions.jsx';
@@ -144,6 +145,7 @@ const MiClub = () => {
   const isAdminIngresarSemillas = adminAction === 'ingresarsemillas';
   const isAdminSembrar = adminAction === 'sembrar';
   const isAdminCosechar = adminAction === 'cosechar';
+  const isAdminCurar = adminAction === 'curar';
   const isAdminEsquejear = adminAction === 'esquejear';
   const isAdminEntregar = adminAction === 'entregar';
   const isAdminExcedentes = adminAction === 'excedentes';
@@ -248,6 +250,8 @@ const MiClub = () => {
               <Cosechar user={user} cosechaid={adminItemId} />
             ) : isAdminEsquejear ? (
               <Esquejear user={user} idplanta={adminItemId} />
+            ) : isAdminCurar ? (
+              <Curar user={user} idplanta={adminItemId} />
             ) : isAdminEntregar ? (
               <Entregar user={user} cosechaid={adminItemId} />
             ) : isAdminExcedentes ? (

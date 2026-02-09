@@ -1,4 +1,3 @@
-// src/pages/Anuncios.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useAuth0 } from '@auth0/auth0-react';
@@ -7,12 +6,12 @@ import axios from 'axios';
 // Panels
 import AnunciosPorDefecto from '../../components/Anuncios/AnunciosPorDefecto.jsx';
 import AnunciosProgramados from '../../components/Anuncios/AnunciosProgramados.jsx';
+import NuevoAnuncioProgramado from '../../components/Anuncios/NuevoAnuncioProgramado.jsx';
 import HistorialPublicaciones from '../../components/Anuncios/HistorialPublicaciones.jsx';
 import ConfiguracionAnuncios from '../../components/Anuncios/ConfiguracionAnuncios.jsx';
 import { useRoles } from '../../Contexts/RolesContext';
 
 import ActivaTuMembresia from '../../components/Membresias/ActivaTuMembresia.jsx';
-// Pestanas genérico (import según tu estructura)
 import Pestanas from '../../components/Pestanas';
 
 const Anuncios = () => {
@@ -26,7 +25,6 @@ const Anuncios = () => {
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
 
-  // Rutas de prueba
   const basePrueba = '/comunidad/mis-anuncios';
   const tabs = [
     { label: 'Por defecto', path: '' },
@@ -35,14 +33,12 @@ const Anuncios = () => {
     { label: 'Configuración', path: 'configuracion' }
   ];
 
-  // responsive listener
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // sincroniza tabIndex con la URL
   useEffect(() => {
     const path = (location.pathname || '').toLowerCase();
 
@@ -54,12 +50,15 @@ const Anuncios = () => {
 
   if (isLoading) return <p>Cargando...</p>;
 
-  // 🔴 USO CORRECTO: isActivaMembresia ES FUNCIÓN
   if (!isActivaMembresia()) {
     return <ActivaTuMembresia />;
   }
 
   const filtros = 'mios';
+
+  // 🔥 ÚNICO AGREGADO: detectar ruta directa
+  const esNuevoAnuncioProgramado =
+    location.pathname === '/comunidad/nuevo-anuncio-programado';
 
   return (
     <div
@@ -71,7 +70,6 @@ const Anuncios = () => {
         flexWrap: 'wrap'
       }}
     >
-      {/* Columna principal */}
       <div style={{ flex: '1 1 100%' }}>
         <Pestanas
           tabs={tabs}
@@ -83,12 +81,20 @@ const Anuncios = () => {
         />
 
         <div>
-          {tabIndex === 0 && <AnunciosPorDefecto />}
-          {tabIndex === 1 && <AnunciosProgramados />}
-          {tabIndex === 2 && (
+          {esNuevoAnuncioProgramado && <NuevoAnuncioProgramado />}
+
+          {!esNuevoAnuncioProgramado && tabIndex === 0 && (
+            <AnunciosPorDefecto />
+          )}
+          {!esNuevoAnuncioProgramado && tabIndex === 1 && (
+            <AnunciosProgramados />
+          )}
+          {!esNuevoAnuncioProgramado && tabIndex === 2 && (
             <HistorialPublicaciones filtros={filtros} productos={'productos'} />
           )}
-          {tabIndex === 3 && <ConfiguracionAnuncios />}
+          {!esNuevoAnuncioProgramado && tabIndex === 3 && (
+            <ConfiguracionAnuncios />
+          )}
         </div>
       </div>
     </div>

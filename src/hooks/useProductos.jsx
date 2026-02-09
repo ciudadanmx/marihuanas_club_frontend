@@ -107,7 +107,6 @@ const precotizacionTotal = async (producto, cpDestino) => {
  */
 const useProductos = ({ paginado } = {}) => {
   const isPaginado = Boolean(paginado);
-  // estado inicial acorde al modo paginado o no
   const [productos, setProductos] = useState(isPaginado ? { data: [], meta: {} } : []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -116,13 +115,10 @@ const useProductos = ({ paginado } = {}) => {
 
   const API_ROOT = process.env.REACT_APP_STRAPI_URL + '/api';
   const API_URL_PRODUCTOS = `${API_ROOT}/productos`;
+  const API_URL_RANKINGS = `${API_ROOT}/rankings`; // asumimos colección 'rankings'
 
-  // ref para evitar multiples updates si es necesario
   const mountedRef = useRef(true);
-  // cleanup si es necesario (si en el futuro añades useEffect para cancelar peticiones)
-  // useEffect(() => () => { mountedRef.current = false; }, []);
 
-  // helper para setear productos respetando el modo paginado
   const setProductosNormalized = useCallback((items = [], meta = {}) => {
     if (isPaginado) {
       setProductos({ data: items, meta: meta || {} });
@@ -132,6 +128,20 @@ const useProductos = ({ paginado } = {}) => {
       setTotalItems(items ? items.length : 0);
     }
   }, [isPaginado]);
+
+  // --------- Helpers para manejar producto que puede venir en forma Strapi (attributes) o plano
+  const _getField = (productoObj, field) => {
+    if (!productoObj) return undefined;
+    // Si es objeto Strapi: { id, attributes: { ... } }
+    if (productoObj.attributes) return productoObj.attributes[field];
+    return productoObj[field];
+  };
+
+  const _getId = (productoObj) => {
+    if (!productoObj) return null;
+    return productoObj.id || (productoObj.attributes && productoObj.attributes.id) || null;
+  };
+  // --------------------------------------------------------
 
   // Legacy simple fetch (arreglado) - envía items y meta cuando aplica
   const fetchProductos = useCallback(async (params = {}) => {
@@ -204,15 +214,138 @@ const useProductos = ({ paginado } = {}) => {
     }
   }, [API_URL_PRODUCTOS]);
 
+  // ---- RANKINGS: contar y obtener rankings de la colección 'rankings'
+  // Se intenta detectar el campo numérico de la puntuación entre varias posibilidades (valor, puntuacion, calificacion, rating, score)
+  const _extractScoreFromRanking = (ranking) => {
+    // ranking puede venir con atributos si fue devuelto por Strapi
+    const raw = ranking.attributes ? ranking.attributes : ranking;
+    const possible = ['valor', 'puntuacion', 'calificacion', 'rating', 'score', 'value'];
+    for (const key of possible) {
+      if (raw[key] != null && !isNaN(Number(raw[key]))) {
+        return Number(raw[key]);
+      }
+    }
+    // si no encontramos, intentar buscar cualquier campo numérico
+    for (const k of Object.keys(raw)) {
+      const v = raw[k];
+      if (v != null && !isNaN(Number(v))) return Number(v);
+    }
+    return null;
+  };
+
+  // obtener los items de rankings para un producto
+  const obtenerRankings = useCallback(async (productoId, { pageSize = 1000 } = {}) => {
+    try {
+      const res = await axios.get(API_URL_RANKINGS, {
+        params: {
+          'filters[producto][id][$eq]': productoId,
+          'pagination[pageSize]': pageSize,
+          populate: '*',
+        },
+        withCredentials: true,
+      });
+      return res?.data?.data || [];
+    } catch (err) {
+      console.error('Error obteniendo rankings:', err);
+      return [];
+    }
+  }, [API_URL_RANKINGS]);
+
+  // contar rankings rápidamente usando meta.pagination.total (si Strapi regresa meta)
+  const contadorRankings = useCallback(async (productoId) => {
+    try {
+      const res = await axios.get(API_URL_RANKINGS, {
+        params: {
+          'filters[producto][id][$eq]': productoId,
+          'pagination[pageSize]': 1,
+        },
+        withCredentials: true,
+      });
+      const meta = res?.data?.meta;
+      if (meta?.pagination?.total != null) return meta.pagination.total;
+      // fallback: obtener todos y contar
+      const items = res?.data?.data || [];
+      return items.length;
+    } catch (err) {
+      console.error('Error contando rankings:', err);
+      return 0;
+    }
+  }, [API_URL_RANKINGS]);
+
+  // calcular promedio de rankings (de 1-100) y devolver también la conversión a 0-5
+  const calcularPromedioRankingsPorProducto = useCallback(async (productoId) => {
+    try {
+      const items = await obtenerRankings(productoId);
+      if (!items || items.length === 0) return { count: 0, avg100: 0, avg5: 0 };
+      let sum = 0;
+      let valid = 0;
+      for (const it of items) {
+        const score = _extractScoreFromRanking(it);
+        if (score != null && !isNaN(score)) {
+          sum += Number(score);
+          valid += 1;
+        }
+      }
+      if (valid === 0) return { count: 0, avg100: 0, avg5: 0 };
+      const avg100 = sum / valid; // promedio en escala 1-100
+      const avg5 = (avg100 / 100) * 5; // convertir a 0-5
+      return {
+        count: valid,
+        avg100: parseFloat(avg100.toFixed(2)),
+        avg5: parseFloat(avg5.toFixed(2)),
+      };
+    } catch (err) {
+      console.error('Error calculando promedio rankings:', err);
+      return { count: 0, avg100: 0, avg5: 0 };
+    }
+  }, [obtenerRankings]);
+
+  // actualizar en Strapi los campos relacionados del producto:
+  // - numero_calificaciones: número total de rankings
+  // - calificacion: suma total de estrellas (avg5 * count) para mantener compatibilidad con calificacionPromedio existente
+  const actualizarCalificacionProducto = useCallback(async (productoId) => {
+    try {
+      const { count, avg5 } = await calcularPromedioRankingsPorProducto(productoId);
+      // sumStars = avg5 * count  (mantener formato que usa calificacionPromedio)
+      const sumStars = parseFloat((avg5 * count).toFixed(2));
+      // si necesitas guardar avg5 directamente, podríamos crear campo adiccional 'promedio_estrellas'
+      const body = {
+        numero_calificaciones: count,
+        calificacion: sumStars,
+      };
+      // actualizar producto en Strapi (PUT)
+      const res = await axios.put(`${API_URL_PRODUCTOS}/${productoId}`, { data: body }, { withCredentials: true });
+      return { success: true, data: res.data };
+    } catch (err) {
+      console.error('Error actualizando calificacion producto:', err);
+      return { success: false, error: err };
+    }
+  }, [API_URL_PRODUCTOS, calcularPromedioRankingsPorProducto]);
+
+  // ---- adaptar funciones ya existentes para aprovechar lo anterior ----
+
+  // nota: calificacionPromedio asume que producto.calificacion es la SUMA de estrellas (0-5) de todas las calificaciones
   const calificacionPromedio = useCallback((producto) => {
-    if (!producto.calificacion || producto.calificacion === 0 || !producto.numero_calificaciones) return 0;
-    return parseFloat((producto.calificacion / (producto.numero_calificaciones * 5)).toFixed(2));
+    // soportar producto que puede venir con attributes
+    const calificacion = _getField(producto, 'calificacion');
+    const numero_calificaciones = _getField(producto, 'numero_calificaciones');
+    if (!calificacion || calificacion === 0 || !numero_calificaciones) return 0;
+    // devuelve valor normalizado 0..1 (como ya lo tenías). Si necesitas 0..5, multiplica por 5.
+    return parseFloat((calificacion / (numero_calificaciones * 5)).toFixed(2));
   }, []);
 
-  const obtenerNumeroCalificaciones = useCallback((producto) => {
-    return producto.numero_calificaciones || 0;
-  }, []);
+  // obtenerNúmeroCalificaciones: si viene en el producto lo devuelve, si no, hace fetch
+  const obtenerNumeroCalificaciones = useCallback(async (producto) => {
+    const numero_local = _getField(producto, 'numero_calificaciones');
+    if (numero_local != null) return Number(numero_local);
+    // si no está, intentar contar en collection rankings
+    const id = _getId(producto);
+    if (!id) return 0;
+    const cnt = await contadorRankings(id);
+    return cnt;
+  }, [contadorRankings]);
 
+  // contadorResenas y obtenerResenas ya existentes (resenas distinta de rankings)
   const contadorResenas = useCallback(async (productoId) => {
     try {
       const res = await fetch(`${API_ROOT}/resenas?filters[producto][id][$eq]=${productoId}`, {
@@ -239,7 +372,7 @@ const useProductos = ({ paginado } = {}) => {
     }
   }, [API_ROOT]);
 
-  // getProductos (incremental / onChunk)
+  // getProductos (incremental / onChunk) - lo dejamos igual pero agrego comentario de dónde llamar actualizarCalificacionProducto si quieres
   const getProductos = useCallback(async (params = {}) => {
     const { onChunk, batchSize = 1, chunkDelay = 0, ...axiosParams } = params || {};
     setLoading(true);
@@ -264,7 +397,6 @@ const useProductos = ({ paginado } = {}) => {
               await onChunk(item);
               setProductos(prev => {
                 if (isPaginado) {
-                  // in paginado mode we keep data array inside object
                   const prevData = (prev && prev.data) ? prev.data : [];
                   const next = { data: [...prevData, item], meta };
                   return next;
@@ -276,7 +408,6 @@ const useProductos = ({ paginado } = {}) => {
             }
             if (chunkDelay) await new Promise(r => setTimeout(r, chunkDelay));
           }
-          // after chunks, normalize total/meta
           setTotalItems(meta?.pagination?.total || items.length);
         } else {
           for (let i = 0; i < items.length; i += batchSize) {
@@ -298,7 +429,6 @@ const useProductos = ({ paginado } = {}) => {
           setTotalItems(meta?.pagination?.total || items.length);
         }
       } else {
-        // default behavior
         setProductosNormalized(items, meta);
       }
 
@@ -312,8 +442,8 @@ const useProductos = ({ paginado } = {}) => {
     }
   }, [API_URL_PRODUCTOS, isPaginado, setProductosNormalized]);
 
-  // getProducto por id
-  const getProducto = useCallback(async (id) => {
+  // getProducto por id (si quieres, puedes llamar actualizarCalificacionProducto después de obtener)
+  const getProducto = useCallback(async (id, { actualizarCalificacion = false } = {}) => {
     setLoading(true);
     setError(null);
     try {
@@ -322,6 +452,15 @@ const useProductos = ({ paginado } = {}) => {
       });
       const item = res.data?.data || null;
       setProducto(item);
+      // opcional: actualizar calificación desde rankings y refrescar
+      if (actualizarCalificacion && item?.id) {
+        await actualizarCalificacionProducto(item.id);
+        // volver a traer item (opcional)
+        const r2 = await axios.get(`${API_URL_PRODUCTOS}/${id}`, { params: { populate: '*' } });
+        const item2 = r2.data?.data || item;
+        setProducto(item2);
+        return item2;
+      }
       return item;
     } catch (err) {
       setError(err);
@@ -330,9 +469,8 @@ const useProductos = ({ paginado } = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [API_URL_PRODUCTOS]);
+  }, [API_URL_PRODUCTOS, actualizarCalificacionProducto]);
 
-  // getProductoBySlug
   const getProductoBySlug = useCallback(async (slug) => {
     setLoading(true);
     setError(null);
@@ -355,98 +493,86 @@ const useProductos = ({ paginado } = {}) => {
     }
   }, [API_URL_PRODUCTOS]);
 
-  // buscarProductos: acepta string o un objeto { filtros, parametros, pagina, porPagina, ... }
-const buscarProductos = useCallback(async (busqueda) => {
-  setLoading(true);
-  setError(null);
+  // buscarProductos ...
+  const buscarProductos = useCallback(async (busqueda) => {
+    setLoading(true);
+    setError(null);
 
-  try {
-    const endpoint = API_URL_PRODUCTOS;
-    let params = { populate: '*' };
+    try {
+      const endpoint = API_URL_PRODUCTOS;
+      let params = { populate: '*' };
 
-    // ----------------------------------
-    // 1️⃣ Búsqueda simple (string)
-    // ----------------------------------
-    if (typeof busqueda === 'string') {
-      const q = busqueda;
-      params = {
-        ...params,
-        'filters[$or][0][descripcion][$containsi]': q,
-        'filters[$or][1][nombre][$containsi]': q,
-        'filters[$or][2][marca][$containsi]': q,
-      };
-    }
-
-    // ----------------------------------
-    // 2️⃣ Búsqueda estructurada (objeto)
-    // ----------------------------------
-    else if (busqueda && typeof busqueda === 'object') {
-      const {
-        filtros,
-        parametros,
-        pagina,
-        porPagina,
-        precio_min,
-        precio_max,
-        marca,
-        tienda,
-      } = busqueda;
-
-      // ---- filtros principales
-      if (filtros === 'busqueda' && parametros) {
+      if (typeof busqueda === 'string') {
+        const q = busqueda;
         params = {
           ...params,
-          'filters[$or][0][descripcion][$containsi]': parametros,
-          'filters[$or][1][nombre][$containsi]': parametros,
-          'filters[$or][2][marca][$containsi]': parametros,
+          'filters[$or][0][descripcion][$containsi]': q,
+          'filters[$or][1][nombre][$containsi]': q,
+          'filters[$or][2][marca][$containsi]': q,
         };
+      } else if (busqueda && typeof busqueda === 'object') {
+        const {
+          filtros,
+          parametros,
+          pagina,
+          porPagina,
+          precio_min,
+          precio_max,
+          marca,
+          tienda,
+        } = busqueda;
+
+        if (filtros === 'busqueda' && parametros) {
+          params = {
+            ...params,
+            'filters[$or][0][descripcion][$containsi]': parametros,
+            'filters[$or][1][nombre][$containsi]': parametros,
+            'filters[$or][2][marca][$containsi]': parametros,
+          };
+        }
+
+        if (filtros === 'categoria' && parametros) {
+          params = {
+            ...params,
+            'filters[categoria][slug][$eq]': parametros,
+          };
+        }
+
+        if (precio_min != null) {
+          params['filters[precio][$gte]'] = precio_min;
+        }
+
+        if (precio_max != null) {
+          params['filters[precio][$lte]'] = precio_max;
+        }
+
+        if (marca) {
+          params['filters[marca][$eq]'] = marca;
+        }
+
+        if (tienda) {
+          params['filters[tienda][$eq]'] = tienda;
+        }
+
+        if (pagina) params['pagination[page]'] = pagina;
+        if (porPagina) params['pagination[pageSize]'] = porPagina;
       }
 
-      if (filtros === 'categoria' && parametros) {
-        params = {
-          ...params,
-          'filters[categoria][slug][$eq]': parametros,
-        };
-      }
+      const res = await axios.get(endpoint, { params });
+      const items = res?.data?.data || [];
+      const meta = res?.data?.meta || {};
 
-      // ---- filtros numéricos
-      if (precio_min != null) {
-        params['filters[precio][$gte]'] = precio_min;
-      }
+      setProductosNormalized(items, meta);
+      return items;
 
-      if (precio_max != null) {
-        params['filters[precio][$lte]'] = precio_max;
-      }
-
-      // ---- filtros exactos
-      if (marca) {
-        params['filters[marca][$eq]'] = marca;
-      }
-
-      if (tienda) {
-        params['filters[tienda][$eq]'] = tienda;
-      }
-
-      // ---- paginación
-      if (pagina) params['pagination[page]'] = pagina;
-      if (porPagina) params['pagination[pageSize]'] = porPagina;
+    } catch (err) {
+      setError(err);
+      console.error('buscarProductos error', err);
+      return [];
+    } finally {
+      setLoading(false);
     }
-
-    const res = await axios.get(endpoint, { params });
-    const items = res?.data?.data || [];
-    const meta = res?.data?.meta || {};
-
-    setProductosNormalized(items, meta);
-    return items;
-
-  } catch (err) {
-    setError(err);
-    console.error('buscarProductos error', err);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-}, [API_URL_PRODUCTOS, setProductosNormalized]);
+  }, [API_URL_PRODUCTOS, setProductosNormalized]);
 
   const getProductosPorCategoria = useCallback(async (categoriaId) => {
     setLoading(true);
@@ -540,8 +666,8 @@ const buscarProductos = useCallback(async (busqueda) => {
     precotizarStripe,
     precotizacionSuma,
     precotizacionTotal,
-    calificacionPromedio,
-    obtenerNumeroCalificaciones,
+    calificacionPromedio,           // devuelve 0..1 (como antes)
+    obtenerNumeroCalificaciones,    // ahora async: si no viene en producto la cuenta en rankings
     contadorResenas,
     obtenerResenas,
     agregarResena,
@@ -552,6 +678,11 @@ const buscarProductos = useCallback(async (busqueda) => {
     getProductosPorCategoria,
     getProductosPorTienda,
     obtenerImagenProducto,
+    // nuevas exportadas relacionadas con rankings:
+    obtenerRankings,
+    contadorRankings,
+    calcularPromedioRankingsPorProducto, // { count, avg100, avg5 }
+    actualizarCalificacionProducto,     // actualiza producto en Strapi con numero_calificaciones y calificacion (suma de estrellas)
   };
 };
 

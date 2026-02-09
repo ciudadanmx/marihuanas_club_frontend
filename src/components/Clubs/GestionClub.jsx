@@ -26,6 +26,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useRoles } from "../../Contexts/RolesContext";
 import sinImagen from "../../assets/placeholders/sinimagen.jpg";
+import Secado from "./Secado.jsx";
+import Curado from "./Curado.jsx";
 
 /**
  * GestionClub
@@ -367,8 +369,8 @@ export default function GestionClub({ clubId: clubIdProp = null }) {
     ? pl.color
     : pl.color?.codigo || pl.color?.nombre || pl.codigo_color || "";
 
-const colorKey = rawColor.toString().trim().toLowerCase();
-const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
+  const colorKey = rawColor.toString().trim().toLowerCase();
+  const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
       const viva = !!pl.viva;
       const secado = !!pl.secado;
       const curado = !!pl.curado;
@@ -411,7 +413,7 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
   const handleCosechar = (id) => navigate(`/clubs/miclub/admin/cosechar/${id}`);
 
   const handlePasarACurado = (userId) =>
-    navigate(`/plantas/pasar-a-curado?armario=${encodeURIComponent(userId)}`);
+    navigate(`/clubs/miclub/admin/curar/${encodeURIComponent(userId)}`);
   const handleEnviarAMerma = (userId) =>
     navigate(`/plantas/merma?armario=${encodeURIComponent(userId)}`);
 
@@ -625,7 +627,28 @@ const colorHex = COLOR_MAP[colorKey] || "#e0e0e0";
       {/* contenido por armarios */}
       {!loading && (
         <Stack spacing={4}>
-          {Array.from(armariosMap.values()).map((user) => renderArmarioSection(user))}
+          
+          {categoria === "mallas" ? (
+            <Secado
+              users={Array.from(armariosMap.values())}
+              onEdit={(userId) => navigate(`/clubs/miclub/admin/anotar?usuario=${userId}`)}
+              onPasarACurado={handlePasarACurado}
+              onEnviarAMerma={handleEnviarAMerma}
+              onEntregar={(userId) => navigate(`/plantas/entregar?usuario=${userId}`)}
+            />
+          ) : categoria === "closet" ? (
+            <Curado
+              users={Array.from(armariosMap.values())}
+              onEdit={(userId) => navigate(`/clubs/miclub/admin/anotar?usuario=${userId}`)}
+              onEntregar={(userId) => navigate(`/plantas/entregar?usuario=${userId}`)}
+              onEnviarAMerma={handleEnviarAMerma}
+              onPasarACurado={handlePasarACurado} // opcional, lo dejo por si lo necesitas
+            />
+          ) : (
+            Array.from(armariosMap.values()).map((user) => renderArmarioSection(user))
+          )}
+
+
           {Array.from(armariosMap.values()).length === 0 && <Typography color="text.secondary">No hay plantas para mostrar en este club.</Typography>}
         </Stack>
       )}

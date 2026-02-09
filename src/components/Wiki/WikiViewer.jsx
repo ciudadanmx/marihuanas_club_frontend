@@ -17,7 +17,7 @@ const WikiViewer = () => {
         const path = window.location.pathname;
 
         const pageId = WIKI_ROUTES[path] || WIKI_ROUTES.default;
-        const notionUrl = `${WIKI_BASE_URL}/${pageId}`;
+        const notionUrl = `https://wiki.ciudadan.org/wiki/${pageId}`;
 
         setLoading(true);
 

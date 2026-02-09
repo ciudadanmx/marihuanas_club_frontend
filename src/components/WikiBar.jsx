@@ -19,7 +19,7 @@ const neonMove = keyframes`
 `;
 
 const AppBarRoot = styled(AppBar)(({ theme }) => ({
-  position: "fixed",
+  position: "absolute",
   top: 0,
   left: 0,
   right: 0,
