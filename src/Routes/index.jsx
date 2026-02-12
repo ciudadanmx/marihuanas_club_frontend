@@ -40,6 +40,7 @@ import Tienda from '../Pages/MarketPlace/Tienda.jsx';
 import ProductosPage from '../Pages/MarketPlace/ProductosPage.jsx';
 import Producto from '../Pages/MarketPlace/Producto.jsx';
 import Carrito from '../Pages/MarketPlace/Carrito.jsx';
+import FinalizarCompra from '../Pages/MarketPlace/FinalizarCompra.jsx';
 import VendePage from '../Pages/Gana/VendePage';
 import MisProductos from '../Pages/MarketPlace/MisProductos';
 import PedidosEntregados from '../Pages/MarketPlace/PedidosEntregados.jsx';
@@ -270,6 +271,7 @@ const Rutas = () => (
     <Route path="/agregar-producto" element={<AgregarProducto />} />
     { /* <Route path="/stripe-success/:slug" element={<StripeSuccessRedirect />} /> */ }
     <Route path="/market" element={<MarketPlace />} />
+    <Route path="/carrito/finalizar" element={<FinalizarCompra />} />
     <Route path="/carrito" element={<Carrito />} />
     <Route path="/market/compras/*" element={<Compras />} />
     <Route path="/market/producto/:slug" element={<Producto />} />

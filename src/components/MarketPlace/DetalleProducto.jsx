@@ -1,3 +1,4 @@
+// src/components/MarketPlace/DetalleProducto.jsx
 import React, { useEffect, useState } from 'react';
 import {
   Typography,
@@ -8,14 +9,16 @@ import {
   CardContent,
   Divider,
   Box,
-  CircularProgress
+  CircularProgress,
+  IconButton,
 } from '@mui/material';
-import BoltIcon from "@mui/icons-material/Bolt";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+
+import BoltIcon from '@mui/icons-material/Bolt';
+import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
-import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
 
 import { useCart } from '../../Contexts/CartContext';
 import useFavoritos from '../../hooks/useFavoritos';
@@ -25,7 +28,7 @@ import '../../styles/DetalleProducto.css';
 
 const MotionButton = motion(Button);
 
-const DetalleProducto = ({
+export default function DetalleProducto({
   producto,
   precio,
   marca,
@@ -34,221 +37,247 @@ const DetalleProducto = ({
   localidad,
   estado,
   cantidad,
-  handleCantidadChange
-}) => {
+  handleCantidadChange,
+}) {
   const STRAPI_URL = process.env.REACT_APP_STRAPI_URL;
-  const [costoEnvio, setCostoEnvio] = useState('Calculando...');
-  const { addToCart } = useCart();
   const navigate = useNavigate();
-
+  const { addToCart } = useCart();
   const { user, isAuthenticated } = useAuth0();
+
+  /* -------------------- estados -------------------- */
+  const [costoEnvio, setCostoEnvio] = useState('Calculando…');
 
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
-  const [favLoading, setFavLoading] = useState(false);
+  const [favLoading, setFavLoading] = useState(true);
   const [favAdded, setFavAdded] = useState(false);
 
-  const { addFavorito } = useFavoritos({
+  /* -------------------- favoritos hook -------------------- */
+  const { addFavorito, existeFavorito } = useFavoritos({
     user: user
-      ? {
-          email: user.email,
-        }
+      ? { email: user.email }
       : null,
     token: null,
   });
 
-  const calcularEnvio = async () => {
-    try {
-      const cp_origen = producto?.attributes?.cp_origen || '01000';
-      const cp_destino = producto?.attributes?.cp_destino || '02800';
-      const largo= 2;
-      const ancho= 2;
-      const alto= 2;
-      const peso= 2;
-
-      const response = await fetch(`${STRAPI_URL}/api/shipping/calcular`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cp_origen, cp_destino, cantidad, largo, ancho, alto, peso })
-      });
-
-      if (response.ok) {
-        const res = await response.json();
-        setCostoEnvio(`$${res.costo}`);
-      } else {
-        setCostoEnvio('No disponible');
-      }
-    } catch (e) {
-      console.error('[ENVÍO] Error:', e);
-      setCostoEnvio('No disponible');
-    }
-  };
-
+  /* -------------------- ENVÍO (no bloqueante) -------------------- */
   useEffect(() => {
-    calcularEnvio();
-    console.log('envio');
-  }, [cantidad]);
+    let mounted = true;
 
+    const calcularEnvio = async () => {
+      try {
+        const cp_origen = producto?.attributes?.cp_origen || '01000';
+        const cp_destino = producto?.attributes?.cp_destino || '02800';
+
+        const response = await fetch(`${STRAPI_URL}/api/shipping/calcular`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            cp_origen,
+            cp_destino,
+            cantidad,
+            largo: 2,
+            ancho: 2,
+            alto: 2,
+            peso: 2,
+          }),
+        });
+
+        if (!mounted) return;
+
+        if (response.ok) {
+          const res = await response.json();
+          setCostoEnvio(`$${res.costo}`);
+        } else {
+          setCostoEnvio('No disponible');
+        }
+      } catch (e) {
+        console.error('[ENVÍO]', e);
+        if (mounted) setCostoEnvio('No disponible');
+      }
+    };
+
+    calcularEnvio();
+    return () => { mounted = false; };
+  }, [cantidad, producto, STRAPI_URL]);
+
+  /* -------------------- FAVORITOS (silent load) -------------------- */
+  useEffect(() => {
+    let mounted = true;
+
+    const checkFavorito = async () => {
+      if (!isAuthenticated || !producto?.id || !existeFavorito) {
+        setFavLoading(false);
+        return;
+      }
+
+      try {
+        const existe = await existeFavorito({
+          tipo: 'producto',
+          id: producto.id,
+        });
+
+        if (mounted) setFavAdded(!!existe);
+      } catch (e) {
+        console.error('[FAVORITOS check]', e);
+      } finally {
+        if (mounted) setFavLoading(false);
+      }
+    };
+
+    checkFavorito();
+    return () => { mounted = false; };
+  }, [isAuthenticated, producto, existeFavorito]);
+
+  /* -------------------- acciones -------------------- */
   const handleAddToCart = async () => {
-    if (!producto?.id || !producto?.attributes) return;
-    if (adding) return;
+    if (adding || !producto) return;
 
     setAdding(true);
     try {
-      const result = addToCart({
-        id: producto.id,
-        nombre: producto.attributes.nombre,
-        marca: producto.attributes.marca,
-        precio: producto.attributes.precio,
-        imagen_predeterminada: producto.attributes.imagen_predeterminada?.data?.attributes,
-      }, cantidad);
+      await addToCart(
+        {
+          id: producto.id,
+          nombre: producto.attributes.nombre,
+          marca: producto.attributes.marca,
+          precio: producto.attributes.precio,
+          imagen_predeterminada:
+            producto.attributes.imagen_predeterminada?.data?.attributes,
+        },
+        cantidad
+      );
 
-      if (result && typeof result.then === 'function') {
-        await result;
-      }
-
-      await new Promise((r) => setTimeout(r, 500));
       setAdded(true);
     } catch (e) {
-      console.error('[CART] Error al agregar:', e);
+      console.error('[CART]', e);
     } finally {
       setAdding(false);
     }
   };
 
-  const handleAddFavorito = async () => {
-    if (!isAuthenticated || !producto?.id) return;
-    if (favLoading || favAdded) return;
+  const handleToggleFavorito = async () => {
+    if (!isAuthenticated || favLoading) return;
 
     setFavLoading(true);
     try {
       await addFavorito({
         tipo: 'producto',
         id: producto.id,
-        url: `/market/producto/${producto?.attributes?.slug || producto.id}`,
+        url: `/market/producto/${producto.attributes.slug}`,
       });
-
       setFavAdded(true);
     } catch (e) {
-      console.error('[FAVORITOS] Error:', e);
+      console.error('[FAVORITOS add]', e);
     } finally {
       setFavLoading(false);
     }
   };
 
   const handleBuy = () => {
-    const slug = producto?.attributes?.slug || producto?.id;
-    navigate(`/market/comprar/${slug}`);
+    navigate(`/market/comprar/${producto.attributes.slug}`);
   };
 
+  /* -------------------- UI -------------------- */
   return (
-    <div className="mt-6 z-10 producto-layout">
-      <Card className="producto-card" elevation={10}>
-        <CardContent>
-          <Typography variant="h3" className="producto-precio">
+    <Card elevation={8} sx={{ borderRadius: 3 }}>
+      <CardContent>
+        {/* Precio + favorito */}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4" fontWeight={900}>
             ${precio?.toFixed(2) || '0.00'}
           </Typography>
 
-          <Divider sx={{ my: 3, borderColor: '#A5D6A7' }} />
+          <IconButton
+            onClick={handleToggleFavorito}
+            disabled={favLoading || !isAuthenticated}
+          >
+            {favLoading ? (
+              <CircularProgress size={20} />
+            ) : favAdded ? (
+              <FavoriteIcon sx={{ color: '#7C3AED' }} />
+            ) : (
+              <FavoriteBorderIcon />
+            )}
+          </IconButton>
+        </Box>
 
-          <Box className="producto-detalle">
-            <Typography variant="body1"><strong>🌿 Marca:</strong> {marca || 'Desconocida'}</Typography>
-            <Typography variant="body1"><strong>📦 Stock:</strong> {stock ?? 'N/A'}</Typography>
-            <Typography variant="body1"><strong>🔥 Vendidos:</strong> {vendidos ?? 0}</Typography>
-            <Typography variant="body1"><strong>📍 Localidad:</strong> {localidad ?? 'N/A'}, {estado ?? ''}</Typography>
-            <Typography variant="body1"><strong>🚚 Envío:</strong> {costoEnvio}</Typography>
-          </Box>
+        <Divider sx={{ my: 2 }} />
 
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center" className="cantidad-stack">
-            <Button className="icon-button" onClick={() => handleCantidadChange(Math.max(1, cantidad - 1))}>
-              <span className="material-icons">remove</span>
-            </Button>
-            <TextField
-              value={cantidad}
-              onChange={(e) => handleCantidadChange(Number(e.target.value))}
-              type="number"
-              inputProps={{ min: 1, max: stock }}
-              size="small"
-              className="cantidad-input"
-            />
-            <Button className="icon-button" onClick={() => handleCantidadChange(Math.min(stock, cantidad + 1))}>
-              <span className="material-icons">add</span>
-            </Button>
-          </Stack>
+        {/* info */}
+        <Stack spacing={0.5}>
+          <Typography variant="body2">🌿 <strong>Marca:</strong> {marca || '—'}</Typography>
+          <Typography variant="body2">📦 <strong>Stock:</strong> {stock ?? '—'}</Typography>
+          <Typography variant="body2">🔥 <strong>Vendidos:</strong> {vendidos ?? 0}</Typography>
+          <Typography variant="body2">
+            📍 <strong>Ubicación:</strong> {localidad || '—'} {estado || ''}
+          </Typography>
+          <Typography variant="body2">
+            🚚 <strong>Envío:</strong> {costoEnvio}
+          </Typography>
+        </Stack>
 
+        <Divider sx={{ my: 2 }} />
+
+        {/* cantidad */}
+        <Stack direction="row" spacing={1} justifyContent="center">
+          <Button onClick={() => handleCantidadChange(Math.max(1, cantidad - 1))}>
+            −
+          </Button>
+
+          <TextField
+            size="small"
+            type="number"
+            value={cantidad}
+            onChange={(e) => handleCantidadChange(Number(e.target.value))}
+            inputProps={{ min: 1, max: stock }}
+            sx={{ width: 80 }}
+          />
+
+          <Button
+            onClick={() =>
+              handleCantidadChange(
+                stock ? Math.min(stock, cantidad + 1) : cantidad + 1
+              )
+            }
+          >
+            +
+          </Button>
+        </Stack>
+
+        {/* acciones */}
+        <Stack spacing={1.5} mt={3}>
           <MotionButton
-            onClick={ added ? () => navigate('/market/carrito') : handleAddToCart }
+            fullWidth
             variant="contained"
-            startIcon={
-              adding ? <CircularProgress size={18} /> : <AddShoppingCartIcon />
-            }
+            startIcon={adding ? <CircularProgress size={18} /> : <AddShoppingCartIcon />}
+            onClick={added ? () => navigate('/market/carrito') : handleAddToCart}
             sx={{
-              backgroundColor: "#fff200",
-              color: "#000",
+              backgroundColor: '#fff200',
+              color: '#000',
               fontWeight: 700,
-              textTransform: "none",
-              borderRadius: "12px",
-              padding: "10px 18px",
-              "&:hover": { backgroundColor: "#e6d700" },
+              borderRadius: 2,
+              '&:hover': { backgroundColor: '#e6d700' },
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            disabled={adding}
           >
-            { adding ? 'Cargando...' : (added ? 'Ir al carrito' : 'Agregar al carrito') }
+            {added ? 'Ir al carrito' : 'Agregar al carrito'}
           </MotionButton>
 
           <MotionButton
-            onClick={handleAddFavorito}
-            variant="outlined"
-            startIcon={
-              favLoading
-                ? <CircularProgress size={18} />
-                : favAdded
-                ? <FavoriteIcon />
-                : <FavoriteBorderIcon />
-            }
-            sx={{
-              borderColor: "#fff200",
-              color: "#000",
-              fontWeight: 700,
-              textTransform: "none",
-              borderRadius: "12px",
-              padding: "10px 18px",
-              mt: 2,
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-            disabled={favLoading || favAdded || !isAuthenticated}
-          >
-            {favLoading ? 'Guardando...' : favAdded ? 'En favoritos' : 'Agregar a favoritos'}
-          </MotionButton>
-
-          <MotionButton
-            onClick={handleBuy}
+            fullWidth
             variant="contained"
             startIcon={<BoltIcon />}
+            onClick={handleBuy}
             sx={{
-              backgroundColor: "#6d6e71",
-              color: "#fff",
+              backgroundColor: '#6d6e71',
               fontWeight: 700,
-              textTransform: "none",
-              borderRadius: "12px",
-              padding: "10px 18px",
-              mt: 2,
-              "&:hover": { backgroundColor: "#56575a" },
+              borderRadius: 2,
             }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
           >
-            Comprar
+            Comprar ahora
           </MotionButton>
-
-        </CardContent>
-      </Card>
-    </div>
+        </Stack>
+      </CardContent>
+    </Card>
   );
-};
-
-export default DetalleProducto;
+}

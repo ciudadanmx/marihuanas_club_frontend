@@ -57,10 +57,16 @@ export default function ProductoCard({
   stock,
   onAgregarCarrito,
   mostrarLink = true,
+  productoId = null,        // acepta id del producto (recomendado)
+  id = null,                // fallback si te pasaron prop id
+  currentUserId = null,     // opcional: id del usuario actual (si ya lo tienes)
 }) {
   const theme = useTheme();
   const navigate = useNavigate();
   const [favorito, setFavorito] = useState(false);
+
+  // determinar productId real (acepta varias formas)
+  const productId = productoId || id || null;
 
   const imagenValida = imagen && imagen !== `${process.env.REACT_APP_STRAPI_URL}` ? imagen : productoImg;
 
@@ -75,6 +81,8 @@ export default function ProductoCard({
     return Number(calificacion).toFixed(1); // 1 decimal
   }, [calificacion]);
 
+  // ⚠️ IMPORTANTE: los hooks (useMemo) NO deben depender de returns condicionales
+  // Se definen siempre, antes de cualquier return.
   const estrellas = useMemo(() => {
     const llenar = calificacion != null && !isNaN(Number(calificacion)) ? Math.round(Number(calificacion)) : 0;
     const arr = [];
@@ -85,7 +93,6 @@ export default function ProductoCard({
   }, [calificacion]);
 
   const handleCardClick = (e) => {
-    // evitar doble navegacion cuando se dan click en botones internos
     if (e.target.closest('button') || e.target.closest('a')) return;
     if (!slug) return;
     if (mostrarLink) navigate(`/market/producto/${slug}`);
@@ -93,8 +100,8 @@ export default function ProductoCard({
 
   const handleFavoritos = (e) => {
     e.stopPropagation();
-    // navegamos a la ruta que pediste
     if (slug) {
+      // navegamos a la ruta que pediste y marcamos favorito optimista
       navigate(`/favoritos/agregar/producto/${slug}`);
       setFavorito(true);
     }
@@ -103,9 +110,52 @@ export default function ProductoCard({
   const handleAgregarCarrito = (e) => {
     e.stopPropagation();
     if (typeof onAgregarCarrito === 'function') return onAgregarCarrito({ slug, titulo, precio });
-    // por defecto navegamos a comprar
     navigate('/comprar');
   };
+
+  // ----------------------
+  // Check favoritos (no bloqueante)
+  // Consulta collection 'favoritos' filtrando por usuario y producto.
+  // Si currentUserId no se pasa, intenta obtenerlo desde /api/users/me (requiere sesión).
+  // ----------------------
+  React.useEffect(() => {
+    let mounted = true;
+    const checkFavorito = async () => {
+      try {
+        if (!productId) return; // necesitamos id del producto para checar
+
+        let userIdLocal = currentUserId;
+        if (!userIdLocal) {
+          try {
+            const meRes = await fetch(`${process.env.REACT_APP_STRAPI_URL}/api/users/me`, { credentials: 'include' });
+            if (meRes.ok) {
+              const meJson = await meRes.json();
+              // Strapi puede devolver el user en different shapes; intentar varias
+              userIdLocal = meJson?.id || meJson?.data?.id || (meJson?.data && meJson.data.id) || null;
+            }
+          } catch (e) {
+            // ignore — si no hay sesión, no marcamos como favorito
+          }
+        }
+
+        if (!userIdLocal) return;
+
+        const url = `${process.env.REACT_APP_STRAPI_URL}/api/favoritos?filters[usuario][id][$eq]=${userIdLocal}&filters[producto][id][$eq]=${productId}`;
+        const res = await fetch(url, { credentials: 'include' });
+        if (!mounted) return;
+        if (!res.ok) return;
+        const json = await res.json();
+        const items = json?.data || [];
+        if (!mounted) return;
+        setFavorito(items.length > 0);
+      } catch (err) {
+        console.error('[ProductoCard] Error verificando favoritos:', err);
+      }
+    };
+
+    checkFavorito();
+    return () => { mounted = false; };
+  }, [productId, currentUserId]);
 
   return (
     <motion.div

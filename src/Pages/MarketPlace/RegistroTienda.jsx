@@ -213,7 +213,7 @@ export default function RegistroTienda() {
 
   // 🚫 Autenticado PERO sin membresía → SOLO ActivaTuMembresia
   if (!isActivaMembresia()) {
-    return <ActivaTuMembresia />;
+    //return <ActivaTuMembresia />;
   }
 
   // ✅ Autenticado + membresía activa → flujo normal
