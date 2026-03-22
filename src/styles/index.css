@@ -204,3 +204,15 @@ body {
     font-size: clamp(1.5rem, 4vw, 1rem);
 
   }
+
+
+
+  html, body, #root {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
+}

@@ -22,8 +22,13 @@ import Curar from '../../components/Clubs/Curar.jsx';
 import Entregar from '../../components/Clubs/ClubActions/Entregar.jsx';
 import Excedentes from '../../components/Clubs/ClubActions/Excedentes.jsx';
 import ClubActions from '../../components/Clubs/ClubActions/ClubActions.jsx';
-import Agenda from '../../components/Clubs/Agenda.jsx'; // nueva pestaña Agenda para admin
+import Agenda from '../../components/Clubs/Agenda.jsx'; 
+import SolicitudesAfiliacionClub from '../../components/Clubs/SolicitudesAfiliacionClub.jsx'; 
 
+import AnotarEnAfiliacion from '../../components/Clubs/ClubActions/AnotarEnAfiliacion.jsx';
+import AprobarAfiliacion from '../../components/Clubs/ClubActions/AprobarAfiliacion.jsx';
+import RechazarAfiliacion from '../../components/Clubs/ClubActions/RechazarAfiliacion.jsx';
+import QrScanner from '../../components/Clubs/QrScanner.jsx';
 
 // Componentes para los casos con /:id
 import SembrarSemilla from '../../components/Clubs/ClubActions/SembrarSemilla.jsx';
@@ -66,6 +71,7 @@ const MiClub = () => {
         { label: 'Documentación Legal', path: 'documentos' },
         { label: 'Info tu Club', path: 'info' },
         { label: 'Gestionar Club', path: 'admin' },
+        { label: 'Afiliaciones', path: 'afiliar' },
       ];
 
   // Listener responsive
@@ -151,10 +157,25 @@ const MiClub = () => {
   const isAdminExcedentes = adminAction === 'excedentes';
   const isAdminChecar = adminAction === 'checar';
   const isAdminAnotar = adminAction === 'anotar';
+  const isAdminAfiliar = adminAction === 'afiliar';
   const isAdminVer = adminAction === 'ver' && !!adminCode;
-
   // admin item id (cuando la ruta tiene /admin/<action>/<id>)
   const adminItemId = segments[0] === 'admin' && segments[2] ? segments[2] : null;
+
+  // --- AFILIACION subroute checks (/afiliacion o /afiliar) ---
+  const afiliacionRoot =
+    segments[0] === 'afiliacion' || segments[0] === 'afiliar'
+      ? segments[0]
+      : null;
+
+  const afiliacionAction = afiliacionRoot ? segments[1] : null;
+  const afiliacionItemId =
+    afiliacionRoot && segments[2] ? segments[2] : null;
+
+  const isAfiliacionScan =
+    afiliacionAction === 'scan' ||
+    afiliacionAction === 'scanner' ||
+    afiliacionAction === 'scannear';
 
   // --- Mis plantas (usuarios normales) ---
   const isSembrar = segments[0] === 'misplantas' && segments[1] === 'sembrar';
@@ -268,6 +289,24 @@ const MiClub = () => {
               <GestionClub />
             )
           )}
+
+          {/* RUTAS DE AFILIACION (soportamos /afiliacion y /afiliar) */}
+          {jardinero && afiliacionRoot && (
+            afiliacionAction === 'aprobar' && afiliacionItemId ? (
+              <AprobarAfiliacion id={afiliacionItemId} />
+            ) : afiliacionAction === 'rechazar' && afiliacionItemId ? (
+              <RechazarAfiliacion id={afiliacionItemId} />
+            ) : afiliacionAction === 'anotar' && afiliacionItemId ? (
+              <AnotarEnAfiliacion id={afiliacionItemId} />
+            ) : isAfiliacionScan ? (
+              <QrScanner />
+            ) : (
+              // Si navegan a /afiliacion o /afiliar sin verbo o sin id, mostramos la lista de solicitudes
+              <SolicitudesAfiliacionClub />
+            )
+          )}
+
+         
 
           {/* MISPLANTAS tab (solo aparece para no-admins) */}
           {tabs[tabIndex]?.path === 'misplantas' && (

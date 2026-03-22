@@ -242,3 +242,60 @@
   top: 6vh;
 }
 }
+
+
+
+.notifications-menu {
+  position: absolute;
+  top: 55px; /* ajusta según tu header */
+  right: 0;
+
+  width: 360px;
+  max-width: 95vw;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  z-index: 9999;
+}
+
+
+/* Estado cerrado */
+.notifications-menu.closed {
+  opacity: 0;
+  transform: scale(0.95);
+  pointer-events: none;
+}
+
+/* Estado abierto */
+.notifications-menu.open {
+  opacity: 1;
+  transform: scale(1);
+}
+@media (max-width: 768px) {
+
+  .notifications-menu {
+    right: 0;
+    left: auto;
+    width: 92vw;
+    max-width: 92vw;
+  }
+
+}
+
+
+.notif-wrapper {
+  position: relative;
+}
+
+
+.header {
+  position: relative;
+  z-index: 10000;
+}
+
+.notifications-menu {
+  z-index: 9999;
+}

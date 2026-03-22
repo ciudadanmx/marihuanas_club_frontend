@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import io from 'socket.io-client';
-import axios from 'axios';
-
-import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
-import { FaUniversity, FaDollarSign } from 'react-icons/fa';
-import { FaBalanceScale, FaTools  } from 'react-icons/fa';
-import { RiHomeSmileFill } from "react-icons/ri";
+// IMPORTS QUE YA TENÍAS
+// borré io y axios porque no queremos socket duplicado en NavBar
+import {
+  FaUniversity, FaDollarSign, FaBalanceScale, FaTools
+} from 'react-icons/fa';
+import { RiHomeSmileFill, RiVipCrownFill, RiUserCommunityFill } from 'react-icons/ri';
 import { BiStore } from "react-icons/bi";
 import { MdOndemandVideo } from "react-icons/md";
 import { IoCalendarNumberOutline } from "react-icons/io5";
-import { RiVipCrownFill, RiUserCommunityFill  } from "react-icons/ri";
 
+import { registerUserInStrapi, findUserInStrapi } from '../../utils/strapiUserService';
 import guestImage from '../../assets/guest.png';
 import MenuIcon from './MenuIcon';
 import NotificationsIcon from './NotificationsIcon.jsx';
-import UserIcon from './UserIcon.jsx'
+import UserIcon from './UserIcon.jsx';
 import CartIcon from './CartIcon';
 import NavButton from './NavButton.jsx';
 import '../../styles/NavBar.css';
@@ -25,8 +24,6 @@ import '../../styles/AccountMenu.css';
 import { useNotifications } from '../../Contexts/NotificationsContext';
 import HearthButton from './HearthButton.jsx';
 import MenuTopBar from './MenuTopBar.jsx';
-
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
 const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -85,7 +82,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       const targets = [profileRef.current, notifRef.current, InfoRef.current];
-      const clickedInside = targets.some(ref => ref && ref.contains(event.target));
+      const clickedInside = targets.some(ref => ref && ref.contains && ref.contains(event.target));
       if (!clickedInside) {
         closeAllMenus();
       }
@@ -108,8 +105,8 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
 
     };
     handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [topBarOpen]);
 
   useEffect(() => {
@@ -127,8 +124,6 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     setIsInfoMenuOpen(false);
   };
 
-
-  
   // Toggle de la topBar: calculamos la altura para la animación
   const toggleTopBar = () => {
     setTopBarOpen(prev => {
@@ -155,88 +150,14 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     if (topBarRef.current && !topBarOpen) topBarRef.current.style.maxHeight = '0px';
   }, []);
 
-  // --- Notifications context (usa lo que tengas disponible) ---
-  // Asegúrate que tu NotificationsContext exponga refreshNotificaciones si quieres que pushNotification
-  // dispare una recarga desde el servidor.
-  const { notificationsNum, refreshNotificaciones } = useNotifications();
+  // --- Notifications: usamos el contexto centralizado (NO sockets aquí) ---
+  // El context expone: notificaciones, loading, error, unreadCount, refreshNotificaciones, markAsRead, pushNotification
+  const { unreadCount, refreshNotificaciones } = useNotifications();
 
-  // contador optimista local para respuesta instantánea en UI
-  const [optimisticUnread, setOptimisticUnread] = useState(0);
+  // Si quieres comportamiento optimista local, puedes añadirlo; por ahora usamos el contador real
+  // const [optimisticUnread, setOptimisticUnread] = useState(0);
 
-  // Cuando el número real cambie (viene del contexto), limpiamos el optimismo
-  // calculamos el número actual a partir de la función
-  const currentNotificationsNum = typeof notificationsNum === 'function' ? notificationsNum() : 0;
-  useEffect(() => {
-    // si el backend refrescó, limpiamos el contador optimista
-    setOptimisticUnread(0);
-  }, [currentNotificationsNum]);
-
-  /**
-   * pushNotification
-   * - notif: objeto recibido por socket (ya mapeado en el on('notification'))
-   * Comportamiento:
-   * 1) incrementa contador optimista para feedback inmediato
-   * 2) si existe refreshNotificaciones en el contexto, la llama para traer la lista actualizada
-   * 3) si ocurre error, mantiene el incremento optimista para que el usuario vea la alerta
-   */
-  const pushNotification = async (notif) => {
-    try {
-      // 1) Feedback inmediato en UI
-      setOptimisticUnread((v) => v + 1);
-
-      // 2) Si tu contexto provee la función para refrescar, la usamos
-      if (typeof refreshNotificaciones === 'function') {
-        await refreshNotificaciones(); // espera a que el servidor responda y el contexto se actualice
-        // al actualizar el contexto, el useEffect que observa currentNotificationsNum limpiará optimisticUnread
-      } else {
-        // Si no existe refresh, opcionalmente podrías guardar la notificación localmente (no lo hacemos aquí)
-        console.warn('pushNotification: refreshNotificaciones no disponible; aplicado incremento optimista.');
-      }
-
-      // opcional: puedes mostrar una pequeña animación, sonido o toast aquí
-      // example: toast('Nueva notificación');
-    } catch (err) {
-      console.error('pushNotification error:', err);
-      // no quitar el optimisticUnread para que el usuario vea algo; podrías revertir si quieres:
-      // setOptimisticUnread((v) => Math.max(0, v - 1));
-    }
-  };
-
-  // ---------- Socket: conectar y escuchar eventos ----------
-  useEffect(() => {
-    if (!SOCKET_URL) {
-      console.warn('REACT_APP_SOCKET_URL no definido; el socket no se conectará.');
-      return;
-    }
-
-    const socket = io(SOCKET_URL, { transports: ['websocket', 'polling'] });
-
-    socket.on('connect', () => {
-      console.log('NavBar conectado al socket', SOCKET_URL, 'id:', socket.id);
-    });
-
-    socket.on('notification', (data) => {
-      const newNotif = {
-        id: data.id ?? `notif_${Date.now()}`,
-        title: data.title ?? 'Notificación',
-        message: data.message ?? (data.body ?? JSON.stringify(data)).slice(0, 250),
-        createdAt: data.createdAt ?? new Date().toISOString(),
-        read: false,
-        data,
-        type: data.type ?? 'generic'
-      };
-      // Llamamos a la función que actualiza contador y refresca notificaciones
-      pushNotification(newNotif);
-    });
-
-    socket.on('disconnect', (reason) => console.log('Socket desconectado:', reason));
-    socket.on('connect_error', (err) => console.warn('Error de conexión socket:', err));
-
-    return () => socket.disconnect();
-    // NOTA: pushNotification no está en dependencias para evitar reconectar el socket constantemente.
-    // Si tu linter reclama, puedes envolver pushNotification en useCallback y añadirla.
-  }, [SOCKET_URL]); // intentionally minimal deps
-
+  // registro de usuario en Strapi (mantengo tal como tenías)
   useEffect(() => {
     const handleUserRegistration = async () => {
       if (isAuthenticated && user) {
@@ -244,7 +165,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
         try {
           const existingUsers = await findUserInStrapi(userEmail);
           if (Array.isArray(existingUsers) && existingUsers.length === 0) {
-            const result = await registerUserInStrapi(userEmail, user.name);
+            await registerUserInStrapi(userEmail, user.name);
           }
         } catch (error) {
           console.error('Error al buscar o registrar usuario en Strapi:', error);
@@ -254,9 +175,7 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     handleUserRegistration();
   }, [isAuthenticated, user]);
 
-
-
-    const handleLogin = () => {
+  const handleLogin = () => {
     // Guarda la URL completa (ruta, query y hash) en una cookie, codificada para evitar problemas con caracteres especiales
     const currentUrl =
       window.location.pathname + window.location.search + window.location.hash;
@@ -278,8 +197,8 @@ const NavBar = ({ SetIsMenuOpen, siteSection }) => {
     setIsMenuOpen(false);
   };
 
-  // cuenta que pasamos al MenuIcon: número real + optimista
-  const displayCount = currentNotificationsNum + optimisticUnread;
+  // cuenta que pasamos al MenuIcon: número real (desde context)
+  const displayCount = Number(unreadCount || 0);
 
   return (
     <>

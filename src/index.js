@@ -1,6 +1,7 @@
 // src/index.js
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { Box } from "@mui/material";
 import PreLoader from './components/PreLoader.jsx';
 import { useNavigate } from 'react-router-dom'
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
@@ -19,7 +20,7 @@ import { NotificationsProvider } from './Contexts/NotificationsContext';
 import Footer from './components/Footer/Footer.jsx';
 import './styles/index.css';
 
-import { findUserInStrapi } from './utils/strapiUserService.jsx';
+//import { findUserInStrapi } from './utils/strapiUserService.jsx';
 // IMPORTA ScrollToTop
 import ScrollToTop from './components/ScrollToTop.jsx';
 import AuthGate from './components/AuthGate.jsx';
@@ -47,21 +48,37 @@ const AppWrapper = () => {
     club: 'clubs',
     carrito: 'market',
     curso: 'cursos',
+    referir: 'comunidad',
   };
   const pathSection = location.pathname.split('/').filter(Boolean)[0];
   const siteSection = sectionMap[pathSection] ?? pathSection ?? '';
 
   return (
     <>
-      <ScrollToTop behavior="auto" targetId="marihuanasclub-app" />
+    <Box
+      id="marihuanasclub-app"
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        width: "100%",
+        maxWidth: "100vw",
+        overflowX: "hidden",   // 👈 clave
+      }}
+    >
+      
       {!isWikiRoute && <NavBar siteSection={siteSection} />}
+      <ScrollToTop behavior="auto" targetId="marihuanasclub-app" />
+      <Box sx={{ flex: 1 }}>
       <Rutas />
       <AuthGate>
         <Asistente />
         <ShareButton />
       </AuthGate>
+      </Box>
       
       <Footer />
+      </Box>
     </>
   );
 };

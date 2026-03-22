@@ -126,6 +126,10 @@ import Humo from '../components/Membresias/Humo/Humo.jsx';
 import Registrar from './components/Registrar.jsx';
 import PreCargador from '../components/PreCargador.jsx';
 import ClubCreado from '../components/Clubs/steps/ClubCreado.jsx';
+import Referir from '../Pages/Comunidad/Referir.jsx';
+import AfiliarseClubCultivo from '../Pages/Clubs/AfiliarseClubClultivo.jsx';
+import AllNotificaciones from '../Pages/Notificacions.jsx';
+import Notificacion from '../Pages/Notificacion.jsx';
 
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
@@ -163,6 +167,8 @@ const Rutas = () => (
     <Route path="/" element={<HomeRoute />} />
     <Route path="/probador" element={<Probador />} />
     <Route path="/registrar" element={<Registrar />} />
+    <Route path="/notificaciones" element={<AllNotificaciones />} />
+    <Route path="/notificacion/:id" element={<Notificacion />} />
     
     
     <Route path="/clubs/mi-club/ingresar-semillas" element={<IngresarSemillas />} />
@@ -197,10 +203,10 @@ const Rutas = () => (
     <Route path="/clubs/miclub/*" element={<MiClub />} />
     <Route path="/clubs/:nombre_club" element={<Club />} />
     <Route path="/clubs/requisitos-jardinero" element={<RequisitosJardinero />} />
-    <Route path="/clubs/agregar-club" element={<AgregarClubWrapper tipo='consumo' />} />
+    <Route path="/clubs/afiliarseclub/:club" element={<AfiliarseClubCultivo />} />
     <Route path="/clubs/agregar-club/cultivo" element={<AgregarClubWrapper tipo='cultivo' />} />
     <Route path="/clubs/tipos-clubs" element={<TiposClubs />} />
-    <Route path="/clubs/qrscanner" element={<QrScanner />} />
+    <Route path="/clubs/miclub/qrscanner" element={<QrScanner />} />
     <Route path="/contenidos/agregar-contenido" element={<AgregarContenido />} />
     <Route path="/cursos/agregar-curso" element={<AgregarCurso />} />
     <Route path="/cursos/editar/:slug" element={<EditarCursoWrapper />} />
@@ -242,6 +248,9 @@ const Rutas = () => (
 
     <Route path="/precargador" element={<PreCargador />} />
     <Route path="/club-creado" element={<ClubCreado />} />
+    <Route path="/referir" element={<Referir />} />
+    <Route path="/referir/*" element={<Referir />} />
+    <Route path="/agregar-club/:club" element={<Referir />} />
     
 
 

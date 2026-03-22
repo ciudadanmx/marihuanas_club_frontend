@@ -198,38 +198,40 @@ const Clubs = () => {
 
   return (
     <Box
-      className="clubs-wrapper"
-      maxWidth="lg"
-      mx="auto"
-      px={2}
-      py={4}
-      sx={{
-        backgroundColor: '#f4ffe2',
-        borderRadius: 4,
-        boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
-      }}
-    >
+  className="clubs-wrapper"
+  maxWidth="lg"
+  mx="auto"
+  px={{ xs: 1.5, sm: 2 }}
+  py={{ xs: 2, sm: 4 }}
+  sx={{
+    mt: { xs: 10, md: 0 },  // 👈 separación en mobile
+    backgroundColor: '#f4ffe2',
+    borderRadius: { xs: 2, sm: 4 },
+    boxShadow: '0 4px 25px rgba(0,0,0,0.1)',
+  }}
+>
       <Typography
-        variant="h3"
-        textAlign="center"
-        fontWeight="bold"
-        mb={3}
-        className="section-title animated-box fade-in-top"
-        sx={{
-          textShadow: '0 1px 2px rgba(0,0,0,0.2)',
-          color: '#2e7d32',
-        }}
-      >
-        🌿 Red de Clubs Cannábicos en México
-      </Typography>
+  variant="h3"
+  textAlign="center"
+  fontWeight="bold"
+  mb={{ xs: 0, md: 3 }}
+  className="section-title animated-box fade-in-top"
+  sx={{
+    display: { xs: 'none', md: 'block' },  // 👈 lo ocultamos en mobile
+    textShadow: '0 1px 2px rgba(0,0,0,0.2)',
+    color: '#2e7d32',
+  }}
+>
+  🌿 Red de Clubs Cannábicos en México
+</Typography>
 
       <Box
         display="flex"
         flexDirection={{ xs: 'column', md: 'row' }}
         alignItems="center"
         justifyContent="center"
-        gap={4}
-        mb={4}
+        gap={{ xs: 11, md: 4 }}   // 👈 más separación en mobile
+        mb={{ xs: 2, md: 4 }}
       >
         {/* Imagen 1 */}
         <Box
@@ -314,7 +316,7 @@ const Clubs = () => {
         fontWeight="600"
         color="text.secondary"
         className="animated-box fade-in-bottom"
-        sx={{ mt: 4 }}
+        sx={{ mt: { xs: 2, md: 4 } }}
       >
         {/* Aquí mantenemos la misma posición del mapa como antes, pero con Tabs:
             - "Mapa" muestra MapaClubs
@@ -343,20 +345,26 @@ const Clubs = () => {
 
           {/* Panel Mapa */}
           {mapTab === 0 && (
-            <Suspense
-              fallback={
-                <Box sx={{ width: '100%', display: 'block', py: { xs: 2, md: 4 } }}>
-                  <Skeleton variant="rectangular" height={isMobile ? 180 : 360} />
-                  <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
-                    <Skeleton variant="rectangular" width={100} height={36} />
-                    <Skeleton variant="rectangular" width={100} height={36} />
-                  </Stack>
-                </Box>
-              }
-            >
-              <MapaClubsLazy />
-            </Suspense>
-          )}
+  <Box
+    sx={{
+      width: "100%",
+      minHeight: { xs: 280, md: 480 }, // 👈 altura reservada
+      position: "relative",
+    }}
+  >
+    <Suspense
+      fallback={
+        <Skeleton
+          variant="rectangular"
+          height="100%"
+          sx={{ borderRadius: 2 }}
+        />
+      }
+    >
+      <MapaClubsLazy />
+    </Suspense>
+  </Box>
+)}
 
           {/* Panel Directorio */}
           {mapTab === 1 && (
