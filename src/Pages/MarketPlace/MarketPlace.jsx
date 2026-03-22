@@ -334,7 +334,7 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
         if (parametros) requestParams.parametros = parametros;
 
         // PRECIOS DESDE URL
-        const searchParams = new URLSearchParams(location.search);
+        const searchParams = new URLSearchParams(window.location.search);
         const precioMin = searchParams.get('precio_min');
         const precioMax = searchParams.get('precio_max');
 
@@ -357,7 +357,7 @@ const MarketPlace = ({ filtros = '', parametros = '' }) => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [filtros, parametros, pagina, porPagina, buscarProductos, location.search]);
+  }, [filtros, parametros, pagina, porPagina, buscarProductos, window.location.search]);
 
   // Observer para animar cuando entran en viewport
   useEffect(() => {

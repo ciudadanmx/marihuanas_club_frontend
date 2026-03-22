@@ -87,6 +87,8 @@ export default function FinalizarCompra() {
   const [pedidosCreados, setPedidosCreados] = useState([]); // NORMALIZADOS
   const [creatingPedidos, setCreatingPedidos] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [localItems, setLocalItems] = useState([]);
+  const [localTotal, setLocalTotal] = useState(0);
 
   useEffect(() => {
     console.log("cart y emojis - useEffect itemsContext changed:", itemsContext);
