@@ -7,7 +7,7 @@ import { useAuth0 } from '@auth0/auth0-react';
 // Hooks de React Router:
 // - useLocation: para saber en qué ruta estamos
 // - useNavigate: para redirigir al usuario
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 // Componente visual que se muestra mientras se valida el acceso
 import PreLoader from './PreLoader';
@@ -33,8 +33,6 @@ export default function AuthGate({ children }) {
   // Información de la ruta actual
   const location = useLocation();
 
-  // Función para redireccionar
-  const navigate = useNavigate();
 
   /**
    * Estado interno para saber si seguimos validando
@@ -79,12 +77,10 @@ export default function AuthGate({ children }) {
         const strapiUser = data?.[0];
 
         // Si el usuario NO existe en Strapi
-        // o existe pero NO ha terminado su registro
+        // o existe pero NO ha terminado su registro,
+        // no bloqueamos navegación desde aquí
         if (!strapiUser || strapiUser.registrado !== true) {
-
-          // Redirigimos a /registrar
-          // replace: true evita que pueda regresar con "back"
-          navigate('/registrar', { replace: true });
+          setChecking(false);
           return;
         }
 
