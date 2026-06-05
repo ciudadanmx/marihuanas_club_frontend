@@ -131,6 +131,8 @@ import AfiliarseClubCultivo from '../Pages/Clubs/AfiliarseClubClultivo.jsx';
 import AllNotificaciones from '../Pages/Notificacions.jsx';
 import Notificacion from '../Pages/Notificacion.jsx';
 
+
+import InsurGlorieta from '../components/InsurGlorieta.jsx';
 // 🧰 Wrappers
 const EditarContenidoWrapper = () => {
   const { slug } = useParams();
@@ -169,7 +171,7 @@ const Rutas = () => (
     <Route path="/registrar" element={<Registrar />} />
     <Route path="/notificaciones" element={<AllNotificaciones />} />
     <Route path="/notificacion/:id" element={<Notificacion />} />
-    
+    <Route path="/insurglorieta" element={<InsurGlorieta />} />
     
     <Route path="/clubs/mi-club/ingresar-semillas" element={<IngresarSemillas />} />
 

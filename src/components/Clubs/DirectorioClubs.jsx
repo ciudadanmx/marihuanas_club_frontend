@@ -10,7 +10,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 const STRAPI_URL = process.env.REACT_APP_STRAPI_URL || '';
 
-export default function DirectorioClubs() {
+export default function DirectorioClubs({ onlyPromocion = false }) {
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,6 +66,11 @@ export default function DirectorioClubs() {
 
   // Filtramos clubs según dirección y tipo
   const filteredClubs = clubs.filter(club => {
+    const integrantes = Number(club.num_integrantes ?? 0);
+    const isPromocion = integrantes === 0;
+
+    if (onlyPromocion && !isPromocion) return false;
+
     let matchCity = true;
     let matchTipo = true;
 
@@ -94,6 +99,25 @@ export default function DirectorioClubs() {
 
   return (
     <Box sx={{ width: '95%', mx: 'auto', mt: 2 }}>
+      {onlyPromocion && (
+        <Box
+          sx={{
+            mb: 2,
+            px: 2,
+            py: 1.25,
+            borderRadius: 3,
+            border: '2px solid #fff200',
+            background: 'linear-gradient(90deg, #43a047 0%, #66bb6a 100%)',
+            boxShadow: '0 0 16px rgba(255, 242, 0, 0.6)',
+            display: 'inline-block',
+          }}
+        >
+          <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: { xs: '0.92rem', sm: '1rem' } }}>
+            En promoción: solo clubs con 0 integrantes
+          </Typography>
+        </Box>
+      )}
+
       {/* FILTROS */}
       <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 2 }}>
         {/* Autocomplete de Google Places para ciudades */}

@@ -1,0 +1,4 @@
+{
+    "ollama-copilot.model": "starcoder2:15b",
+    "ollama-copilot.chatModel": "mistral"
+}

@@ -185,13 +185,11 @@ const Clubs = () => {
   // manejar cambio de tab dentro del mapa: si el usuario va a Directorio, prefetch/import
   const handleMapTabChange = (event, newValue) => {
     setMapTab(newValue);
-    if (newValue === 1) {
-      // intención explícita de ver el directorio
+    if (newValue === 1 || newValue === 2) {
       startTransition(() => {
         prefetchModule(importDirectorioClubs);
       });
     } else if (newValue === 0) {
-      // si vuelve a mapa, aseguramos que el mapa esté prefeteado
       startTransition(() => prefetchModule(importMapaClubs));
     }
   };
@@ -337,9 +335,72 @@ const Clubs = () => {
               onChange={handleMapTabChange}
               aria-label="Mapa o Directorio de clubs"
               centered={isMobile ? false : true}
+              sx={{
+                '& .MuiTabs-indicator': {
+                  height: 4,
+                  borderRadius: 8,
+                  background: 'linear-gradient(90deg, #43a047 0%, #66bb6a 100%)',
+                  boxShadow: '0 0 10px rgba(102,187,106,0.7)',
+                },
+              }}
             >
-              <Tab label="Mapa" id="tab-mapa" aria-controls="tabpanel-mapa" />
-              <Tab label="Directorio" id="tab-directorio" aria-controls="tabpanel-directorio" />
+              <Tab
+                label="Mapa"
+                id="tab-mapa"
+                aria-controls="tabpanel-mapa"
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 800,
+                  borderRadius: '999px',
+                  transition: 'all .25s ease',
+                  '&.Mui-selected': {
+                    color: '#1b5e20',
+                    textShadow: '0 0 8px rgba(102,187,106,0.55)',
+                  },
+                }}
+              />
+              <Tab
+                label="Directorio"
+                id="tab-directorio"
+                aria-controls="tabpanel-directorio"
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 800,
+                  borderRadius: '999px',
+                  transition: 'all .25s ease',
+                  '&.Mui-selected': {
+                    color: '#1b5e20',
+                    textShadow: '0 0 8px rgba(102,187,106,0.55)',
+                  },
+                }}
+              />
+              <Tab
+                label="En promoción"
+                id="tab-promocion"
+                aria-controls="tabpanel-promocion"
+                sx={{
+                  textTransform: 'none',
+                  fontWeight: 900,
+                  borderRadius: '999px',
+                  color: '#2e7d32',
+                  border: '2px solid #fff200',
+                  background: 'linear-gradient(90deg, #43a047 0%, #66bb6a 100%)',
+                  boxShadow: '0 0 14px rgba(255,242,0,0.45)',
+                  mx: .5,
+                  my: .75,
+                  minHeight: 36,
+                  transition: 'all .25s ease',
+                  '&:hover': {
+                    boxShadow: '0 0 18px rgba(255,242,0,0.65)',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&.Mui-selected': {
+                    color: '#fff',
+                    boxShadow: '0 0 20px rgba(255,242,0,0.8), 0 4px 10px rgba(0,0,0,0.25)',
+                    textShadow: '0 0 10px rgba(255,242,0,0.7)',
+                  },
+                }}
+              />
             </Tabs>
           </Box>
 
@@ -366,22 +427,23 @@ const Clubs = () => {
   </Box>
 )}
 
-          {/* Panel Directorio */}
-          {mapTab === 1 && (
+          {/* Panel En promoción */}
+          {mapTab === 2 && (
             <Suspense
               fallback={
                 <Box sx={{ width: '100%', display: 'block', py: { xs: 2, md: 4 } }}>
                   <Skeleton variant="rectangular" height={isMobile ? 180 : 360} />
                   <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 2 }}>
-                    <Skeleton variant="rectangular" width={140} height={36} />
+                    <Skeleton variant="rectangular" width={180} height={36} />
                   </Stack>
                 </Box>
               }
-            > {membresia?.activa === true ? (
-              <DirectorioClubsLazy />
-            ) : (
-              <ActivaTuMembresiaLazy />
-            )}
+            >
+              {membresia?.activa === true ? (
+                <DirectorioClubsLazy onlyPromocion />
+              ) : (
+                <ActivaTuMembresiaLazy />
+              )}
             </Suspense>
           )}
         </Box>
