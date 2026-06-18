@@ -1,0 +1,18 @@
+name: Deploy Frontend Marihuanas
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Deploy
+        run: |
+          cd /var/www/apps/frontend-marihuanas
+          git fetch origin
+          git reset --hard origin/master
+          npm install --legacy-peer-deps
+          CI=false npm run build
