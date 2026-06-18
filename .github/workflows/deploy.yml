@@ -5,8 +5,6 @@ on:
     branches:
       - master
 
-# Usamos concurrencia para evitar que múltiples despliegues se solapen
-# y saturen la RAM de tu servidor.
 concurrency:
   group: deploy-frontend-marihuanas
   cancel-in-progress: true
@@ -14,24 +12,15 @@ concurrency:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      NODE_OPTIONS: "--max-old-space-size=4096"
+      CI: "false"
+      GENERATE_SOURCEMAP: "false"
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Deploy and Build
         run: |
           cd /var/www/apps/frontend-marihuanas
-          
-          # 1. Asegurar estado limpio
           git fetch origin
           git reset --hard origin/master
-          
-          # 2. Instalar dependencias con flags de alta estabilidad
-          # --no-audit: evita bloqueos de red por consultas de seguridad
-          # --prefer-offline: usa caché local para mayor velocidad
-          npm install --legacy-peer-deps --no-audit --prefer-offline
-          
-          # 3. Build con control de recursos
-          # CI=false: evita que errores menores detengan el build
-          # NODE_OPTIONS: ajustado a 4GB, si el servidor se congela, reduce a 2048
-          NODE_OPTIONS="--max-old-space-size=2048" CI=false ionice -c 3 npm run build
+          npm install --legacy-peer-deps --no-audit
+          npm run build
