@@ -34,4 +34,4 @@ jobs:
           # 3. Build con control de recursos
           # CI=false: evita que errores menores detengan el build
           # NODE_OPTIONS: ajustado a 4GB, si el servidor se congela, reduce a 2048
-          NODE_OPTIONS="--max-old-space-size=4096" CI=false npm run build
+          NODE_OPTIONS="--max-old-space-size=2048" CI=false ionice -c 3 npm run build
