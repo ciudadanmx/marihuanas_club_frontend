@@ -15,4 +15,4 @@ jobs:
           git fetch origin
           git reset --hard origin/master
           npm install --legacy-peer-deps
-          CI=false npm run build
+          NODE_OPTIONS="--max-old-space-size=4096" CI=false npm run build
